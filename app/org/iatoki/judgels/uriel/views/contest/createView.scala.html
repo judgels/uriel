@@ -1,0 +1,12 @@
+@(form: Form[org.iatoki.judgels.uriel.ContestUpsertForm])
+
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreate()) {
+
+    @upsertView(form)
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}

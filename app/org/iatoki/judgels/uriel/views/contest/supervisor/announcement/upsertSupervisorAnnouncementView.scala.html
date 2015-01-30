@@ -1,0 +1,13 @@
+@(form: Form[org.iatoki.judgels.uriel.ContestAnnouncementUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@helper.CSRF.formField
+
+@b3.text(form("title"), '_label -> Messages.get("contest.announcement.field.title"))
+@b3.input(form("announcement"), '_label -> Messages.get("contest.announcement.field.announcement")) { (id, name, value, args) =>
+    <textarea class="ckeditor" id="@id" name="@name">
+    @value
+    </textarea>
+}
+@b3.select(form("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("contest.announcement.field.status"))

@@ -1,0 +1,48 @@
+@(currentPage: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.UserRole], currentSortBy: String, currentOrder: String, currentFilter: String)
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.pagination.tablePagination
+@import org.iatoki.judgels.commons.views.html.pagination.tableHeader
+@import org.iatoki.judgels.commons.views.html.pagination.link
+@import org.iatoki.judgels.uriel.UrielUtils
+
+@shortLink(newPage: scala.Long, newSortBy: String) = {@link(currentSortBy, true, currentOrder, currentFilter, newPage, newSortBy, org.iatoki.judgels.uriel.controllers.routes.UserRoleController.list)}
+
+<form class="form form-inline pull-right" action='@org.iatoki.judgels.uriel.controllers.routes.UserRoleController.list(currentPage.getPageIndex, "", "", "")' method="GET">
+    <input type="hidden" name="orderBy" value="@currentOrder"/>
+    <input type="hidden" name="sortBy" value="@currentSortBy"/>
+    <div class="form-group">
+        <input type="search" class="form-control" name="filterString" value="@currentFilter">
+    </div>
+    <button type="submit" class="btn btn-primary">@Messages.get("commons.search")</button>
+</form>
+
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-condensed table-bordered">
+        <tr>
+            @tableHeader("id", Messages.get("commons.field.id"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "id"))
+            @tableHeader("userJid", Messages.get("userRole.field.userJid"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "userJid"))
+            @tableHeader("username", Messages.get("userRole.field.username"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "username"))
+            @tableHeader("alias", Messages.get("userRole.field.alias"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "alias"))
+            @tableHeader("roles", Messages.get("userRole.field.roles"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "roles"))
+            <th></th>
+        </tr>
+        @for(page <- currentPage.getList()) {
+            <tr>
+                <td>@page.getId</td>
+                <td>@page.getUserJid</td>
+                <td>@page.getUsername</td>
+                <td>@page.getAlias</td>
+                <td>@page.getRoles</td>
+                <td class="text-center">
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.UserRoleController.update(page.getId)"><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.UserRoleController.delete(page.getId)" onclick="confirmLink ( event, this.href )"><span class="glyphicon glyphicon-remove"></span></a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+@tablePagination(currentPage, currentSortBy, currentOrder, currentFilter, org.iatoki.judgels.uriel.controllers.routes.UserRoleController.list)

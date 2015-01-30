@@ -1,0 +1,12 @@
+@(user: org.iatoki.judgels.uriel.Contest)
+
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(play.api.mvc.Call("GET", "#")) {
+
+    @b3.static(Messages.get("commons.field.id")) { @user.getId }
+    @b3.static(Messages.get("user.field.name")) { @user.getName }
+
+}

@@ -1,0 +1,26 @@
+@(contest: org.iatoki.judgels.uriel.Contest, form: Form[org.iatoki.judgels.uriel.ContestClarificationCreateForm], contestProblems: java.util.List[org.iatoki.judgels.uriel.ContestProblem])
+
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.UrielUtils
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestClarification(contest.getId)) {
+
+    @helper.CSRF.formField
+
+    @b3.textarea(form("question"), '_label -> Messages.get("contest.clarification.field.question"), 'class -> "form-control")
+    <div class="form-group" id="topicJid_field">
+        <label class="control-label col-xs-3">@Messages.get("contest.clarification.field.topic")</label>
+        <div class="col-xs-9">
+            <select id="topicJid" name="topicJid" class="form-control">
+                <option value="@contest.getJid">@Messages.get("contest.clarification.general")</option>
+                @for(contestProblem <- contestProblems) {
+                    <option value="@contestProblem.getProblemJid">@contestProblem.getAlias</option>
+                }
+            </select>
+        </div>
+    </div>
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}

@@ -1,0 +1,53 @@
+@(currentPage: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.Contest], currentSortBy: String, currentOrder: String, currentFilter: String)
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.pagination.tablePagination
+@import org.iatoki.judgels.commons.views.html.pagination.tableHeader
+@import org.iatoki.judgels.commons.views.html.pagination.link
+@import org.iatoki.judgels.uriel.UrielUtils
+
+@shortLink(newPage: scala.Long, newSortBy: String) = {@link(currentSortBy, true, currentOrder, currentFilter, newPage, newSortBy, org.iatoki.judgels.uriel.controllers.routes.ContestController.list)}
+
+<form class="form form-inline pull-right" action='@org.iatoki.judgels.uriel.controllers.routes.ContestController.list(currentPage.getPageIndex, "", "", "")' method="GET">
+    <input type="hidden" name="orderBy" value="@currentOrder"/>
+    <input type="hidden" name="sortBy" value="@currentSortBy"/>
+    <div class="form-group">
+        <input type="search" class="form-control" name="filterString" value="@currentFilter">
+    </div>
+    <button type="submit" class="btn btn-primary">@Messages.get("commons.search")</button>
+</form>
+
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-condensed table-bordered">
+        <tr>
+            @tableHeader("id", Messages.get("commons.field.id"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "id"))
+            @tableHeader("name", Messages.get("contest.field.name"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "name"))
+            @tableHeader("scope", Messages.get("contest.field.scope"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "scope"))
+            @tableHeader("style", Messages.get("contest.field.style"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "style"))
+            @tableHeader("type", Messages.get("contest.field.type"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "type"))
+            @tableHeader("startTime", Messages.get("contest.field.startTime"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "startTime"))
+            @tableHeader("endTime", Messages.get("contest.field.endTime"), currentSortBy, currentOrder, shortLink(currentPage.getPageIndex(), "endTime"))
+            <th></th>
+        </tr>
+        @for(page <- currentPage.getList()) {
+            <tr>
+                <td>@page.getId</td>
+                <td>@page.getName</td>
+                <td>@page.getScope.name()</td>
+                <td>@page.getStyle.name()</td>
+                <td>@page.getType.name()</td>
+                <td>@UrielUtils.convertDateToString(page.getStartTime)</td>
+                <td>@UrielUtils.convertDateToString(page.getEndTime)</td>
+                <td class="text-center">
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.viewAnnouncement(page.getId)"><span class="glyphicon glyphicon-search"></span></a>
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.update(page.getId)"><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.delete(page.getId)" onclick="confirmLink ( event, this.href )"><span class="glyphicon glyphicon-remove"></span></a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+@tablePagination(currentPage, currentSortBy, currentOrder, currentFilter, org.iatoki.judgels.uriel.controllers.routes.ContestController.list)

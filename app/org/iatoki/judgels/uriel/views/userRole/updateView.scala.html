@@ -1,0 +1,15 @@
+@(form: Form[org.iatoki.judgels.uriel.UserRoleUpdateForm], modelId: Long)
+
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-xs-3", "col-xs-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.UserRoleController.postUpdate(modelId)) {
+
+    @helper.CSRF.formField
+
+    @b3.text(form("alias"), '_label -> Messages.get("userRole.field.alias"))
+    @b3.text(form("roles"), '_label -> Messages.get("userRole.field.roles"))
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}

@@ -1,0 +1,19 @@
+@(contestId: Long, clarification: org.iatoki.judgels.uriel.ContestClarification, form: Form[org.iatoki.judgels.uriel.ContestClarificationUpdateForm])
+
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@clarification.getQuestion
+@clarification.getAsker
+@clarification.getAskedTime
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postUpdateContestClarification(contestId, clarification.getId)) {
+
+    @helper.CSRF.formField
+
+    @b3.textarea(form("answer"), '_label -> Messages.get("contest.clarification.field.answer"), 'class -> "form-control")
+    @b3.select(form("status"), Seq("ANSWERED" -> "Answered", "REJECTED" -> "Rejected"), '_label -> Messages.get("contest.clarification.field.status"))
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}

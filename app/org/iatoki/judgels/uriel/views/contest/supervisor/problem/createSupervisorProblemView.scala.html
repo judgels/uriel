@@ -1,0 +1,21 @@
+@(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestProblemCreateForm])
+
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.UrielUtils
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestProblem(contestId)) {
+
+    @helper.CSRF.formField
+
+    @b3.text(form("problemJid"), '_label -> Messages.get("contest.problem.field.problemJid"), 'class -> "form-control")
+    @b3.text(form("problemSecret"), '_label -> Messages.get("contest.problem.field.problemSecret"), 'class -> "form-control")
+    @b3.text(form("alias"), '_label -> Messages.get("contest.problem.field.alias"), 'class -> "form-control")
+    @b3.text(form("name"), '_label -> Messages.get("contest.problem.field.name"), 'class -> "form-control")
+    @b3.text(form("submissionLimit"), '_label -> Messages.get("contest.problem.field.submissionLimit"), 'class -> "form-control")
+    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSE" -> "Close", "HIDDEN" -> "Hidden"), '_label -> Messages.get("contest.problem.field.status"))
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}

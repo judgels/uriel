@@ -1,0 +1,60 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Imports
+->          /                                                        frontendcommons.Routes
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file                                            controllers.Assets.at(path="/public", file)
+GET         /vassets/*file                                           controllers.Assets.versioned(path="/public", file: Asset)
+
+
+GET         /                                                        @org.iatoki.judgels.uriel.controllers.ApplicationController.index()
+GET         /auth/:returnUri                                         @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri: String)
+GET         /authRole/:returnUri                                     @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri: String)
+
+GET         /contest                                                 @org.iatoki.judgels.uriel.controllers.ContestController.index()
+GET         /contest/                                                @org.iatoki.judgels.uriel.controllers.ContestController.list(page: Long ?= 0, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /contest/create                                          @org.iatoki.judgels.uriel.controllers.ContestController.create()
+POST        /contest/create                                          @org.iatoki.judgels.uriel.controllers.ContestController.postCreate()
+GET         /contest/:cId/announcement                               @org.iatoki.judgels.uriel.controllers.ContestController.viewAnnouncement(cId: Long)
+GET         /contest/:cId/problem                                    @org.iatoki.judgels.uriel.controllers.ContestController.viewProblem(cId: Long)
+GET         /contest/:cId/submission                                 @org.iatoki.judgels.uriel.controllers.ContestController.viewSubmission(cId: Long)
+GET         /contest/:cId/clarification                              @org.iatoki.judgels.uriel.controllers.ContestController.viewClarification(cId: Long)
+GET         /contest/:cId/clarification/create                       @org.iatoki.judgels.uriel.controllers.ContestController.createContestClarification(cId: Long)
+POST        /contest/:cId/clarification/create                       @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestClarification(cId: Long)
+GET         /contest/:cId/supervisor/announcement                    @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorAnnouncement(cId: Long)
+GET         /contest/:cId/supervisor/announcement/                   @org.iatoki.judgels.uriel.controllers.ContestController.listContestAnnouncement(cId: Long, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/announcement/create             @org.iatoki.judgels.uriel.controllers.ContestController.createContestAnnouncement(cId: Long)
+POST        /contest/:cId/supervisor/announcement/create             @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestAnnouncement(cId: Long)
+GET         /contest/:cId/supervisor/announcement/:aId/update        @org.iatoki.judgels.uriel.controllers.ContestController.updateContestAnnouncement(cId: Long, aId: Long)
+POST        /contest/:cId/supervisor/announcement/:aId/update        @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestAnnouncement(cId: Long, aId: Long)
+GET         /contest/:cId/supervisor/problem                         @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorProblem(cId: Long)
+GET         /contest/:cId/supervisor/problem/                        @org.iatoki.judgels.uriel.controllers.ContestController.listContestProblem(cId: Long, page: Long ?= 0, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/problem/create                  @org.iatoki.judgels.uriel.controllers.ContestController.createContestProblem(cId: Long)
+POST        /contest/:cId/supervisor/problem/create                  @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestProblem(cId: Long)
+GET         /contest/:cId/supervisor/problem/:pId/update             @org.iatoki.judgels.uriel.controllers.ContestController.updateContestProblem(cId: Long, pId: Long)
+POST        /contest/:cId/supervisor/problem/:pId/update             @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestProblem(cId: Long, pId: Long)
+GET         /contest/:cId/supervisor/submission                      @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorSubmission(cId: Long)
+GET         /contest/:cId/supervisor/clarification                   @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorClarification(cId: Long)
+GET         /contest/:cId/supervisor/clarification/                  @org.iatoki.judgels.uriel.controllers.ContestController.listContestClarification(cId: Long, page: Long ?= 0, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/clarification/:c2Id/update      @org.iatoki.judgels.uriel.controllers.ContestController.updateContestClarification(cId: Long, c2Id: Long)
+POST        /contest/:cId/supervisor/clarification/:c2Id/update      @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestClarification(cId: Long, c2Id: Long)
+GET         /contest/:cId/supervisor/contestant                      @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorContestant(cId: Long)
+GET         /contest/:cId/supervisor/contestant/                     @org.iatoki.judgels.uriel.controllers.ContestController.listContestContestant(cId: Long, page: Long ?= 0, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/contestant/create               @org.iatoki.judgels.uriel.controllers.ContestController.createContestContestant(cId: Long)
+POST        /contest/:cId/supervisor/contestant/create               @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestContestant(cId: Long)
+GET         /contest/:cId/supervisor/contestant/:c2Id/update         @org.iatoki.judgels.uriel.controllers.ContestController.updateContestContestant(cId: Long, c2Id: Long)
+POST        /contest/:cId/supervisor/contestant/:c2Id/update         @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestContestant(cId: Long, c2Id: Long)
+GET         /contest/:cId/manager/supervisor                         @org.iatoki.judgels.uriel.controllers.ContestController.viewManagerSupervisor(cId: Long)
+GET         /contest/:cId/admin/manager                              @org.iatoki.judgels.uriel.controllers.ContestController.viewAdminManager(cId: Long)
+GET         /contest/:cId/update                                     @org.iatoki.judgels.uriel.controllers.ContestController.update(cId: Long)
+POST        /contest/:cId/update                                     @org.iatoki.judgels.uriel.controllers.ContestController.postUpdate(cId: Long)
+GET         /contest/:cId/delete                                     @org.iatoki.judgels.uriel.controllers.ContestController.delete(cId: Long)
+
+GET         /userRole                                                @org.iatoki.judgels.uriel.controllers.UserRoleController.index()
+GET         /userRole/                                               @org.iatoki.judgels.uriel.controllers.UserRoleController.list(page: Long ?= 0, sortBy ?= "id", orderBy ?= "asc", filterString ?= "")
+GET         /userRole/:uId/update                                    @org.iatoki.judgels.uriel.controllers.UserRoleController.update(uId: Long)
+POST        /userRole/:uId/update                                    @org.iatoki.judgels.uriel.controllers.UserRoleController.postUpdate(uId: Long)
+GET         /userRole/:uId/delete                                    @org.iatoki.judgels.uriel.controllers.UserRoleController.delete(uId: Long)

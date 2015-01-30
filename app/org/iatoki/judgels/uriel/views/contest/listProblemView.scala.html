@@ -1,0 +1,8 @@
+@(contestId: Long, problems: java.util.List[org.iatoki.judgels.uriel.ContestProblem])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.UrielUtils
+
+@for(problem <- problems) {
+    @problem.getAlias
+}
