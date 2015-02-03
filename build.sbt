@@ -47,8 +47,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap-datetimepicker" % "2.3.1",
   "org.hibernate" % "hibernate-entitymanager" % "4.3.7.Final",
 //  "org.hibernate" % "hibernate-jpamodelgen" % "4.3.7.Final",
-  "com.adrianhurt" % "play-bootstrap3_2.11" % "0.3",
-  "com.warrenstrange" % "googleauth" % "0.4.3"
+  "com.adrianhurt" % "play-bootstrap3_2.11" % "0.3"
 )
 
 TestNGPlugin.testNGSettings

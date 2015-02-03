@@ -4,5 +4,5 @@
 @import org.iatoki.judgels.uriel.UrielUtils
 
 @for(problem <- problems) {
-    @problem.getAlias
+    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.viewProblemStatement(contestId, problem.getId)">@problem.getAlias</a>
 }

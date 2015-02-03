@@ -46,6 +46,7 @@ import org.iatoki.judgels.uriel.views.html.contest.createView;
 import org.iatoki.judgels.uriel.views.html.contest.listAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.listClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.listProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.createSupervisorAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.listSupervisorAnnouncementView;
@@ -59,6 +60,7 @@ import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupe
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.updateView;
+import play.Play;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -206,6 +208,27 @@ public final class ContestController extends Controller {
             if (checkIfPermitted(contest, "problem")) {
                 content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewProblem(contest.getId()), routes.ContestController.viewSupervisorProblem(contest.getId()), c));
             }
+            appendViewTabsLayout(content, contest);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.viewProblem(contest.getId()))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return forbidden();
+        }
+    }
+
+    public Result viewProblemStatement(long contestId, long contestProblemId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        if ((checkIfPermitted(contest, "contest")) && (contestProblem.getContestJid().equals(contest.getJid()))) {
+            int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
+            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName()).toString();
+            LazyHtml content = new LazyHtml(viewProblemView.render(contest.getId(), requestUrl));
+
             appendViewTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
