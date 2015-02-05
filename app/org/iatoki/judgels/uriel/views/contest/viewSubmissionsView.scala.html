@@ -1,0 +1,36 @@
+@(currentPage: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestSubmission], contestId: Long, currentSortBy: String, currentOrder: String, currentFilter: String)
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.pagination.tablePagination
+@import org.iatoki.judgels.commons.views.html.pagination.tableHeader
+@import org.iatoki.judgels.commons.views.html.pagination.link
+
+
+<div class="clearfix"></div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-condensed table-bordered">
+        <tr>
+            <th>Id</th>
+            <th>Author</th>
+            <th>Time</th>
+            <th>Language</th>
+            <th>Verdict</th>
+            <th>Score</th>
+            <th></th>
+        </tr>
+        @for(page <- currentPage.getList()) {
+            <tr>
+                <td>@page.getId</td>
+                <td>@page.getAuthorJid</td>
+                <td>@page.getGradingLanguage</td>
+                <td>@page.getVerdict.getName</td>
+                <td>@page.getScore</td>
+                <td class="text-center">
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.viewSubmission(contestId, page.getId)"><span class="glyphicon glyphicon-search"></span></a>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+

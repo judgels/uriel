@@ -208,6 +208,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid) {
+        ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJid(contestJid, contestProblemJid);
+
+        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.name, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+    }
+
+    @Override
     public boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid) {
         return contestProblemDao.isExistByProblemJid(contestJid, contestProblemJid);
     }

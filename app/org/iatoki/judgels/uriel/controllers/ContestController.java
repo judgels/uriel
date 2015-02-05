@@ -5,6 +5,8 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.SubmissionAdapters;
+import org.iatoki.judgels.commons.SubmissionException;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
@@ -13,6 +15,7 @@ import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
+import org.iatoki.judgels.gabriel.GradingSource;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
 import org.iatoki.judgels.uriel.Contest;
@@ -34,8 +37,11 @@ import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
+import org.iatoki.judgels.uriel.ContestSubmission;
+import org.iatoki.judgels.uriel.ContestSubmissionService;
 import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
+import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRoleService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
@@ -47,6 +53,7 @@ import org.iatoki.judgels.uriel.views.html.contest.listAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.listClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.listProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.viewProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.viewSubmissionsView;
 import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.createSupervisorAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.listSupervisorAnnouncementView;
@@ -79,10 +86,12 @@ public final class ContestController extends Controller {
     private static final long PAGE_SIZE = 20;
     private final ContestService contestService;
     private final UserRoleService userRoleService;
+    private final ContestSubmissionService submissionService;
 
-    public ContestController(ContestService contestService, UserRoleService userRoleService) {
+    public ContestController(ContestService contestService, UserRoleService userRoleService, ContestSubmissionService submissionService) {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
+        this.submissionService = submissionService;
     }
 
     public Result index() {
@@ -243,11 +252,62 @@ public final class ContestController extends Controller {
     }
 
     public Result postSubmit(long contestId, String problemJid) {
-        return ok("dah disubmit! :*");
+        Contest contest = contestService.findContestById(contestId);
+
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+
+        String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
+        String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
+        long gradingLastUpdateTime = Long.parseLong(body.asFormUrlEncoded().get("gradingLastUpdateTime")[0]);
+
+        ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
+
+        try {
+            GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
+            String submissionJid = submissionService.submit(contest.getJid(),problemJid, gradingEngine, gradingLanguage, gradingLastUpdateTime, source);
+            SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
+        } catch (SubmissionException e) {
+            flash("submissionError", e.getMessage());
+
+            return redirect(routes.ContestController.viewProblemStatement(contestId, contestProblem.getId()));
+        }
+
+        return redirect(routes.ContestController.viewSubmissions(contestId));
     }
 
-    public Result viewSubmission(long contestId) {
-        return TODO;
+    public Result viewSubmissions(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+
+        Page<ContestSubmission> submissions = submissionService.pageSubmission(0, 20, "id", "asc", contest.getJid(), null, null);
+
+        LazyHtml content = new LazyHtml(viewSubmissionsView.render(submissions, contestId, "id", "asc", ""));
+
+        appendViewTabsLayout(content, contest);
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.viewProblem(contest.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
+    }
+
+    public Result viewSubmission(long contestId, long submissionId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestSubmission submission = submissionService.findSubmissionById(contest.getJid(), submissionId);
+
+        GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
+
+        LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source));
+
+        appendViewTabsLayout(content, contest);
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.viewProblem(contest.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
     }
 
     public Result viewClarification(long contestId) {
@@ -789,7 +849,7 @@ public final class ContestController extends Controller {
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.view.tab.announcement"), routes.ContestController.viewAnnouncement(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.view.tab.problem"), routes.ContestController.viewProblem(contest.getId())));
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.view.tab.submission"), routes.ContestController.viewSubmission(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("contest.view.tab.submission"), routes.ContestController.viewSubmissions(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.view.tab.clarification"), routes.ContestController.viewClarification(contest.getId())));
 
         if (checkIfPermitted(contest, "contestant")) {

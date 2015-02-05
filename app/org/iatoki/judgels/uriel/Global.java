@@ -1,5 +1,8 @@
 package org.iatoki.judgels.uriel;
 
+import akka.actor.Scheduler;
+import org.iatoki.judgels.commons.GradingResponsePoller;
+import org.iatoki.judgels.gabriel.FakeSealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
 import org.iatoki.judgels.uriel.controllers.UserRoleController;
@@ -8,18 +11,25 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibern
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.UserRoleHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSubmissionDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
+import play.libs.Akka;
 import play.mvc.Controller;
+import scala.concurrent.ExecutionContextExecutor;
+import scala.concurrent.duration.Duration;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public final class Global extends org.iatoki.judgels.commons.Global {
 
@@ -30,6 +40,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         cache = new HashMap<>();
 
         super.onStart(application);
+
+        GradingResponsePoller poller = new GradingResponsePoller(new SubmissionUpdaterServiceImpl(new ContestSubmissionHibernateDao()), new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses")));
+
+        Scheduler scheduler = Akka.system().scheduler();
+        ExecutionContextExecutor context = Akka.system().dispatcher();
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
     }
 
     @Override
@@ -47,11 +63,14 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestContestantDao contestContestantDao = new ContestContestantHibernateDao();
                 ContestClarificationDao contestClarificationDao = new ContestClarificationHibernateDao();
                 ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
+                ContestSubmissionDao submissionDao = new ContestSubmissionHibernateDao();
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 ContestService contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, userRoleDao);
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                FakeSealtiel sealtiel = new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses"));
+                ContestSubmissionService submissionService = new ContestSubmissionServiceImpl(submissionDao, sealtiel);
 
-                ContestController contestController = new ContestController(contestService, userRoleService);
+                ContestController contestController = new ContestController(contestService, userRoleService, submissionService);
                 cache.put(ContestController.class, contestController);
             } else if (controllerClass.equals(UserRoleController.class)) {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
