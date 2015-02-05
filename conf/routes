@@ -21,6 +21,7 @@ POST        /contest/create                                          @org.iatoki
 GET         /contest/:cId/announcement                               @org.iatoki.judgels.uriel.controllers.ContestController.viewAnnouncement(cId: Long)
 GET         /contest/:cId/problem                                    @org.iatoki.judgels.uriel.controllers.ContestController.viewProblem(cId: Long)
 GET         /contest/:cId/problem/:cpId                              @org.iatoki.judgels.uriel.controllers.ContestController.viewProblemStatement(cId: Long, cpId: Long)
+POST        /contest/:cId/problem/:cpJid/submit                              @org.iatoki.judgels.uriel.controllers.ContestController.postSubmit(cId: Long, cpJid: String)
 GET         /contest/:cId/submission                                 @org.iatoki.judgels.uriel.controllers.ContestController.viewSubmission(cId: Long)
 GET         /contest/:cId/clarification                              @org.iatoki.judgels.uriel.controllers.ContestController.viewClarification(cId: Long)
 GET         /contest/:cId/clarification/create                       @org.iatoki.judgels.uriel.controllers.ContestController.createContestClarification(cId: Long)

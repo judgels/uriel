@@ -226,7 +226,7 @@ public final class ContestController extends Controller {
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if ((checkIfPermitted(contest, "contest")) && (contestProblem.getContestJid().equals(contest.getJid()))) {
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName()).toString();
+            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName(), routes.ContestController.postSubmit(contestId, contestProblem.getProblemJid()).absoluteURL(request())).toString();
             LazyHtml content = new LazyHtml(viewProblemView.render(contest.getId(), requestUrl));
 
             appendViewTabsLayout(content, contest);
@@ -240,6 +240,10 @@ public final class ContestController extends Controller {
         } else {
             return forbidden();
         }
+    }
+
+    public Result postSubmit(long contestId, String problemJid) {
+        return ok("dah disubmit! :*");
     }
 
     public Result viewSubmission(long contestId) {
