@@ -1,0 +1,68 @@
+@(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestSupervisorCreateForm])
+
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestSupervisor(contestId)) {
+
+    @helper.CSRF.formField
+
+    @b3.text(form("userJid"), '_label -> Messages.get("contest.supervisor.field.userJid"), 'class -> "form-control user_autocomplete")
+    <div class="form-group" id="">
+        <label class="control-label col-xs-2">@Messages.get("client.field.scopes")</label>
+        <div class="col-xs-10">
+            <div class="multi-checkbox-list">
+                <div class="checkbox-wrap">
+                    <div class="checkbox">
+                        <label for="announcement">
+                            <input type="checkbox" id="announcement" name="announcement">
+                            announcement
+                        </label>
+                    </div>
+                </div>
+                <div class="checkbox-wrap">
+                    <div class="checkbox">
+                        <label for="problem">
+                            <input type="checkbox" id="problem" name="problem">
+                            problem
+                        </label>
+                    </div>
+                </div>
+                <div class="checkbox-wrap">
+                    <div class="checkbox">
+                        <label for="submission">
+                            <input type="checkbox" id="submission" name="submission">
+                            submission
+                        </label>
+                    </div>
+                </div>
+                <div class="checkbox-wrap">
+                    <div class="checkbox">
+                        <label for="clarification">
+                            <input type="checkbox" id="clarification" name="clarification">
+                            clarification
+                        </label>
+                    </div>
+                </div>
+                <div class="checkbox-wrap">
+                    <div class="checkbox">
+                        <label for="contestant">
+                            <input type="checkbox" id="contestant" name="contestant">
+                            contestant
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
+        var encodedAccessToken = "@JophielUtils.getEncodedAccessToken";
+    </script>
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}

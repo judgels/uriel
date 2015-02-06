@@ -30,13 +30,13 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public ContestContestantModel findByContestantJid(String contestId, String contestantJid) {
+    public ContestContestantModel findByContestantJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestContestantModel> query = cb.createQuery(ContestContestantModel.class);
         Root<ContestContestantModel> root = query.from(ContestContestantModel.class);
 
         query
-            .where(cb.and(cb.equal(root.get(ContestContestantModel_.contestJid), contestId), cb.equal(root.get(ContestContestantModel_.userJid), contestantJid)));
+            .where(cb.and(cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.equal(root.get(ContestContestantModel_.userJid), contestantJid)));
 
         return JPA.em().createQuery(query).getSingleResult();
     }

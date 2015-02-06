@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-public final class ContestContestant {
+public final class ContestManager {
 
     private long id;
 
@@ -12,15 +12,12 @@ public final class ContestContestant {
 
     private String alias;
 
-    private ContestContestantStatus status;
-
-    public ContestContestant(long id, String contestJid, String userJid, String username, String alias, ContestContestantStatus status) {
+    public ContestManager(long id, String contestJid, String userJid, String username, String alias) {
         this.id = id;
         this.contestJid = contestJid;
         this.userJid = userJid;
         this.username = username;
         this.alias = alias;
-        this.status = status;
     }
 
     public long getId() {
@@ -41,9 +38,5 @@ public final class ContestContestant {
 
     public String getAlias() {
         return alias;
-    }
-
-    public ContestContestantStatus getStatus() {
-        return status;
     }
 }

@@ -63,4 +63,24 @@ public interface ContestService {
 
     void updateContestContestant(long contestContestantId, ContestContestantStatus status);
 
+    ContestPermission findContestPermissionByContestJidAndUserJid(String contestJid, String userJid);
+
+    Page<ContestPermission> pageContestPermissionByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+
+    ContestPermission findContestPermissionByContestPermissionId(long contestSupervisorId);
+
+    boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid);
+
+    void createContestSupervisor(long contestId, String userJid, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant);
+
+    void updateContestSupervisor(long contestSupervisorId, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant);
+
+    Page<ContestManager> pageContestManagerByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+
+    ContestManager findContestManagerByContestManagerId(long contestManagerId);
+
+    boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid);
+
+    void createContestManager(long contestId, String userJid);
+
 }

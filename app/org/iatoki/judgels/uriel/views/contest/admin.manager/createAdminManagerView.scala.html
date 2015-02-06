@@ -1,0 +1,21 @@
+@(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestManagerCreateForm])
+
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import play.i18n.Messages
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestManager(contestId)) {
+
+    @helper.CSRF.formField
+
+    @b3.text(form("userJid"), '_label -> Messages.get("contest.manager.field.userJid"), 'class -> "form-control user_autocomplete")
+
+    <script type="text/javascript">
+        var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
+        var encodedAccessToken = "@JophielUtils.getEncodedAccessToken";
+    </script>
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}
