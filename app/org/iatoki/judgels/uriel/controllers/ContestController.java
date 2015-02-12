@@ -106,6 +106,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.util.Date;
 import java.util.List;
 
 @Transactional
@@ -1294,5 +1295,35 @@ public final class ContestController extends Controller {
             default:
                 return badRequest(content.render(0));
         }
+    }
+
+    private boolean isAdmin() {
+        return UrielUtils.hasRole("admin");
+    }
+
+    private boolean isContestant(Contest contest) {
+        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+    }
+
+    private boolean isSupervisor()
+
+    private boolean isContestStarted(Contest contest) {
+        return new Date().compareTo(contest.getStartTime()) >= 0;
+    }
+
+    private boolean isContestEnded(Contest contest) {
+        return new Date().compareTo(contest.getEndTime()) > 0;
+    }
+
+    private boolean isAllowedToEnterContest(Contest contest) {
+        return isAdmin() || (isContestant(contest) && isContestStarted(contest));
+    }
+
+    private boolean isAllowedToDoContest(Contest contest) {
+        return new Date().compareTo(contest.getEndTime()) < 0;
+    }
+
+    private boolean isAllowedToSuperviseAnnouncement(Contest contest) {
+        return true;
     }
 }
