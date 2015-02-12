@@ -71,7 +71,6 @@ import org.iatoki.judgels.uriel.views.html.contest.contestant.problem.viewContes
 
 import org.iatoki.judgels.uriel.views.html.contest.contestant.submission.listContestantSubmissionsView;
 
-
 import org.iatoki.judgels.uriel.views.html.contest.manager.general.updateManagerGeneralView;
 
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.createManagerSupervisorView;
@@ -93,6 +92,7 @@ import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupe
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
 
+import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.viewView;
 
@@ -1259,6 +1259,7 @@ public final class ContestController extends Controller {
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())));
         }
 
+        content.appendLayout(c -> contestTimeLayout.render(contest.getEndTime(), c));
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
         content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
     }
@@ -1274,7 +1275,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> leftSidebarLayout.render(
             IdentityUtils.getUsername(),
             IdentityUtils.getUserRealName(),
-            "#",
+            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(routes.ContestController.index().absoluteURL(request())).absoluteURL(request()),
             org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
             internalLinkBuilder.build(), c)
         );

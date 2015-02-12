@@ -108,3 +108,10 @@ userRole.update=Update User Role
 
 userRole.name=Name
 userRole.roles=Roles
+
+contest.time_left=Time left
+contest.time.s=s
+contest.day-left=day
+contest.hour-left=hour
+contest.minute-left=minute
+contest.second-left=second

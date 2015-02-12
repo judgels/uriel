@@ -5,7 +5,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
-import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
+import org.iatoki.judgels.commons.views.html.layouts.leftSidebarWithoutProfileLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.jophiel.commons.views.html.auth.authView;
@@ -45,11 +45,12 @@ public final class ApplicationController extends Controller {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            LazyHtml content = new LazyHtml(authView.render(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri)));
-            content.appendLayout(c -> headingLayout.render(Messages.get("commons.auth.login"), c));
-            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(), c));
-            appendTemplateLayout(content);
-            return getResult(content, Http.Status.OK);
+            return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
+//            LazyHtml content = new LazyHtml(authView.render(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri)));
+//            content.appendLayout(c -> headingLayout.render(Messages.get("commons.auth.login"), c));
+//            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(), c));
+//            appendTemplateLayout(content);
+//            return getResult(content, Http.Status.OK);
         }
     }
 
@@ -58,7 +59,6 @@ public final class ApplicationController extends Controller {
             return redirect(routes.ContestController.index());
         } else {
             String userRoleJid = IdentityUtils.getUserJid();
-            String name = IdentityUtils.getUserRealName();
             if (userRoleService.existsByUserJid(userRoleJid)) {
                 UserRole userRole = userRoleService.findUserRoleByUserJid(userRoleJid);
                 UrielUtils.saveRoleInSession(userRole.getRoles());
@@ -72,14 +72,6 @@ public final class ApplicationController extends Controller {
     }
 
     private void appendTemplateLayout(LazyHtml content) {
-        content.appendLayout(c -> leftSidebarLayout.render(
-                        IdentityUtils.getUsername(),
-                        IdentityUtils.getUserRealName(),
-                        "#",
-                        org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
-                        ImmutableList.of(), c)
-        );
-
         content.appendLayout(c -> headerFooterLayout.render(c));
         content.appendLayout(c -> baseLayout.render("TODO", c));
     }
