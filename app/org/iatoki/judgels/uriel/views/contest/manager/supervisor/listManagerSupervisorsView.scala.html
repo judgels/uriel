@@ -20,12 +20,12 @@
 @tableView() {
     @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
-        "userJid" -> Messages.get("supervisor.userJid"),
-        "announcement" -> Messages.get("supervisor.announcement"),
-        "problem" -> Messages.get("supervisor.problem"),
-        "submission" -> Messages.get("supervisor.submission"),
-        "clarification" -> Messages.get("supervisor.clarification"),
-        "contestant" -> Messages.get("supervisor.contestant")
+        "userJid" -> Messages.get("supervisor.name"),
+        "announcement" -> Messages.get("permission.announcement"),
+        "problem" -> Messages.get("permission.problem"),
+        "submission" -> Messages.get("permission.submission"),
+        "clarification" -> Messages.get("permission.clarification"),
+        "contestant" -> Messages.get("permission.contestant")
     )
     <tbody>
         @for(contestSupervisor <- page.getData) {

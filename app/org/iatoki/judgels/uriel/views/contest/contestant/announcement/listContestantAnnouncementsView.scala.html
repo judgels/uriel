@@ -1,3 +1,16 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
-INI KONTES ANAOUNCMENT
+@import play.i18n.Messages
+@import org.apache.commons.lang3.StringEscapeUtils
+
+@for(contestAnnouncement <- page.getData) {
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="panel-title">@contestAnnouncement.getTitle</span>
+        </div>
+        <div class="panel-body">
+            @Html(contestAnnouncement.getContent)
+
+        </div>
+    </div>
+}

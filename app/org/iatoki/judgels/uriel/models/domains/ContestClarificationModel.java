@@ -20,6 +20,8 @@ public final class ContestClarificationModel extends AbstractModel {
 
     public String topicJid;
 
+    public String title;
+
     public String question;
 
     public String answer;

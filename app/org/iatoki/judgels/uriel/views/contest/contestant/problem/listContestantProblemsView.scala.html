@@ -1,1 +1,14 @@
-@(contestId: Long, contestProblems: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+
+@import org.iatoki.judgels.uriel.JidCacheService
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@for(contestProblem <- page.getData) {
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="@routes.ContestController.viewContestantProblem(contestId, contestProblem.getId)">
+                @contestProblem.getAlias - @JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid)
+            </a>
+        </div>
+    </div>
+}

@@ -1,17 +1,21 @@
 package org.iatoki.judgels.uriel;
 
+import play.data.validation.Constraints;
+
 public final class ContestProblemCreateForm {
 
-    public ContestProblemCreateForm() {
-    }
-
+    @Constraints.Required
     public String problemJid;
 
+    @Constraints.Required
     public String problemSecret;
 
+    @Constraints.Required
     public String alias;
 
-    public long submissionLimit;
+    @Constraints.Required
+    public long submissionsLimit;
 
+    @Constraints.Required
     public String status;
 }

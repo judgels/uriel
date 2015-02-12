@@ -21,9 +21,9 @@ public interface ContestService {
 
     ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId);
 
-    void createContestAnnouncement(long contestId, String title, String announcement, ContestAnnouncementStatus status);
+    void createContestAnnouncement(long contestId, String title, String content, ContestAnnouncementStatus status);
 
-    void updateContestAnnouncement(long contestAnnouncementId, String title, String announcement, ContestAnnouncementStatus status);
+    void updateContestAnnouncement(long contestAnnouncementId, String title, String content, ContestAnnouncementStatus status);
 
     List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid);
 
@@ -35,15 +35,15 @@ public interface ContestService {
 
     boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid);
 
-    void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status);
+    void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 
-    void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status);
+    void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 
     Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, String askerJid);
 
     ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId);
 
-    void createContestClarification(long contestId, String question, String topicJid);
+    void createContestClarification(long contestId, String title, String question, String topicJid);
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 

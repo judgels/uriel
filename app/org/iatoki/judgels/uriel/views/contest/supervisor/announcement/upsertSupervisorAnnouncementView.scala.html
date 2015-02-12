@@ -5,7 +5,7 @@
 @helper.CSRF.formField
 
 @b3.text(form("title"), '_label -> Messages.get("announcement.title"))
-@b3.input(form("announcement"), '_label -> Messages.get("announcement.content")) { (id, name, value, args) =>
+@b3.input(form("content"), '_label -> Messages.get("announcement.content")) { (id, name, value, args) =>
     <textarea class="ckeditor" id="@id" name="@name">
     @value
     </textarea>

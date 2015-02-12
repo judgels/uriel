@@ -1,5 +1,7 @@
 package org.iatoki.judgels.uriel;
 
+import play.data.validation.Constraints;
+
 public final class ContestUpsertForm {
 
     public ContestUpsertForm() {
@@ -15,18 +17,29 @@ public final class ContestUpsertForm {
         this.endTime = UrielUtils.convertDateToString(contest.getEndTime());
     }
 
+    @Constraints.Required
     public String name;
 
     public String description;
 
+
+    @Constraints.Required
     public String type;
 
+
+    @Constraints.Required
     public String scope;
 
+
+    @Constraints.Required
     public String style;
 
+
+    @Constraints.Required
     public String startTime;
 
+
+    @Constraints.Required
     public String endTime;
 
 }

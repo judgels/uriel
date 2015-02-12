@@ -14,6 +14,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSubmissionHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.UserRoleHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
@@ -44,6 +45,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         cache = new HashMap<>();
 
         super.onStart(application);
+
+        JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
 
         GradingResponsePoller poller = new GradingResponsePoller(new SubmissionUpdaterServiceImpl(new ContestSubmissionHibernateDao()), new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses")));
 

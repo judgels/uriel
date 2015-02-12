@@ -20,8 +20,9 @@
 @tableView() {
     @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
-        "question" -> Messages.get("clarification.question"),
-        "userCreate" -> Messages.get("clarification.askerJid"),
+        "title" -> Messages.get("clarification.title"),
+        "topicJid" -> Messages.get("clarification.topic"),
+        "askerJid" -> Messages.get("clarification.asker"),
         "timeCreate" -> Messages.get("clarification.askedTime"),
         "status" -> Messages.get("clarification.status")
     )
@@ -29,7 +30,8 @@
         @for(contestClarification <- page.getData) {
             <tr>
                 <td>@contestClarification.getId</td>
-                <td>@contestClarification.getQuestion</td>
+                <td>@contestClarification.getTitle</td>
+                <td>@contestClarification.getTopic</td>
                 <td>@JidCacheService.getInstance().getDisplayName(contestClarification.getAskerJid)</td>
                 <td>@UrielUtils.convertDateToString(contestClarification.getAskedTime)</td>
                 <td>@contestClarification.getStatus.name()</td>

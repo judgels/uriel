@@ -1,0 +1,94 @@
+role.contestant=Contestant
+role.supervisor=Supervisor
+
+contest.contests=Contests
+contest.contest=Contest
+contest.list=Contests
+contest.create=Create Contest
+contest.view=View Contest
+contest.update=Update Contest
+
+contest.name=Name
+contest.description=Description
+contest.type=Type
+contest.scope=Scope
+contest.style=Style
+contest.startTime=Start Time
+contest.endTime=End Time
+
+
+announcement.announcements=Announcements
+announcement.list=Announcements
+announcement.create=Create Announcement
+announcement.view=View Announcement
+announcement.update=Update Announcement
+
+announcement.title=Title
+announcement.authorJid=Author
+announcement.content=Content
+announcement.status=Status
+announcement.lastUpdate=Last Update
+
+problem.problems=Problems
+problem.problem=Problem
+problem.list=Problems
+problem.create=Create Problem
+problem.update=Update Problem
+
+problem.alias=Alias
+problem.name=Name
+problem.problemJid=Problem JID
+problem.status=Status
+problem.submissionsLimit=Submissions Limit
+problem.problemSecret=Problem Secret
+
+
+submission.submissions=Submissions
+submission.list=Submissions
+
+clarification.clarifications=Clarifications
+clarification.list=Clarifications
+clarification.create=Create Clarification
+clarification.update=Update Clarification
+
+clarification.title=Title
+clarification.question=Question
+clarification.answer=Answer
+clarification.topic=Topic
+clarification.general=General
+
+clarification.asker=Asker
+clarification.askedTime=Asked Time
+clarification.status=Status
+
+clarification.unanswered=Unanswered
+
+contestant.contestants=Contestants
+contestant.list=Contestants
+contestant.create=Create Contestant
+
+contestant.name=Name
+contestant.status=Status
+contestant.userJid=User JID
+
+supervisor.supervisors=Supervisors
+supervisor.list=Supervisors
+supervisor.create=Create Supervisor
+supervisor.update=Update Supervisor
+
+supervisor.name=Name
+supervisor.userJid=User JID
+supervisor.permissions=Permissions
+
+manager.managers=Managers
+manager.list=Manager
+manager.create=Create Manager
+
+manager.userJid=User JID
+manager.name=Name
+
+permission.announcement=Supervise announcements
+permission.problem=Supervise problems
+permission.submission=Supervise submissions
+permission.clarification=Supervise clarifications
+permission.contestant=Supervise contestants

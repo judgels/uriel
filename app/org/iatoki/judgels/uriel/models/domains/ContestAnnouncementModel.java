@@ -20,7 +20,7 @@ public final class ContestAnnouncementModel extends AbstractModel {
 
     public String title;
 
-    public String announcement;
+    public String content;
 
     public String status;
 

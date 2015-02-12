@@ -12,7 +12,9 @@
 
     @helper.CSRF.formField
 
-    @b3.textarea(form("question"), '_label -> Messages.get("clarification.question"))
+
+    @b3.text(form("title"), '_label -> Messages.get("clarification.title"))
+
     <div class="form-group" id="topicJid_field">
         <label class="control-label col-md-3">@Messages.get("clarification.topic")</label>
         <div class="col-md-9">
@@ -24,5 +26,8 @@
             </select>
         </div>
     </div>
+
+    @b3.textarea(form("question"), '_label -> Messages.get("clarification.question"))
+
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }

@@ -19,7 +19,7 @@
 @tableView() {
     @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
-        "userJid" -> Messages.get("contestant.userJid"),
+        "userJid" -> Messages.get("contestant.name"),
         "status" -> Messages.get("contestant.status")
     )
     <tbody>

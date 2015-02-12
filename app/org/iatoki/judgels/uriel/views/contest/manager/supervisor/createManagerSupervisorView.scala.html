@@ -12,14 +12,14 @@
 
     @b3.text(form("userJid"), '_label -> Messages.get("supervisor.userJid"), 'class -> "form-control user_autocomplete")
     <div class="form-group" id="">
-        <label class="control-label col-md-2">@Messages.get("supervisor.permission")</label>
+        <label class="control-label col-md-2">@Messages.get("supervisor.permissions")</label>
         <div class="col-md-10">
             <div class="multi-checkbox-list">
                 <div class="checkbox-wrap">
                     <div class="checkbox">
                         <label for="announcement">
                             <input type="checkbox" id="announcement" name="announcement">
-                            announcement
+                            @Messages.get("permission.announcement")
                         </label>
                     </div>
                 </div>
@@ -27,7 +27,7 @@
                     <div class="checkbox">
                         <label for="problem">
                             <input type="checkbox" id="problem" name="problem">
-                            problem
+                            @Messages.get("permission.problem")
                         </label>
                     </div>
                 </div>
@@ -35,7 +35,7 @@
                     <div class="checkbox">
                         <label for="submission">
                             <input type="checkbox" id="submission" name="submission">
-                            submission
+                            @Messages.get("permission.submission")
                         </label>
                     </div>
                 </div>
@@ -43,7 +43,7 @@
                     <div class="checkbox">
                         <label for="clarification">
                             <input type="checkbox" id="clarification" name="clarification">
-                            clarification
+                            @Messages.get("permission.clarification")
                         </label>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                     <div class="checkbox">
                         <label for="contestant">
                             <input type="checkbox" id="contestant" name="contestant">
-                            contestant
+                            @Messages.get("permission.contestant")
                         </label>
                     </div>
                 </div>

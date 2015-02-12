@@ -12,7 +12,7 @@
 
     @b3.text(form("problemSecret"), '_label -> Messages.get("problem.problemSecret"))
     @b3.text(form("alias"), '_label -> Messages.get("problem.alias"))
-    @b3.text(form("submissionLimit"), '_label -> Messages.get("problem.submissionLimit"))
+    @b3.text(form("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
     @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Close", "HIDDEN" -> "Hidden"), '_label -> Messages.get("problem.status"))
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }

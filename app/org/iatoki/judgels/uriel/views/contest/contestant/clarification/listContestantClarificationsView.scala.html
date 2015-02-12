@@ -1,3 +1,27 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
-INI KONTES KLARIFIKESYEN
+@import play.i18n.Messages
+@import org.apache.commons.lang3.StringEscapeUtils
+@import org.iatoki.judgels.uriel.ContestClarificationStatus
+
+@for(contestClarification <- page.getData) {
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="panel-title">@contestClarification.getTitle</span>
+        </div>
+        <div class="panel-body">
+            @Html(StringEscapeUtils.escapeHtml4(contestClarification.getQuestion).replaceAll("\r\n", "<br />"))
+
+            <hr />
+
+            @if(contestClarification.getStatus == ContestClarificationStatus.ASKED) {
+                (@{Messages.get("clarification.unanswered")})
+            }else{
+                @if(contestClarification.getStatus == ContestClarificationStatus.ANSWERED) {
+                    <strong>@Messages.get("clarification.answer")</strong>:
+                    @Html(StringEscapeUtils.escapeHtml4(contestClarification.getAnswer).replaceAll("\r\n", "<br />"))
+                }
+            }
+        </div>
+    </div>
+}

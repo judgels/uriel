@@ -12,6 +12,7 @@ import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
+import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
 import org.iatoki.judgels.gabriel.GradingSource;
@@ -169,7 +170,7 @@ public final class ContestController extends Controller {
 
         LazyHtml content = new LazyHtml(listAdminManagersView.render(contest.getId(), contestManager, pageIndex, orderBy, orderDir, filterString));
 
-        content.appendLayout(c -> headingWithActionLayout.render(Messages.get("manager.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createAdminManager(contestId)), c));
+        content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("manager.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createAdminManager(contestId)), c));
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -201,7 +202,7 @@ public final class ContestController extends Controller {
             return showCreateAdminManager(form, contest);
         } else {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
-            if ((JophielUtils.verifyUserJid(contestManagerCreateForm.userJid)) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), contestManagerCreateForm.userJid))) {
+            if ((JophielUtils.verifyUserJid(contestManagerCreateForm.userJid)) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), contestManagerCreateForm.userJid))) {
                 userRoleService.upsertUserRoleFromJophielUserJid(contestManagerCreateForm.userJid);
                 contestService.createContestManager(contest.getId(), contestManagerCreateForm.userJid);
 
@@ -259,12 +260,12 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listManagerSupervisorsView.render(contest.getId(), contestPermissionPage, pageIndex, orderBy, orderDir, filterString));
 
-            content.appendLayout(c -> headingWithActionLayout.render(Messages.get("supervisor.list"), new InternalLink(Messages.get("supervisor.create"), routes.ContestController.createManagerSupervisor(contestId)), c));
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("supervisor.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createManagerSupervisor(contestId)), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contestId)),
-                    new InternalLink(Messages.get("supervisors.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId()))
+                    new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -358,7 +359,7 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listSupervisorAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
 
-            content.appendLayout(c -> headingWithActionLayout.render(Messages.get("announcement.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorAnnouncement(contest.getId())), c));
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("announcement.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorAnnouncement(contest.getId())), c));
             content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantAnnouncements(contest.getId()), routes.ContestController.viewSupervisorAnnouncements(contest.getId()), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -396,7 +397,7 @@ public final class ContestController extends Controller {
                 return showCreateSupervisorAnnouncement(form, contest);
             } else {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
-                contestService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.announcement, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
+                contestService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
 
                 return redirect(routes.ContestController.viewSupervisorAnnouncements(contest.getId()));
             }
@@ -430,7 +431,7 @@ public final class ContestController extends Controller {
                 return showUpdateSupervisorAnnouncement(form, contest, contestAnnouncement);
             } else {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
-                contestService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.announcement, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
+                contestService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
 
                 return redirect(routes.ContestController.viewSupervisorAnnouncements(contest.getId()));
             }
@@ -454,7 +455,7 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listSupervisorProblemsView.render(contest.getId(), contestProblemPage, page, sortBy, orderBy, filterString));
 
-            content.appendLayout(c -> headingWithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorProblem(contestId)), c));
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorProblem(contestId)), c));
             content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantProblems(contest.getId()), routes.ContestController.viewSupervisorProblems(contest.getId()), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -493,7 +494,7 @@ public final class ContestController extends Controller {
             } else {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
                 if ((SandalphonUtils.verifyProblemJid(contestProblemCreateForm.problemJid)) && (!contestService.isContestProblemInContestByProblemJid(contest.getJid(), contestProblemCreateForm.problemJid))) {
-                    contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
+                    contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
 
                     return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
                 } else {
@@ -530,7 +531,7 @@ public final class ContestController extends Controller {
                 return showUpdateSupervisorProblem(form, contest, contestProblem);
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
 
                 return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
             }
@@ -553,8 +554,8 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listSupervisorClarificationsView.render(contest.getId(), contestClarifications, pageIndex, orderBy, orderDir, filterString));
 
+            content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
             content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantClarifications(contest.getId()), routes.ContestController.viewSupervisorClarifications(contest.getId()), c));
-            content.appendLayout(c -> headingLayout.render(Messages.get("clarification.list"), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -617,7 +618,7 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listSupervisorContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString));
 
-            content.appendLayout(c -> headingWithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorContestant(contestId)), c));
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorContestant(contestId)), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -726,6 +727,7 @@ public final class ContestController extends Controller {
             Page<ContestAnnouncement> contestAnnouncements = contestService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
 
             LazyHtml content = new LazyHtml(listContestantAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
+            content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.announcements"), c));
 
             if (checkIfPermitted(contest, "announcement")) {
                 content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantAnnouncements(contest.getId()), routes.ContestController.viewSupervisorAnnouncements(contest.getId()), c));
@@ -735,7 +737,7 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                    new InternalLink("announcement.announcements", routes.ContestController.viewContestantAnnouncements(contest.getId()))
+                    new InternalLink(Messages.get("announcement.announcements"), routes.ContestController.viewContestantAnnouncements(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -757,6 +759,7 @@ public final class ContestController extends Controller {
             Page<ContestProblem> contestProblems = contestService.pageContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestProblemStatus.OPEN.name());
 
             LazyHtml content = new LazyHtml(listContestantProblemsView.render(contest.getId(), contestProblems, pageIndex, orderBy, orderDir, filterString));
+            content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
 
             if (checkIfPermitted(contest, "problem")) {
                 content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantProblems(contest.getId()), routes.ContestController.viewSupervisorProblems(contest.getId()), c));
@@ -765,7 +768,7 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                    new InternalLink("problem.problems", routes.ContestController.viewContestantProblems(contest.getId()))
+                    new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewContestantProblems(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -835,6 +838,8 @@ public final class ContestController extends Controller {
 
         LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
 
+        content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
+
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -868,7 +873,7 @@ public final class ContestController extends Controller {
     /* contestant/clarification ************************************************************************************* */
 
     public Result viewContestantClarifications(long contestId) {
-        return listContestantClarifications(contestId, 0, "id", "asc", "");
+        return listContestantClarifications(contestId, 0, "timeCreate", "desc", "");
     }
 
     public Result listContestantClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
@@ -878,7 +883,7 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listContestantClarificationsView.render(contest.getId(), contestClarifications, pageIndex, orderBy, orderDir, filterString));
 
-            content.appendLayout(c -> headingWithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createContestantClarification(contest.getId())), c));
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createContestantClarification(contest.getId())), c));
             if (checkIfPermitted(contest, "clarification")) {
                 content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantClarifications(contest.getId()), routes.ContestController.viewSupervisorClarifications(contest.getId()), c));
             }
@@ -913,7 +918,7 @@ public final class ContestController extends Controller {
             return showCreateContestantClarification(form, contest);
         } else {
             ContestClarificationCreateForm contestClarificationCreateForm = form.get();
-            contestService.createContestClarification(contest.getId(), contestClarificationCreateForm.question, contestClarificationCreateForm.topicJid);
+            contestService.createContestClarification(contest.getId(), contestClarificationCreateForm.title, contestClarificationCreateForm.question, contestClarificationCreateForm.topicJid);
 
             return redirect(routes.ContestController.viewContestantClarifications(contest.getId()));
         }
@@ -1180,7 +1185,7 @@ public final class ContestController extends Controller {
         List<ContestProblem> contestProblemList = contestService.findOpenedContestProblemByContestJid(contest.getJid());
 
         LazyHtml content = new LazyHtml(createContestantClarificationView.render(contest, form, contestProblemList));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("contest.clarification.create"), c));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.create"), c));
         if (checkIfPermitted(contest, "clarification")) {
             content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantClarifications(contest.getId()), routes.ContestController.viewSupervisorClarifications(contest.getId()), c));
         }
@@ -1198,21 +1203,21 @@ public final class ContestController extends Controller {
 
     private void appendTabsLayout(LazyHtml content, Contest contest) {
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.announcements"), routes.ContestController.viewContestantAnnouncements(contest.getId())));
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.problems"), routes.ContestController.viewContestantProblems(contest.getId())));
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.ssubmissions"), routes.ContestController.viewContestantSubmissions(contest.getId())));
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("announcement.announcements"), routes.ContestController.viewContestantAnnouncements(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewContestantProblems(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("submission.submissions"), routes.ContestController.viewContestantSubmissions(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId())));
 
         if (checkIfPermitted(contest, "contestant")) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("contest.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())));
+            internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())));
         }
 
         if (checkIfPermitted(contest, "supervisor")) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("contest.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId())));
+            internalLinkBuilder.add(new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId())));
         }
 
         if (checkIfPermitted(contest, "manager")) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("contest.managers"), routes.ContestController.viewAdminManagers(contest.getId())));
+            internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())));
         }
 
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));

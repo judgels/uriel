@@ -13,7 +13,7 @@ public abstract class ContestAnnouncementModel_ extends AbstractModel_ {
     public static volatile SingularAttribute<ContestAnnouncementModel, Long> id;
 	public static volatile SingularAttribute<ContestAnnouncementModel, String> contestJid;
 	public static volatile SingularAttribute<ContestAnnouncementModel, String> title;
-	public static volatile SingularAttribute<ContestAnnouncementModel, String> announcement;
+	public static volatile SingularAttribute<ContestAnnouncementModel, String> content;
 	public static volatile SingularAttribute<ContestAnnouncementModel, String> status;
 
 }
