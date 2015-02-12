@@ -16,6 +16,9 @@ contest.style=Style
 contest.startTime=Start Time
 contest.endTime=End Time
 
+contest.registrants=Registrants
+contest.register=Register
+contest.enter=Enter
 
 announcement.announcements=Announcements
 announcement.list=Announcements
@@ -44,6 +47,7 @@ problem.problemSecret=Problem Secret
 
 submission.submissions=Submissions
 submission.list=Submissions
+submission.view=View Submission
 
 submission.author=Author
 submission.time=Time

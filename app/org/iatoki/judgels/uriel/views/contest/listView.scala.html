@@ -17,13 +17,8 @@
 
 @for(contest <- page.getData) {
     <div class="panel panel-default">
-        <div class="panel-heading">
-            <span class="panel-title">@contest.getName | @UrielUtils.convertDateToString(contest.getStartTime) -  @UrielUtils.convertDateToString(contest.getEndTime)</span>
-        </div>
         <div class="panel-body">
-            @Html(contest.getDescription)
-            <hr />
-            <a href="@routes.ContestController.register(contest.getId)" class="btn btn-primary">Register</a>
+        <a href="@routes.ContestController.view(contest.getId, 0, "id", "asc", "")">@contest.getName</a>
         </div>
     </div>
 }

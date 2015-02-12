@@ -17,6 +17,8 @@ GET         /authRole/:returnUri                                     @org.iatoki
 GET         /contest                                                 @org.iatoki.judgels.uriel.controllers.ContestController.index()
 GET         /contest/                                                @org.iatoki.judgels.uriel.controllers.ContestController.list(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
+GET         /contest/:cId/view                                       @org.iatoki.judgels.uriel.controllers.ContestController.view(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+
 GET         /contest/:cId/register                                   @org.iatoki.judgels.uriel.controllers.ContestController.register(cId: Long)
 
 GET         /contest/admin/create                                    @org.iatoki.judgels.uriel.controllers.ContestController.create()

@@ -94,6 +94,7 @@ import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSuperv
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
 
 import org.iatoki.judgels.uriel.views.html.contest.listView;
+import org.iatoki.judgels.uriel.views.html.contest.viewView;
 
 import play.Play;
 import play.data.Form;
@@ -130,9 +131,37 @@ public final class ContestController extends Controller {
     }
 
 
-    /* list ********************************************************************************************************* */
+    /* view ********************************************************************************************************* */
+
+    public Result view(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+        Contest contest = contestService.findContestById(contestId);
+        Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), 0, PAGE_SIZE, orderBy, orderDir, filterString);
+
+        boolean isRegistered = contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        boolean isAdmin = UrielUtils.hasRole("admin");
+        boolean isAllowedToEnter = true;
+
+        LazyHtml content = new LazyHtml(viewView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isRegistered, isAdmin, isAllowedToEnter));
+        content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
+
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index())
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
+    }
+
+
+    /* register ******************************************************************************************************* */
     public Result register(long contestId) {
-        return TODO;
+        Contest contest = contestService.findContestById(contestId);
+
+        if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid())) {
+            contestService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
+        }
+
+        return redirect(routes.ContestController.index());
     }
 
     /* admin/create ************************************************************************************************* */
