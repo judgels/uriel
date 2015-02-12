@@ -10,7 +10,7 @@ public final class ContestAnnouncement {
 
     private final String title;
 
-    private final String announcement;
+    private final String content;
 
     private final String authorJid;
 
@@ -18,11 +18,11 @@ public final class ContestAnnouncement {
 
     private final Date lastUpdated;
 
-    public ContestAnnouncement(long id, String contestJid, String title, String announcement, String authorJid, ContestAnnouncementStatus status, Date lastUpdated) {
+    public ContestAnnouncement(long id, String contestJid, String title, String content, String authorJid, ContestAnnouncementStatus status, Date lastUpdated) {
         this.id = id;
         this.contestJid = contestJid;
         this.title = title;
-        this.announcement = announcement;
+        this.content = content;
         this.authorJid = authorJid;
         this.status = status;
         this.lastUpdated = lastUpdated;
@@ -40,8 +40,8 @@ public final class ContestAnnouncement {
         return title;
     }
 
-    public String getAnnouncement() {
-        return announcement;
+    public String getContent() {
+        return content;
     }
 
     public String getAuthorJid() {

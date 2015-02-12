@@ -10,6 +10,8 @@ public final class ContestClarification {
 
     private final String topic;
 
+    private final String title;
+
     private final String question;
 
     private final String answer;
@@ -24,10 +26,11 @@ public final class ContestClarification {
 
     private final Date answeredTime;
 
-    public ContestClarification(long id, String contestJid, String topic, String question, String answer, String askerJid, String answererJid, ContestClarificationStatus status, Date askedTime, Date answeredTime) {
+    public ContestClarification(long id, String contestJid, String topic, String title, String question, String answer, String askerJid, String answererJid, ContestClarificationStatus status, Date askedTime, Date answeredTime) {
         this.id = id;
         this.contestJid = contestJid;
         this.topic = topic;
+        this.title = title;
         this.question = question;
         this.answer = answer;
         this.askerJid = askerJid;
@@ -47,6 +50,10 @@ public final class ContestClarification {
 
     public String getTopic() {
         return topic;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getQuestion() {
