@@ -5,12 +5,12 @@ public final class ContestSupervisorUpdateForm {
     public ContestSupervisorUpdateForm() {
     }
 
-    public ContestSupervisorUpdateForm(ContestPermission contestPermission) {
-        this.announcement = contestPermission.isAnnouncement();
-        this.problem = contestPermission.isProblem();
-        this.submission = contestPermission.isSubmission();
-        this.clarification = contestPermission.isClarification();
-        this.contestant = contestPermission.isContestant();
+    public ContestSupervisorUpdateForm(ContestSupervisor contestSupervisor) {
+        this.announcement = contestSupervisor.isAnnouncement();
+        this.problem = contestSupervisor.isProblem();
+        this.submission = contestSupervisor.isSubmission();
+        this.clarification = contestSupervisor.isClarification();
+        this.contestant = contestSupervisor.isContestant();
     }
 
     public boolean announcement;

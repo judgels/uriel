@@ -2,9 +2,13 @@
 
 @import play.i18n.Messages
 
+@import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.upsertSupervisorAnnouncementView
+
+@import org.iatoki.judgels.uriel.controllers.routes
+
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postUpdateContestAnnouncement(contestId, contestAnnouncementId)) {
+@b3.form(routes.ContestController.postUpdateSupervisorAnnouncement(contestId, contestAnnouncementId)) {
 
     @upsertSupervisorAnnouncementView(form)
 

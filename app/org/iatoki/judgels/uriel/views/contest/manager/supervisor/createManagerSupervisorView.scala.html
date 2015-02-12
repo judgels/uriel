@@ -2,17 +2,18 @@
 
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
+@import org.iatoki.judgels.uriel.controllers.routes
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestSupervisor(contestId)) {
+@b3.form(routes.ContestController.postCreateManagerSupervisor(contestId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("contest.supervisor.field.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.text(form("userJid"), '_label -> Messages.get("supervisor.userJid"), 'class -> "form-control user_autocomplete")
     <div class="form-group" id="">
-        <label class="control-label col-xs-2">@Messages.get("client.field.scopes")</label>
-        <div class="col-xs-10">
+        <label class="control-label col-md-2">@Messages.get("supervisor.permission")</label>
+        <div class="col-md-10">
             <div class="multi-checkbox-list">
                 <div class="checkbox-wrap">
                     <div class="checkbox">
@@ -62,6 +63,7 @@
         var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
         var encodedAccessToken = "@JophielUtils.getEncodedAccessToken";
     </script>
+
     <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }

@@ -1,0 +1,37 @@
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestManager], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.table.tableView
+@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
+@import org.iatoki.judgels.commons.views.html.table.searchView
+@import org.iatoki.judgels.commons.views.html.table.paginationView
+
+
+@import org.iatoki.judgels.uriel.JidCacheService
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.listAdminManagers(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+
+@searchView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)
+
+<div class="clearfix"></div>
+
+@tableView() {
+    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "userJid" -> Messages.get("manager.userJid")
+    )
+    <tbody>
+    @for(contestManager <- page.getData) {
+        <tr>
+            <td>@contestManager.getId</td>
+            <td>@JidCacheService.getInstance().getDisplayName(contestManager.getUserJid)</td>
+            <td class="text-center">
+            </td>
+        </tr>
+    }
+    </tbody>
+}
+
+@paginationView(page, orderBy, orderDir, filterString, listFunc)

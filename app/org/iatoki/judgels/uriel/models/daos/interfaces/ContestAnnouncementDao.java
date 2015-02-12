@@ -8,7 +8,4 @@ import java.util.List;
 public interface ContestAnnouncementDao extends Dao<Long, ContestAnnouncementModel> {
 
     List<ContestAnnouncementModel> findPublishedByContestJidOrderedByUpdateTime(String contestJid);
-
-    List<ContestAnnouncementModel> findByContestJidFilterAndSort(String contestJid, String filterString, List<String> userJids, String sortBy, String order);
-
 }

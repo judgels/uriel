@@ -58,15 +58,13 @@ public final class ApplicationController extends Controller {
             return redirect(routes.ContestController.index());
         } else {
             String userRoleJid = IdentityUtils.getUserJid();
-            String username = IdentityUtils.getUsername();
             String name = IdentityUtils.getUserRealName();
-            if (userRoleService.isUserRoleExist(userRoleJid)) {
-                userRoleService.updateUserRole(userRoleJid, username);
+            if (userRoleService.existsByUserJid(userRoleJid)) {
                 UserRole userRole = userRoleService.findUserRoleByUserJid(userRoleJid);
                 UrielUtils.saveRoleInSession(userRole.getRoles());
                 return redirect(returnUri);
             } else {
-                userRoleService.createUserRole(userRoleJid, name, UrielUtils.getDefaultRole());
+                userRoleService.createUserRole(userRoleJid, UrielUtils.getDefaultRole());
                 UrielUtils.saveRoleInSession(UrielUtils.getDefaultRole());
                 return redirect(returnUri);
             }

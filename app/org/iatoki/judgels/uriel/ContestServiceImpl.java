@@ -1,15 +1,16 @@
 package org.iatoki.judgels.uriel;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.JidType;
+import org.iatoki.judgels.commons.JidService;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.ContestPermissionDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import org.iatoki.judgels.uriel.models.domains.ContestAnnouncementModel;
@@ -17,12 +18,10 @@ import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
-import org.iatoki.judgels.uriel.models.domains.ContestPermissionModel;
+import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
-import org.iatoki.judgels.uriel.models.domains.UserRoleModel;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,17 +32,17 @@ public final class ContestServiceImpl implements ContestService {
     private ContestProblemDao contestProblemDao;
     private ContestClarificationDao contestClarificationDao;
     private ContestContestantDao contestContestantDao;
-    private ContestPermissionDao contestPermissionDao;
+    private ContestSupervisorDao contestSupervisorDao;
     private ContestManagerDao contestManagerDao;
     private UserRoleDao userRoleDao;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestPermissionDao contestPermissionDao, ContestManagerDao contestManagerDao, UserRoleDao userRoleDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, UserRoleDao userRoleDao) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
         this.contestClarificationDao = contestClarificationDao;
         this.contestContestantDao = contestContestantDao;
-        this.contestPermissionDao = contestPermissionDao;
+        this.contestSupervisorDao = contestSupervisorDao;
         this.contestManagerDao = contestManagerDao;
         this.userRoleDao = userRoleDao;
     }
@@ -51,17 +50,13 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public Contest findContestById(long contestId) {
         ContestModel contestModel = contestDao.findById(contestId);
-        Contest contest = new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime));
-
-        return contest;
+        return createContestFromModel(contestModel);
     }
 
     @Override
     public Contest findContestByJid(String contestJid) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
-        Contest contest = new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime));
-
-        return contest;
+        return createContestFromModel(contestModel);
     }
 
     @Override
@@ -93,66 +88,34 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void deleteContest(long contestId) {
-        ContestModel contestModel = contestDao.findById(contestId);
-        contestDao.remove(contestModel);
+    public Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = contestDao.countByFilters(filterString, ImmutableMap.of());
+        List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
+
+        List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+        return new Page<>(contests, totalPages, pageIndex, pageSize);
     }
 
     @Override
-    public Page<Contest> pageContest(long page, long pageSize, String sortBy, String order, String filterString) {
-        long totalPage = contestDao.countByFilter(filterString);
-        List<ContestModel> contestModels = contestDao.findByFilterAndSort(filterString, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<Contest> listBuilder = ImmutableList.builder();
-
-        for (ContestModel contestModel : contestModels) {
-            listBuilder.add(new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime)));
+    public Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
+        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
+        filterColumnsBuilder.put("contestJid", contestJid);
+        if (status != null) {
+            filterColumnsBuilder.put("status", status);
         }
+        Map<String, String> filterColumns = filterColumnsBuilder.build();
 
-        Page<Contest> ret = new Page<>(listBuilder.build(), totalPage, page, pageSize);
-        return ret;
-    }
+        long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns);
+        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex, pageIndex * pageSize);
+        List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> createContestAnnouncementFromModel(m));
 
-    @Override
-    public List<ContestAnnouncement> findPublishedContestAnnouncementByContestJid(String contestJid) {
-        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findPublishedByContestJidOrderedByUpdateTime(contestJid);
-        if (contestAnnouncementModels == null) {
-            contestAnnouncementModels = ImmutableList.of();
-        }
-
-        ImmutableList.Builder<ContestAnnouncement> listBuilder = ImmutableList.builder();
-
-        for (ContestAnnouncementModel contestAnnouncementModel : contestAnnouncementModels) {
-            UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestAnnouncementModel.userUpdate);
-            listBuilder.add(new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.announcement, userRoleModel.username, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate)));
-        }
-
-        return listBuilder.build();
-    }
-
-    @Override
-    public List<ContestAnnouncement> findContestAnnouncementByContestJid(String contestJid, String sortBy, String order, String filterString) {
-        List<String> userJids = userRoleDao.findUserJidByFilter(filterString);
-        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findByContestJidFilterAndSort(contestJid, filterString, userJids, sortBy, order);
-        if (contestAnnouncementModels == null) {
-            contestAnnouncementModels = ImmutableList.of();
-        }
-
-        ImmutableList.Builder<ContestAnnouncement> listBuilder = ImmutableList.builder();
-
-        for (ContestAnnouncementModel contestAnnouncementModel : contestAnnouncementModels) {
-            UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestAnnouncementModel.userUpdate);
-            listBuilder.add(new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.announcement, userRoleModel.username, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate)));
-        }
-
-        return listBuilder.build();
+        return new Page<>(contestAnnouncements, totalPages, pageIndex, pageSize);
     }
 
     @Override
     public ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId) {
         ContestAnnouncementModel contestAnnouncementModel = contestAnnouncementDao.findById(contestAnnouncementId);
-        UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestAnnouncementModel.userUpdate);
-
-        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.announcement, userRoleModel.username, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
+        return createContestAnnouncementFromModel(contestAnnouncementModel);
     }
 
     @Override
@@ -181,54 +144,44 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findOpenedByContestJidOrderedByAlias(contestJid);
-        if (contestProblemModels == null) {
-            contestProblemModels = ImmutableList.of();
-        }
-
-        ImmutableList.Builder<ContestProblem> listBuilder = ImmutableList.builder();
-
-        for (ContestProblemModel contestProblemModel : contestProblemModels) {
-            listBuilder.add(new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.name, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status)));
-        }
-
-        return listBuilder.build();
+        return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
     }
 
     @Override
-    public Page<ContestProblem> pageContestProblemByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString) {
-        long totalPage = contestProblemDao.countByFilter(contestJid, filterString);
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJidFilterAndSort(contestJid, filterString, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<ContestProblem> listBuilder = ImmutableList.builder();
-
-        for (ContestProblemModel contestProblemModel : contestProblemModels) {
-            listBuilder.add(new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.name, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status)));
+    public Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
+        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
+        filterColumnsBuilder.put("contestJid", contestJid);
+        if (status != null) {
+            filterColumnsBuilder.put("status", status);
         }
+        Map<String, String> filterColumns = filterColumnsBuilder.build();
 
-        Page<ContestProblem> ret = new Page<>(listBuilder.build(), totalPage, page, pageSize);
-        return ret;
+        long totalPages = contestProblemDao.countByFilters(filterString, filterColumns);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
+        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
+
+        return new Page<>(contestProblems, totalPages, pageIndex, pageSize);
     }
 
     @Override
     public ContestProblem findContestProblemByContestProblemId(long contestProblemId) {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
-
-        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.name, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+        return createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid) {
         ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJid(contestJid, contestProblemJid);
-
-        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.name, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+        return createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid) {
-        return contestProblemDao.isExistByProblemJid(contestJid, contestProblemJid);
+        return contestProblemDao.existsByProblemJid(contestJid, contestProblemJid);
     }
 
     @Override
-    public void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, String name, long submissionLimit, ContestProblemStatus status) {
+    public void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status) {
         ContestModel contestModel = contestDao.findById(contestId);
 
         ContestProblemModel contestProblemModel = new ContestProblemModel();
@@ -236,7 +189,6 @@ public final class ContestServiceImpl implements ContestService {
         contestProblemModel.problemJid = problemJid;
         contestProblemModel.problemSecret = problemSecret;
         contestProblemModel.alias = alias;
-        contestProblemModel.name = name;
         contestProblemModel.submissionLimit = submissionLimit;
         contestProblemModel.status = status.name();
 
@@ -244,11 +196,10 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContestProblem(long contestProblemId, String problemSecret, String alias, String name, long submissionLimit, ContestProblemStatus status) {
+    public void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status) {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
         contestProblemModel.problemSecret = problemSecret;
         contestProblemModel.alias = alias;
-        contestProblemModel.name = name;
         contestProblemModel.submissionLimit = submissionLimit;
         contestProblemModel.status = status.name();
 
@@ -256,67 +207,21 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public List<ContestClarification> findContestClarificationByContestJidAndAskerJid(String contestJid, String askerJid) {
+    public Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String askerJid) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
-        List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findByContestJidAndAskerJid(contestJid, askerJid);
-        ImmutableList.Builder<ContestClarification> contestClarificationBuilder = ImmutableList.builder();
 
-        for (ContestClarificationModel contestClarificationModel : contestClarificationModels) {
-            String topic = "";
-            if (JidType.CONTEST.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-                topic = contestModel.name;
-            } else if (JidType.PROBLEM.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-                topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
-            }
-
-            if (contestClarificationModel.status.equals(ContestClarificationStatus.ASKED.name())) {
-                UserRoleModel asker = userRoleDao.findByUserJid(contestClarificationModel.userCreate);
-                contestClarificationBuilder.add(new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, asker.username + "(" + asker.alias + ")", ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate)));
-            } else {
-                UserRoleModel asker = userRoleDao.findByUserJid(contestClarificationModel.userCreate);
-                UserRoleModel answerer = userRoleDao.findByUserJid(contestClarificationModel.userUpdate);
-                contestClarificationBuilder.add(new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, asker.username + "(" + asker.alias + ")", answerer.username + "(" + answerer.alias + ")", ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate)));
-            }
+        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
+        filterColumnsBuilder.put("contestJid", contestJid);
+        if (askerJid != null) {
+            filterColumnsBuilder.put("userCreate", askerJid);
         }
+        Map<String, String> filterColumns = filterColumnsBuilder.build();
 
-        return contestClarificationBuilder.build();
-    }
+        long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns);
+        List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
+        List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
 
-    @Override
-    public Page<ContestClarification> pageContestClarificationByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString) {
-        ContestModel contestModel = contestDao.findByJid(contestJid);
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
-        List<String> userJids = userRoleDao.findUserJidByFilter(filterString);
-
-        Map<String, ContestProblemModel> problemJidMap = new HashMap<>();
-        for (ContestProblemModel contestProblemModel : contestProblemModels) {
-            problemJidMap.put(contestProblemModel.problemJid, contestProblemModel);
-        }
-
-        long totalPage = contestClarificationDao.countByFilter(contestJid, filterString, userJids);
-        List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findByContestJidFilterAndSort(contestJid, filterString, userJids, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<ContestClarification> contestClarificationBuilder = ImmutableList.builder();
-
-        for (ContestClarificationModel contestClarificationModel : contestClarificationModels) {
-            String topic = "";
-            if (JidType.CONTEST.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-                topic = contestModel.name;
-            } else if (JidType.PROBLEM.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-                topic = problemJidMap.get(contestClarificationModel.topicJid).alias;
-            }
-
-            if (contestClarificationModel.status.equals(ContestClarificationStatus.ASKED.name())) {
-                UserRoleModel asker = userRoleDao.findByUserJid(contestClarificationModel.userCreate);
-                contestClarificationBuilder.add(new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, asker.username + "(" + asker.alias + ")", ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate)));
-            } else {
-                UserRoleModel asker = userRoleDao.findByUserJid(contestClarificationModel.userCreate);
-                UserRoleModel answerer = userRoleDao.findByUserJid(contestClarificationModel.userUpdate);
-                contestClarificationBuilder.add(new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, asker.username + "(" + asker.alias + ")", answerer.username + "(" + answerer.alias + ")", ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate)));
-            }
-        }
-
-        Page<ContestClarification> ret = new Page<>(contestClarificationBuilder.build(), totalPage, page, pageSize);
-        return ret;
+        return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
     }
 
     @Override
@@ -324,16 +229,7 @@ public final class ContestServiceImpl implements ContestService {
         ContestClarificationModel contestClarificationModel = contestClarificationDao.findById(contestClarificationId);
         ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
 
-        UserRoleModel asker = userRoleDao.findByUserJid(contestClarificationModel.userCreate);
-        UserRoleModel answerer = userRoleDao.findByUserJid(contestClarificationModel.userUpdate);
-        String topic = "";
-        if (JidType.CONTEST.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-            topic = contestModel.name;
-        } else if (JidType.PROBLEM.equals(IdentityUtils.getJidType(contestClarificationModel.topicJid))) {
-            topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
-        }
-
-        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, asker.username + "(" + asker.alias + ")", answerer.username + "(" + answerer.alias + ")", ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
+        return createContestClarificationFromModel(contestClarificationModel, contestModel);
     }
 
     @Override
@@ -359,33 +255,24 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Page<ContestContestant> pageContestContestantByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString) {
-        List<String> userJids = userRoleDao.findUserJidByFilter(filterString);
+    public Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
 
-        long totalPage = contestContestantDao.countByFilter(contestJid, filterString, userJids);
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findByContestJidFilterAndSort(contestJid, filterString, userJids, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<ContestContestant> listBuilder = ImmutableList.builder();
+        List<ContestContestant> contestContestants = Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
 
-        for (ContestContestantModel contestContestantModel : contestContestantModels) {
-            UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestContestantModel.userJid);
-            listBuilder.add(new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, userRoleModel.username, userRoleModel.alias, ContestContestantStatus.valueOf(contestContestantModel.status)));
-        }
-
-        Page<ContestContestant> ret = new Page<>(listBuilder.build(), totalPage, page, pageSize);
-        return ret;
+        return new Page<>(contestContestants, totalPages, pageIndex, pageSize);
     }
 
     @Override
     public ContestContestant findContestContestantByContestContestantId(long contestContestantId) {
         ContestContestantModel contestContestantModel = contestContestantDao.findById(contestContestantId);
-        UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestContestantModel.userJid);
-
-        return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, userRoleModel.username, userRoleModel.alias, ContestContestantStatus.valueOf(contestContestantModel.status));
+        return createContestContestantFromModel(contestContestantModel);
     }
 
     @Override
     public boolean isContestContestantInContestByUserJid(String contestJid, String contestContestantJid) {
-        return contestContestantDao.isExistByContestantJid(contestJid, contestContestantJid);
+        return contestContestantDao.existsByContestantJid(contestJid, contestContestantJid);
     }
 
     @Override
@@ -409,99 +296,78 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestPermission findContestPermissionByContestJidAndUserJid(String contestJid, String userJid) {
-        ContestPermissionModel contestPermissionModel = contestPermissionDao.findBySupervisorJid(contestJid, userJid);
-        UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestPermissionModel.userJid);
+    public ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid) {
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findBySupervisorJid(contestJid, userJid);
 
-        return new ContestPermission(contestPermissionModel.id, contestPermissionModel.contestJid, contestPermissionModel.userJid, userRoleModel.username, userRoleModel.alias, contestPermissionModel.announcement, contestPermissionModel.problem, contestPermissionModel.submission, contestPermissionModel.clarification, contestPermissionModel.contestant);
+        return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
-    public Page<ContestPermission> pageContestPermissionByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString) {
-        List<String> userJids = userRoleDao.findUserJidByFilter(filterString);
-
-        long totalPage = contestPermissionDao.countByFilter(contestJid, filterString, userJids);
-        List<ContestPermissionModel> contestPermissionModels = contestPermissionDao.findByContestJidFilterAndSort(contestJid, filterString, userJids, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<ContestPermission> listBuilder = ImmutableList.builder();
-
-        for (ContestPermissionModel contestPermissionModel : contestPermissionModels) {
-            UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestPermissionModel.userJid);
-            listBuilder.add(new ContestPermission(contestPermissionModel.id, contestPermissionModel.contestJid, contestPermissionModel.userJid, userRoleModel.username, userRoleModel.alias, contestPermissionModel.announcement, contestPermissionModel.problem, contestPermissionModel.submission, contestPermissionModel.clarification, contestPermissionModel.contestant));
-        }
-
-        Page<ContestPermission> ret = new Page<>(listBuilder.build(), totalPage, page, pageSize);
-        return ret;
+    public Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
+        List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+        List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> createContestSupervisorFromModel(m));
+        return new Page<>(contestSupervisors, totalPages, pageIndex, pageSize);
     }
 
     @Override
-    public ContestPermission findContestPermissionByContestPermissionId(long contestSupervisorId) {
-        ContestPermissionModel contestPermissionModel = contestPermissionDao.findById(contestSupervisorId);
-        UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestPermissionModel.userJid);
+    public ContestSupervisor findContestSupervisrByContestSupervisorId(long contestSupervisorId) {
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
 
-        return new ContestPermission(contestPermissionModel.id, contestPermissionModel.contestJid, contestPermissionModel.userJid, userRoleModel.username, userRoleModel.alias, contestPermissionModel.announcement, contestPermissionModel.problem, contestPermissionModel.submission, contestPermissionModel.clarification, contestPermissionModel.contestant);
+        return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
     public boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid) {
-        return contestPermissionDao.isExistBySupervisorJid(contestJid, contestSupervisorJid);
+        return contestSupervisorDao.existsBySupervisorJid(contestJid, contestSupervisorJid);
     }
 
     @Override
     public void createContestSupervisor(long contestId, String userJid, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
         ContestModel contestModel = contestDao.findById(contestId);
 
-        ContestPermissionModel contestPermissionModel = new ContestPermissionModel();
-        contestPermissionModel.contestJid = contestModel.jid;
-        contestPermissionModel.userJid = userJid;
-        contestPermissionModel.announcement = announcement;
-        contestPermissionModel.problem = problem;
-        contestPermissionModel.submission = submission;
-        contestPermissionModel.clarification = clarification;
-        contestPermissionModel.contestant = contestant;
+        ContestSupervisorModel contestSupervisorModel = new ContestSupervisorModel();
+        contestSupervisorModel.contestJid = contestModel.jid;
+        contestSupervisorModel.userJid = userJid;
+        contestSupervisorModel.announcement = announcement;
+        contestSupervisorModel.problem = problem;
+        contestSupervisorModel.submission = submission;
+        contestSupervisorModel.clarification = clarification;
+        contestSupervisorModel.contestant = contestant;
 
-        contestPermissionDao.persist(contestPermissionModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestSupervisorDao.persist(contestSupervisorModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
     public void updateContestSupervisor(long contestSupervisorId, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
-        ContestPermissionModel contestPermissionModel = contestPermissionDao.findById(contestSupervisorId);
-        contestPermissionModel.announcement = announcement;
-        contestPermissionModel.problem = problem;
-        contestPermissionModel.submission = submission;
-        contestPermissionModel.clarification = clarification;
-        contestPermissionModel.contestant = contestant;
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
+        contestSupervisorModel.announcement = announcement;
+        contestSupervisorModel.problem = problem;
+        contestSupervisorModel.submission = submission;
+        contestSupervisorModel.clarification = clarification;
+        contestSupervisorModel.contestant = contestant;
 
-        contestPermissionDao.edit(contestPermissionModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestSupervisorDao.edit(contestSupervisorModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
-    public Page<ContestManager> pageContestManagerByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString) {
-        List<String> userJids = userRoleDao.findUserJidByFilter(filterString);
+    public Page<ContestManager> pageContestManagersByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
+        List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+        List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));
 
-        long totalPage = contestManagerDao.countByFilter(contestJid, filterString, userJids);
-        List<ContestManagerModel> contestManagerModels = contestManagerDao.findByContestJidFilterAndSort(contestJid, filterString, userJids, sortBy, order, page * pageSize, pageSize);
-        ImmutableList.Builder<ContestManager> listBuilder = ImmutableList.builder();
-
-        for (ContestManagerModel contestManagerModel : contestManagerModels) {
-            UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestManagerModel.userJid);
-            listBuilder.add(new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid, userRoleModel.username, userRoleModel.alias));
-        }
-
-        Page<ContestManager> ret = new Page<>(listBuilder.build(), totalPage, page, pageSize);
-        return ret;
+        return new Page<>(contestManagers, totalPages, pageIndex, pageSize);
     }
 
     @Override
     public ContestManager findContestManagerByContestManagerId(long contestManagerId) {
         ContestManagerModel contestManagerModel = contestManagerDao.findById(contestManagerId);
-        UserRoleModel userRoleModel = userRoleDao.findByUserJid(contestManagerModel.userJid);
-
-        return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid, userRoleModel.username, userRoleModel.alias);
+        return createContestManagerFromModel(contestManagerModel);
     }
 
     @Override
     public boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid) {
-        return contestManagerDao.isExistByManagerJid(contestJid, contestManagerJid);
+        return contestManagerDao.existsByManagerJid(contestJid, contestManagerJid);
     }
 
     @Override
@@ -513,5 +379,39 @@ public final class ContestServiceImpl implements ContestService {
         contestManagerModel.userJid = userJid;
 
         contestManagerDao.persist(contestManagerModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    private Contest createContestFromModel(ContestModel contestModel) {
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime));
+    }
+
+    private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
+        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.announcement, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
+    }
+
+    private ContestProblem createContestProblemFromModel(ContestProblemModel contestProblemModel) {
+        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.submissionLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+    }
+
+    private ContestClarification createContestClarificationFromModel(ContestClarificationModel contestClarificationModel, ContestModel contestModel) {
+        String topic;
+        if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
+            topic = contestModel.name;
+        } else {
+            topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
+        }
+        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
+    }
+
+    private ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
+        return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status));
+    }
+
+    private ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {
+        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, contestSupervisorModel.announcement, contestSupervisorModel.problem, contestSupervisorModel.submission, contestSupervisorModel.clarification, contestSupervisorModel.contestant);
+    }
+
+    private ContestManager createContestManagerFromModel(ContestManagerModel contestManagerModel) {
+        return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid);
     }
 }

@@ -5,13 +5,13 @@ name := """uriel"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val main = (project.in(file(".")))
+lazy val uriel = (project.in(file(".")))
                     .enablePlugins(PlayJava)
                     .disablePlugins(plugins.JUnitXmlReportPlugin)
                     .dependsOn(frontendcommons)
                     .aggregate(frontendcommons)
 
-lazy val frontendcommons = (RootProject(file("../judgels-frontend-commons")))
+lazy val frontendcommons = RootProject(file("../judgels-frontend-commons"))
 
 scalaVersion := "2.11.1"
 

@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "uriel_contest_permission")
-public final class ContestPermissionModel extends AbstractModel {
+public final class ContestSupervisorModel extends AbstractModel {
 
     @Id
     @GeneratedValue
@@ -28,9 +28,4 @@ public final class ContestPermissionModel extends AbstractModel {
     public boolean clarification;
 
     public boolean contestant;
-
-
-    public ContestPermissionModel() {
-    }
-
 }

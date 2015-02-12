@@ -7,7 +7,4 @@ import java.util.List;
 
 public interface ContestDao extends JudgelsDao<ContestModel> {
 
-    long countByFilter(String filterString);
-
-    List<ContestModel> findByFilterAndSort(String filterString, String sortBy, String order, long first, long max);
 }

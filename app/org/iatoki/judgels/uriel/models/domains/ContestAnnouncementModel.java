@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.models.domains;
 
+import org.iatoki.judgels.commons.models.JidPrefix;
 import org.iatoki.judgels.commons.models.domains.AbstractModel;
 
 import javax.persistence.Entity;

@@ -2,13 +2,15 @@
 
 @import play.i18n.Messages
 
+@import org.iatoki.judgels.uriel.controllers.routes
+
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postUpdateContestClarification(contestId, contestContestantId)) {
+@b3.form(routes.ContestController.postUpdateSupervisorContestant(contestId, contestContestantId)) {
 
     @helper.CSRF.formField
 
-    @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contest.contestant.field.status"))
+    @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"))
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

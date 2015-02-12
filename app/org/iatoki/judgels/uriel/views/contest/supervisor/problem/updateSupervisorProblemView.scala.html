@@ -1,18 +1,19 @@
-@(contestId: Long, contestContestantId: Long, form: Form[org.iatoki.judgels.uriel.ContestProblemUpdateForm])
+@(contestId: Long, contestProblemId: Long, form: Form[org.iatoki.judgels.uriel.ContestProblemUpdateForm])
 
 @import play.i18n.Messages
 
+@import org.iatoki.judgels.uriel.controllers.routes
+
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postUpdateContestProblem(contestId, contestContestantId)) {
+@b3.form(routes.ContestController.postUpdateSupervisorProblem(contestId, contestProblemId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("problemSecret"), '_label -> Messages.get("contest.problem.field.problemSecret"), 'class -> "form-control")
-    @b3.text(form("alias"), '_label -> Messages.get("contest.problem.field.alias"), 'class -> "form-control")
-    @b3.text(form("name"), '_label -> Messages.get("contest.problem.field.name"), 'class -> "form-control")
-    @b3.text(form("submissionLimit"), '_label -> Messages.get("contest.problem.field.submissionLimit"), 'class -> "form-control")
-    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSE" -> "Close", "HIDDEN" -> "Hidden"), '_label -> Messages.get("contest.problem.field.status"))
+    @b3.text(form("problemSecret"), '_label -> Messages.get("problem.problemSecret"))
+    @b3.text(form("alias"), '_label -> Messages.get("problem.alias"))
+    @b3.text(form("submissionLimit"), '_label -> Messages.get("problem.submissionLimit"))
+    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Close", "HIDDEN" -> "Hidden"), '_label -> Messages.get("problem.status"))
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

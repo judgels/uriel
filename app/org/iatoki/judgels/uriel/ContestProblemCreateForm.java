@@ -11,8 +11,6 @@ public final class ContestProblemCreateForm {
 
     public String alias;
 
-    public String name;
-
     public long submissionLimit;
 
     public String status;

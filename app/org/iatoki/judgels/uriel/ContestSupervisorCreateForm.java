@@ -2,9 +2,6 @@ package org.iatoki.judgels.uriel;
 
 public final class ContestSupervisorCreateForm {
 
-    public ContestSupervisorCreateForm() {
-    }
-
     public String userJid;
 
     public boolean announcement;

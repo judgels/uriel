@@ -1,17 +1,19 @@
 @(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestContestantCreateForm])
 
+@import org.iatoki.judgels.uriel.controllers.routes
+
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.UrielUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestContestant(contestId)) {
+@b3.form(routes.ContestController.postCreateSupervisorContestant(contestId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("contest.contestant.field.userJid"), 'class -> "form-control user_autocomplete")
-    @b3.select(form("status"), Seq("APPROVED" -> "Approveds", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contest.contestant.field.status"))
+    @b3.text(form("userJid"), '_label -> Messages.get("contestant.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"))
 
     <script type="text/javascript">
         var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";

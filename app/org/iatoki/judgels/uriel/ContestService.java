@@ -15,13 +15,9 @@ public interface ContestService {
 
     void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime);
 
-    void deleteContest(long contestId);
+    Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    Page<Contest> pageContest(long page, long pageSize, String sortBy, String order, String filterString);
-
-    List<ContestAnnouncement> findPublishedContestAnnouncementByContestJid(String contestJid);
-
-    List<ContestAnnouncement> findContestAnnouncementByContestJid(String contestJid, String sortBy, String order, String filterString);
+    Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
     ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId);
 
@@ -31,7 +27,7 @@ public interface ContestService {
 
     List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid);
 
-    Page<ContestProblem> pageContestProblemByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+    Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
     ContestProblem findContestProblemByContestProblemId(long contestProblemId);
 
@@ -39,13 +35,11 @@ public interface ContestService {
 
     boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid);
 
-    void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, String name, long submissionLimit, ContestProblemStatus status);
+    void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status);
 
-    void updateContestProblem(long contestProblemId, String problemSecret, String alias, String name, long submissionLimit, ContestProblemStatus status);
+    void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status);
 
-    List<ContestClarification> findContestClarificationByContestJidAndAskerJid(String contestJid, String askerJid);
-
-    Page<ContestClarification> pageContestClarificationByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+    Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, String askerJid);
 
     ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId);
 
@@ -53,7 +47,7 @@ public interface ContestService {
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 
-    Page<ContestContestant> pageContestContestantByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+    Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     ContestContestant findContestContestantByContestContestantId(long contestContestantId);
 
@@ -63,11 +57,11 @@ public interface ContestService {
 
     void updateContestContestant(long contestContestantId, ContestContestantStatus status);
 
-    ContestPermission findContestPermissionByContestJidAndUserJid(String contestJid, String userJid);
+    ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid);
 
-    Page<ContestPermission> pageContestPermissionByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+    Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    ContestPermission findContestPermissionByContestPermissionId(long contestSupervisorId);
+    ContestSupervisor findContestSupervisrByContestSupervisorId(long contestSupervisorId);
 
     boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid);
 
@@ -75,7 +69,7 @@ public interface ContestService {
 
     void updateContestSupervisor(long contestSupervisorId, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant);
 
-    Page<ContestManager> pageContestManagerByContestJid(String contestJid, long page, long pageSize, String sortBy, String order, String filterString);
+    Page<ContestManager> pageContestManagersByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     ContestManager findContestManagerByContestManagerId(long contestManagerId);
 

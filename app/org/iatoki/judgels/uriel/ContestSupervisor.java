@@ -1,33 +1,27 @@
 package org.iatoki.judgels.uriel;
 
-public final class ContestPermission {
+public final class ContestSupervisor {
 
-    private long id;
+    private final long id;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String userJid;
+    private final String userJid;
 
-    private String username;
+    private final boolean announcement;
 
-    private String alias;
+    private final boolean problem;
 
-    private boolean announcement;
+    private final boolean submission;
 
-    private boolean problem;
+    private final boolean clarification;
 
-    private boolean submission;
+    private final boolean contestant;
 
-    private boolean clarification;
-
-    private boolean contestant;
-
-    public ContestPermission(long id, String contestJid, String userJid, String username, String alias, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
+    public ContestSupervisor(long id, String contestJid, String userJid, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
         this.id = id;
         this.contestJid = contestJid;
         this.userJid = userJid;
-        this.username = username;
-        this.alias = alias;
         this.announcement = announcement;
         this.problem = problem;
         this.submission = submission;
@@ -45,14 +39,6 @@ public final class ContestPermission {
 
     public String getUserJid() {
         return userJid;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getAlias() {
-        return alias;
     }
 
     public boolean isAnnouncement() {

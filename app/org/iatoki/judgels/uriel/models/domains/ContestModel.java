@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.models.domains;
 
+import org.iatoki.judgels.commons.models.JidPrefix;
 import org.iatoki.judgels.commons.models.domains.AbstractJudgelsModel;
 
 import javax.persistence.Entity;
@@ -7,6 +8,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "uriel_contest")
+@JidPrefix("CONT")
 public final class ContestModel extends AbstractJudgelsModel {
 
     public String name;

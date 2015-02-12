@@ -11,13 +11,7 @@ public interface ContestProblemDao extends Dao<Long, ContestProblemModel> {
 
     ContestProblemModel findByProblemJid(String contestJid, String problemJid);
 
-    boolean isExistByProblemJid(String contestJid, String problemJid);
+    boolean existsByProblemJid(String contestJid, String problemJid);
 
     List<ContestProblemModel> findOpenedByContestJidOrderedByAlias(String contestJid);
-
-    long countByFilter(String contestJid, String filterString);
-
-    List<ContestProblemModel> findByContestJidFilterAndSort(String contestJid, String filterString, String sortBy, String order, long first, long max);
-
-
 }

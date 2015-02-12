@@ -1,15 +1,16 @@
-@(form: Form[org.iatoki.judgels.uriel.UserRoleUpdateForm], modelId: Long)
+@(form: Form[org.iatoki.judgels.uriel.UserRoleUpdateForm], userRoleId: Long)
 
 @import play.i18n.Messages
 
-@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-xs-3", "col-xs-9") }
+@import org.iatoki.judgels.uriel.controllers.routes
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.UserRoleController.postUpdate(modelId)) {
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@b3.form(routes.UserRoleController.postUpdate(userRoleId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("alias"), '_label -> Messages.get("userRole.field.alias"))
-    @b3.text(form("roles"), '_label -> Messages.get("userRole.field.roles"))
+    @b3.text(form("roles"), '_label -> Messages.get("userRole.roles"))
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

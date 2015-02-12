@@ -23,8 +23,6 @@ public final class ContestProblemModel extends AbstractModel {
 
     public String alias;
 
-    public String name;
-
     public String status;
 
     public long submissionLimit;

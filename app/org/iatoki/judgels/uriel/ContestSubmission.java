@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.commons.Submission;
 import org.iatoki.judgels.gabriel.Verdict;
+import org.iatoki.judgels.sandalphon.commons.Submission;
 
 public final class ContestSubmission implements Submission {
 
@@ -61,6 +61,7 @@ public final class ContestSubmission implements Submission {
         return gradingLanguage;
     }
 
+    @Override
     public String getGradingEngine() {
         return gradingEngine;
     }

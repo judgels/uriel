@@ -5,9 +5,9 @@ import org.iatoki.judgels.gabriel.GradingSource;
 
 public interface ContestSubmissionService {
 
-    Page<ContestSubmission> pageSubmission(long page, long pageSize, String sortBy, String order, String contestJid, String problemJid, String authorJid);
+    Page<ContestSubmission> pageContestSubmissionsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String authorJid, String problemJid);
 
-    ContestSubmission findSubmissionById(String contestJid, long submissionId);
+    ContestSubmission findContestSubmissionById(String contestJid, long contestSubmissionId);
 
     String submit(String contestJid, String problemJid, String problemGradingEngine, String gradingLanguage, long gradingLastUpdateTime, GradingSource source);
 }

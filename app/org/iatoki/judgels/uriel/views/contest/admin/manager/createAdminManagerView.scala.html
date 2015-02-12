@@ -3,13 +3,15 @@
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
 
+@import org.iatoki.judgels.uriel.controllers.routes
+
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@b3.form(org.iatoki.judgels.uriel.controllers.routes.ContestController.postCreateContestManager(contestId)) {
+@b3.form(routes.ContestController.postCreateAdminManager(contestId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("contest.manager.field.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.text(form("userJid"), '_label -> Messages.get("manager.userJid"), 'class -> "form-control user_autocomplete")
 
     <script type="text/javascript">
         var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";

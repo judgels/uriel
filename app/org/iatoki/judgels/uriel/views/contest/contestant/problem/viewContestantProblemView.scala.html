@@ -1,11 +1,9 @@
-@(contestId: Long, requestURL: String)
-
-@import play.i18n.Messages
+@(requestURL: String)
 
 <div class="problem_statement">
 
 </div>
 <script type="text/javascript">
-    var sandalphonTOTPURL = "@requestURL";
+var sandalphonTOTPURL = "@requestURL";
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/problemTOTPStatement.js")"></script>

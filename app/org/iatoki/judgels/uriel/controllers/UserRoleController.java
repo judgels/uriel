@@ -18,8 +18,8 @@ import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.userRole.listView;
-import org.iatoki.judgels.uriel.views.html.userRole.updateView;
+import org.iatoki.judgels.uriel.views.html.userrole.listView;
+import org.iatoki.judgels.uriel.views.html.userrole.updateView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -75,7 +75,7 @@ public final class UserRoleController extends Controller {
             return showUpdate(form, userRoleId);
         } else {
             UserRoleUpdateForm userRoleUpdateForm = form.get();
-            userRoleService.updateUserRole(userRoleId, userRoleUpdateForm.alias, Arrays.asList(userRoleUpdateForm.roles.split(",")));
+            userRoleService.updateUserRole(userRoleId, Arrays.asList(userRoleUpdateForm.roles.split(",")));
 
             return redirect(routes.UserRoleController.index());
         }
@@ -88,7 +88,7 @@ public final class UserRoleController extends Controller {
     }
 
     public Result list(long page, String sortBy, String orderBy, String filterString) {
-        Page<UserRole> currentPage = userRoleService.pageUserRole(page, PAGE_SIZE, sortBy, orderBy, filterString);
+        Page<UserRole> currentPage = userRoleService.pageUserRoles(page, PAGE_SIZE, sortBy, orderBy, filterString);
 
         LazyHtml content = new LazyHtml(listView.render(currentPage, sortBy, orderBy, filterString));
         content.appendLayout(c -> headingLayout.render(Messages.get("userRole.list"), c));

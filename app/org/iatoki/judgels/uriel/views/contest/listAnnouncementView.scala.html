@@ -1,8 +1,0 @@
-@(contestId: Long, announcements: java.util.List[org.iatoki.judgels.uriel.ContestAnnouncement])
-
-@import play.i18n.Messages
-@import org.iatoki.judgels.uriel.UrielUtils
-
-@for(announcement <- announcements) {
-    @announcement.getAnnouncement
-}

@@ -4,45 +4,34 @@ import java.util.Date;
 
 public final class ContestClarification {
 
-    private long id;
+    private final long id;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String topic;
+    private final String topic;
 
-    private String question;
+    private final String question;
 
-    private String answer;
+    private final String answer;
 
-    private String asker;
+    private final String askerJid;
 
-    private String answerer;
+    private final String answererJid;
 
-    private ContestClarificationStatus status;
+    private final ContestClarificationStatus status;
 
-    private Date askedTime;
+    private final Date askedTime;
 
-    private Date answeredTime;
+    private final Date answeredTime;
 
-    public ContestClarification(long id, String contestJid, String topic, String question, String answer, String asker, ContestClarificationStatus status, Date askedTime) {
+    public ContestClarification(long id, String contestJid, String topic, String question, String answer, String askerJid, String answererJid, ContestClarificationStatus status, Date askedTime, Date answeredTime) {
         this.id = id;
         this.contestJid = contestJid;
         this.topic = topic;
         this.question = question;
         this.answer = answer;
-        this.asker = asker;
-        this.status = status;
-        this.askedTime = askedTime;
-    }
-
-    public ContestClarification(long id, String contestJid, String topic, String question, String answer, String asker, String answerer, ContestClarificationStatus status, Date askedTime, Date answeredTime) {
-        this.id = id;
-        this.contestJid = contestJid;
-        this.topic = topic;
-        this.question = question;
-        this.answer = answer;
-        this.asker = asker;
-        this.answerer = answerer;
+        this.askerJid = askerJid;
+        this.answererJid = answererJid;
         this.status = status;
         this.askedTime = askedTime;
         this.answeredTime = answeredTime;
@@ -68,12 +57,12 @@ public final class ContestClarification {
         return answer;
     }
 
-    public String getAsker() {
-        return asker;
+    public String getAskerJid() {
+        return askerJid;
     }
 
-    public String getAnswerer() {
-        return answerer;
+    public String getAnswererJid() {
+        return answererJid;
     }
 
     public ContestClarificationStatus getStatus() {
