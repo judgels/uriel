@@ -1,5 +1,9 @@
 @(requestURL: String)
 
+@if(play.mvc.Controller.flash("submissionError") != null) {
+    <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>
+}
+
 <div class="problem_statement">
 
 </div>

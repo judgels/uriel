@@ -42,9 +42,14 @@ problem.status=Status
 problem.submissionsLimit=Submissions Limit
 problem.problemSecret=Problem Secret
 
-
 submission.submissions=Submissions
 submission.list=Submissions
+
+submission.author=Author
+submission.time=Time
+submission.gradingLanguage=Language
+submission.verdict=Verdict
+submission.score=Score
 
 clarification.clarifications=Clarifications
 clarification.list=Clarifications
@@ -92,3 +97,10 @@ permission.problem=Supervise problems
 permission.submission=Supervise submissions
 permission.clarification=Supervise clarifications
 permission.contestant=Supervise contestants
+
+userRole.userRoles=User Roles
+userRole.list=User Roles
+userRole.update=Update User Role
+
+userRole.name=Name
+userRole.roles=Roles

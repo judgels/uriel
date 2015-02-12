@@ -17,13 +17,13 @@ public class UrielUtils {
     }
 
     public static String convertDateToString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy, HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy, HH:mm");
         return sdf.format(date);
     }
 
     public static Date convertStringToDate(String s) {
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy, HH:mm");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy, HH:mm");
             return sdf.parse(s);
         } catch (ParseException e) {
             e.printStackTrace();

@@ -56,11 +56,12 @@ public final class ContestSubmissionServiceImpl implements ContestSubmissionServ
     }
 
     @Override
-    public String submit(String contestJid, String problemJid, String problemGradingEngine, String gradingLanguage, long gradingLastUpdateTime, GradingSource source) {
+    public String submit(String contestJid, String problemJid, String gradingLanguage, String problemGradingEngine, long gradingLastUpdateTime, GradingSource source) {
         ContestSubmissionModel submissionRecord = new ContestSubmissionModel();
         submissionRecord.problemJid = problemJid;
         submissionRecord.contestJid = contestJid;
         submissionRecord.gradingLanguage = gradingLanguage;
+        submissionRecord.gradingEngine = problemGradingEngine;
         submissionRecord.verdictCode = "?";
         submissionRecord.verdictName = "Pending";
         submissionRecord.score = 0;

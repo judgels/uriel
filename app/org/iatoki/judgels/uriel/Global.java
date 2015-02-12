@@ -46,6 +46,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
         super.onStart(application);
 
+        UrielProperties.getInstance();
         JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
 
         GradingResponsePoller poller = new GradingResponsePoller(new SubmissionUpdaterServiceImpl(new ContestSubmissionHibernateDao()), new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses")));

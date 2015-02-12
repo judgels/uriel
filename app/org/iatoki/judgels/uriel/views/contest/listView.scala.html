@@ -15,33 +15,16 @@
 
 <div class="clearfix"></div>
 
-
-@tableView() {
-    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.list)(
-        "id" -> Messages.get("commons.id"),
-        "name" -> Messages.get("contest.name"),
-        "scope" -> Messages.get("contest.scope"),
-        "style" -> Messages.get("contest.style"),
-        "startTime" -> Messages.get("contest.startTime"),
-        "endTime" -> Messages.get("contest.endTime")
-    )
-
-    <tbody>
-        @for(contest <- page.getData) {
-            <tr>
-                <td>@contest.getId</td>
-                <td>@contest.getName</td>
-                <td>@contest.getScope.name()</td>
-                <td>@contest.getStyle.name()</td>
-                <td>@contest.getType.name()</td>
-                <td>@UrielUtils.convertDateToString(contest.getStartTime)</td>
-                <td>@UrielUtils.convertDateToString(contest.getEndTime)</td>
-                <td class="text-center">
-                    <a href="@routes.ContestController.viewContestantAnnouncements(contest.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
-                </td>
-            </tr>
-        }
-    </tbody>
+@for(contest <- page.getData) {
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <span class="panel-title">@contest.getName | @UrielUtils.convertDateToString(contest.getStartTime) -  @UrielUtils.convertDateToString(contest.getEndTime)</span>
+        </div>
+        <div class="panel-body">
+            @Html(contest.getDescription)
+            <hr />
+            <a href="@routes.ContestController.register(contest.getId)" class="btn btn-primary">Register</a>
+        </div>
+    </div>
 }
-
 @paginationView(page, orderBy, orderDir, filterString, routes.ContestController.list)

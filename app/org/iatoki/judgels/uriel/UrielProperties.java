@@ -50,7 +50,7 @@ public final class UrielProperties {
     private static void verifyConfiguration(Configuration configuration) {
         List<String> requiredKeys = ImmutableList.of(
                 "jophiel.baseUrl",
-                "jophiel.clientId",
+                "jophiel.clientJid",
                 "jophiel.clientSecret",
                 "sealtiel.baseUrl",
                 "sealtiel.clientChannel",

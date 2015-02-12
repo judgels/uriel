@@ -130,6 +130,11 @@ public final class ContestController extends Controller {
     }
 
 
+    /* list ********************************************************************************************************* */
+    public Result register(long contestId) {
+        return TODO;
+    }
+
     /* admin/create ************************************************************************************************* */
 
     @Authorized(value = {"admin"})
@@ -813,7 +818,7 @@ public final class ContestController extends Controller {
 
         try {
             GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-            String submissionJid = submissionService.submit(contest.getJid(),problemJid, gradingEngine, gradingLanguage, gradingLastUpdateTime, source);
+            String submissionJid = submissionService.submit(contest.getJid(),problemJid, gradingLanguage, gradingEngine, gradingLastUpdateTime, source);
             SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
         } catch (SubmissionException e) {
             flash("submissionError", e.getMessage());
@@ -828,23 +833,27 @@ public final class ContestController extends Controller {
     /* contestant/submission **************************************************************************************** */
 
     public Result viewContestantSubmissions(long contestId) {
-        return listContestantSubmissions(contestId, 0, "id", "asc", "");
+        return listContestantSubmissions(contestId, 0, "id", "desc", "");
     }
 
     public Result listContestantSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
 
-        Page<ContestSubmission> submissions = submissionService.pageContestSubmissionsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, "id", "asc", filterString, IdentityUtils.getUserJid(), null);
+        Page<ContestSubmission> submissions = submissionService.pageContestSubmissionsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), null);
 
         LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
 
-        content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
+
+        if (checkIfPermitted(contest, "submission")) {
+            content.appendLayout(c -> accessTypesLayout.render(routes.ContestController.viewContestantSubmissions(contest.getId()), routes.ContestController.viewSupervisorSubmissions(contest.getId()), c));
+        }
 
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                new InternalLink("submission.submissions", routes.ContestController.viewContestantSubmissions(contest.getId()))
+                new InternalLink(Messages.get("submission.submissions"), routes.ContestController.viewContestantSubmissions(contest.getId()))
         ), c));
         appendTemplateLayout(content);
 
@@ -863,7 +872,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                new InternalLink("submission.viewSubmission", routes.ContestController.viewContestantSubmission(contest.getId(), submission.getId()))
+                new InternalLink(Messages.get("submission.view"), routes.ContestController.viewContestantSubmission(contest.getId(), submission.getId()))
         ), c));
         appendTemplateLayout(content);
 
