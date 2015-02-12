@@ -1305,7 +1305,9 @@ public final class ContestController extends Controller {
         return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
-    private boolean isSupervisor()
+    private boolean isSupervisor() {
+        return true;
+    }
 
     private boolean isContestStarted(Contest contest) {
         return new Date().compareTo(contest.getStartTime()) >= 0;
