@@ -1,5 +1,8 @@
 package org.iatoki.judgels.uriel.controllers.security;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.codec.binary.Base64;
+import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Security;
@@ -8,7 +11,19 @@ public class LoggedIn extends Security.Authenticator {
 
     @Override
     public String getUsername(Http.Context context) {
-        return context.session().get("username");
+        if ((context.session().get("username") != null) && (context.request().cookie("JOURID") != null)) {
+            String jID = context.request().cookie("JID").value();
+            if (jID.equals(context.session().get("idToken"))) {
+                return context.session().get("username");
+            } else {
+                return null;
+            }
+        } else if (context.session().get("username") != null) {
+            context.session().clear();
+            return null;
+        } else {
+            return null;
+        }
     }
 
     @Override
