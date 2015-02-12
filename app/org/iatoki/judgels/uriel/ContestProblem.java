@@ -12,19 +12,16 @@ public final class ContestProblem {
 
     private String alias;
 
-    private String name;
-
     private long submissionLimit;
 
     private ContestProblemStatus status;
 
-    public ContestProblem(long id, String contestJid, String problemJid, String problemSecret, String alias, String name, long submissionLimit, ContestProblemStatus status) {
+    public ContestProblem(long id, String contestJid, String problemJid, String problemSecret, String alias, long submissionLimit, ContestProblemStatus status) {
         this.id = id;
         this.contestJid = contestJid;
         this.problemJid = problemJid;
         this.problemSecret = problemSecret;
         this.alias = alias;
-        this.name = name;
         this.submissionLimit = submissionLimit;
         this.status = status;
     }
@@ -47,10 +44,6 @@ public final class ContestProblem {
 
     public String getAlias() {
         return alias;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public long getSubmissionLimit() {

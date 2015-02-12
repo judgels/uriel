@@ -4,26 +4,26 @@ import java.util.Date;
 
 public final class ContestAnnouncement {
 
-    private long id;
+    private final long id;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String title;
+    private final String title;
 
-    private String announcement;
+    private final String announcement;
 
-    private String author;
+    private final String authorJid;
 
-    private ContestAnnouncementStatus status;
+    private final ContestAnnouncementStatus status;
 
-    private Date lastUpdated;
+    private final Date lastUpdated;
 
-    public ContestAnnouncement(long id, String contestJid, String title, String announcement, String author, ContestAnnouncementStatus status, Date lastUpdated) {
+    public ContestAnnouncement(long id, String contestJid, String title, String announcement, String authorJid, ContestAnnouncementStatus status, Date lastUpdated) {
         this.id = id;
         this.contestJid = contestJid;
         this.title = title;
         this.announcement = announcement;
-        this.author = author;
+        this.authorJid = authorJid;
         this.status = status;
         this.lastUpdated = lastUpdated;
     }
@@ -44,8 +44,8 @@ public final class ContestAnnouncement {
         return announcement;
     }
 
-    public String getAuthor() {
-        return author;
+    public String getAuthorJid() {
+        return authorJid;
     }
 
     public ContestAnnouncementStatus getStatus() {
