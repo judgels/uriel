@@ -5,7 +5,6 @@ import play.data.validation.Constraints;
 public final class ContestSupervisorCreateForm {
 
     @Constraints.Required
-
     public String userJid;
 
     public boolean announcement;

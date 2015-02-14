@@ -2,10 +2,12 @@
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
-
+@import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.upsertSupervisorAnnouncementView
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
 
 @b3.form(routes.ContestController.postCreateSupervisorAnnouncement(contestId)) {
 

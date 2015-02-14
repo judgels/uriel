@@ -1,10 +1,12 @@
 @(form: Form[org.iatoki.judgels.uriel.UserRoleUpdateForm], userRoleId: Long)
 
 @import play.i18n.Messages
-
+@import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
 
 @b3.form(routes.UserRoleController.postUpdate(userRoleId)) {
 

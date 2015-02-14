@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.controllers.security;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.codec.binary.Base64;
+import play.Play;
 import play.libs.Json;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -11,21 +12,17 @@ public class LoggedIn extends Security.Authenticator {
 
     @Override
     public String getUsername(Http.Context context) {
-        if ((context.session().get("username") != null) && (context.request().cookie("JOURID") != null)) {
-            String jID = context.request().cookie("JOURID").value();
+        if ((context.session().get("username") != null) && (context.request().cookie("JOID-" + Play.application().configuration().getString("jophiel.clientJid")) != null)) {
+            String jID = context.request().cookie("JOID-" + Play.application().configuration().getString("jophiel.clientJid")).value();
             if (context.session().get("idToken").startsWith(jID)) {
-                System.out.println("A 1");
                 return context.session().get("username");
             } else {
-                System.out.println("A 2");
                 return null;
             }
         } else if (context.session().get("username") != null) {
-            System.out.println("A 3");
             context.session().clear();
             return null;
         } else {
-            System.out.println("A 4");
             return null;
         }
     }

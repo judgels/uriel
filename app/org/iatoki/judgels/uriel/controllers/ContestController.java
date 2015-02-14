@@ -243,6 +243,7 @@ public final class ContestController extends Controller {
 
                 return redirect(routes.ContestController.viewAdminManagers(contest.getId()));
             } else {
+                form.reject("error.manager.create.userJid.invalid");
                 return showCreateAdminManager(form, contest);
             }
         }
@@ -338,6 +339,7 @@ public final class ContestController extends Controller {
 
                     return redirect(routes.ContestController.viewManagerSupervisors(contest.getId()));
                 } else {
+                    form.reject("error.supervisor.create.userJid.invalid");
                     return showCreateManagerSupervisor(form, contest);
                 }
             }
@@ -521,7 +523,7 @@ public final class ContestController extends Controller {
     @RequireCSRFCheck
     public Result postCreateSupervisorProblem(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (checkIfPermitted(contest, "contestant")) {
+        if (checkIfPermitted(contest, "problem")) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
@@ -533,6 +535,7 @@ public final class ContestController extends Controller {
 
                     return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
                 } else {
+                    form.reject("error.problem.create.problemJid.invalid");
                     return showCreateSupervisorProblem(form, contest);
                 }
             }
@@ -696,6 +699,7 @@ public final class ContestController extends Controller {
 
                     return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
                 } else {
+                    form.reject("error.contestant.create.userJid.invalid");
                     return showCreateSupervisorContestant(form, contest);
                 }
             }

@@ -9,6 +9,4 @@ public final class ContestContestantCreateForm {
 
     @Constraints.Required
     public String status;
-
-
 }

@@ -1,11 +1,13 @@
 @(contestId: Long, clarification: org.iatoki.judgels.uriel.ContestClarification, form: Form[org.iatoki.judgels.uriel.ContestClarificationUpdateForm])
 
 @import play.i18n.Messages
-
+@import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.apache.commons.lang3.StringEscapeUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
 
 @b3.form(routes.ContestController.postUpdateSupervisorClarification(contestId, clarification.getId)) {
 

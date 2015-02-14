@@ -1,12 +1,13 @@
 @(form: Form[org.iatoki.judgels.uriel.ContestUpsertForm], contestId: Long)
 
 @import play.i18n.Messages
-
 @import org.iatoki.judgels.uriel.controllers.routes
-
 @import org.iatoki.judgels.uriel.views.html.contest.manager.general.upsertManagerGeneralView
+@import org.iatoki.judgels.commons.views.html.formErrorView
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
 
 @b3.form(routes.ContestController.postUpdateManagerGeneral(contestId)) {
 

@@ -3,15 +3,16 @@
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.UrielUtils
-
+@import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
+@formErrorView(form)
+
 @b3.form(routes.ContestController.postCreateContestantClarification(contest.getId)) {
 
     @helper.CSRF.formField
-
 
     @b3.text(form("title"), '_label -> Messages.get("clarification.title"))
 
