@@ -1,8 +1,10 @@
 package org.iatoki.judgels.uriel;
 
 import akka.actor.Scheduler;
-import org.iatoki.judgels.gabriel.FakeSealtiel;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
+import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
 import org.iatoki.judgels.uriel.controllers.UserRoleController;
@@ -11,9 +13,9 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibern
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSubmissionHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.UserRoleHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
@@ -21,17 +23,17 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSubmissionDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
+import play.Play;
 import play.libs.Akka;
 import play.mvc.Controller;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -46,10 +48,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
         super.onStart(application);
 
+        Config config = ConfigFactory.load();
+
         UrielProperties.getInstance();
         JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
 
-        GradingResponsePoller poller = new GradingResponsePoller(new SubmissionUpdaterServiceImpl(new ContestSubmissionHibernateDao()), new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses")));
+        GradingResponsePoller poller = new GradingResponsePoller(new SubmissionUpdaterServiceImpl(new ContestSubmissionHibernateDao()), new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), config.getString("sealtiel.baseUrl")));
 
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
@@ -77,7 +81,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 ContestService contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, userRoleDao);
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
-                FakeSealtiel sealtiel = new FakeSealtiel(new File("/Users/fushar/grading-requests"), new File("/Users/fushar/grading-responses"));
+                Sealtiel sealtiel = new Sealtiel(Play.application().configuration().getString("sealtiel.clientJid"), Play.application().configuration().getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
                 ContestSubmissionService submissionService = new ContestSubmissionServiceImpl(submissionDao, sealtiel);
 
                 ContestController contestController = new ContestController(contestService, userRoleService, submissionService);
