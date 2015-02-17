@@ -31,4 +31,17 @@ public final class ContestAnnouncementHibernateDao extends AbstractHibernateDao<
 
         return JPA.em().createQuery(query).getResultList();
     }
+
+    @Override
+    public List<Long> findAllPublishedAnnouncementIdInContest(String contestJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestAnnouncementModel> root = query.from(ContestAnnouncementModel.class);
+
+        query
+                .select(root.get(ContestAnnouncementModel_.id))
+                .where(cb.and(cb.equal(root.get(ContestAnnouncementModel_.contestJid), contestJid), cb.equal(root.get(ContestAnnouncementModel_.status), ContestAnnouncementStatus.PUBLISHED.name())));
+
+        return JPA.em().createQuery(query).getResultList();
+    }
 }

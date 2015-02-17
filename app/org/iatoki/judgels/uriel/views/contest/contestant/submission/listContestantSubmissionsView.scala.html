@@ -8,6 +8,7 @@
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import org.iatoki.judgels.uriel.JidCacheService
+@import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
 <div class="clearfix"></div>
 
@@ -41,3 +42,5 @@
 }
 
 @paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+@contestantjs(contestId)

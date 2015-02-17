@@ -4,6 +4,7 @@
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.apache.commons.lang3.StringEscapeUtils
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -29,3 +30,5 @@
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }
+
+@supervisorjs(contestId)

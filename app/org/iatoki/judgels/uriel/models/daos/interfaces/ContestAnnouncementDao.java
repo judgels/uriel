@@ -8,4 +8,6 @@ import java.util.List;
 public interface ContestAnnouncementDao extends Dao<Long, ContestAnnouncementModel> {
 
     List<ContestAnnouncementModel> findPublishedByContestJidOrderedByUpdateTime(String contestJid);
+
+    List<Long> findAllPublishedAnnouncementIdInContest(String contestJid);
 }

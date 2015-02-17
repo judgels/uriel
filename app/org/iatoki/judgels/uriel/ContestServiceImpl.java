@@ -10,6 +10,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
@@ -18,6 +19,7 @@ import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
+import org.iatoki.judgels.uriel.models.domains.ContestReadModel;
 import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
 import play.i18n.Messages;
@@ -35,9 +37,10 @@ public final class ContestServiceImpl implements ContestService {
     private ContestContestantDao contestContestantDao;
     private ContestSupervisorDao contestSupervisorDao;
     private ContestManagerDao contestManagerDao;
+    private ContestReadDao contestReadDao;
     private UserRoleDao userRoleDao;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, UserRoleDao userRoleDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestReadDao contestReadDao, UserRoleDao userRoleDao) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -45,6 +48,7 @@ public final class ContestServiceImpl implements ContestService {
         this.contestContestantDao = contestContestantDao;
         this.contestSupervisorDao = contestSupervisorDao;
         this.contestManagerDao = contestManagerDao;
+        this.contestReadDao = contestReadDao;
         this.userRoleDao = userRoleDao;
     }
 
@@ -257,6 +261,11 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public long getUnansweredContestClarificationsCount(String contestJid) {
+        return contestClarificationDao.countUnansweredClarificationByContestJid(contestJid);
+    }
+
+    @Override
     public Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
@@ -313,7 +322,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestSupervisor findContestSupervisrByContestSupervisorId(long contestSupervisorId) {
+    public ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
 
         return createContestSupervisorFromModel(contestSupervisorModel);
@@ -415,5 +424,53 @@ public final class ContestServiceImpl implements ContestService {
 
     private ContestManager createContestManagerFromModel(ContestManagerModel contestManagerModel) {
         return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid);
+    }
+
+    @Override
+    public long getUnreadContestAnnouncementsCount(String userJid, String contestJid) {
+        List<Long> announcementIds = contestAnnouncementDao.findAllPublishedAnnouncementIdInContest(contestJid);
+        if (!announcementIds.isEmpty()) {
+            return (announcementIds.size() - contestReadDao.countReadByUserJidAndTypeAndIdList(userJid, ContestReadType.ANNOUNCEMENT.name(), announcementIds));
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public long getUnreadContestClarificationsCount(String userJid, String contestJid) {
+        List<Long> clarificationIds = contestClarificationDao.findAllAnsweredClarificationIdInContestByUserJid(contestJid, userJid);
+        if (!clarificationIds.isEmpty()) {
+            return (clarificationIds.size() - contestReadDao.countReadByUserJidAndTypeAndIdList(userJid, ContestReadType.CLARIFICATION.name(), clarificationIds));
+        } else {
+            return 0;
+        }
+    }
+
+    @Override
+    public void readContestAnnouncements(String userJid, List<Long> contestAnnouncementIds) {
+        for (Long contestAnnouncementId : contestAnnouncementIds) {
+            if (!contestReadDao.existByUserJidAndTypeAndId(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementId)) {
+                ContestReadModel contestReadModel = new ContestReadModel();
+                contestReadModel.userJid = userJid;
+                contestReadModel.type = ContestReadType.ANNOUNCEMENT.name();
+                contestReadModel.readId = contestAnnouncementId;
+
+                contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            }
+        }
+    }
+
+    @Override
+    public void readContestClarifications(String userJid, List<Long> contestClarificationIds) {
+        for (Long contestClarificationId : contestClarificationIds) {
+            if (!contestReadDao.existByUserJidAndTypeAndId(userJid, ContestReadType.CLARIFICATION.name(), contestClarificationId)) {
+                ContestReadModel contestReadModel = new ContestReadModel();
+                contestReadModel.userJid = userJid;
+                contestReadModel.type = ContestReadType.CLARIFICATION.name();
+                contestReadModel.readId = contestClarificationId;
+
+                contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            }
+        }
     }
 }

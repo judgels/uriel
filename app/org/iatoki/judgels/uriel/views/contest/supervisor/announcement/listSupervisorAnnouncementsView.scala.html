@@ -7,6 +7,7 @@
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
 @import org.iatoki.judgels.commons.views.html.table.searchView
 @import org.iatoki.judgels.commons.views.html.table.paginationView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @import org.iatoki.judgels.uriel.UrielUtils
 @import org.iatoki.judgels.uriel.JidCacheService
@@ -42,3 +43,5 @@
 }
 
 @paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+@supervisorjs(contestId)

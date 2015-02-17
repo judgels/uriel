@@ -2,6 +2,7 @@
 
 @import play.i18n.Messages
 @import org.apache.commons.lang3.StringEscapeUtils
+@import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
 @for(contestAnnouncement <- page.getData) {
     <div class="panel panel-default">
@@ -13,3 +14,5 @@
         </div>
     </div>
 }
+
+@contestantjs(contestId)

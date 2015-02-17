@@ -14,6 +14,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantHibernate
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestReadHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
@@ -24,6 +25,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSubmissionDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
@@ -78,8 +80,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestSubmissionDao submissionDao = new ContestSubmissionHibernateDao();
                 ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
                 ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
+                ContestReadDao contestReadDao = new ContestReadHibernateDao();
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                ContestService contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, userRoleDao);
+                ContestService contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestReadDao, userRoleDao);
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
                 Sealtiel sealtiel = new Sealtiel(Play.application().configuration().getString("sealtiel.clientJid"), Play.application().configuration().getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
                 ContestSubmissionService submissionService = new ContestSubmissionServiceImpl(submissionDao, sealtiel);

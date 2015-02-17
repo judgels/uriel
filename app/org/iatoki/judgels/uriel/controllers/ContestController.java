@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
@@ -102,12 +103,15 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -351,7 +355,7 @@ public final class ContestController extends Controller {
     @AddCSRFToken
     public Result updateManagerSupervisor(long contestId, long contestSupervisorId) {
         Contest contest = contestService.findContestById(contestId);
-        ContestSupervisor contestSupervisor = contestService.findContestSupervisrByContestSupervisorId(contestSupervisorId);
+        ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if ((checkIfPermitted(contest, "supervisor")) && (contestSupervisor.getContestJid().equals(contest.getJid()))) {
             ContestSupervisorUpdateForm contestSupervisorUpdateForm = new ContestSupervisorUpdateForm(contestSupervisor);
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateForm);
@@ -365,7 +369,7 @@ public final class ContestController extends Controller {
     @RequireCSRFCheck
     public Result postUpdateManagerSupervisor(long contestId, long contestSupervisorId) {
         Contest contest = contestService.findContestById(contestId);
-        ContestSupervisor contestSupervisor = contestService.findContestSupervisrByContestSupervisorId(contestSupervisorId);
+        ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if ((checkIfPermitted(contest, "supervisor")) && (contestSupervisor.getContestJid().equals(contest.getJid()))) {
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).bindFromRequest();
 
@@ -498,7 +502,8 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                    new InternalLink("problem.problems", routes.ContestController.viewSupervisorProblems(contest.getId()))
+                    new InternalLink(Messages.get("problem.problem"), routes.ContestController.viewContestantProblems(contest.getId())),
+                    new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewSupervisorProblems(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -598,7 +603,8 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                    new InternalLink("clarification.clarifications", routes.ContestController.viewSupervisorClarifications(contest.getId()))
+                    new InternalLink(Messages.get("clarification.clarification"), routes.ContestController.viewContestantClarifications(contest.getId())),
+                    new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewSupervisorClarifications(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -661,7 +667,7 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                    new InternalLink("contestant.contestants", routes.ContestController.viewSupervisorContestants(contest.getId()))
+                    new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -764,6 +770,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (checkIfPermitted(contest, "contest")) {
             Page<ContestAnnouncement> contestAnnouncements = contestService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
+            contestService.readContestAnnouncements(IdentityUtils.getUserJid(), contestAnnouncements.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listContestantAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.announcements"), c));
@@ -829,6 +836,7 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                    new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewContestantProblems(contest.getId())),
                     new InternalLink(contestProblem.getAlias(), routes.ContestController.viewContestantProblem(contest.getId(), contestProblem.getId()))
             ), c));
             appendTemplateLayout(content);
@@ -923,6 +931,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (checkIfPermitted(contest, "contest")) {
             Page<ContestClarification> contestClarifications = contestService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid());
+            contestService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listContestantClarificationsView.render(contest.getId(), contestClarifications, pageIndex, orderBy, orderDir, filterString));
 
@@ -985,6 +994,53 @@ public final class ContestController extends Controller {
         appendTemplateLayout(content);
 
         return lazyOk(content);
+    }
+
+    /* ajax ********************************************************************************************************* */
+
+    public Result unreadAnnouncement(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (checkIfPermitted(contest, "contest")) {
+            long unreadCount = contestService.getUnreadContestAnnouncementsCount(IdentityUtils.getUserJid(), contest.getJid());
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", true);
+            objectNode.put("count", unreadCount);
+            return ok(objectNode);
+        } else {
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", false);
+            return ok(objectNode);
+        }
+    }
+
+    public Result unreadClarification(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (checkIfPermitted(contest, "contest")) {
+            long unreadCount = contestService.getUnreadContestClarificationsCount(IdentityUtils.getUserJid(), contest.getJid());
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", true);
+            objectNode.put("count", unreadCount);
+            return ok(objectNode);
+        } else {
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", false);
+            return ok(objectNode);
+        }
+    }
+
+    public Result unansweredClarification(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (checkIfPermitted(contest, "clarification")) {
+            long unreadCount = contestService.getUnansweredContestClarificationsCount(contest.getJid());
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", true);
+            objectNode.put("count", unreadCount);
+            return ok(objectNode);
+        } else {
+            ObjectNode objectNode = Json.newObject();
+            objectNode.put("success", false);
+            return ok(objectNode);
+        }
     }
 
     private boolean checkIfPermitted(Contest contest, String permission) {
@@ -1073,7 +1129,8 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                new InternalLink("manager.create", routes.ContestController.createAdminManager(contest.getId()))
+                new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())),
+                new InternalLink(Messages.get("manager.create"), routes.ContestController.createAdminManager(contest.getId()))
         ), c));
         appendTemplateLayout(content);
 
@@ -1086,6 +1143,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())),
                 new InternalLink(Messages.get("contest.update"), routes.ContestController.viewManagerGeneral(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1099,6 +1157,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId())),
                 new InternalLink(Messages.get("supervisor.create"), routes.ContestController.createManagerSupervisor(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1113,6 +1172,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId())),
                 new InternalLink(Messages.get("supervisor.update"), routes.ContestController.viewManagerSupervisors(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1128,6 +1188,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("announcement.announcements"), routes.ContestController.viewSupervisorAnnouncements(contest.getId())),
                 new InternalLink(Messages.get("announcement.create"), routes.ContestController.createSupervisorAnnouncement(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1143,6 +1204,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("announcement.announcements"), routes.ContestController.viewContestantAnnouncements(contest.getId())),
                 new InternalLink(Messages.get("announcement.update"), routes.ContestController.viewSupervisorAnnouncements(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1158,6 +1220,8 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("problem.problem"), routes.ContestController.viewContestantProblems(contest.getId())),
+                new InternalLink(Messages.get("problem.update"), routes.ContestController.viewSupervisorProblems(contest.getId())),
                 new InternalLink(Messages.get("problem.create"), routes.ContestController.createSupervisorProblem(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1173,6 +1237,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("problem.problem"), routes.ContestController.viewContestantProblems(contest.getId())),
                 new InternalLink(Messages.get("problem.update"), routes.ContestController.viewSupervisorProblems(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1188,6 +1253,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("clarification.clarification"), routes.ContestController.viewContestantClarifications(contest.getId())),
                 new InternalLink(Messages.get("clarification.update"), routes.ContestController.viewSupervisorClarifications(contest.getId()))
         ), c));
         appendTemplateLayout(content);
@@ -1202,7 +1268,8 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantProblems(contest.getId())),
-                new InternalLink(Messages.get("contestant.create"), routes.ContestController.viewContestantAnnouncements(contest.getId()))
+                new InternalLink(Messages.get("contestant.contestant"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                new InternalLink(Messages.get("contestant.create"), routes.ContestController.createSupervisorContestant(contest.getId()))
         ), c));
         appendTemplateLayout(content);
 
@@ -1216,7 +1283,8 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                new InternalLink(Messages.get("contestant.update"), routes.ContestController.viewSupervisorContestants(contest.getId()))
+                new InternalLink(Messages.get("contestant.contestant"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                new InternalLink(Messages.get("contestant.update"), routes.ContestController.updateSupervisorContestant(contest.getId(), contestContestant.getId()))
         ), c));
         appendTemplateLayout(content);
 
@@ -1236,7 +1304,8 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(contest.getName(), routes.ContestController.viewContestantAnnouncements(contest.getId())),
-                new InternalLink(Messages.get("clarification.create"), routes.ContestController.viewContestantAnnouncements(contest.getId()))
+                new InternalLink(Messages.get("clarification.clarification"), routes.ContestController.viewContestantClarifications(contest.getId())),
+                new InternalLink(Messages.get("clarification.create"), routes.ContestController.createContestantClarification(contest.getId()))
         ), c));
         appendTemplateLayout(content);
 

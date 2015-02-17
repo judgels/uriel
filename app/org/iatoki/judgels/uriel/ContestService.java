@@ -47,6 +47,8 @@ public interface ContestService {
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 
+    long getUnansweredContestClarificationsCount(String contestJid);
+
     Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     ContestContestant findContestContestantByContestContestantId(long contestContestantId);
@@ -61,7 +63,7 @@ public interface ContestService {
 
     Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    ContestSupervisor findContestSupervisrByContestSupervisorId(long contestSupervisorId);
+    ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId);
 
     boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid);
 
@@ -76,5 +78,13 @@ public interface ContestService {
     boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid);
 
     void createContestManager(long contestId, String userJid);
+
+    long getUnreadContestAnnouncementsCount(String userJid, String contestJid);
+
+    long getUnreadContestClarificationsCount(String userJid, String contestJid);
+
+    void readContestAnnouncements(String userJid, List<Long> contestAnnouncementIds);
+
+    void readContestClarifications(String userJid, List<Long> contestClarificationIds);
 
 }

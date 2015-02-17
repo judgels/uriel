@@ -2,7 +2,6 @@
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.UrielUtils
 @import org.iatoki.judgels.uriel.JidCacheService
@@ -10,6 +9,7 @@
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
 @import org.iatoki.judgels.commons.views.html.table.paginationView
 @import org.iatoki.judgels.commons.views.html.table.searchView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.listSupervisorClarifications(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
@@ -44,3 +44,5 @@
 }
 
 @paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+@supervisorjs(contestId)

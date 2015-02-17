@@ -5,6 +5,7 @@
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.UrielUtils
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -25,3 +26,5 @@
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }
+
+@supervisorjs(contestId)

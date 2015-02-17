@@ -53,8 +53,7 @@ public final class UrielProperties {
                 "jophiel.clientJid",
                 "jophiel.clientSecret",
                 "sealtiel.baseUrl",
-                "sealtiel.clientChannel",
-                "sealtiel.clientId",
+                "sealtiel.clientJid",
                 "sealtiel.clientSecret",
                 "uriel.baseDir",
                 "sandalphon.baseUrl"

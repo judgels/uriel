@@ -87,6 +87,10 @@ GET         /contest/:cId/contestant/clarification/                  @org.iatoki
 GET         /contest/:cId/contestant/clarification/create            @org.iatoki.judgels.uriel.controllers.ContestController.createContestantClarification(cId: Long)
 POST        /contest/:cId/contestant/clarification/create            @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestantClarification(cId: Long)
 
+GET        /contest/:cId/ajax/clarification/unread                   @org.iatoki.judgels.uriel.controllers.ContestController.unreadClarification(cId: Long)
+GET        /contest/:cId/ajax/clarification/unanswered               @org.iatoki.judgels.uriel.controllers.ContestController.unansweredClarification(cId: Long)
+GET        /contest/:cId/ajax/announcement/unread                    @org.iatoki.judgels.uriel.controllers.ContestController.unreadAnnouncement(cId: Long)
+
 GET         /userRole                                                @org.iatoki.judgels.uriel.controllers.UserRoleController.index()
 GET         /userRole/                                               @org.iatoki.judgels.uriel.controllers.UserRoleController.list(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
