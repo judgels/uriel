@@ -3,6 +3,8 @@ package org.iatoki.judgels.uriel;
 import org.iatoki.judgels.gabriel.Verdict;
 import org.iatoki.judgels.sandalphon.commons.Submission;
 
+import java.util.Date;
+
 public final class ContestSubmission implements Submission {
 
     private final long id;
@@ -12,12 +14,12 @@ public final class ContestSubmission implements Submission {
     private final String authorJid;
     private final String gradingLanguage;
     private final String gradingEngine;
-    private final long timestamp;
+    private final Date time;
     private final Verdict verdict;
     private final int score;
     private final String details;
 
-    public ContestSubmission(long id, String jid, String problemJid, String contestJid, String authorJid, String gradingLanguage, String gradingEngine, long timestamp, Verdict verdict, int score, String details) {
+    public ContestSubmission(long id, String jid, String problemJid, String contestJid, String authorJid, String gradingLanguage, String gradingEngine, Date time, Verdict verdict, int score, String details) {
         this.id = id;
         this.jid = jid;
         this.problemJid = problemJid;
@@ -25,7 +27,7 @@ public final class ContestSubmission implements Submission {
         this.authorJid = authorJid;
         this.gradingLanguage = gradingLanguage;
         this.gradingEngine = gradingEngine;
-        this.timestamp = timestamp;
+        this.time = time;
         this.verdict = verdict;
         this.score = score;
         this.details = details;
@@ -67,8 +69,8 @@ public final class ContestSubmission implements Submission {
     }
 
     @Override
-    public long getTimestamp() {
-        return timestamp;
+    public Date getTime() {
+        return time;
     }
 
     @Override
