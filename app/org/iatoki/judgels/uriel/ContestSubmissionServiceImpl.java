@@ -17,6 +17,7 @@ import org.iatoki.judgels.uriel.models.domains.ContestSubmissionModel;
 import play.Play;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -58,12 +59,12 @@ public final class ContestSubmissionServiceImpl implements ContestSubmissionServ
     }
 
     @Override
-    public String submit(String contestJid, String problemJid, String gradingLanguage, String problemGradingEngine, long gradingLastUpdateTime, GradingSource source) {
+    public String submit(String contestJid, String problemJid, String gradingLanguage, String gradingEngine, Date gradingLastUpdateTime, GradingSource source) {
         ContestSubmissionModel submissionRecord = new ContestSubmissionModel();
         submissionRecord.problemJid = problemJid;
         submissionRecord.contestJid = contestJid;
         submissionRecord.gradingLanguage = gradingLanguage;
-        submissionRecord.gradingEngine = problemGradingEngine;
+        submissionRecord.gradingEngine = gradingEngine;
         submissionRecord.verdictCode = "?";
         submissionRecord.verdictName = "Pending";
         submissionRecord.score = 0;
@@ -71,7 +72,7 @@ public final class ContestSubmissionServiceImpl implements ContestSubmissionServ
 
         submissionDao.persist(submissionRecord, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        GradingRequest request = SubmissionAdapters.fromGradingEngine(problemGradingEngine).createGradingRequest(submissionRecord.jid, problemJid, gradingLastUpdateTime, problemGradingEngine, gradingLanguage, source);
+        GradingRequest request = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingRequest(submissionRecord.jid, problemJid, gradingLastUpdateTime, gradingEngine, gradingLanguage, source);
 
         try {
             ClientMessage message = new ClientMessage(Play.application().configuration().getString("sealtiel.gabrielClientJid"), request.getClass().getSimpleName(), new Gson().toJson(request));
@@ -85,6 +86,6 @@ public final class ContestSubmissionServiceImpl implements ContestSubmissionServ
 
     private ContestSubmission createSubmissionFromModel(ContestSubmissionModel record, String contestJid) {
         String language = GradingLanguageRegistry.getInstance().getLanguage(record.gradingLanguage).getName();
-        return new ContestSubmission(record.id, record.jid, record.problemJid, contestJid, record.userCreate, language, record.gradingEngine, record.timeCreate, new Verdict(record.verdictCode, record.verdictName), record.score, record.details);
+        return new ContestSubmission(record.id, record.jid, record.problemJid, contestJid, record.userCreate, language, record.gradingEngine, new Date(record.timeCreate), new Verdict(record.verdictCode, record.verdictName), record.score, record.details);
     }
 }

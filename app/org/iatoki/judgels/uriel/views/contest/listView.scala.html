@@ -18,7 +18,7 @@
 @for(contest <- page.getData) {
     <div class="panel panel-default">
         <div class="panel-body">
-        <a href="@routes.ContestController.view(contest.getId, 0, "id", "asc", "")">@contest.getName</a>
+        <a href="@routes.ContestController.view(contest.getId)">@contest.getName</a>
         </div>
     </div>
 }

@@ -1,5 +1,5 @@
-role.contestant=Contestant
-role.supervisor=Supervisor
+status.contestant=Contestant
+status.supervisor=Supervisor
 
 contest.contests=Contests
 contest.contest=Contest

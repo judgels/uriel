@@ -1,4 +1,4 @@
-@(form: Form[org.iatoki.judgels.uriel.ContestUpsertForm], contestId: Long)
+@(form: Form[org.iatoki.judgels.uriel.ContestUpsertForm], contest: org.iatoki.judgels.uriel.Contest)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
@@ -10,11 +10,14 @@
 
 @formErrorView(form)
 
-@b3.form(routes.ContestController.postUpdateManagerGeneral(contestId)) {
+@b3.form(routes.ContestController.postUpdateManagerGeneral(contest.getId)) {
+
+    @b3.static(Messages.get("commons.id")){@contest.getId}
+    @b3.static(Messages.get("commons.jid")){@contest.getJid}
 
     @upsertManagerGeneralView(form)
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }
 
-@supervisorjs(contestId)
+@supervisorjs(contest.getId)

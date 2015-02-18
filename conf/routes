@@ -17,7 +17,8 @@ GET         /authRole/:returnUri                                     @org.iatoki
 GET         /contest                                                 @org.iatoki.judgels.uriel.controllers.ContestController.index()
 GET         /contest/                                                @org.iatoki.judgels.uriel.controllers.ContestController.list(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
-GET         /contest/:cId/view                                       @org.iatoki.judgels.uriel.controllers.ContestController.view(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/view                                       @org.iatoki.judgels.uriel.controllers.ContestController.view(cId: Long)
+GET         /contest/:cId/view/                                      @org.iatoki.judgels.uriel.controllers.ContestController.viewAndListRegistrants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
 GET         /contest/:cId/register                                   @org.iatoki.judgels.uriel.controllers.ContestController.register(cId: Long)
 
@@ -28,8 +29,6 @@ GET         /contest/:cId/admin/manager                              @org.iatoki
 GET         /contest/:cId/admin/manager/                             @org.iatoki.judgels.uriel.controllers.ContestController.listAdminManagers(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contest/:cId/admin/manager/create                       @org.iatoki.judgels.uriel.controllers.ContestController.createAdminManager(cId: Long)
 POST        /contest/:cId/admin/manager/create                       @org.iatoki.judgels.uriel.controllers.ContestController.postCreateAdminManager(cId: Long)
-
-GET         /contest/:cId/manager/view                               @org.iatoki.judgels.uriel.controllers.ContestController.viewManagerGeneral(cId: Long)
 
 GET         /contest/:cId/manager/update                             @org.iatoki.judgels.uriel.controllers.ContestController.updateManagerGeneral(cId: Long)
 POST        /contest/:cId/manager/update                             @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateManagerGeneral(cId: Long)

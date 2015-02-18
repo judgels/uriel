@@ -29,7 +29,7 @@
         <tr>
             <td>@submission.getId</td>
             <td>@JidCacheService.getInstance().getDisplayName(submission.getAuthorJid)</td>
-            <td>@JudgelsUtils.timestampToFormattedDate(submission.getTimestamp)</td>
+            <td>@JudgelsUtils.formatDate(submission.getTime)</td>
             <td>@submission.getGradingLanguage</td>
             <td>@submission.getVerdict.getName</td>
             <td>@submission.getScore</td>
