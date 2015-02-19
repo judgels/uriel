@@ -1,16 +1,22 @@
 package org.iatoki.judgels.uriel;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.gson.Gson;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.uriel.commons.ContestConfig;
+import org.iatoki.judgels.uriel.commons.Scoreboard;
+import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
@@ -20,27 +26,30 @@ import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
 import org.iatoki.judgels.uriel.models.domains.ContestReadModel;
+import org.iatoki.judgels.uriel.models.domains.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
 import play.i18n.Messages;
 
+import javax.persistence.NoResultException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public final class ContestServiceImpl implements ContestService {
 
-    private ContestDao contestDao;
-    private ContestAnnouncementDao contestAnnouncementDao;
-    private ContestProblemDao contestProblemDao;
-    private ContestClarificationDao contestClarificationDao;
-    private ContestContestantDao contestContestantDao;
-    private ContestSupervisorDao contestSupervisorDao;
-    private ContestManagerDao contestManagerDao;
-    private ContestReadDao contestReadDao;
-    private UserRoleDao userRoleDao;
+    private final ContestDao contestDao;
+    private final ContestAnnouncementDao contestAnnouncementDao;
+    private final ContestProblemDao contestProblemDao;
+    private final ContestClarificationDao contestClarificationDao;
+    private final ContestContestantDao contestContestantDao;
+    private final ContestSupervisorDao contestSupervisorDao;
+    private final ContestManagerDao contestManagerDao;
+    private final ContestScoreboardDao contestScoreboardDao;
+    private final ContestReadDao contestReadDao;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestReadDao contestReadDao, UserRoleDao userRoleDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestReadDao contestReadDao) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -48,8 +57,8 @@ public final class ContestServiceImpl implements ContestService {
         this.contestContestantDao = contestContestantDao;
         this.contestSupervisorDao = contestSupervisorDao;
         this.contestManagerDao = contestManagerDao;
+        this.contestScoreboardDao = contestScoreboardDao;
         this.contestReadDao = contestReadDao;
-        this.userRoleDao = userRoleDao;
     }
 
     @Override
@@ -76,6 +85,19 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.endTime = endTime.getTime();
 
         contestDao.persist(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
+        contestScoreboardModel.contestJid = contestModel.jid;
+        contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
+
+        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
+        ContestConfig config = getContestConfigByJid(contestModel.jid);
+        ScoreboardContent content = adapter.computeContent(config, ImmutableList.of());
+        Scoreboard scoreboard = adapter.createScoreboard(config, content);
+
+        contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+
+        contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
@@ -99,6 +121,23 @@ public final class ContestServiceImpl implements ContestService {
 
         List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
         return new Page<>(contests, totalPages, pageIndex, pageSize);
+    }
+
+    @Override
+    public ContestConfig getContestConfigByJid(String contestJid) {
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
+
+        Map<String, String> problemAliasesByJid = contestProblemModels.stream().collect(Collectors.toMap(m -> m.problemJid, m -> m.alias));
+        List<String> contestantJids = Lists.transform(contestContestantModels, m -> m.userJid);
+
+        return new ContestConfig(problemAliasesByJid, contestantJids);
+    }
+
+    @Override
+    public List<Contest> getRunningContests(Date timeNow) {
+        List<ContestModel> contestModels = contestDao.getRunningContests(timeNow.getTime());
+        return Lists.transform(contestModels, m -> createContestFromModel(m));
     }
 
     @Override
@@ -392,40 +431,6 @@ public final class ContestServiceImpl implements ContestService {
         contestManagerDao.persist(contestManagerModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
-    private Contest createContestFromModel(ContestModel contestModel) {
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime));
-    }
-
-    private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
-        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
-    }
-
-    private ContestProblem createContestProblemFromModel(ContestProblemModel contestProblemModel) {
-        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.submissionsLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
-    }
-
-    private ContestClarification createContestClarificationFromModel(ContestClarificationModel contestClarificationModel, ContestModel contestModel) {
-        String topic;
-        if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
-            topic = "(" + Messages.get("clarification.general") + ")";
-        } else {
-            topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
-        }
-        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
-    }
-
-    private ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
-        return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status));
-    }
-
-    private ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {
-        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, contestSupervisorModel.announcement, contestSupervisorModel.problem, contestSupervisorModel.submission, contestSupervisorModel.clarification, contestSupervisorModel.contestant);
-    }
-
-    private ContestManager createContestManagerFromModel(ContestManagerModel contestManagerModel) {
-        return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid);
-    }
-
     @Override
     public long getUnreadContestAnnouncementsCount(String userJid, String contestJid) {
         List<Long> announcementIds = contestAnnouncementDao.findAllPublishedAnnouncementIdInContest(contestJid);
@@ -472,5 +477,63 @@ public final class ContestServiceImpl implements ContestService {
                 contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
         }
+    }
+
+    @Override
+    public ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
+        ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
+        return createContestScoreboardFromModel(contestScoreboardModel, ContestStyle.valueOf(contestModel.style));
+    }
+
+    @Override
+    public void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard) {
+        try {
+            ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
+            contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+
+            contestScoreboardDao.edit(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        } catch (NoResultException e) {
+            // just do nothing
+        }
+    }
+
+    private Contest createContestFromModel(ContestModel contestModel) {
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime));
+    }
+
+    private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
+        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
+    }
+
+    private ContestProblem createContestProblemFromModel(ContestProblemModel contestProblemModel) {
+        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.submissionsLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+    }
+
+    private ContestClarification createContestClarificationFromModel(ContestClarificationModel contestClarificationModel, ContestModel contestModel) {
+        String topic;
+        if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
+            topic = "(" + Messages.get("clarification.general") + ")";
+        } else {
+            topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
+        }
+        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
+    }
+
+    private ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
+        return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status));
+    }
+
+    private ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {
+        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, contestSupervisorModel.announcement, contestSupervisorModel.problem, contestSupervisorModel.submission, contestSupervisorModel.clarification, contestSupervisorModel.contestant);
+    }
+
+    private ContestManager createContestManagerFromModel(ContestManagerModel contestManagerModel) {
+        return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid);
+    }
+
+    private ContestScoreboard createContestScoreboardFromModel(ContestScoreboardModel contestScoreboardModel, ContestStyle style) {
+        Scoreboard scoreboard = ScoreboardAdapters.fromContestStyle(style).parseScoreboardFromJson(contestScoreboardModel.scoreboard);
+        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard);
     }
 }

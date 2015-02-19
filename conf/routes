@@ -69,6 +69,8 @@ POST        /contest/:cId/supervisor/contestant/:c2Id/update         @org.iatoki
 GET         /contest/:cId/supervisor/submission                      @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorSubmissions(cId: Long)
 GET         /contest/:cId/supervisor/submission/                     @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
+GET         /contest/:cId/supervisor/scoreboard                      @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorScoreboard(cId: Long)
+
 GET         /contest/:cId/contestant/announcement                    @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantAnnouncements(cId: Long)
 GET         /contest/:cId/contestant/announcement/                   @org.iatoki.judgels.uriel.controllers.ContestController.listContestantAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
@@ -85,6 +87,8 @@ GET         /contest/:cId/contestant/clarification                   @org.iatoki
 GET         /contest/:cId/contestant/clarification/                  @org.iatoki.judgels.uriel.controllers.ContestController.listContestantClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contest/:cId/contestant/clarification/create            @org.iatoki.judgels.uriel.controllers.ContestController.createContestantClarification(cId: Long)
 POST        /contest/:cId/contestant/clarification/create            @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestantClarification(cId: Long)
+
+GET         /contest/:cId/contestant/scoreboard                      @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantScoreboard(cId: Long)
 
 GET        /contest/:cId/ajax/clarification/unread                   @org.iatoki.judgels.uriel.controllers.ContestController.unreadClarification(cId: Long)
 GET        /contest/:cId/ajax/clarification/unanswered               @org.iatoki.judgels.uriel.controllers.ContestController.unansweredClarification(cId: Long)

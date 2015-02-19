@@ -6,5 +6,5 @@ import org.iatoki.judgels.uriel.models.domains.ContestModel;
 import java.util.List;
 
 public interface ContestDao extends JudgelsDao<ContestModel> {
-
+    List<ContestModel> getRunningContests(long timeNow);
 }

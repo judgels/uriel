@@ -1,6 +1,8 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.uriel.commons.ContestConfig;
+import org.iatoki.judgels.uriel.commons.Scoreboard;
 
 import java.util.Date;
 import java.util.List;
@@ -16,6 +18,10 @@ public interface ContestService {
     void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime);
 
     Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+
+    ContestConfig getContestConfigByJid(String contestJid);
+
+    List<Contest> getRunningContests(Date timeNow);
 
     Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
@@ -87,4 +93,7 @@ public interface ContestService {
 
     void readContestClarifications(String userJid, List<Long> contestClarificationIds);
 
+    ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
+
+    void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard);
 }

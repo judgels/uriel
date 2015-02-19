@@ -16,6 +16,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestReadHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreboardHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
@@ -28,8 +29,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.GradingDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
@@ -47,10 +47,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private Map<Class, Controller> cache;
 
-    private SubmissionDao submissionDao;
-    private GradingDao gradingDao;
-    private Sealtiel sealtiel;
     private SubmissionService submissionService;
+    private ContestService contestService;
 
     public Global() {
     }
@@ -64,18 +62,31 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         Config config = ConfigFactory.load();
 
         UrielProperties.getInstance();
+
         JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
 
-        submissionDao = new SubmissionHibernateDao();
-        gradingDao = new GradingHibernateDao();
-        sealtiel = new Sealtiel(Play.application().configuration().getString("sealtiel.clientJid"), Play.application().configuration().getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
+        Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
 
         submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
         GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel);
 
+        ContestDao contestDao = new ContestHibernateDao();
+        ContestAnnouncementDao contestAnnouncementDao = new ContestAnnouncementHibernateDao();
+        ContestContestantDao contestContestantDao = new ContestContestantHibernateDao();
+        ContestClarificationDao contestClarificationDao = new ContestClarificationHibernateDao();
+        ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
+        ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
+        ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
+        ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
+        ContestReadDao contestReadDao = new ContestReadHibernateDao();
+        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestReadDao);
+
+        ScoreboardUpdater updater = new ScoreboardUpdater(contestService, submissionService);
+
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
     }
 
     @Override
@@ -88,17 +99,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ApplicationController applicationController = new ApplicationController(userRoleService);
                 cache.put(ApplicationController.class, applicationController);
             } else if (controllerClass.equals(ContestController.class)) {
-                ContestDao contestDao = new ContestHibernateDao();
-                ContestAnnouncementDao contestAnnouncementDao = new ContestAnnouncementHibernateDao();
-                ContestContestantDao contestContestantDao = new ContestContestantHibernateDao();
-                ContestClarificationDao contestClarificationDao = new ContestClarificationHibernateDao();
-                ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
-                SubmissionDao submissionDao = new SubmissionHibernateDao();
-                ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
-                ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
-                ContestReadDao contestReadDao = new ContestReadHibernateDao();
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                ContestService contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestReadDao, userRoleDao);
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
 
                 ContestController contestController = new ContestController(contestService, userRoleService, submissionService);

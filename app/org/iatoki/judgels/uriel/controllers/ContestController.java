@@ -36,6 +36,8 @@ import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.ContestScoreboard;
+import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemCreateForm;
@@ -49,9 +51,12 @@ import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
 import org.iatoki.judgels.uriel.JidCacheService;
+import org.iatoki.judgels.uriel.ScoreboardAdapter;
+import org.iatoki.judgels.uriel.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRoleService;
+import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -789,6 +794,32 @@ public final class ContestController extends Controller {
         }
     }
 
+    /* contestant/scoreboard **************************************************************************************** */
+
+    public Result viewSupervisorScoreboard(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseScoreboard(contest)) {
+            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+            Scoreboard scoreboard = contestScoreboard.getScoreboard();
+            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard));
+
+            content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantScoreboard(contest.getId()), routes.ContestController.viewSupervisorScoreboard(contest.getId()), c));
+
+            appendTabsLayout(content, contest);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                    new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId())),
+                    new InternalLink(Messages.get("status.supervisor"), routes.ContestController.viewSupervisorScoreboard(contest.getId()))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
 
     /* contestant/announcement *************************************************************************************** */
 
@@ -987,6 +1018,34 @@ public final class ContestController extends Controller {
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                     new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
                     new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId()))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    /* contestant/scoreboard **************************************************************************************** */
+
+    public Result viewContestantScoreboard(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToEnterContest(contest)) {
+            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+            Scoreboard scoreboard = contestScoreboard.getScoreboard();
+            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard));
+
+            if (isAllowedToSuperviseScoreboard(contest)) {
+                content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantScoreboard(contest.getId()), routes.ContestController.viewSupervisorScoreboard(contest.getId()), c));
+            }
+
+            appendTabsLayout(content, contest);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                    new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId()))
             ), c));
             appendTemplateLayout(content);
 
@@ -1303,6 +1362,7 @@ public final class ContestController extends Controller {
         internalLinkBuilder.add(new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewContestantProblems(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("submission.submissions"), routes.ContestController.viewContestantSubmissions(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId())));
+        internalLinkBuilder.add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId())));
 
         if (isAllowedToSuperviseContestants(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())));
@@ -1417,6 +1477,10 @@ public final class ContestController extends Controller {
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
         return isAdmin() || isManager(contest) || (isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
+    }
+
+    private boolean isAllowedToSuperviseScoreboard(Contest contest) {
+        return isAdmin() || isManager(contest) || isSupervisor(contest);
     }
 
     private Result tryEnteringContest(Contest contest) {
