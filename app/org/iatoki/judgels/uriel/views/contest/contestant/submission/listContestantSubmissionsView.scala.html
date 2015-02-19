@@ -1,4 +1,4 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestSubmission], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.gabriel.commons.Submission], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
@@ -31,8 +31,8 @@
             <td>@JidCacheService.getInstance().getDisplayName(submission.getAuthorJid)</td>
             <td>@JudgelsUtils.formatDate(submission.getTime)</td>
             <td>@submission.getGradingLanguage</td>
-            <td>@submission.getVerdict.getName</td>
-            <td>@submission.getScore</td>
+            <td>@submission.getLatestVerdict.getName</td>
+            <td>@submission.getLatestScore</td>
             <td class="text-center">
                 <a href="@routes.ContestController.viewContestantSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
             </td>

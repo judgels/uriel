@@ -16,10 +16,12 @@ import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
 import org.iatoki.judgels.gabriel.GradingSource;
+import org.iatoki.judgels.gabriel.commons.Submission;
+import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
-import org.iatoki.judgels.sandalphon.commons.SubmissionAdapters;
-import org.iatoki.judgels.sandalphon.commons.SubmissionException;
+import org.iatoki.judgels.gabriel.commons.SubmissionAdapters;
+import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
@@ -42,8 +44,6 @@ import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
-import org.iatoki.judgels.uriel.ContestSubmission;
-import org.iatoki.judgels.uriel.ContestSubmissionService;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestType;
@@ -123,9 +123,9 @@ public final class ContestController extends Controller {
 
     private final ContestService contestService;
     private final UserRoleService userRoleService;
-    private final ContestSubmissionService submissionService;
+    private final SubmissionService submissionService;
 
-    public ContestController(ContestService contestService, UserRoleService userRoleService, ContestSubmissionService submissionService) {
+    public ContestController(ContestService contestService, UserRoleService userRoleService, SubmissionService submissionService) {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
         this.submissionService = submissionService;
@@ -766,7 +766,7 @@ public final class ContestController extends Controller {
 
         if (isAllowedToSuperviseSubmissions(contest)) {
 
-            Page<ContestSubmission> submissions = submissionService.pageContestSubmissionsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null, null);
+            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, null, null, contest.getJid());
 
             LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
 
@@ -891,7 +891,7 @@ public final class ContestController extends Controller {
 
             try {
                 GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-                String submissionJid = submissionService.submit(contest.getJid(), problemJid, gradingLanguage, gradingEngine, gradingLastUpdateTime, source);
+                String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, gradingLastUpdateTime, source);
                 SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
             } catch (SubmissionException e) {
                 flash("submissionError", e.getMessage());
@@ -917,7 +917,7 @@ public final class ContestController extends Controller {
 
         if (isAllowedToEnterContest(contest)) {
 
-            Page<ContestSubmission> submissions = submissionService.pageContestSubmissionsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), null);
+            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), null, contest.getJid());
 
             LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
 
@@ -943,7 +943,7 @@ public final class ContestController extends Controller {
 
     public Result viewContestantSubmission(long contestId, long submissionId) {
         Contest contest = contestService.findContestById(contestId);
-        ContestSubmission submission = submissionService.findContestSubmissionById(contest.getJid(), submissionId);
+        Submission submission = submissionService.findSubmissionById(submissionId);
 
         if (isAllowedToEnterContest(contest) && submission.getContestJid().equals(contest.getJid())) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());

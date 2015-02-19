@@ -55,6 +55,7 @@ public final class UrielProperties {
                 "sealtiel.baseUrl",
                 "sealtiel.clientJid",
                 "sealtiel.clientSecret",
+                "sealtiel.gabrielClientJid",
                 "uriel.baseDir",
                 "sandalphon.baseUrl"
         );
