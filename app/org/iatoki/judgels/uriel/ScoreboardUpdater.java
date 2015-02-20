@@ -5,6 +5,7 @@ import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.commons.ContestConfig;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
+import play.db.jpa.JPA;
 
 import java.util.Date;
 import java.util.List;
@@ -20,18 +21,20 @@ public final class ScoreboardUpdater implements Runnable {
 
     @Override
     public void run() {
-        Date timeNow = new Date();
-        for (Contest contest : contestService.getRunningContests(timeNow)) {
-            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-            ContestConfig config = contestService.getContestConfigByJid(contest.getJid());
-            List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
-            ScoreboardContent content = adapter.computeContent(config, submissions);
+        JPA.withTransaction(() -> {
+            Date timeNow = new Date();
+            for (Contest contest : contestService.getRunningContests(timeNow)) {
+                ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+                ContestConfig config = contestService.getContestConfigByJid(contest.getJid());
+                List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
+                ScoreboardContent content = adapter.computeContent(config, submissions);
 
-            Scoreboard scoreboard = adapter.createScoreboard(config, content);
+                Scoreboard scoreboard = adapter.createScoreboard(config, content);
 
-            contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+                contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
-            // TODO: update frozen scoreboard
-        }
+                // TODO: update frozen scoreboard
+            }
+        });
     }
 }

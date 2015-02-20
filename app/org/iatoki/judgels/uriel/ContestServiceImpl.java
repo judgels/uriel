@@ -492,7 +492,7 @@ public final class ContestServiceImpl implements ContestService {
             ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
             contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
-            contestScoreboardDao.edit(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestScoreboardDao.edit(contestScoreboardModel, "scoreboardUpdater", "localhost");
         } catch (NoResultException e) {
             // just do nothing
         }
@@ -534,6 +534,6 @@ public final class ContestServiceImpl implements ContestService {
 
     private ContestScoreboard createContestScoreboardFromModel(ContestScoreboardModel contestScoreboardModel, ContestStyle style) {
         Scoreboard scoreboard = ScoreboardAdapters.fromContestStyle(style).parseScoreboardFromJson(contestScoreboardModel.scoreboard);
-        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard);
+        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard, new Date(contestScoreboardModel.timeUpdate));
     }
 }
