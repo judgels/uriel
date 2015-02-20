@@ -91,7 +91,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     @Override
     public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
-        if (!cache.containsKey(controllerClass)) {
+        if (true) {
             if (controllerClass.equals(ApplicationController.class)) {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
