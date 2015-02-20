@@ -38,7 +38,7 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
         Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
 
         query
-            .where(cb.equal(root.get(ContestProblemModel_.problemJid), problemJid));
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.problemJid), problemJid), cb.equal(root.get(ContestProblemModel_.contestJid), contestJid)));
 
         return JPA.em().createQuery(query).getSingleResult();
     }
