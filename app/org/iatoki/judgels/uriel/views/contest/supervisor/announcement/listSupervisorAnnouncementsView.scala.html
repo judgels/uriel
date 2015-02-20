@@ -11,6 +11,7 @@
 
 @import org.iatoki.judgels.uriel.UrielUtils
 @import org.iatoki.judgels.uriel.JidCacheService
+@import scala.collection.JavaConversions
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.listSupervisorAnnouncements(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
@@ -27,11 +28,12 @@
         "timeUpdate" -> Messages.get("announcement.lastUpdate")
     )
     <tbody>
+    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
         @for(contestAnnouncement <- page.getData) {
             <tr>
                 <td>@contestAnnouncement.getId</td>
                 <td>@contestAnnouncement.getTitle</td>
-                <td>@JidCacheService.getInstance().getDisplayName(contestAnnouncement.getAuthorJid)</td>
+                <td>@displayNamesMap.get(contestAnnouncement.getAuthorJid)</td>
                 <td>@contestAnnouncement.getStatus.name()</td>
                 <td>@UrielUtils.convertDateToString(contestAnnouncement.getLastUpdated)</td>
                 <td class="text-center">
@@ -39,6 +41,7 @@
                 </td>
             </tr>
         }
+    }
     </tbody>
 }
 

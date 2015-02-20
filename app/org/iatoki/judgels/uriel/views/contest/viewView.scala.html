@@ -10,6 +10,7 @@
 
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import org.iatoki.judgels.uriel.JidCacheService
+@import scala.collection.JavaConversions
 
 <div class="panel panel-default">
     <div class="panel-body">
@@ -46,13 +47,15 @@
         "userJid" -> Messages.get("contestant.name")
     )
     <tbody>
-    @for(contestContestant <- page.getData) {
-        <tr>
-            <td>@contestContestant.getId</td>
-            <td>@JidCacheService.getInstance().getDisplayName(contestContestant.getUserJid)</td>
-            <td class="text-center">
+    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestContestant <- page.getData) {
+            <tr>
+                <td>@contestContestant.getId</td>
+                <td>@displayNamesMap.get(contestContestant.getUserJid)</td>
+                <td class="text-center">
             </td>
-        </tr>
+            </tr>
+        }
     }
     </tbody>
 }

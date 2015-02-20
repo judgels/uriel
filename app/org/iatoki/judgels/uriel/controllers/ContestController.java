@@ -99,6 +99,8 @@ import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupe
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
 
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.submission.listSupervisorSubmissionsView;
+
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.viewView;
@@ -777,7 +779,7 @@ public final class ContestController extends Controller {
 
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, null, null, contest.getJid());
 
-            LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listSupervisorSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
 
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
 

@@ -10,6 +10,7 @@
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @import org.iatoki.judgels.uriel.JidCacheService
+@import scala.collection.JavaConversions
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.listManagerSupervisors(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
@@ -28,10 +29,11 @@
         "contestant" -> Messages.get("permission.contestant")
     )
     <tbody>
+    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
         @for(contestSupervisor <- page.getData) {
             <tr>
                 <td>@contestSupervisor.getId</td>
-                <td>@JidCacheService.getInstance().getDisplayName(contestSupervisor.getUserJid)</td>
+                <td>@displayNamesMap.get(contestSupervisor.getUserJid)</td>
                 <td>@contestSupervisor.isAnnouncement</td>
                 <td>@contestSupervisor.isProblem</td>
                 <td>@contestSupervisor.isSubmission</td>
@@ -42,6 +44,7 @@
                 </td>
             </tr>
         }
+    }
     </tbody>
 }
 

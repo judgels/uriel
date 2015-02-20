@@ -2,16 +2,21 @@
 
 @import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.uriel.controllers.routes
+@import scala.collection.JavaConversions
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
-@for(contestProblem <- page.getData) {
-    <div class="panel panel-default">
-        <div class="panel-body">
-            <a href="@routes.ContestController.viewContestantProblem(contestId, contestProblem.getId)">
-                @contestProblem.getAlias - @JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid)
-            </a>
+
+@defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
+    @for(contestProblem <- page.getData) {
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <a href="@routes.ContestController.viewContestantProblem(contestId, contestProblem.getId)">
+                    @contestProblem.getAlias
+                    - @displayNamesMap.get(contestProblem.getProblemJid)
+                </a>
+            </div>
         </div>
-    </div>
+    }
 }
 
 @contestantjs(contestId)
