@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
@@ -134,6 +135,8 @@ public final class ContestController extends Controller {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
         this.submissionService = submissionService;
+
+        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
     }
 
     /* list ********************************************************************************************************* */
