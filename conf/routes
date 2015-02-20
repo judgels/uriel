@@ -76,7 +76,8 @@ GET         /contest/:cId/contestant/announcement/                   @org.iatoki
 
 GET         /contest/:cId/contestant/problem                         @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantProblems(cId: Long)
 GET         /contest/:cId/contestant/problem/                        @org.iatoki.judgels.uriel.controllers.ContestController.listContestantProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
-GET         /contest/:cId/contestant/problem/:pId                    @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantProblem(cId: Long, pId: Long)
+GET         /contest/:cId/contestant/problem/:pId/view               @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantProblem(cId: Long, pId: Long)
+GET         /contest/:cId/contestant/problem/:pId/render/:name       @org.iatoki.judgels.uriel.controllers.ContestController.renderImage(cId: Long, pId: Long, name: String)
 POST        /contest/:cId/contestant/problem/:pJid/submit            @org.iatoki.judgels.uriel.controllers.ContestController.postSubmitContestantProblem(cId: Long, pJid: String)
 
 GET         /contest/:cId/contestant/submission                      @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantSubmissions(cId: Long)

@@ -116,6 +116,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -909,6 +910,14 @@ public final class ContestController extends Controller {
         } else {
             return tryEnteringContest(contest);
         }
+    }
+
+    public Result renderImage(long contestId, long contestProblemId, String imageFilename) {
+        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+
+        URI imageUri = SandalphonUtils.getRenderImageUri(contestProblem.getProblemJid(), imageFilename);
+
+        return redirect(imageUri.toString());
     }
 
     public Result postSubmitContestantProblem(long contestId, String problemJid) {
