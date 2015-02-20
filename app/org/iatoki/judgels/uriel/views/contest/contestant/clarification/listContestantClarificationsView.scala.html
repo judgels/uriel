@@ -1,7 +1,7 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @import play.i18n.Messages
-@import org.apache.commons.lang3.StringEscapeUtils
+@import org.iatoki.judgels.commons.JudgelsUtils
 @import org.iatoki.judgels.uriel.ContestClarificationStatus
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
@@ -11,7 +11,7 @@
             <span class="panel-title">@contestClarification.getTitle</span>
         </div>
         <div class="panel-body">
-            @Html(StringEscapeUtils.escapeHtml4(contestClarification.getQuestion).replaceAll("\r\n", "<br />"))
+            @Html(JudgelsUtils.escapeHtmlString(contestClarification.getQuestion))
 
             <hr />
 
@@ -19,8 +19,8 @@
                 (@{Messages.get("clarification.unanswered")})
             }else{
                 @if(contestClarification.getStatus == ContestClarificationStatus.ANSWERED) {
-                    <strong>@Messages.get("clarification.answer")</strong>:
-                    @Html(StringEscapeUtils.escapeHtml4(contestClarification.getAnswer).replaceAll("\r\n", "<br />"))
+                    <p><strong>@Messages.get("clarification.answer")</strong>:</p>
+                    @Html(JudgelsUtils.escapeHtmlString(contestClarification.getAnswer))
                 }
             }
         </div>

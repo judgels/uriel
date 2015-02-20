@@ -1,13 +1,14 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
-@import play.i18n.Messages
-@import org.apache.commons.lang3.StringEscapeUtils
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+@import org.iatoki.judgels.uriel.JidCacheService
+@import org.iatoki.judgels.commons.JudgelsUtils
 
 @for(contestAnnouncement <- page.getData) {
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestAnnouncement.getTitle</span>
+            <span class="panel-title pull-right">@JidCacheService.getInstance().getDisplayName(contestAnnouncement.getAuthorJid) @@ @JudgelsUtils.formatDate(contestAnnouncement.getLastUpdated)</span>
         </div>
         <div class="panel-body">
             @Html(contestAnnouncement.getContent)

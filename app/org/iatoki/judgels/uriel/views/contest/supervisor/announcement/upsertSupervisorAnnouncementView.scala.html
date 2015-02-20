@@ -2,6 +2,8 @@
 
 @import play.i18n.Messages
 
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/ckeditor.js")"></script>
+
 @helper.CSRF.formField
 
 @b3.text(form("title"), '_label -> Messages.get("announcement.title"))
