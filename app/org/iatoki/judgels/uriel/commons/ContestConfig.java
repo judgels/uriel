@@ -1,19 +1,24 @@
 package org.iatoki.judgels.uriel.commons;
 
 import java.util.List;
-import java.util.Map;
 
 public class ContestConfig {
-    private final Map<String, String> problemAliasesByJid;
+    private final List<String> problemJids;
+    private final List<String> problemAliases;
     private final List<String> contestantJids;
 
-    public ContestConfig(Map<String, String> problemAliasesByJid, List<String> contestantJids) {
-        this.problemAliasesByJid = problemAliasesByJid;
+    public ContestConfig(List<String> problemJids, List<String> problemAliases, List<String> contestantJids) {
+        this.problemJids = problemJids;
+        this.problemAliases = problemAliases;
         this.contestantJids = contestantJids;
     }
 
-    public Map<String, String> getProblemAliasesByJid() {
-        return problemAliasesByJid;
+    public List<String> getProblemJids() {
+        return problemJids;
+    }
+
+    public List<String> getProblemAliases() {
+        return problemAliases;
     }
 
     public List<String> getContestantJids() {

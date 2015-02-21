@@ -11,8 +11,8 @@
             <th class="col-md-1">Rank</th>
             <th>Contestant</th>
             <th class="col-md-1">Total</th>
-            @for(problem <- config.getProblemAliasesByJid.entrySet) {
-                <th>@problem.getValue</th>
+            @for(problemAlias <- config.getProblemAliases) {
+                <th>@problemAlias</th>
             }
         </tr>
     </thead>
@@ -24,8 +24,8 @@
                 <td>@entry.rank</td>
                 <td>@displayNamesMap.get(entry.contestantJid)</td>
                 <td>@entry.totalScores</td>
-                @for(problem <- config.getProblemAliasesByJid.entrySet) {
-                    <td>@entry.scoresByProblemJid.get(problem.getKey)</td>
+                @for(score <- entry.scores) {
+                    <td>@score</td>
                 }
             </tr>
         }
