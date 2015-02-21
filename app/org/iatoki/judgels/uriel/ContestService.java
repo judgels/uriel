@@ -6,6 +6,7 @@ import org.iatoki.judgels.uriel.commons.Scoreboard;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface ContestService {
 
@@ -32,6 +33,8 @@ public interface ContestService {
     void updateContestAnnouncement(long contestAnnouncementId, String title, String content, ContestAnnouncementStatus status);
 
     List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid);
+
+    Map<String, String> findProblemJidToAliasMapByContestJid(String contestJid);
 
     Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 

@@ -193,6 +193,12 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public Map<String, String> findProblemJidToAliasMapByContestJid(String contestJid) {
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
+        return contestProblemModels.stream().collect(Collectors.toMap(m -> m.problemJid, m -> m.alias));
+    }
+
+    @Override
     public Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
         ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
         filterColumnsBuilder.put("contestJid", contestJid);

@@ -16,6 +16,7 @@ import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
+import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
 import org.iatoki.judgels.gabriel.GradingSource;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
@@ -122,6 +123,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -769,7 +771,7 @@ public final class ContestController extends Controller {
     /* supervisor/submission **************************************************************************************** */
 
     public Result viewSupervisorSubmissions(long contestId) {
-        return listSupervisorSubmissions(contestId, 0, "id", "asc", "");
+        return listSupervisorSubmissions(contestId, 0, "id", "desc", "");
     }
 
     public Result listSupervisorSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
@@ -778,8 +780,10 @@ public final class ContestController extends Controller {
         if (isAllowedToSuperviseSubmissions(contest)) {
 
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, null, null, contest.getJid());
+            Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
+            Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
-            LazyHtml content = new LazyHtml(listSupervisorSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listSupervisorSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, filterString));
 
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
 
@@ -963,8 +967,10 @@ public final class ContestController extends Controller {
         if (isAllowedToEnterContest(contest)) {
 
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), null, contest.getJid());
+            Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
+            Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
-            LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listContestantSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, filterString));
 
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
 

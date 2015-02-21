@@ -1,4 +1,4 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.gabriel.commons.Submission], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.gabriel.commons.Submission], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
@@ -20,6 +20,7 @@
         "id" -> Messages.get("commons.id"),
         "userCreate" -> Messages.get("submission.author"),
         "timeCreate" -> Messages.get("submission.time"),
+        "problemJid" -> Messages.get("problem.name"),
         "gradingLanguage" -> Messages.get("submission.gradingLanguage"),
         "verdictName" -> Messages.get("submission.verdict"),
         "score" -> Messages.get("submission.score")
@@ -33,7 +34,8 @@
                 <td>@submission.getId</td>
                 <td>@displayNamesMap.get(submission.getAuthorJid)</td>
                 <td>@JudgelsUtils.formatDate(submission.getTime)</td>
-                <td>@submission.getGradingLanguage</td>
+                <td>@problemJidToAliasMap.get(submission.getProblemJid)</td>
+                <td>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</td>
                 <td>@submission.getLatestVerdict.getName</td>
                 <td>@submission.getLatestScore</td>
                 <td class="text-center">
