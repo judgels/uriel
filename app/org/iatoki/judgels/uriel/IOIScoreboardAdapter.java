@@ -1,6 +1,5 @@
 package org.iatoki.judgels.uriel;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -16,7 +15,6 @@ import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.commons.views.html.ioiScoreboardView;
 import play.twirl.api.Html;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -30,7 +28,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
         for (String contestantJid : config.getContestantJids()) {
             Map<String, Integer> problemScores = Maps.newHashMap();
-            for (String problemJid : config.getProblemAliasesByJid().keySet()) {
+            for (String problemJid : config.getProblemJids()) {
                 problemScores.put(problemJid, 0);
             }
             scores.put(contestantJid, problemScores);
@@ -38,6 +36,11 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
         for (Submission submission : submissions) {
             String contestantJid = submission.getAuthorJid();
+
+            if (!scores.containsKey(contestantJid)) {
+                continue;
+            }
+
             String problemJid = submission.getProblemJid();
             int score = submission.getLatestScore();
 
@@ -47,16 +50,19 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
         List<IOIScoreboardEntry> entries = Lists.newArrayList();
 
-        for (Map.Entry<String, Map<String, Integer>> scoreEntry : scores.entrySet()) {
+        for (String contestantJid : config.getContestantJids()) {
             IOIScoreboardEntry entry = new IOIScoreboardEntry();
 
+            entry.contestantJid = contestantJid;
+            entry.scores = Lists.newArrayList();
+
             int totalScores = 0;
-            for (int score : scoreEntry.getValue().values()) {
+            for (String problemJid : config.getProblemJids()) {
+                int score = scores.get(contestantJid).get(problemJid);
+                entry.scores.add(score);
                 totalScores += score;
             }
 
-            entry.contestantJid = scoreEntry.getKey();
-            entry.scoresByProblemJid = ImmutableMap.copyOf(scoreEntry.getValue());
             entry.totalScores = totalScores;
 
             entries.add(entry);
