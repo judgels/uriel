@@ -128,10 +128,11 @@ public final class ContestServiceImpl implements ContestService {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findOpenedByContestJidOrderedByAlias(contestJid);
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
 
-        Map<String, String> problemAliasesByJid = contestProblemModels.stream().collect(Collectors.toMap(m -> m.problemJid, m -> m.alias));
+        List<String> problemJids = Lists.transform(contestProblemModels, m -> m.problemJid);
+        List<String> problemAliases = Lists.transform(contestProblemModels, m -> m.alias);
         List<String> contestantJids = Lists.transform(contestContestantModels, m -> m.userJid);
 
-        return new ContestConfig(problemAliasesByJid, contestantJids);
+        return new ContestConfig(problemJids, problemAliases, contestantJids);
     }
 
     @Override
