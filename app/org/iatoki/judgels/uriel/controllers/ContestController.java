@@ -998,10 +998,13 @@ public final class ContestController extends Controller {
 
         if (isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
-            String contestProblemAlias = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid()).getAlias();
+            String authorName = JidCacheService.getInstance().getDisplayName(IdentityUtils.getUserJid());
+            ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
+            String contestProblemAlias = contestProblem.getAlias();
+            String contestProblemName = JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid());
             String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
 
-            LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, JidCacheService.getInstance(), contestProblemAlias, gradingLanguageName, contest.getName()));
+            LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, authorName, contestProblemAlias, contestProblemName, gradingLanguageName, contest.getName()));
 
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
