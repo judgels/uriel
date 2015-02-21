@@ -125,7 +125,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestConfig getContestConfigByJid(String contestJid) {
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findOpenedByContestJidOrderedByAlias(contestJid);
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
 
         Map<String, String> problemAliasesByJid = contestProblemModels.stream().collect(Collectors.toMap(m -> m.problemJid, m -> m.alias));
