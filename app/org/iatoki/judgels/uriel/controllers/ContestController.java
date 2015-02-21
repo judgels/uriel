@@ -998,8 +998,10 @@ public final class ContestController extends Controller {
 
         if (isAllowedToEnterContest(contest) && submission.getContestJid().equals(contest.getJid())) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
+            String contestProblemAlias = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid()).getAlias();
+            String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
 
-            LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, JidCacheService.getInstance()));
+            LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, JidCacheService.getInstance(), contestProblemAlias, gradingLanguageName, contest.getName()));
 
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
