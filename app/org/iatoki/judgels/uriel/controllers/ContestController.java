@@ -898,7 +898,7 @@ public final class ContestController extends Controller {
     public Result viewContestantProblem(long contestId, long contestProblemId) {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
-        if (isAllowedToEnterContest(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
+        if (isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
             String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName(), routes.ContestController.postSubmitContestantProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request())).toString();
             LazyHtml content = new LazyHtml(viewContestantProblemView.render(requestUrl));
@@ -996,7 +996,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         Submission submission = submissionService.findSubmissionById(submissionId);
 
-        if (isAllowedToEnterContest(contest) && submission.getContestJid().equals(contest.getJid())) {
+        if (isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
             String contestProblemAlias = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid()).getAlias();
             String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
@@ -1503,6 +1503,14 @@ public final class ContestController extends Controller {
 
     private boolean isAllowedToSuperviseScoreboard(Contest contest) {
         return isAdmin() || isManager(contest) || isSupervisor(contest);
+    }
+
+    private boolean isAllowedToViewProblem(Contest contest, ContestProblem contestProblem) {
+        return contestProblem.getContestJid().equals(contest.getJid()) && (isAdmin() || isAllowedToSuperviseProblems(contest) || contestProblem.getStatus() == ContestProblemStatus.OPEN);
+    }
+
+    private boolean isAllowedToViewSubmission(Contest contest, Submission submission) {
+        return submission.getContestJid().equals(contest.getJid()) && (isAdmin() || isAllowedToSuperviseSubmissions(contest) || submission.getAuthorJid().equals(IdentityUtils.getUserJid()));
     }
 
     private Result tryEnteringContest(Contest contest) {
