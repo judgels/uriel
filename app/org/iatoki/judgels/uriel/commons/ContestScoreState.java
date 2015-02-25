@@ -2,12 +2,12 @@ package org.iatoki.judgels.uriel.commons;
 
 import java.util.List;
 
-public class ContestConfig {
+public class ContestScoreState {
     private final List<String> problemJids;
     private final List<String> problemAliases;
     private final List<String> contestantJids;
 
-    public ContestConfig(List<String> problemJids, List<String> problemAliases, List<String> contestantJids) {
+    public ContestScoreState(List<String> problemJids, List<String> problemAliases, List<String> contestantJids) {
         this.problemJids = problemJids;
         this.problemAliases = problemAliases;
         this.contestantJids = contestantJids;

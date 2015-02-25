@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.commons;
 
 public interface Scoreboard {
-    ContestConfig getConfig();
+    ContestScoreState getState();
 
     ScoreboardContent getContent();
 }
