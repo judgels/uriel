@@ -1,14 +1,14 @@
 package org.iatoki.judgels.uriel;
 
-public final class ScoreboardAdapters {
-    private ScoreboardAdapters() {
+public final class ScoreAdapters {
+    private ScoreAdapters() {
         // prevent instantiation
     }
 
-    public static ScoreboardAdapter fromContestStyle(ContestStyle style) {
+    public static ScoreAdapter fromContestStyle(ContestStyle style) {
         switch (style) {
             case IOI:
-                return new IOIScoreboardAdapter();
+                return new IOIScoreAdapter();
             default:
                 throw new IllegalArgumentException();
         }
