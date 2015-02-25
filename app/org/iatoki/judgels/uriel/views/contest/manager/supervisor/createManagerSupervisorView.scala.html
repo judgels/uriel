@@ -14,7 +14,7 @@
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("supervisor.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.text(form("username"), '_label -> Messages.get("supervisor.username"), 'class -> "form-control user_autocomplete")
     <div class="form-group" id="">
         <label class="control-label col-md-2">@Messages.get("supervisor.permissions")</label>
         <div class="col-md-10">

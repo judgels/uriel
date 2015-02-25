@@ -10,11 +10,14 @@ public final class ContestContestant {
 
     private ContestContestantStatus status;
 
-    public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status) {
+    private long contestEnterTime;
+
+    public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status, long contestEnterTime) {
         this.id = id;
         this.contestJid = contestJid;
         this.userJid = userJid;
         this.status = status;
+        this.contestEnterTime = contestEnterTime;
     }
 
     public long getId() {
@@ -31,5 +34,9 @@ public final class ContestContestant {
 
     public ContestContestantStatus getStatus() {
         return status;
+    }
+
+    public long getContestEnterTime() {
+        return contestEnterTime;
     }
 }

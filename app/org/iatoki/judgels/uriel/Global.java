@@ -11,24 +11,28 @@ import org.iatoki.judgels.uriel.controllers.ContestController;
 import org.iatoki.judgels.uriel.controllers.UserRoleController;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestConfigurationHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestReadHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreboardHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.UserRoleHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestConfigurationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
@@ -77,11 +81,13 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
         ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
         ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
+        ContestScoreDao contestScoreDao = new ContestScoreHibernateDao();
         ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
+        ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
-        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestReadDao);
+        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestScoreDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
 
-        ScoreboardUpdater updater = new ScoreboardUpdater(contestService, submissionService);
+        ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
 
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
@@ -91,7 +97,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     @Override
     public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
-        if (true) {
+        if (!cache.containsKey(controllerClass)) {
             if (controllerClass.equals(ApplicationController.class)) {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);

@@ -1,0 +1,10 @@
+@(formStyle: Form[_])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@b3.inputWrapped("timePenalty", formStyle("timePenalty"), '_label -> Messages.get("contest.style.ICPC.timePenalty")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}

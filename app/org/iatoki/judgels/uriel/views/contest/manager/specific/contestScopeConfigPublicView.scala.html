@@ -1,0 +1,7 @@
+@(formScope: Form[_])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@b3.text(formScope("registerStartTime"), '_label -> Messages.get("contest.scope.public.registerStartTime"), 'class -> "form-control form_datetime")
+@b3.text(formScope("registerEndTime"), '_label -> Messages.get("contest.scope.public.registerEndTime"), 'class -> "form-control form_datetime")
+@b3.number(formScope("maxRegistrants"), '_label -> Messages.get("contest.scope.public.maxRegistrants"))

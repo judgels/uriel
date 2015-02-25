@@ -25,6 +25,10 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public long endTime;
 
+    public long clarificationEndTime;
+
+    public boolean isIncognitoScoreboard;
+
     public ContestModel() {
     }
 

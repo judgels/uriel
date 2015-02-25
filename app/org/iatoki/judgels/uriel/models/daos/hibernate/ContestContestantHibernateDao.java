@@ -40,4 +40,43 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
 
         return JPA.em().createQuery(query).getSingleResult();
     }
+
+    @Override
+    public long countContestContestantByContestJid(String contestJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestContestantModel> root = query.from(ContestContestantModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.equal(root.get(ContestContestantModel_.contestJid), contestJid));
+
+        return JPA.em().createQuery(query).getSingleResult();
+    }
+
+    @Override
+    public boolean isContestEntered(String contestJid, String contestantJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestContestantModel> root = query.from(ContestContestantModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.equal(root.get(ContestContestantModel_.contestEnterTime), 0)));
+
+        return (JPA.em().createQuery(query).getSingleResult() == 0);
+    }
+
+    @Override
+    public boolean isThereNewContestant(String contestJid, long lastTime) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestContestantModel> root = query.from(ContestContestantModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.gt(root.get(ContestContestantModel_.timeUpdate), lastTime)));
+
+        return (JPA.em().createQuery(query).getSingleResult() != 0);
+    }
 }

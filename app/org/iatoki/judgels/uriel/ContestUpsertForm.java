@@ -15,6 +15,8 @@ public final class ContestUpsertForm {
         this.style = contest.getStyle().name();
         this.startTime = UrielUtils.convertDateToString(contest.getStartTime());
         this.endTime = UrielUtils.convertDateToString(contest.getEndTime());
+        this.clarificationEndTime = UrielUtils.convertDateToString(contest.getClarificationEndTime());
+        this.isIncognitoScoreboard = contest.isIncognitoScoreboard();
     }
 
     @Constraints.Required
@@ -22,24 +24,24 @@ public final class ContestUpsertForm {
 
     public String description;
 
-
     @Constraints.Required
     public String type;
-
 
     @Constraints.Required
     public String scope;
 
-
     @Constraints.Required
     public String style;
-
 
     @Constraints.Required
     public String startTime;
 
-
     @Constraints.Required
     public String endTime;
+
+    @Constraints.Required
+    public String clarificationEndTime;
+
+    public boolean isIncognitoScoreboard;
 
 }

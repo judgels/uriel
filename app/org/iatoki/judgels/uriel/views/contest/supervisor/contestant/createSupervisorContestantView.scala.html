@@ -1,4 +1,4 @@
-@(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestContestantCreateForm])
+@(contestId: Long, form: Form[org.iatoki.judgels.uriel.ContestContestantCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestContestantUploadForm])
 
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.commons.views.html.formErrorView
@@ -9,13 +9,28 @@
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
+<h3>@Messages.get("contest.supervisor.contestant.importTXT")</h3>
+
+@formErrorView(form2)
+
+@b3.form(routes.ContestController.postUploadSupervisorContestant(contestId), 'enctype->"multipart/form-data") {
+
+    @helper.CSRF.formField
+
+    @b3.file(form("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control")
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
+}
+
 @formErrorView(form)
+
+<h3>@Messages.get("contest.supervisor.contestant.manualCreate")</h3>
 
 @b3.form(routes.ContestController.postCreateSupervisorContestant(contestId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("contestant.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.text(form("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
     @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"))
 
     <script type="text/javascript">

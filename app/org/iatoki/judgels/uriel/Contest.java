@@ -22,7 +22,11 @@ public final class Contest {
 
     private Date endTime;
 
-    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime) {
+    private Date clarificationEndTime;
+
+    private boolean isIncognitoScoreboard;
+
+    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isIncognitoScoreboard) {
         this.id = id;
         this.jid = jid;
         this.name = name;
@@ -32,6 +36,8 @@ public final class Contest {
         this.style = style;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.clarificationEndTime = clarificationEndTime;
+        this.isIncognitoScoreboard = isIncognitoScoreboard;
     }
 
     public long getId() {
@@ -68,5 +74,41 @@ public final class Contest {
 
     public Date getEndTime() {
         return endTime;
+    }
+
+    public Date getClarificationEndTime() {
+        return clarificationEndTime;
+    }
+
+    public boolean isClarificationTimeValid() {
+        return clarificationEndTime.after(new Date());
+    }
+
+    public boolean isIncognitoScoreboard() {
+        return isIncognitoScoreboard;
+    }
+
+    public boolean isStandard() {
+        return type.equals(ContestType.STANDARD);
+    }
+
+    public boolean isVirtual() {
+        return type.equals(ContestType.VIRTUAL);
+    }
+
+    public boolean isPrivate() {
+        return scope.equals(ContestScope.PRIVATE);
+    }
+
+    public boolean isPublic() {
+        return scope.equals(ContestScope.PUBLIC);
+    }
+
+    public boolean isICPC() {
+        return style.equals(ContestStyle.ICPC);
+    }
+
+    public boolean isIOI() {
+        return style.equals(ContestStyle.IOI);
     }
 }

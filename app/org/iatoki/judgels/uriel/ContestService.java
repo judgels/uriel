@@ -1,7 +1,8 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.uriel.commons.ContestConfig;
+import org.iatoki.judgels.gabriel.commons.Submission;
+import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 
 import java.util.Date;
@@ -14,13 +15,15 @@ public interface ContestService {
 
     Contest findContestByJid(String contestJid);
 
-    void createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime);
+    void createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isIncognitoScoreboard);
 
-    void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime);
+    void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isIncognitoScoreboard);
 
     Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    ContestConfig getContestConfigByJid(String contestJid);
+    boolean isThereNewProblemsOrContestants(String contestJid, long lastTime);
+
+    ContestScoreState getContestConfigByJid(String contestJid);
 
     List<Contest> getRunningContests(Date timeNow);
 
@@ -62,11 +65,19 @@ public interface ContestService {
 
     ContestContestant findContestContestantByContestContestantId(long contestContestantId);
 
+    ContestContestant findContestContestantByContestJidAndContestContestantJid(String contestJid, String contestContestantJid);
+
     boolean isContestContestantInContestByUserJid(String contestJid, String contestContestantJid);
 
     void createContestContestant(long contestId, String userJid, ContestContestantStatus status);
 
     void updateContestContestant(long contestContestantId, ContestContestantStatus status);
+
+    long getContestContestantCount(String contestJid);
+
+    void enterContest(String contestJid, String contestContestantJid);
+
+    boolean isContestEntered(String contestJid, String contestContestantJid);
 
     ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid);
 
@@ -98,5 +109,13 @@ public interface ContestService {
 
     ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
 
+    List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter);
+
+    void updateContestScoreBySubmissions(String contestJid, List<Submission> submissions, ScoreAdapter adapter, ContestScoreState contestScoreState);
+
     void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard);
+
+    ContestConfiguration findContestConfigurationByContestJid(String contestJid);
+
+    void updateContestConfigurationByContestJid(String contestJid, ContestTypeConfig typeConfig, ContestScopeConfig scopeConfig, ContestStyleConfig styleConfig);
 }

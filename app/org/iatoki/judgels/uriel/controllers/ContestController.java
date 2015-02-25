@@ -2,14 +2,18 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
+import org.iatoki.judgels.commons.views.html.layouts.alertLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
@@ -32,14 +36,26 @@ import org.iatoki.judgels.uriel.ContestClarification;
 import org.iatoki.judgels.uriel.ContestClarificationCreateForm;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 import org.iatoki.judgels.uriel.ContestClarificationUpdateForm;
+import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantCreateForm;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
+import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.ContestScopeConfig;
+import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
+import org.iatoki.judgels.uriel.ContestScopeConfigPrivateForm;
+import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
+import org.iatoki.judgels.uriel.ContestScopeConfigPublicForm;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.ContestStyleConfig;
+import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
+import org.iatoki.judgels.uriel.ContestStyleConfigICPCForm;
+import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
+import org.iatoki.judgels.uriel.ContestStyleConfigIOIForm;
 import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemCreateForm;
@@ -51,10 +67,15 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestType;
+import org.iatoki.judgels.uriel.ContestTypeConfig;
+import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.ContestTypeConfigStandardForm;
+import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
+import org.iatoki.judgels.uriel.ContestTypeConfigVirtualForm;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
 import org.iatoki.judgels.uriel.JidCacheService;
-import org.iatoki.judgels.uriel.ScoreboardAdapter;
-import org.iatoki.judgels.uriel.ScoreboardAdapters;
+import org.iatoki.judgels.uriel.ScoreAdapter;
+import org.iatoki.judgels.uriel.ScoreAdapters;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRoleService;
@@ -80,6 +101,8 @@ import org.iatoki.judgels.uriel.views.html.contest.contestant.problem.viewContes
 import org.iatoki.judgels.uriel.views.html.contest.contestant.submission.listContestantSubmissionsView;
 
 import org.iatoki.judgels.uriel.views.html.contest.manager.general.updateManagerGeneralView;
+
+import org.iatoki.judgels.uriel.views.html.contest.manager.specific.updateManagerSpecificView;
 
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.createManagerSupervisorView;
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.listManagerSupervisorsView;
@@ -119,8 +142,9 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -185,6 +209,17 @@ public final class ContestController extends Controller {
         return redirect(routes.ContestController.view(contestId));
     }
 
+    /* enter contest ******************************************************************************************************* */
+    public Result enter(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+
+        if ((isAllowedToEnterContest(contest)) && (isContestant(contest))) {
+            contestService.enterContest(contest.getJid(), IdentityUtils.getUserJid());
+        }
+
+        return redirect(routes.ContestController.viewContestantAnnouncements(contestId));
+    }
+
     /* admin/create ************************************************************************************************* */
 
     @Authorized(value = {"admin"})
@@ -204,7 +239,7 @@ public final class ContestController extends Controller {
             return showCreate(form);
         } else {
             ContestUpsertForm contestUpsertForm = form.get();
-            contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime));
+            contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isIncognitoScoreboard);
 
             return redirect(routes.ContestController.index());
         }
@@ -257,9 +292,10 @@ public final class ContestController extends Controller {
             return showCreateAdminManager(form, contest);
         } else {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
-            if ((JophielUtils.verifyUserJid(contestManagerCreateForm.userJid)) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), contestManagerCreateForm.userJid))) {
-                userRoleService.upsertUserRoleFromJophielUserJid(contestManagerCreateForm.userJid);
-                contestService.createContestManager(contest.getId(), contestManagerCreateForm.userJid);
+            String userJid = JophielUtils.verifyUsername(contestManagerCreateForm.username);
+            if ((userJid != null) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
+                userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                contestService.createContestManager(contest.getId(), userJid);
 
                 return redirect(routes.ContestController.viewAdminManagers(contest.getId()));
             } else {
@@ -295,7 +331,7 @@ public final class ContestController extends Controller {
                 return showUpdateManagerGeneral(form, contest);
             } else {
                 ContestUpsertForm contestUpsertForm = form.get();
-                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime));
+                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isIncognitoScoreboard);
 
                 return redirect(routes.ContestController.view(contestId));
             }
@@ -355,9 +391,10 @@ public final class ContestController extends Controller {
                 return showCreateManagerSupervisor(form, contest);
             } else {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
-                if ((JophielUtils.verifyUserJid(contestSupervisorCreateForm.userJid)) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), contestSupervisorCreateForm.userJid))) {
-                    userRoleService.upsertUserRoleFromJophielUserJid(contestSupervisorCreateForm.userJid);
-                    contestService.createContestSupervisor(contest.getId(), contestSupervisorCreateForm.userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
+                String userJid = JophielUtils.verifyUsername(contestSupervisorCreateForm.username);
+                if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
+                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                    contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
 
                     return redirect(routes.ContestController.viewManagerSupervisors(contest.getId()));
                 } else {
@@ -398,6 +435,144 @@ public final class ContestController extends Controller {
                 contestService.updateContestSupervisor(contestSupervisor.getId(), contestSupervisorUpdateForm.announcement, contestSupervisorUpdateForm.problem, contestSupervisorUpdateForm.submission, contestSupervisorUpdateForm.clarification, contestSupervisorUpdateForm.contestant);
 
                 return redirect(routes.ContestController.viewManagerSupervisors(contest.getId()));
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @AddCSRFToken
+    public Result updateContestSpecificConfig(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToManageContest(contest)) {
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+
+            Form<?> form1 = null;
+            if (contest.isStandard()) {
+                ContestTypeConfigStandard contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class);
+                Form<ContestTypeConfigStandardForm> form = Form.form(ContestTypeConfigStandardForm.class);
+                form = form.fill(new ContestTypeConfigStandardForm(UrielUtils.convertDateToString(new Date(contestTypeConfigStandard.getScoreboardFreezeTime())), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
+                form1 = form;
+
+            } else if (contest.isVirtual()) {
+                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+                Form<ContestTypeConfigVirtualForm> form = Form.form(ContestTypeConfigVirtualForm.class);
+                form = form.fill(new ContestTypeConfigVirtualForm(contestTypeConfigVirtual.getContestDuration()));
+                form1 = form;
+            }
+
+            Form form2 = null;
+            if (contest.isPrivate()) {
+                ContestScopeConfigPrivate contestScopeConfigPrivate = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPrivate.class);
+                Form<ContestScopeConfigPrivateForm> form = Form.form(ContestScopeConfigPrivateForm.class);
+                form = form.fill(new ContestScopeConfigPrivateForm());
+                form2 = form;
+            } else if (contest.isPublic()) {
+                ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
+                Form<ContestScopeConfigPublicForm> form = Form.form(ContestScopeConfigPublicForm.class);
+                form = form.fill(new ContestScopeConfigPublicForm(UrielUtils.convertDateToString(new Date(contestScopeConfigPublic.getRegisterStartTime())), UrielUtils.convertDateToString(new Date(contestScopeConfigPublic.getRegisterEndTime())), contestScopeConfigPublic.getMaxRegistrants()));
+                form2 = form;
+            }
+
+            Form form3 = null;
+            if (contest.isICPC()) {
+                ContestStyleConfigICPC contestStyleConfigICPC = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigICPC.class);
+                Form<ContestStyleConfigICPCForm> form = Form.form(ContestStyleConfigICPCForm.class);
+                form = form.fill(new ContestStyleConfigICPCForm(contestStyleConfigICPC.getTimePenalty()));
+                form3 = form;
+            } else if (contest.isIOI()) {
+                ContestStyleConfigIOI contestStyleConfigIOI = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigIOI.class);
+                Form<ContestStyleConfigIOIForm> form = Form.form(ContestStyleConfigIOIForm.class);
+                form = form.fill(new ContestStyleConfigIOIForm());
+                form3 = form;
+            }
+
+            return showUpdateContestSpecificConfig(form1, form2, form3, contest);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @RequireCSRFCheck
+    public Result postUpdateContestSpecificConfig(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToManageContest(contest)) {
+            Form form1 = null;
+            if (contest.isStandard()) {
+                form1 = Form.form(ContestTypeConfigStandardForm.class).bindFromRequest();
+            } else if (contest.isVirtual()) {
+                form1 = Form.form(ContestTypeConfigVirtualForm.class).bindFromRequest();
+            }
+
+            Form form2 = null;
+            if (contest.isPrivate()) {
+                form2 = Form.form(ContestScopeConfigPrivateForm.class).bindFromRequest();
+            } else if (contest.isPublic()) {
+                form2 = Form.form(ContestScopeConfigPublicForm.class).bindFromRequest();
+            }
+
+            Form form3 = null;
+            if (contest.isICPC()) {
+                form3 = Form.form(ContestStyleConfigICPCForm.class).bindFromRequest();
+            } else if (contest.isIOI()) {
+                form3 = Form.form(ContestStyleConfigIOIForm.class).bindFromRequest();
+            }
+
+            if ((form1.hasErrors() || form1.hasGlobalErrors()) || (form2.hasErrors() || form2.hasGlobalErrors()) || (form3.hasErrors() || form3.hasGlobalErrors())) {
+                return showUpdateContestSpecificConfig(form1, form2, form3, contest);
+            } else {
+                boolean check = true;
+
+                ContestTypeConfig contestTypeConfig = null;
+                if (contest.isStandard()) {
+                    ContestTypeConfigStandardForm data = (ContestTypeConfigStandardForm) form1.get();
+                    Date scoreboardFreezeTime = UrielUtils.convertStringToDate(data.scoreboardFreezeTime);
+                    if ((scoreboardFreezeTime.before(contest.getStartTime())) && (scoreboardFreezeTime.after(contest.getEndTime()))) {
+                        form1.reject("error.contest.config.specific.invalid_freeze_time");
+                        check = false;
+                    }
+                    contestTypeConfig = new ContestTypeConfigStandard(scoreboardFreezeTime.getTime(), data.isOfficialScoreboardAllowed);
+                } else if (contest.isVirtual()) {
+                    ContestTypeConfigVirtualForm data = (ContestTypeConfigVirtualForm) form1.get();
+                    long contestTotalDuration = contest.getEndTime().getTime() - contest.getStartTime().getTime();
+                    if (data.contestDuration > contestTotalDuration) {
+                        form1.reject("error.contest.config.specific.invalid_contest_duration");
+                        check = false;
+                    }
+                    contestTypeConfig = new ContestTypeConfigVirtual(data.contestDuration);
+                }
+
+                ContestScopeConfig contestScopeConfig = null;
+                if (contest.isPrivate()) {
+                    ContestScopeConfigPrivateForm data = (ContestScopeConfigPrivateForm) form2.get();
+                    contestScopeConfig = new ContestScopeConfigPrivate();
+                } else if (contest.isPublic()) {
+                    ContestScopeConfigPublicForm data = (ContestScopeConfigPublicForm) form2.get();
+                    Date registerStartTime = UrielUtils.convertStringToDate(data.registerStartTime);
+                    Date registerEndTime = UrielUtils.convertStringToDate(data.registerEndTime);
+                    if (!((!registerStartTime.before(contest.getStartTime()) && (!registerStartTime.after(contest.getEndTime())) && (!registerEndTime.before(contest.getStartTime()) && (!registerEndTime.after(contest.getEndTime())))))) {
+                        form2.reject("error.contest.config.specific.invalidRegisterTime");
+                        check = false;
+                    }
+                    contestScopeConfig = new ContestScopeConfigPublic(registerStartTime.getTime(), registerEndTime.getTime(), data.maxRegistrants);
+                }
+
+                ContestStyleConfig contestStyleConfig = null;
+                if (contest.isICPC()) {
+                    ContestStyleConfigICPCForm data = (ContestStyleConfigICPCForm) form3.get();
+                    contestStyleConfig = new ContestStyleConfigICPC(data.timePenalty);
+                } else if (contest.isIOI()) {
+                    ContestStyleConfigIOIForm data = (ContestStyleConfigIOIForm) form3.get();
+                    contestStyleConfig = new ContestStyleConfigIOI();
+                }
+
+
+                if (check) {
+                    contestService.updateContestConfigurationByContestJid(contest.getJid(), contestTypeConfig, contestScopeConfig, contestStyleConfig);
+                    return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+                } else {
+                    return showUpdateContestSpecificConfig(form1, form2, form3, contest);
+                }
             }
         } else {
             return tryEnteringContest(contest);
@@ -701,8 +876,9 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class);
+            Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
 
-            return showCreateSupervisorContestant(form, contest);
+            return showCreateSupervisorContestant(form, form2, contest);
         } else {
             return tryEnteringContest(contest);
         }
@@ -715,17 +891,20 @@ public final class ContestController extends Controller {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showCreateSupervisorContestant(form, contest);
+                Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
+                return showCreateSupervisorContestant(form, form2, contest);
             } else {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
-                if ((JophielUtils.verifyUserJid(contestContestantCreateForm.userJid)) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), contestContestantCreateForm.userJid))) {
-                    userRoleService.upsertUserRoleFromJophielUserJid(contestContestantCreateForm.userJid);
-                    contestService.createContestContestant(contest.getId(), contestContestantCreateForm.userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+                String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
+                if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
+                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
                     return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
                 } else {
+                    Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                     form.reject("error.contestant.create.userJid.invalid");
-                    return showCreateSupervisorContestant(form, contest);
+                    return showCreateSupervisorContestant(form, form2, contest);
                 }
             }
         } else {
@@ -767,6 +946,34 @@ public final class ContestController extends Controller {
         }
     }
 
+    @RequireCSRFCheck
+    public Result postUploadSupervisorContestant(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart file;
+
+        if (isAllowedToSuperviseContestants(contest)) {
+            file = body.getFile("usernames");
+            if (file != null) {
+                File userFile = file.getFile();
+                try {
+                    String[] usernames = FileUtils.readFileToString(userFile).split("\n");
+                    for (String username : usernames) {
+                        String userJid = JophielUtils.verifyUsername(username);
+                        if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
+                            userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        }
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
 
     /* supervisor/submission **************************************************************************************** */
 
@@ -810,7 +1017,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseScoreboard(contest)) {
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid()));
 
@@ -1034,7 +1241,12 @@ public final class ContestController extends Controller {
 
             LazyHtml content = new LazyHtml(listContestantClarificationsView.render(contest.getId(), contestClarifications, pageIndex, orderBy, orderDir, filterString));
 
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createContestantClarification(contest.getId())), c));
+            if (contest.isClarificationTimeValid()) {
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createContestantClarification(contest.getId())), c));
+            } else {
+                content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
+                content.appendLayout(c -> headingLayout.render(Messages.get("clarification.list"), c));
+            }
             if (isAllowedToSuperviseClarifications(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantClarifications(contest.getId()), routes.ContestController.viewSupervisorClarifications(contest.getId()), c));
             }
@@ -1058,7 +1270,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid()));
 
@@ -1084,9 +1296,13 @@ public final class ContestController extends Controller {
     public Result createContestantClarification(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToDoContest(contest)) {
-            Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class);
+            if (contest.isClarificationTimeValid()) {
+                Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class);
 
-            return showCreateContestantClarification(form, contest);
+                return showCreateContestantClarification(form, contest);
+            } else {
+                return redirect(routes.ContestController.viewContestantClarifications(contest.getId()));
+            }
         } else {
             return tryEnteringContest(contest);
         }
@@ -1096,14 +1312,18 @@ public final class ContestController extends Controller {
     public Result postCreateContestantClarification(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToDoContest(contest)) {
-            Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class).bindFromRequest();
+            if (contest.isClarificationTimeValid()) {
+                Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class).bindFromRequest();
 
-            if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showCreateContestantClarification(form, contest);
+                if (form.hasErrors() || form.hasGlobalErrors()) {
+                    return showCreateContestantClarification(form, contest);
+                } else {
+                    ContestClarificationCreateForm contestClarificationCreateForm = form.get();
+                    contestService.createContestClarification(contest.getId(), contestClarificationCreateForm.title, contestClarificationCreateForm.question, contestClarificationCreateForm.topicJid);
+
+                    return redirect(routes.ContestController.viewContestantClarifications(contest.getId()));
+                }
             } else {
-                ContestClarificationCreateForm contestClarificationCreateForm = form.get();
-                contestService.createContestClarification(contest.getId(), contestClarificationCreateForm.title, contestClarificationCreateForm.question, contestClarificationCreateForm.topicJid);
-
                 return redirect(routes.ContestController.viewContestantClarifications(contest.getId()));
             }
         } else {
@@ -1208,6 +1428,7 @@ public final class ContestController extends Controller {
 
     private Result showUpdateManagerGeneral(Form<ContestUpsertForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(updateManagerGeneralView.render(form, contest));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateManagerGeneral(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
         content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -1215,6 +1436,21 @@ public final class ContestController extends Controller {
                 new InternalLink(Messages.get("commons.update"), routes.ContestController.updateManagerGeneral(contest.getId()))
         ), c));
         appendTemplateLayout(content);
+        return lazyOk(content);
+    }
+
+    private Result showUpdateContestSpecificConfig(Form form1, Form form2, Form form3, Contest contest) {
+        LazyHtml content = new LazyHtml(updateManagerSpecificView.render(contest, form1, form2, form3));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateManagerGeneral(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
+        content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                new InternalLink(Messages.get("commons.update"), routes.ContestController.updateManagerGeneral(contest.getId())),
+                new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
         return lazyOk(content);
     }
 
@@ -1329,8 +1565,8 @@ public final class ContestController extends Controller {
         return lazyOk(content);
     }
 
-    private Result showCreateSupervisorContestant(Form<ContestContestantCreateForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(createSupervisorContestantView.render(contest.getId(), form));
+    private Result showCreateSupervisorContestant(Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
+        LazyHtml content = new LazyHtml(createSupervisorContestantView.render(contest.getId(), form, form2));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.create"), c));
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -1401,7 +1637,15 @@ public final class ContestController extends Controller {
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())));
         }
 
-        content.appendLayout(c -> contestTimeLayout.render(contest.getEndTime(), c));
+        if ((contest.isVirtual()) && (isContestant(contest))) {
+            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+
+            content.appendLayout(c -> contestTimeLayout.render(contest.getStartTime(), new Date(contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()), c));
+        } else {
+            content.appendLayout(c -> contestTimeLayout.render(contest.getStartTime(), contest.getEndTime(), c));
+        }
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
         content.appendLayout(c -> headingLayout.render(contest.getName(), c));
     }
@@ -1457,11 +1701,19 @@ public final class ContestController extends Controller {
     }
 
     private boolean isContestStarted(Contest contest) {
-        return new Date().compareTo(contest.getStartTime()) >= 0;
+        return (!new Date().before(contest.getStartTime()));
     }
 
     private boolean isContestEnded(Contest contest) {
-        return new Date().compareTo(contest.getEndTime()) > 0;
+        if ((contest.isVirtual()) && (isContestant(contest))) {
+            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+
+            return (System.currentTimeMillis() > (contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()));
+        } else {
+            return new Date().after(contest.getEndTime());
+        }
     }
 
     private boolean isAllowedToManageContest(Contest contest) {
@@ -1473,7 +1725,15 @@ public final class ContestController extends Controller {
     }
 
     private boolean isAllowedToRegisterContest(Contest contest) {
-        return !isContestant(contest) && !isContestEnded(contest);
+        boolean result = !isContestant(contest) && !isContestEnded(contest);
+        if (contest.isPublic()) {
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
+
+            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants());
+        }
+
+        return result;
     }
 
     private boolean isAllowedToEnterContest(Contest contest) {
@@ -1481,7 +1741,7 @@ public final class ContestController extends Controller {
     }
 
     private boolean isAllowedToDoContest(Contest contest) {
-        return isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && isContestStarted(contest) && !isContestEnded(contest));
+        return isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid()))  && isContestStarted(contest) && !isContestEnded(contest));
     }
 
     private boolean isAllowedToSuperviseAnnouncements(Contest contest) {

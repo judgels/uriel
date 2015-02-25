@@ -70,4 +70,17 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
 
         return JPA.em().createQuery(query).getResultList();
     }
+
+    @Override
+    public boolean isThereNewProblem(String contestJid, long lastTime) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.gt(root.get(ContestProblemModel_.timeUpdate), lastTime)));
+
+        return (JPA.em().createQuery(query).getSingleResult() != 0);
+    }
 }

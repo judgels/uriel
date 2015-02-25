@@ -1,4 +1,4 @@
-@(endTime: java.util.Date)(content: Html)
+@(startTime: java.util.Date, endTime: java.util.Date)(content: Html)
 
 @import java.util.Date
 @import play.i18n.Messages
@@ -7,7 +7,7 @@
     <div class="pull-right">
         <div class="contest-time">
             <div class="time-value">
-                <span>@Messages.get("contest.time_left"): </span>
+                <span id="contest-time-label">@Messages.get("contest.time_left"): </span>
                 <span id="contest-day-left" span-label='@Messages.get("contest.day-left")'></span>
                 <span id="contest-hour-left" span-label='@Messages.get("contest.hour-left")'></span>
                 <span id="contest-minute-left" span-label='@Messages.get("contest.minute-left")'></span>
@@ -21,6 +21,10 @@
     var secondsLeft = @(Math.max(0, (endTime.getTime - new Date().getTime) / 1000));
     var refreshInterval = 10000;
     var second = "@Messages.get("contest.time.s")";
+    var timeLeftMessage = "@Messages.get("contest.time_left")";
+    var contestStartTimeLeft = @(Math.max(0, (startTime.getTime - new Date().getTime) / 1000));
+    var contestEndMessage = "@Messages.get("contest.time.ended")";
+    var contestNotStartedMessage = "@Messages.get("contest.time.not_started")";
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/contestTimer.js")"></script>
 

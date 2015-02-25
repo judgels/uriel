@@ -113,7 +113,24 @@ userRole.roles=Roles
 
 contest.time_left=Time left
 contest.time.s=s
+contest.time.ended=Contest has Ended
+contest.time.not_started=Contest is not Started
 contest.day-left=day
 contest.hour-left=hour
 contest.minute-left=minute
 contest.second-left=second
+
+contest.clarificationEndTime=Clarification End Time
+contest.isOfficialScoreboardAllowed=Official Scoreboard Allowed?
+contest.isIncognitoScoreboard=Incognito Scoreboard?
+
+contest.config.general=General
+contest.config.specific=Specific
+contest.type.standard.scoreboardFreezeTime=Scoreboard Freeze Time
+contest.type.virtual.duration=Contest Duration
+contest.scope.public.registerStartTime=Register Start Time
+contest.scope.public.registerEndTime=Register End Time
+contest.scope.public.maxRegistrants=Max Registrants
+contest.style.ICPC.timePenalty=Time Penalty
+
+clarification.time_ended=Clarification Time has ended.

@@ -7,7 +7,6 @@ public final class JidCacheService extends AbstractJidCacheService<JidCacheModel
     private static JidCacheService INSTANCE;
 
     private JidCacheService() {
-
     }
 
     public static JidCacheService getInstance() {

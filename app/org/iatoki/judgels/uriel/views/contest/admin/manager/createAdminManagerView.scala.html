@@ -14,7 +14,7 @@
 
     @helper.CSRF.formField
 
-    @b3.text(form("userJid"), '_label -> Messages.get("manager.userJid"), 'class -> "form-control user_autocomplete")
+    @b3.text(form("username"), '_label -> Messages.get("manager.username"), 'class -> "form-control user_autocomplete")
 
     <script type="text/javascript">
         var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";

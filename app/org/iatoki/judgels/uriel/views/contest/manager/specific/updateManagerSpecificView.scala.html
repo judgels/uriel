@@ -1,0 +1,50 @@
+@(contest: org.iatoki.judgels.uriel.Contest, formType: Form[_], formScope: Form[_], formStyle: Form[_])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.ContestType
+@import org.iatoki.judgels.uriel.ContestScope
+@import org.iatoki.judgels.uriel.ContestStyle
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.commons.views.html.formErrorView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(formType)
+@formErrorView(formScope)
+@formErrorView(formStyle)
+
+@b3.form(routes.ContestController.postUpdateContestSpecificConfig(contest.getId)) {
+
+    @helper.CSRF.formField
+
+    @if(contest.getType.equals(ContestType.STANDARD)) {
+        @contestTypeConfigStandardView(formType)
+    } else {
+        @if(contest.getType.equals(ContestType.VIRTUAL)) {
+            @contestTypeConfigVirtualView(formType)
+        }
+    }
+
+    @if(contest.getScope.equals(ContestScope.PRIVATE)) {
+        @contestScopeConfigPrivateView(formScope)
+    } else {
+        @if(contest.getScope.equals(ContestScope.PUBLIC)) {
+            @contestScopeConfigPublicView(formScope)
+        }
+    }
+
+    @if(contest.getStyle.equals(ContestStyle.ICPC)) {
+        @contestStyleConfigICPCView(formStyle)
+    } else {
+        @if(contest.getStyle.equals(ContestStyle.IOI)) {
+            @contestStyleConfigIOIView(formStyle)
+        }
+    }
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/datetimepicker.js")"></script>
+}
+
+@supervisorjs(contest.getId)
