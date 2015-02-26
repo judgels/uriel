@@ -598,7 +598,7 @@ public final class ContestController extends Controller {
     /* supervisor/announcement ************************************************************************************** */
 
     public Result viewSupervisorAnnouncements(long contestId) {
-        return listSupervisorAnnouncements(contestId, 0, "timeUpdate", "desc", "");
+        return listSupervisorAnnouncements(contestId, 0, "id", "desc", "");
     }
 
     public Result listSupervisorAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {

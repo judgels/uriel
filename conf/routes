@@ -45,7 +45,7 @@ GET         /contest/:cId/manager/supervisor/:sId/update               @org.iato
 POST        /contest/:cId/manager/supervisor/:sId/update               @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateManagerSupervisor(cId: Long, sId: Long)
 
 GET         /contest/:cId/supervisor/announcement                      @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorAnnouncements(cId: Long)
-GET         /contest/:cId/supervisor/announcement/                     @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/announcement/                     @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 GET         /contest/:cId/supervisor/announcement/create               @org.iatoki.judgels.uriel.controllers.ContestController.createSupervisorAnnouncement(cId: Long)
 POST        /contest/:cId/supervisor/announcement/create               @org.iatoki.judgels.uriel.controllers.ContestController.postCreateSupervisorAnnouncement(cId: Long)
 GET         /contest/:cId/supervisor/announcement/:aId/update          @org.iatoki.judgels.uriel.controllers.ContestController.updateSupervisorAnnouncement(cId: Long, aId: Long)
@@ -92,7 +92,7 @@ POST        /contest/:cId/supervisor/submission/regrade                @org.iato
 GET         /contest/:cId/supervisor/scoreboard                        @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorScoreboard(cId: Long)
 
 GET         /contest/:cId/contestant/announcement                      @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantAnnouncements(cId: Long)
-GET         /contest/:cId/contestant/announcement/                     @org.iatoki.judgels.uriel.controllers.ContestController.listContestantAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/contestant/announcement/                     @org.iatoki.judgels.uriel.controllers.ContestController.listContestantAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "timeUpdate", orderDir ?= "desc", filterString ?= "")
 
 GET         /contest/:cId/contestant/problem                           @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantProblems(cId: Long)
 GET         /contest/:cId/contestant/problem/                          @org.iatoki.judgels.uriel.controllers.ContestController.listContestantProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
