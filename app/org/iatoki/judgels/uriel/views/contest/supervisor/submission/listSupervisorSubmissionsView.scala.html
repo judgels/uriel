@@ -18,8 +18,11 @@
         <label for="contestantJid">Contestant</label>
         <select name="contestantJid">
             <option value="(none)" @if(contestantJid == null) {selected="selected"}>-</option>
-            @for(cJid <- contestantJids) {
-                <option value="@cJid" @if(cJid.equals(contestantJid)) {selected="selected"}>@cJid</option>
+
+            @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(contestantJids.toSeq))) { displayNamesMap =>
+                @for(cJid <- contestantJids) {
+                    <option value="@cJid" @if(cJid.equals(contestantJid)) {selected="selected"}>@displayNamesMap.get(cJid)</option>
+                }
             }
         </select>
     </div>
