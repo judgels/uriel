@@ -5,10 +5,10 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.AbstractJidCacheService;
 import org.iatoki.judgels.gabriel.commons.Submission;
+import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.IOIScoreEntry;
 import org.iatoki.judgels.uriel.commons.IOIScoreboard;
 import org.iatoki.judgels.uriel.commons.IOIScoreboardContent;
-import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.commons.ScoreEntry;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class IOIScoreAdapter implements ScoreAdapter {
     @Override
@@ -123,8 +125,8 @@ public final class IOIScoreAdapter implements ScoreAdapter {
     }
 
     @Override
-    public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid) {
+    public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
         IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
-        return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries(), lastUpdateTime, jidCacheService, currentContestantJid);
+        return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
     }
 }
