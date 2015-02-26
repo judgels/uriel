@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel;
 
+import com.google.gson.Gson;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
@@ -26,13 +27,12 @@ public final class ScoreUpdater implements Runnable {
             for (Contest contest : contestService.getRunningContests(timeNow)) {
                 ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
                 ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-                ContestScoreState state;
-                if (contestService.isThereNewProblemsOrContestants(contest.getJid(), contestScoreboard.getLastUpdateTime().getTime())) {
-                    state = contestService.getContestConfigByJid(contest.getJid());
-                } else {
-                    state = contestScoreboard.getScoreboard().getState();
+                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+                if ((contest.isStandard()) && (!contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((ContestTypeConfigStandard) new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime())) {
+                    contestService.createFrozenScoreboard(contestScoreboard.getId());
                 }
-                List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByContestants(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());
+                ContestScoreState state = contestService.getContestConfigByJid(contest.getJid());
+                List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByUsers(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());
 
                 contestService.updateContestScoreBySubmissions(contest.getJid(), submissions, adapter, state);
 

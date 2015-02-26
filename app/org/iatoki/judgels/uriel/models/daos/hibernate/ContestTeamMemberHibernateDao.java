@@ -10,8 +10,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
-public final class ContestScoreboardHibernateDao extends AbstractHibernateDao<Long, ContestScoreboardModel> implements ContestScoreboardDao {
-    public ContestScoreboardHibernateDao() {
+public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Long, ContestScoreboardModel> implements ContestScoreboardDao {
+    public ContestTeamMemberHibernateDao() {
         super(ContestScoreboardModel.class);
     }
 

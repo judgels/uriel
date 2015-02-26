@@ -5,7 +5,6 @@
 @import scala.collection.JavaConversions
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
-
 @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
     @for(contestProblem <- page.getData) {
         <div class="panel panel-default">
@@ -14,6 +13,10 @@
                     @contestProblem.getAlias
                     - @displayNamesMap.get(contestProblem.getProblemJid)
                 </a>
+                @if(contestProblem.getSubmissionsLimit != 0) {
+                    <div class="pull-right">@(contestProblem.getSubmissionsLimit - contestProblem.getTotalSubmissions)</div>
+                }
+                <div class="clearfix"></div>
             </div>
         </div>
     }

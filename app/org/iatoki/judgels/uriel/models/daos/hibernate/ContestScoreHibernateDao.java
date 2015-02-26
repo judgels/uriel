@@ -26,4 +26,15 @@ public final class ContestScoreHibernateDao extends AbstractHibernateDao<Long, C
 
         return JPA.em().createQuery(query).getResultList();
     }
+
+    @Override
+    public boolean isExistByContestJidAndContestantJid(String contestJid, String contestantJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestScoreModel> root = query.from(ContestScoreModel.class);
+
+        query.select(cb.count(root)).where(cb.and(cb.equal(root.get(ContestScoreModel_.contestJid), contestJid)), cb.equal(root.get(ContestScoreModel_.contestantJid), contestantJid));
+
+        return (JPA.em().createQuery(query).getSingleResult() != 0);
+    }
 }

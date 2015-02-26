@@ -107,7 +107,11 @@ public interface ContestService {
 
     void readContestClarifications(String userJid, List<Long> contestClarificationIds);
 
+    boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
+
     ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
+
+    void createFrozenScoreboard(long contestScoreboardId);
 
     List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter);
 

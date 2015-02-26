@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
@@ -710,6 +711,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
+            form.fill(new ContestProblemCreateForm(0));
 
             return showCreateSupervisorProblem(form, contest);
         } else {
@@ -1019,7 +1021,7 @@ public final class ContestController extends Controller {
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
-            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid()));
+            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
 
             content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantScoreboard(contest.getId()), routes.ContestController.viewSupervisorScoreboard(contest.getId()), c));
 
@@ -1081,6 +1083,9 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
             Page<ContestProblem> contestProblems = contestService.pageContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestProblemStatus.OPEN.name());
+            for (ContestProblem contestProblem : contestProblems.getData()) {
+                contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
+            }
 
             LazyHtml content = new LazyHtml(listContestantProblemsView.render(contest.getId(), contestProblems, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
@@ -1106,9 +1111,14 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
+            long submissionLeft = -1;
+            if (contestProblem.getSubmissionsLimit() != 0) {
+                submissionLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
+            }
+
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
             String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName(), routes.ContestController.postSubmitContestantProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request())).toString();
-            LazyHtml content = new LazyHtml(viewContestantProblemView.render(requestUrl));
+            LazyHtml content = new LazyHtml(viewContestantProblemView.render(requestUrl, submissionLeft));
 
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -1139,18 +1149,23 @@ public final class ContestController extends Controller {
 
         if (isAllowedToDoContest(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
 
-            Http.MultipartFormData body = request().body().asMultipartFormData();
+            if ((contestProblem.getSubmissionsLimit() == 0) || (submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()) < contestProblem.getSubmissionsLimit())) {
+                Http.MultipartFormData body = request().body().asMultipartFormData();
 
-            String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
-            String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
+                String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
+                String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
 
-            try {
-                GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-                String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, source);
-                SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
-            } catch (SubmissionException e) {
-                flash("submissionError", e.getMessage());
+                try {
+                    GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
+                    String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, source);
+                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
+                } catch (SubmissionException e) {
+                    flash("submissionError", e.getMessage());
 
+                    return redirect(routes.ContestController.viewContestantProblem(contestId, contestProblem.getId()));
+                }
+            } else {
+                flash("submissionError", "submission.limit.reached");
                 return redirect(routes.ContestController.viewContestantProblem(contestId, contestProblem.getId()));
             }
 
@@ -1268,10 +1283,21 @@ public final class ContestController extends Controller {
     public Result viewContestantScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
-            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ContestScoreboard contestScoreboard;
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
+                contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
+            } else {
+                contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            }
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
-            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid()));
+            LazyHtml content;
+            if (contest.isIncognitoScoreboard()) {
+                content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
+            } else {
+                content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+            }
 
             if (isAllowedToSuperviseScoreboard(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantScoreboard(contest.getId()), routes.ContestController.viewSupervisorScoreboard(contest.getId()), c));

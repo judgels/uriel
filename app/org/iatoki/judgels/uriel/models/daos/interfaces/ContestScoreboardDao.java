@@ -5,4 +5,6 @@ import org.iatoki.judgels.uriel.models.domains.ContestScoreboardModel;
 
 public interface ContestScoreboardDao extends Dao<Long, ContestScoreboardModel> {
     ContestScoreboardModel findContestScoreboardByContestJidAndScoreboardType(String contestJid, String type);
+
+    boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, String type);
 }

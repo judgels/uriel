@@ -10,6 +10,7 @@ import play.twirl.api.Html;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 public interface ScoreAdapter {
     ScoreboardContent computeScoreboardContent(ContestScoreState state, List<ContestScore> contestScores);
@@ -24,5 +25,5 @@ public interface ScoreAdapter {
 
     ScoreEntry updateScoreEntry(ScoreEntry scoreEntry, List<String> problemJids, List<Submission> submissions);
 
-    Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid);
+    Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids);
 }

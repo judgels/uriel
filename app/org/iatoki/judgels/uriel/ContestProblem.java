@@ -16,6 +16,8 @@ public final class ContestProblem {
 
     private ContestProblemStatus status;
 
+    private long totalSubmissions;
+
     public ContestProblem(long id, String contestJid, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status) {
         this.id = id;
         this.contestJid = contestJid;
@@ -52,5 +54,13 @@ public final class ContestProblem {
 
     public ContestProblemStatus getStatus() {
         return status;
+    }
+
+    public long getTotalSubmissions() {
+        return totalSubmissions;
+    }
+
+    public void setTotalSubmissions(long totalSubmissions) {
+        this.totalSubmissions = totalSubmissions;
     }
 }

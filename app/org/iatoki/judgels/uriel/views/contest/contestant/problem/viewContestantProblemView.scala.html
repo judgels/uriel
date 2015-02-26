@@ -1,7 +1,13 @@
-@(requestURL: String)
+@(requestURL: String, submissionLeft: Long)
+
+@import play.i18n.Messages
 
 @if(play.mvc.Controller.flash("submissionError") != null) {
     <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>
+}
+
+@if(submissionLeft != -1) {
+    <div class="alert alert-info" role="alert">@Messages.get("submissions.left") : @submissionLeft</div>
 }
 
 <div class="problem_statement">

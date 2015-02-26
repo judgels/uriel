@@ -5,7 +5,7 @@ import org.iatoki.judgels.uriel.models.domains.ContestScoreModel;
 
 import java.util.List;
 
-public interface ContestScoreDao extends Dao<Long, ContestScoreModel> {
+public interface ContestTeamMemberDao extends Dao<Long, ContestScoreModel> {
 
     List<ContestScoreModel> findByContestJid(String contestJid);
 

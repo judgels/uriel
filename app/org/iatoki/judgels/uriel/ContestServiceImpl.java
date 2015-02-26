@@ -565,10 +565,26 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
+        return false;
+    }
+
+    @Override
     public ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
         ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
         return createContestScoreboardFromModel(contestScoreboardModel, ContestStyle.valueOf(contestModel.style));
+    }
+
+    @Override
+    public void createFrozenScoreboard(long contestScoreboardId) {
+        ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findById(contestScoreboardId);
+        ContestScoreboardModel frozenContestScoreboardModel = new ContestScoreboardModel();
+        frozenContestScoreboardModel.contestJid = contestScoreboardModel.contestJid;
+        frozenContestScoreboardModel.scoreboard = contestScoreboardModel.scoreboard;
+        frozenContestScoreboardModel.type = contestScoreboardModel.type;
+
+        contestScoreboardDao.persist(frozenContestScoreboardModel, "scoreUpdater", "localhost");
     }
 
     @Override
@@ -593,7 +609,7 @@ public final class ContestServiceImpl implements ContestService {
         }
 
         for (String contestantJid : contestScoreState.getContestantJids()) {
-            if (!listSubmissionMap.containsKey(contestantJid)) {
+            if (!contestScoreDao.isExistByContestJidAndContestantJid(contestJid, contestantJid)) {
                 ContestScoreModel contestScoreModel = new ContestScoreModel();
                 contestScoreModel.contestJid = contestJid;
                 contestScoreModel.contestantJid = contestantJid;
@@ -664,7 +680,7 @@ public final class ContestServiceImpl implements ContestService {
                 }
             }
 
-            contestConfigurationDao.edit(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestConfigurationDao.edit(contestConfigurationModel, "urielConfigHandler", "localhost");
         } else {
             contestConfigurationModel = new ContestConfigurationModel();
             contestConfigurationModel.contestJid = contestJid;
@@ -689,7 +705,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
             }
 
-            contestConfigurationDao.persist(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestConfigurationDao.persist(contestConfigurationModel, "urielConfigHandler", "localhost");
         }
 
         return new ContestConfiguration(contestConfigurationModel.id, contestConfigurationModel.contestJid, contestConfigurationModel.typeConfig, contestConfigurationModel.scopeConfig, contestConfigurationModel.styleConfig);
