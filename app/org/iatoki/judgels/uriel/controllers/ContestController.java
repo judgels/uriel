@@ -797,7 +797,7 @@ public final class ContestController extends Controller {
     /* supervisor/clarification ************************************************************************************* */
 
     public Result viewSupervisorClarifications(long contestId) {
-        return listSupervisorClarifications(contestId, 0, "timeCreate", "desc", "");
+        return listSupervisorClarifications(contestId, 0, "id", "desc", "");
     }
 
     public Result listSupervisorClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
@@ -1513,7 +1513,7 @@ public final class ContestController extends Controller {
     /* contestant/clarification ************************************************************************************* */
 
     public Result viewContestantClarifications(long contestId) {
-        return listContestantClarifications(contestId, 0, "timeCreate", "desc", "");
+        return listContestantClarifications(contestId, 0, "id", "desc", "");
     }
 
     public Result listContestantClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {

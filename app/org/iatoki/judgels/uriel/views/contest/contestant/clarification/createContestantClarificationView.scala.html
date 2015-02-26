@@ -1,8 +1,7 @@
 @(contest: org.iatoki.judgels.uriel.Contest, form: Form[org.iatoki.judgels.uriel.ContestClarificationCreateForm], contestProblems: java.util.List[org.iatoki.judgels.uriel.ContestProblem])
 
-@import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import play.i18n.Messages
-@import org.iatoki.judgels.uriel.UrielUtils
+@import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
@@ -23,7 +22,7 @@
             <select id="topicJid" name="topicJid" class="form-control">
                 <option value="@contest.getJid">@Messages.get("clarification.general")</option>
                 @for(contestProblem <- contestProblems) {
-                    <option value="@contestProblem.getProblemJid">@contestProblem.getAlias</option>
+                    <option value="@contestProblem.getProblemJid">@contestProblem.getAlias - @JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid)</option>
                 }
             </select>
         </div>

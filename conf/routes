@@ -59,7 +59,7 @@ GET         /contest/:cId/supervisor/problem/:pId/update               @org.iato
 POST        /contest/:cId/supervisor/problem/:pId/update               @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateSupervisorProblem(cId: Long, pId: Long)
 
 GET         /contest/:cId/supervisor/clarification                     @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorClarifications(cId: Long)
-GET         /contest/:cId/supervisor/clarification/                    @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/clarification/                    @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 GET         /contest/:cId/supervisor/clarification/:c2Id/update        @org.iatoki.judgels.uriel.controllers.ContestController.updateSupervisorClarification(cId: Long, c2Id: Long)
 POST        /contest/:cId/supervisor/clarification/:c2Id/update        @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateSupervisorClarification(cId: Long, c2Id: Long)
 
@@ -105,7 +105,7 @@ GET         /contest/:cId/contestant/submission/                       @org.iato
 GET         /contest/:cId/contestant/submission/:sId                   @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantSubmission(cId: Long, sId: Long)
 
 GET         /contest/:cId/contestant/clarification                     @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantClarifications(cId: Long)
-GET         /contest/:cId/contestant/clarification/                    @org.iatoki.judgels.uriel.controllers.ContestController.listContestantClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/contestant/clarification/                    @org.iatoki.judgels.uriel.controllers.ContestController.listContestantClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 GET         /contest/:cId/contestant/clarification/create              @org.iatoki.judgels.uriel.controllers.ContestController.createContestantClarification(cId: Long)
 POST        /contest/:cId/contestant/clarification/create              @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestantClarification(cId: Long)
 

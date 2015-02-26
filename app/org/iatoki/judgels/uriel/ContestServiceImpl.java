@@ -923,7 +923,8 @@ public final class ContestServiceImpl implements ContestService {
         if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
             topic = "(" + Messages.get("clarification.general") + ")";
         } else {
-            topic = contestProblemDao.findByProblemJidOrderedByAlias(contestModel.jid, contestClarificationModel.topicJid).alias;
+            ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJidOrderedByAlias(contestModel.jid, contestClarificationModel.topicJid);
+            topic = contestProblemModel.alias + " - " + JidCacheService.getInstance().getDisplayName(contestProblemModel.problemJid);
         }
         return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
     }

@@ -2,13 +2,15 @@
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.uriel.ContestClarificationStatus
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
 @for(contestClarification <- page.getData) {
     <div class="panel panel-default">
         <div class="panel-heading">
-            <span class="panel-title">@contestClarification.getTitle</span>
+            <span class="panel-title">@contestClarification.getTitle | @contestClarification.getTopic</span>
+            <span class="panel-title pull-right"><small>@JidCacheService.getInstance().getDisplayName(contestClarification.getAskerJid) @@ @JudgelsUtils.formatDate(contestClarification.getAskedTime)</small></span>
         </div>
         <div class="panel-body">
             @Html(JudgelsUtils.escapeHtmlString(contestClarification.getQuestion))
