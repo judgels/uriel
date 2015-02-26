@@ -20,6 +20,9 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestReadHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreboardHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestTeamCoachHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestTeamHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestTeamMemberHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
@@ -35,6 +38,9 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
 import play.Play;
@@ -77,6 +83,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestDao contestDao = new ContestHibernateDao();
         ContestAnnouncementDao contestAnnouncementDao = new ContestAnnouncementHibernateDao();
         ContestContestantDao contestContestantDao = new ContestContestantHibernateDao();
+        ContestTeamDao contestTeamDao = new ContestTeamHibernateDao();
+        ContestTeamCoachDao contestTeamCoachDao = new ContestTeamCoachHibernateDao();
+        ContestTeamMemberDao contestTeamMemberDao = new ContestTeamMemberHibernateDao();
         ContestClarificationDao contestClarificationDao = new ContestClarificationHibernateDao();
         ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
         ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
@@ -85,7 +94,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
-        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestSupervisorDao, contestManagerDao, contestScoreDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
+        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
 
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
 

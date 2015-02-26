@@ -8,15 +8,13 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "uriel_contest_team")
+@Table(name = "uriel_contest_team_member")
 public final class ContestTeamMemberModel extends AbstractModel {
     @Id
     @GeneratedValue
     public long id;
 
-    public String contestJid;
+    public String teamJid;
 
-    public String name;
-
-    public String teamImageName;
+    public String memberJid;
 }

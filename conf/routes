@@ -71,6 +71,18 @@ POST        /contest/:cId/supervisor/contestant/upload                 @org.iato
 GET         /contest/:cId/supervisor/contestant/:c2Id/update           @org.iatoki.judgels.uriel.controllers.ContestController.updateSupervisorContestant(cId: Long, c2Id: Long)
 POST        /contest/:cId/supervisor/contestant/:c2Id/update           @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateSupervisorContestant(cId: Long, c2Id: Long)
 
+GET         /contest/:cId/supervisor/team                              @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorTeams(cId: Long)
+GET         /contest/:cId/supervisor/team/                             @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorTeams(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/team/create                       @org.iatoki.judgels.uriel.controllers.ContestController.createSupervisorTeam(cId: Long)
+POST        /contest/:cId/supervisor/team/create                       @org.iatoki.judgels.uriel.controllers.ContestController.postCreateSupervisorTeam(cId: Long)
+GET         /contest/:cId/supervisor/team/:tId/update                  @org.iatoki.judgels.uriel.controllers.ContestController.updateSupervisorTeam(cId: Long, tId: Long)
+POST        /contest/:cId/supervisor/team/:tId/update                  @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateSupervisorTeam(cId: Long, tId: Long)
+GET         /contest/:cId/supervisor/team/:tId/view                    @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorTeam(cId: Long, tId: Long)
+POST        /contest/:cId/supervisor/team/:tId/coach/create            @org.iatoki.judgels.uriel.controllers.ContestController.postCreateSupervisorTeamCoach(cId: Long, tId: Long)
+GET         /contest/:cId/supervisor/team/:tId/coach/:c2Id/remove      @org.iatoki.judgels.uriel.controllers.ContestController.removeSupervisorTeamCoach(cId: Long, tId: Long, c2Id: Long)
+POST        /contest/:cId/supervisor/team/:tId/member/create           @org.iatoki.judgels.uriel.controllers.ContestController.postCreateSupervisorTeamMember(cId: Long, tId: Long)
+GET         /contest/:cId/supervisor/team/:tId/member/:c2Id/remove     @org.iatoki.judgels.uriel.controllers.ContestController.removeSupervisorTeamMember(cId: Long, tId: Long, c2Id: Long)
+
 GET         /contest/:cId/supervisor/submission                        @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorSubmissions(cId: Long)
 GET         /contest/:cId/supervisor/submission/                       @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 

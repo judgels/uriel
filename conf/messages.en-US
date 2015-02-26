@@ -134,3 +134,8 @@ contest.scope.public.maxRegistrants=Max Registrants
 contest.style.ICPC.timePenalty=Time Penalty
 
 clarification.time_ended=Clarification Time has ended.
+
+submission.left=Submission Left
+
+contest.supervisor.contestant.importTXT=Import via txt
+contest.supervisor.contestant.manualCreate=Manual Create

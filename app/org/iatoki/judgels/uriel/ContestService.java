@@ -5,6 +5,7 @@ import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 
+import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,36 @@ public interface ContestService {
     void enterContest(String contestJid, String contestContestantJid);
 
     boolean isContestEntered(String contestJid, String contestContestantJid);
+
+    Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+
+    ContestTeam findContestTeamByContestTeamId(long contestTeamId);
+
+    void createContestTeam(long contestId, String name);
+
+    void createContestTeam(long contestId, String name, File teamImage, String extension);
+
+    void updateContestTeam(long contestTeamId, String name);
+
+    void updateContestTeam(long contestTeamId, String name, File teamImage, String extension);
+
+    boolean isUserInAnyTeam(String contestJid, String userJid);
+
+    ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
+
+    List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid);
+
+    void createContestTeamCoach(String contestTeamJid, String coachJid);
+
+    void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
+
+    ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId);
+
+    List<ContestTeamMember> findContestTeamMembersByTeamJid(String contestTeamJid);
+
+    void createContestTeamMember(String contestTeamJid, String memberJid);
+
+    void removeContestTeamMemberByContestTeamMemberId(long contestTeamMemberId);
 
     ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid);
 

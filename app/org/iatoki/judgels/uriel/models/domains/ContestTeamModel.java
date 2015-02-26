@@ -1,24 +1,19 @@
 package org.iatoki.judgels.uriel.models.domains;
 
-import org.iatoki.judgels.commons.models.domains.AbstractModel;
+import org.iatoki.judgels.commons.models.JidPrefix;
+import org.iatoki.judgels.commons.models.domains.AbstractJudgelsModel;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "uriel_contest_scoreboard")
-public final class ContestTeamModel extends AbstractModel {
-    @Id
-    @GeneratedValue
-    public long id;
+@Table(name = "uriel_contest_team")
+@JidPrefix("TEAM")
+public final class ContestTeamModel extends AbstractJudgelsModel {
 
     public String contestJid;
 
-    public String type;
+    public String name;
 
-    @Column(columnDefinition = "TEXT")
-    public String scoreboard;
+    public String teamImageName;
 }

@@ -1,5 +1,6 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
+@import play.i18n.Messages
 @import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.uriel.controllers.routes
 @import scala.collection.JavaConversions
@@ -14,7 +15,7 @@
                     - @displayNamesMap.get(contestProblem.getProblemJid)
                 </a>
                 @if(contestProblem.getSubmissionsLimit != 0) {
-                    <div class="pull-right">@(contestProblem.getSubmissionsLimit - contestProblem.getTotalSubmissions)</div>
+                    <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLimit - contestProblem.getTotalSubmissions)</div>
                 }
                 <div class="clearfix"></div>
             </div>

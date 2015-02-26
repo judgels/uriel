@@ -1,0 +1,8 @@
+@(form: Form[org.iatoki.judgels.uriel.ContestTeamUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@helper.CSRF.formField
+
+@b3.text(form("name"), '_label -> Messages.get("team.name"), 'class -> "form-control")
+@b3.file(form("teamImage"), '_label -> Messages.get("team.teamImage"), 'class -> "form-control")

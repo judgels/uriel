@@ -7,9 +7,9 @@ import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 
 @Generated(value = "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor")
-@StaticMetamodel(ContestTeamMemberModel.class)
+@StaticMetamodel(ContestTeamCoachModel.class)
 public abstract class ContestTeamCoachModel_ extends AbstractModel_ {
-    public static volatile SingularAttribute<ContestTeamMemberModel, Long> id;
-    public static volatile SingularAttribute<ContestTeamMemberModel, String> contestJid;
-    public static volatile SingularAttribute<ContestTeamMemberModel, String> memberJid;
+    public static volatile SingularAttribute<ContestTeamCoachModel, Long> id;
+    public static volatile SingularAttribute<ContestTeamCoachModel, String> teamJid;
+    public static volatile SingularAttribute<ContestTeamCoachModel, String> coachJid;
 }

@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
@@ -23,6 +25,9 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
 import org.iatoki.judgels.uriel.models.domains.ContestAnnouncementModel;
 import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestConfigurationModel;
@@ -34,14 +39,23 @@ import org.iatoki.judgels.uriel.models.domains.ContestReadModel;
 import org.iatoki.judgels.uriel.models.domains.ContestScoreModel;
 import org.iatoki.judgels.uriel.models.domains.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
+import org.iatoki.judgels.uriel.models.domains.ContestTeamCoachModel;
+import org.iatoki.judgels.uriel.models.domains.ContestTeamMemberModel;
+import org.iatoki.judgels.uriel.models.domains.ContestTeamModel;
 import play.i18n.Messages;
+import play.mvc.Http;
 
 import javax.persistence.NoResultException;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public final class ContestServiceImpl implements ContestService {
@@ -51,6 +65,9 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestProblemDao contestProblemDao;
     private final ContestClarificationDao contestClarificationDao;
     private final ContestContestantDao contestContestantDao;
+    private final ContestTeamDao contestTeamDao;
+    private final ContestTeamCoachDao contestTeamCoachDao;
+    private final ContestTeamMemberDao contestTeamMemberDao;
     private final ContestSupervisorDao contestSupervisorDao;
     private final ContestManagerDao contestManagerDao;
     private final ContestScoreDao contestScoreDao;
@@ -58,12 +75,15 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestConfigurationDao contestConfigurationDao;
     private final ContestReadDao contestReadDao;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreDao contestScoreDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreDao contestScoreDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
         this.contestClarificationDao = contestClarificationDao;
         this.contestContestantDao = contestContestantDao;
+        this.contestTeamDao = contestTeamDao;
+        this.contestTeamCoachDao = contestTeamCoachDao;
+        this.contestTeamMemberDao = contestTeamMemberDao;
         this.contestSupervisorDao = contestSupervisorDao;
         this.contestManagerDao = contestManagerDao;
         this.contestScoreDao = contestScoreDao;
@@ -431,6 +451,141 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = contestTeamDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+
+        List<ContestTeam> contestTeams = Lists.transform(contestTeamModels, m -> createContestTeamFromModel(m));
+
+        return new Page<>(contestTeams, totalPages, pageIndex, pageSize);
+    }
+
+    @Override
+    public ContestTeam findContestTeamByContestTeamId(long contestTeamId) {
+        return createContestTeamFromModel(contestTeamDao.findById(contestTeamId));
+    }
+
+    @Override
+    public void createContestTeam(long contestId, String name) {
+        ContestModel contestModel = contestDao.findById(contestId);
+
+        ContestTeamModel contestTeamModel = new ContestTeamModel();
+        contestTeamModel.contestJid = contestModel.jid;
+        contestTeamModel.name = name;
+        contestTeamModel.teamImageName = "team-default.png";
+
+        contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    @Override
+    public void createContestTeam(long contestId, String name, File teamImage, String extension) {
+        try {
+            ContestModel contestModel = contestDao.findById(contestId);
+
+            ContestTeamModel contestTeamModel = new ContestTeamModel();
+            contestTeamModel.contestJid = contestModel.jid;
+            contestTeamModel.name = name;
+            contestTeamModel.teamImageName = "team-default.png";
+
+            contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+            String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+            FileUtils.copyFile(teamImage, new File("public/images/team/", newImageName));
+
+            contestTeamModel.teamImageName = newImageName;
+
+            contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void updateContestTeam(long contestTeamId, String name) {
+        ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
+        contestTeamModel.name = name;
+
+        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    @Override
+    public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) {
+        try {
+            ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
+            String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+            FileUtils.copyFile(teamImage, new File("public/images/team/", newImageName));
+
+            contestTeamModel.name = name;
+            contestTeamModel.teamImageName = newImageName;
+
+            contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean isUserInAnyTeam(String contestJid, String userJid) {
+        List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
+
+        return ((contestTeamCoachDao.isUserRegisteredAsCoachInAnyTeam(userJid, teamJids)) || (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(userJid, teamJids)));
+    }
+
+    @Override
+    public ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) {
+        return createContestTeamCoachFromModel(contestTeamCoachDao.findById(contestTeamCoachId));
+    }
+
+    @Override
+    public List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid) {
+        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findContestTeamCoachesInTeam(contestTeamJid);
+
+        return Lists.transform(contestTeamCoachModels, m -> createContestTeamCoachFromModel(m));
+    }
+
+    @Override
+    public void createContestTeamCoach(String contestTeamJid, String coachJid) {
+        ContestTeamCoachModel contestTeamCoachModel = new ContestTeamCoachModel();
+        contestTeamCoachModel.teamJid = contestTeamJid;
+        contestTeamCoachModel.coachJid = coachJid;
+
+        contestTeamCoachDao.persist(contestTeamCoachModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    @Override
+    public void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) {
+        ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findById(contestTeamCoachId);
+        contestTeamCoachDao.remove(contestTeamCoachModel);
+    }
+
+    @Override
+    public ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) {
+        return createContestTeamMemberFromModel(contestTeamMemberDao.findById(contestTeamMemberId));
+    }
+
+    @Override
+    public List<ContestTeamMember> findContestTeamMembersByTeamJid(String contestTeamJid) {
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamJid);
+
+        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
+    }
+
+    @Override
+    public void createContestTeamMember(String contestTeamJid, String memberJid) {
+        ContestTeamMemberModel contestTeamMemberModel = new ContestTeamMemberModel();
+        contestTeamMemberModel.teamJid = contestTeamJid;
+        contestTeamMemberModel.memberJid = memberJid;
+
+        contestTeamMemberDao.persist(contestTeamMemberModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    @Override
+    public void removeContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) {
+        ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findById(contestTeamMemberId);
+        contestTeamMemberDao.remove(contestTeamMemberModel);
+    }
+
+    @Override
     public ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid) {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findBySupervisorJid(contestJid, userJid);
 
@@ -761,6 +916,22 @@ public final class ContestServiceImpl implements ContestService {
 
     private ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
         return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status), contestContestantModel.contestEnterTime);
+    }
+
+    private ContestTeam createContestTeamFromModel(ContestTeamModel contestTeamModel) {
+        try {
+            return new ContestTeam(contestTeamModel.id, contestTeamModel.jid, contestTeamModel.contestJid, contestTeamModel.name, new URL(controllers.routes.Assets.at("images/team/" + contestTeamModel.teamImageName).absoluteURL(Http.Context.current().request())));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ContestTeamCoach createContestTeamCoachFromModel(ContestTeamCoachModel contestTeamCoachModel) {
+        return new ContestTeamCoach(contestTeamCoachModel.id, contestTeamCoachModel.teamJid, contestTeamCoachModel.coachJid);
+    }
+
+    private ContestTeamMember createContestTeamMemberFromModel(ContestTeamMemberModel contestTeamMemberModel) {
+        return new ContestTeamMember(contestTeamMemberModel.id, contestTeamMemberModel.teamJid, contestTeamMemberModel.memberJid);
     }
 
     private ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.JudgelsUtils;
@@ -67,6 +68,12 @@ import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
+import org.iatoki.judgels.uriel.ContestTeam;
+import org.iatoki.judgels.uriel.ContestTeamCoach;
+import org.iatoki.judgels.uriel.ContestTeamCoachCreateForm;
+import org.iatoki.judgels.uriel.ContestTeamMember;
+import org.iatoki.judgels.uriel.ContestTeamMemberCreateForm;
+import org.iatoki.judgels.uriel.ContestTeamUpsertForm;
 import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestTypeConfig;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
@@ -119,6 +126,11 @@ import org.iatoki.judgels.uriel.views.html.contest.supervisor.clarification.upda
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.createSupervisorContestantView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.listSupervisorContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.updateSupervisorContestantView;
+
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.createSupervisorTeamView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.listSupervisorTeamsView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.updateSupervisorTeamView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.viewSupervisorTeamView;
 
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupervisorProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemsView;
@@ -859,6 +871,7 @@ public final class ContestController extends Controller {
             LazyHtml content = new LazyHtml(listSupervisorContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString));
 
             content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorContestant(contestId)), c));
+            content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -972,6 +985,214 @@ public final class ContestController extends Controller {
                 }
             }
             return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    /* supervisor/team **************************************************************************************** */
+
+    public Result viewSupervisorTeams(long contestId) {
+        return listSupervisorTeams(contestId, 0, "id", "asc", "");
+    }
+
+    public Result listSupervisorTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseContestants(contest)) {
+            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+            LazyHtml content = new LazyHtml(listSupervisorTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString));
+
+            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("team.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorTeam(contestId)), c));
+            content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
+            appendTabsLayout(content, contest);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                    new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                    new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @AddCSRFToken
+    public Result createSupervisorTeam(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseContestants(contest)) {
+            Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class);
+
+            return showCreateSupervisorTeam(form, contest);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @RequireCSRFCheck
+    public Result postCreateSupervisorTeam(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseContestants(contest)) {
+            Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
+
+            if (form.hasErrors() || form.hasGlobalErrors()) {
+                return showCreateSupervisorTeam(form, contest);
+            } else {
+                ContestTeamUpsertForm contestTeamUpsertForm = form.get();
+
+                Http.MultipartFormData body = request().body().asMultipartFormData();
+                Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
+
+                if (teamImage != null) {
+                    contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                } else {
+                    contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name);
+                }
+                return redirect(routes.ContestController.viewSupervisorTeams(contest.getId()));
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @AddCSRFToken
+    public Result updateSupervisorTeam(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+            ContestTeamUpsertForm contestTeamUpsertForm = new ContestTeamUpsertForm(contestTeam);
+            Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).fill(contestTeamUpsertForm);
+
+            return showUpdateSupervisorTeam(form, contest, contestTeam);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @RequireCSRFCheck
+    public Result postUpdateSupervisorTeam(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+            Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
+
+            if (form.hasErrors() || form.hasGlobalErrors()) {
+                return showUpdateSupervisorTeam(form, contest, contestTeam);
+            } else {
+                ContestTeamUpsertForm contestTeamUpsertForm = form.get();
+                Http.MultipartFormData body = request().body().asMultipartFormData();
+                Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
+
+                if (teamImage != null) {
+                    contestService.updateContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                } else {
+                    contestService.updateContestTeam(contest.getId(), contestTeamUpsertForm.name);
+                }
+                return redirect(routes.ContestController.viewSupervisorTeams(contest.getId()));
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @AddCSRFToken
+    public Result viewSupervisorTeam(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+            Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
+            Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+
+            return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @RequireCSRFCheck
+    public Result postCreateSupervisorTeamCoach(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+            Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class).bindFromRequest();
+
+            if (form.hasErrors() || form.hasGlobalErrors()) {
+                Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+            } else {
+                ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
+
+                String userJid = JophielUtils.verifyUsername(contestTeamCoachCreateForm.username);
+                if ((userJid != null) && (!contestService.isUserInAnyTeam(contest.getJid(), userJid))) {
+                    contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
+
+                    return redirect(routes.ContestController.viewSupervisorTeam(contest.getId(), contestTeam.getId()));
+                } else {
+                    form.reject("team.user_already_has_team");
+                    Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+
+                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                }
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    public Result removeSupervisorTeamCoach(long contestId, long contestTeamId, long contestTeamCoachId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeamCoach contestTeamCoach = contestService.findContestTeamCoachByContestTeamCoachId(contestTeamCoachId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamCoach.getTeamJid().equals(contestTeam.getJid())) {
+            contestService.removeContestTeamCoachByContestTeamCoachId(contestTeamCoach.getId());
+
+            return redirect(routes.ContestController.viewSupervisorTeam(contest.getId(), contestTeam.getId()));
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    @RequireCSRFCheck
+    public Result postCreateSupervisorTeamMember(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+            Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class).bindFromRequest();
+
+            if (form2.hasErrors() || form2.hasGlobalErrors()) {
+                Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
+                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+            } else {
+                ContestTeamMemberCreateForm contestTeamMemberCreateForm = form2.get();
+
+                String userJid = JophielUtils.verifyUsername(contestTeamMemberCreateForm.username);
+                if ((userJid != null) && (!contestService.isUserInAnyTeam(contest.getJid(), userJid)) && (contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
+                    contestService.createContestTeamMember(contestTeam.getJid(), userJid);
+
+                    return redirect(routes.ContestController.viewSupervisorTeam(contest.getId(), contestTeam.getId()));
+                } else {
+                    form2.reject("team.user_already_has_team");
+                    Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
+
+                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                }
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    public Result removeSupervisorTeamMember(long contestId, long contestTeamId, long contestTeamMemberId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeamMember contestTeamMember = contestService.findContestTeamMemberByContestTeamMemberId(contestTeamMemberId);
+        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
+            contestService.removeContestTeamMemberByContestTeamMemberId(contestTeamMember.getId());
+
+            return redirect(routes.ContestController.viewSupervisorTeam(contest.getId(), contestTeam.getId()));
         } else {
             return tryEnteringContest(contest);
         }
@@ -1593,6 +1814,7 @@ public final class ContestController extends Controller {
     private Result showCreateSupervisorContestant(Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
         LazyHtml content = new LazyHtml(createSupervisorContestantView.render(contest.getId(), form, form2));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.create"), c));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -1608,6 +1830,7 @@ public final class ContestController extends Controller {
     private Result showUpdateSupervisorContestant(Form<ContestContestantUpdateForm> form, Contest contest, ContestContestant contestContestant){
         LazyHtml content = new LazyHtml(updateSupervisorContestantView.render(contest.getId(), contestContestant.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.update"), c));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
         appendTabsLayout(content, contest);
         content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -1620,6 +1843,56 @@ public final class ContestController extends Controller {
         return lazyOk(content);
     }
 
+    private Result showCreateSupervisorTeam(Form<ContestTeamUpsertForm> form, Contest contest){
+        LazyHtml content = new LazyHtml(createSupervisorTeamView.render(contest.getId(), form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("team.create"), c));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
+        appendTabsLayout(content, contest);
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.viewContestantProblems(contest.getId())),
+                new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId())),
+                new InternalLink(Messages.get("team.create"), routes.ContestController.createSupervisorTeam(contest.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
+    }
+
+    private Result showUpdateSupervisorTeam(Form<ContestTeamUpsertForm> form, Contest contest, ContestTeam contestTeam){
+        LazyHtml content = new LazyHtml(updateSupervisorTeamView.render(contest.getId(), contestTeam.getId(), form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("team.update"), c));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
+        appendTabsLayout(content, contest);
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId())),
+                new InternalLink(Messages.get("team.update"), routes.ContestController.updateSupervisorTeam(contest.getId(), contestTeam.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
+    }
+
+    private Result showViewSupervisorTeam(Form<ContestTeamCoachCreateForm> form, Form<ContestTeamMemberCreateForm> form2, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers) {
+        LazyHtml content = new LazyHtml(viewSupervisorTeamView.render(contest.getId(), contestTeam, form, form2, contestTeamCoaches, contestTeamMembers));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("team.view"), c));
+        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
+        appendTabsLayout(content, contest);
+        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())),
+                new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId())),
+                new InternalLink(Messages.get("team.view"), routes.ContestController.viewSupervisorTeam(contest.getId(), contestTeam.getId()))
+        ), c));
+        appendTemplateLayout(content);
+
+        return lazyOk(content);
+    }
 
     private Result showCreateContestantClarification(Form<ContestClarificationCreateForm> form, Contest contest){
         List<ContestProblem> contestProblemList = contestService.findOpenedContestProblemByContestJid(contest.getJid());
