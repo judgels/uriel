@@ -1143,11 +1143,10 @@ public final class ContestController extends Controller {
 
             String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
             String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
-            Date gradingLastUpdateTime = new Date(Long.parseLong(body.asFormUrlEncoded().get("gradingLastUpdateTime")[0]));
 
             try {
                 GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-                String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, gradingLastUpdateTime, source);
+                String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, source);
                 SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
             } catch (SubmissionException e) {
                 flash("submissionError", e.getMessage());
