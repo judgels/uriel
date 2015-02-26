@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.controllers;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -1201,19 +1202,25 @@ public final class ContestController extends Controller {
     /* supervisor/submission **************************************************************************************** */
 
     public Result viewSupervisorSubmissions(long contestId) {
-        return listSupervisorSubmissions(contestId, 0, "id", "desc", "");
+        return listSupervisorSubmissions(contestId, 0, "id", "desc", null, null);
     }
 
-    public Result listSupervisorSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listSupervisorSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
         Contest contest = contestService.findContestById(contestId);
 
         if (isAllowedToSuperviseSubmissions(contest)) {
 
-            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, null, null, contest.getJid());
+            String actualContestantJid = "(none)".equals(contestantJid) ? null : contestantJid;
+            String actualProblemJid = "(none)".equals(problemJid) ? null : problemJid;
+
+            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, actualContestantJid, actualProblemJid, contest.getJid());
             Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
+            List<ContestContestant> contestants = contestService.findAllContestContestantsByContestJid(contest.getJid());
+            List<String> contestantJids = Lists.transform(contestants, c -> c.getUserJid());
+
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
-            LazyHtml content = new LazyHtml(listSupervisorSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listSupervisorSubmissionsView.render(contestId, submissions, contestantJids, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, actualContestantJid, actualProblemJid));
 
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
 

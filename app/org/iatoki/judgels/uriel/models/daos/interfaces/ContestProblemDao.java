@@ -9,7 +9,7 @@ public interface ContestProblemDao extends Dao<Long, ContestProblemModel> {
 
     List<ContestProblemModel> findByContestJid(String contestJid);
 
-    ContestProblemModel findByProblemJid(String contestJid, String problemJid);
+    ContestProblemModel findByProblemJidOrderedByAlias(String contestJid, String problemJid);
 
     boolean existsByProblemJid(String contestJid, String problemJid);
 

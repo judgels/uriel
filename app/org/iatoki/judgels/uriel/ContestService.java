@@ -62,6 +62,8 @@ public interface ContestService {
 
     long getUnansweredContestClarificationsCount(String contestJid);
 
+    List<ContestContestant> findAllContestContestantsByContestJid(String contestJid);
+
     Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     ContestContestant findContestContestantByContestContestantId(long contestContestantId);

@@ -84,7 +84,7 @@ POST        /contest/:cId/supervisor/team/:tId/member/create           @org.iato
 GET         /contest/:cId/supervisor/team/:tId/member/:c2Id/remove     @org.iatoki.judgels.uriel.controllers.ContestController.removeSupervisorTeamMember(cId: Long, tId: Long, c2Id: Long)
 
 GET         /contest/:cId/supervisor/submission                        @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorSubmissions(cId: Long)
-GET         /contest/:cId/supervisor/submission/                       @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/supervisor/submission/                       @org.iatoki.judgels.uriel.controllers.ContestController.listSupervisorSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
 
 GET         /contest/:cId/supervisor/scoreboard                        @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorScoreboard(cId: Long)
 

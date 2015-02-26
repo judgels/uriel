@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
@@ -267,7 +268,14 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public Map<String, String> findProblemJidToAliasMapByContestJid(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
-        return contestProblemModels.stream().collect(Collectors.toMap(m -> m.problemJid, m -> m.alias));
+
+        Map<String, String> map = Maps.newLinkedHashMap();
+
+        for (ContestProblemModel model : contestProblemModels) {
+            map.put(model.problemJid, model.alias);
+        }
+
+        return map;
     }
 
     @Override
@@ -294,7 +302,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid) {
-        ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJid(contestJid, contestProblemJid);
+        ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJidOrderedByAlias(contestJid, contestProblemJid);
         return createContestProblemFromModel(contestProblemModel);
     }
 
@@ -381,6 +389,12 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public long getUnansweredContestClarificationsCount(String contestJid) {
         return contestClarificationDao.countUnansweredClarificationByContestJid(contestJid);
+    }
+
+    @Override
+    public List<ContestContestant> findAllContestContestantsByContestJid(String contestJid) {
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid), 0, -1);
+        return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
     }
 
     @Override
@@ -909,7 +923,7 @@ public final class ContestServiceImpl implements ContestService {
         if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
             topic = "(" + Messages.get("clarification.general") + ")";
         } else {
-            topic = contestProblemDao.findByProblemJid(contestModel.jid, contestClarificationModel.topicJid).alias;
+            topic = contestProblemDao.findByProblemJidOrderedByAlias(contestModel.jid, contestClarificationModel.topicJid).alias;
         }
         return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
     }

@@ -26,13 +26,14 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
         Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
 
         query
-                .where(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid));
+                .where(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid))
+                .orderBy(cb.asc(root.get(ContestProblemModel_.alias)));
 
         return JPA.em().createQuery(query).getResultList();
     }
 
     @Override
-    public ContestProblemModel findByProblemJid(String contestJid, String problemJid) {
+    public ContestProblemModel findByProblemJidOrderedByAlias(String contestJid, String problemJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestProblemModel> query = cb.createQuery(ContestProblemModel.class);
         Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
