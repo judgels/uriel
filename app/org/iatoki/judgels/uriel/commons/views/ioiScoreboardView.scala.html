@@ -1,4 +1,4 @@
-@(config: org.iatoki.judgels.uriel.commons.ContestScoreState, entries: List[org.iatoki.judgels.uriel.commons.IOIScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.commons.AbstractJidCacheService[_], currentContestantJid: String)
+@(config: org.iatoki.judgels.uriel.commons.ContestScoreState, entries: List[org.iatoki.judgels.uriel.commons.IOIScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.commons.AbstractJidCacheService[_], currentContestantJid: String, hiddenRank: Boolean)
 
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import scala.collection.JavaConversions
@@ -21,7 +21,11 @@
         @for(entry <- entries) {
             <tr @if(entry.contestantJid.equals(currentContestantJid)) {
                 class="warning" }>
-                <td>@entry.rank</td>
+                @if(hiddenRank) {
+                    <td>?</td>
+                } else {
+                    <td>@entry.rank</td>
+                }
                 <td>@displayNamesMap.get(entry.contestantJid)</td>
                 <td>@entry.totalScores</td>
                 @for(score <- entry.scores) {
