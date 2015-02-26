@@ -1488,7 +1488,7 @@ public final class ContestController extends Controller {
 
         if (isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
-            String authorName = JidCacheService.getInstance().getDisplayName(IdentityUtils.getUserJid());
+            String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
             ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
             String contestProblemAlias = contestProblem.getAlias();
             String contestProblemName = JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid());

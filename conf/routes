@@ -101,7 +101,7 @@ GET         /contest/:cId/contestant/problem/:pId/render/:name         @org.iato
 POST        /contest/:cId/contestant/problem/:pJid/submit              @org.iatoki.judgels.uriel.controllers.ContestController.postSubmitContestantProblem(cId: Long, pJid: String)
 
 GET         /contest/:cId/contestant/submission                        @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantSubmissions(cId: Long)
-GET         /contest/:cId/contestant/submission/                       @org.iatoki.judgels.uriel.controllers.ContestController.listContestantSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contest/:cId/contestant/submission/                       @org.iatoki.judgels.uriel.controllers.ContestController.listContestantSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 GET         /contest/:cId/contestant/submission/:sId                   @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantSubmission(cId: Long, sId: Long)
 
 GET         /contest/:cId/contestant/clarification                     @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantClarifications(cId: Long)

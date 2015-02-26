@@ -15,7 +15,7 @@
 
     <form class="form-inline pull-right" method="GET" action="@routes.ContestController.listSupervisorSubmissions(contestId, pageIndex, orderBy, orderDir, null, null)">
     <div class="form-group">
-        <label for="contestantJid">Contestant</label>
+        <label for="contestantJid">@Messages.get("contestant.contestant")</label>
         <select name="contestantJid">
             <option value="(none)" @if(contestantJid == null) {selected="selected"}>-</option>
 
@@ -28,7 +28,7 @@
     </div>
 
     <div class="form-group">
-        <label for="problemJid">Problem</label>
+        <label for="problemJid">@Messages.get("problem.problem")</label>
         <select name="problemJid">
             <option value="(none)" @if(problemJid == null) {selected="selected"}>-</option>
             @for((pJid, pAlias) <- problemJidToAliasMap) {
@@ -63,12 +63,12 @@
 @tableView() {
     @tableHeadersWithSelectionFormView(page.getPageIndex, orderBy, orderDir, "", listFunc)(
         "id" -> Messages.get("commons.id"),
-        "userCreate" -> Messages.get("submission.author"),
-        "timeCreate" -> Messages.get("submission.time"),
-        "alias" -> Messages.get("problem.name"),
+        "userCreate" -> Messages.get("contestant.contestant"),
+        "alias" -> Messages.get("problem.problem"),
         "gradingLanguage" -> Messages.get("submission.gradingLanguage"),
         "verdictName" -> Messages.get("submission.verdict"),
-        "score" -> Messages.get("submission.score")
+        "score" -> Messages.get("submission.score"),
+        "timeCreate" -> Messages.get("submission.time")
     )
 
     <tbody>
@@ -79,11 +79,11 @@
                 <td><input type="checkbox" class="checkboxJid" name="selectJids[]" value="@submission.getJid"></td>
                 <td>@submission.getId</td>
                 <td>@displayNamesMap.get(submission.getAuthorJid)</td>
-                <td>@JudgelsUtils.formatDate(submission.getTime)</td>
                 <td>@problemJidToAliasMap.get(submission.getProblemJid)</td>
                 <td>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</td>
                 <td>@submission.getLatestVerdict.getName</td>
                 <td>@submission.getLatestScore</td>
+                <td>@JudgelsUtils.formatDate(submission.getTime)</td>
                 <td class="text-center">
                     <a href="@routes.ContestController.viewContestantSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                     <a href="@routes.ContestController.regradeSupervisorSubmission(contestId, submission.getId, pageIndex, orderBy, orderDir, contestantJid, problemJid)" onclick="return confirm('Are you sure you want to regrade?');"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>

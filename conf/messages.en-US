@@ -75,6 +75,7 @@ clarification.unanswered=Unanswered
 scoreboard.scoreboard=Scoreboard
 
 contestant.contestants=Contestants
+contestant.contestant=Contestant
 contestant.list=Contestants
 contestant.create=Create Contestant
 
