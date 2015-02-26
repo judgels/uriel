@@ -11,6 +11,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
+import org.iatoki.judgels.commons.ListTableSelectionForm;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
@@ -1236,6 +1237,46 @@ public final class ContestController extends Controller {
             appendTemplateLayout(content);
 
             return lazyOk(content);
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    public Result regradeSupervisorSubmission(long contestId, long submissionId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseSubmissions(contest)) {
+
+            Submission submission = submissionService.findSubmissionById(submissionId);
+            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
+            submissionService.regrade(submission.getJid(), source);
+
+            return redirect(routes.ContestController.listSupervisorSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    public Result regradeSupervisorSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseSubmissions(contest)) {
+            ListTableSelectionForm data = Form.form(ListTableSelectionForm.class).bindFromRequest().get();
+
+            List<Submission> submissions;
+
+            if (data.selectAll) {
+                submissions = submissionService.findSubmissionsWithoutGradingsByFilters(orderBy, orderDir, contestantJid, problemJid, contest.getJid());
+            } else if (data.selectJids != null) {
+                submissions = submissionService.findSubmissionsWithoutGradingsByJids(data.selectJids);
+            } else {
+                return redirect(routes.ContestController.listSupervisorSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
+            }
+
+            for (Submission submission : submissions) {
+                GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
+                submissionService.regrade(submission.getJid(), source);
+            }
+
+            return redirect(routes.ContestController.listSupervisorSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         } else {
             return tryEnteringContest(contest);
         }
