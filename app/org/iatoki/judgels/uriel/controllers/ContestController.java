@@ -574,7 +574,7 @@ public final class ContestController extends Controller {
                     ContestScopeConfigPublicForm data = (ContestScopeConfigPublicForm) form2.get();
                     Date registerStartTime = UrielUtils.convertStringToDate(data.registerStartTime);
                     Date registerEndTime = UrielUtils.convertStringToDate(data.registerEndTime);
-                    if (!((!registerStartTime.before(contest.getStartTime()) && (!registerStartTime.after(contest.getEndTime())) && (!registerEndTime.before(contest.getStartTime()) && (!registerEndTime.after(contest.getEndTime())))))) {
+                    if ((registerStartTime.after(registerEndTime)) || (registerEndTime.after(contest.getEndTime()))) {
                         form2.reject("error.contest.config.specific.invalidRegisterTime");
                         check = false;
                     }
