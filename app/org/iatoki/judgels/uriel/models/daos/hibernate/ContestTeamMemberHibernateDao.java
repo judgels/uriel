@@ -18,6 +18,10 @@ public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Lo
 
     @Override
     public boolean isUserRegisteredAsMemberInAnyTeam(String userJid, List<String> teamJids) {
+        if (teamJids.isEmpty()) {
+            return false;
+        }
+
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestTeamMemberModel> root = query.from(ContestTeamMemberModel.class);
