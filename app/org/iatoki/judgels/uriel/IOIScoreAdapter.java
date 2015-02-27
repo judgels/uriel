@@ -16,6 +16,7 @@ import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.commons.views.html.ioiScoreboardView;
 import play.twirl.api.Html;
 
+import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 
 public final class IOIScoreAdapter implements ScoreAdapter {
     @Override
-    public ScoreboardContent computeScoreboardContent(ContestScoreState state, List<ContestScore> contestScores) {
+    public ScoreboardContent computeScoreboardContent(ContestScoreState state, List<ContestScore> contestScores, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
@@ -50,6 +51,7 @@ public final class IOIScoreAdapter implements ScoreAdapter {
             IOIScoreboardEntry entry = new IOIScoreboardEntry();
 
             entry.contestantJid = contestantJid;
+            entry.imageURL = userJidToImageMap.get(contestantJid);
             entry.scores = Lists.newArrayList();
 
             int totalScores = 0;
