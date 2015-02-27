@@ -9,6 +9,7 @@
     <thead>
         <tr>
             <th class="col-md-1">Rank</th>
+            <th>Logo</th>
             <th>Contestant</th>
             <th class="col-md-1">Total</th>
             @for(problemAlias <- config.getProblemAliases) {
@@ -26,6 +27,7 @@
                 } else {
                     <td>@entry.rank</td>
                 }
+                <td><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
                 <td>@displayNamesMap.get(entry.contestantJid)</td>
                 <td>@entry.totalScores</td>
                 @for(score <- entry.scores) {
