@@ -758,7 +758,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
-        return false;
+        return contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, type.name());
     }
 
     @Override
@@ -774,7 +774,7 @@ public final class ContestServiceImpl implements ContestService {
         ContestScoreboardModel frozenContestScoreboardModel = new ContestScoreboardModel();
         frozenContestScoreboardModel.contestJid = contestScoreboardModel.contestJid;
         frozenContestScoreboardModel.scoreboard = contestScoreboardModel.scoreboard;
-        frozenContestScoreboardModel.type = contestScoreboardModel.type;
+        frozenContestScoreboardModel.type = ContestScoreboardType.FROZEN.name();
 
         contestScoreboardDao.persist(frozenContestScoreboardModel, "scoreUpdater", "localhost");
     }
