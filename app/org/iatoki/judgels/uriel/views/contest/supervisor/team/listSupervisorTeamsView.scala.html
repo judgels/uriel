@@ -28,7 +28,7 @@
     @for(contestTeam <- page.getData) {
         <tr>
             <td>@contestTeam.getId</td>
-            <td><img src="@contestTeam.getTeamImage.toString" alt="team_logo"/></td>
+            <td><img src="@contestTeam.getTeamImage.toString" class="table-image" alt="team_logo"/></td>
             <td>@contestTeam.getName</td>
             <td class="text-center">
                 <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.viewSupervisorTeam(contestId, contestTeam.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>

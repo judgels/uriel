@@ -82,6 +82,7 @@ public final class UserRoleServiceImpl implements UserRoleService {
         }
 
         JidCacheService.getInstance().putDisplayName(user.getJid(), user.getUsername(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     private UserRole createUserRoleFromModel(UserRoleModel userRoleModel) {

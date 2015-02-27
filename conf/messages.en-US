@@ -140,3 +140,14 @@ submission.left=Submission Left
 
 contest.supervisor.contestant.importTXT=Import via txt
 contest.supervisor.contestant.manualCreate=Manual Create
+
+contestant.username=username
+
+team.teams=Teams
+team.image=Logo
+team.teamImage=Team Logo
+team.name=Team Name
+team.list=Teams
+team.view=View Team
+team.coach.name=Coach Name
+team.member.name=Member Name

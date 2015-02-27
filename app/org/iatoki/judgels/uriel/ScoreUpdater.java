@@ -36,7 +36,7 @@ public final class ScoreUpdater implements Runnable {
 
                 contestService.updateContestScoreBySubmissions(contest.getJid(), submissions, adapter, state);
 
-                ScoreboardContent content = adapter.computeScoreboardContent(state, contestService.findContestScoresInContest(contest.getJid(), adapter));
+                ScoreboardContent content = adapter.computeScoreboardContent(state, contestService.findContestScoresInContest(contest.getJid(), adapter), contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
 
                 Scoreboard scoreboard = adapter.createScoreboard(state, content);
 

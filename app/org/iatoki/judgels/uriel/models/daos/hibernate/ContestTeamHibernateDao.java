@@ -17,6 +17,17 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
+    public List<ContestTeamModel> findAllContestTeamModelInContest(String contestJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<ContestTeamModel> query = cb.createQuery(ContestTeamModel.class);
+        Root<ContestTeamModel> root = query.from(ContestTeamModel.class);
+
+        query.where(cb.equal(root.get(ContestTeamModel_.contestJid), contestJid));
+
+        return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
     public List<String> findAllTeamJidsInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);

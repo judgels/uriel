@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface ContestTeamDao extends JudgelsDao<ContestTeamModel> {
 
+    List<ContestTeamModel> findAllContestTeamModelInContest(String contestJid);
+
     List<String> findAllTeamJidsInContest(String contestJid);
 
 }

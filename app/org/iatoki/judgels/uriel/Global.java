@@ -9,6 +9,7 @@ import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
 import org.iatoki.judgels.uriel.controllers.UserRoleController;
+import org.iatoki.judgels.uriel.models.daos.hibernate.AvatarCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestConfigurationHibernateDao;
@@ -46,6 +47,7 @@ import play.Application;
 import play.Play;
 import play.libs.Akka;
 import play.mvc.Controller;
+import play.mvc.Http;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
@@ -74,6 +76,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         UrielProperties.getInstance();
 
         JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
+        AvatarCacheService.getInstance().setDao(new AvatarCacheHibernateDao());
 
         Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
 

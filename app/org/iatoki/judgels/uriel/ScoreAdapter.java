@@ -8,12 +8,14 @@ import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import play.twirl.api.Html;
 
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface ScoreAdapter {
-    ScoreboardContent computeScoreboardContent(ContestScoreState state, List<ContestScore> contestScores);
+    ScoreboardContent computeScoreboardContent(ContestScoreState state, List<ContestScore> contestScores, Map<String, URL> userJidToImageMap);
 
     Scoreboard parseScoreboardFromJson(String json);
 

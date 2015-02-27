@@ -9,7 +9,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
-import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.ListTableSelectionForm;
 import org.iatoki.judgels.commons.Page;
@@ -82,6 +81,7 @@ import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandardForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualForm;
+import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.ScoreAdapter;
@@ -179,8 +179,6 @@ public final class ContestController extends Controller {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
         this.submissionService = submissionService;
-
-        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
     }
 
     /* list ********************************************************************************************************* */
@@ -228,8 +226,19 @@ public final class ContestController extends Controller {
     public Result enter(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if ((isAllowedToEnterContest(contest)) && (isContestant(contest))) {
-            contestService.enterContest(contest.getJid(), IdentityUtils.getUserJid());
+        if (isAllowedToEnterContest(contest)) {
+            boolean isContestantInContest = (isContestant(contest));
+            if (isContestantInContest) {
+                contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+            } else if (contest.isVirtual()) {
+                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (contestService.isUserCoachInAnyTeam(contest.getJid(), IdentityUtils.getUserJid()))) {
+                    contestService.enterContestAsCoach(contest.getJid(), IdentityUtils.getUserJid());
+                } else if (isContestantInContest) {
+                    contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+                }
+            }
         }
 
         return redirect(routes.ContestController.viewContestantAnnouncements(contestId));
@@ -472,7 +481,7 @@ public final class ContestController extends Controller {
             } else if (contest.isVirtual()) {
                 ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
                 Form<ContestTypeConfigVirtualForm> form = Form.form(ContestTypeConfigVirtualForm.class);
-                form = form.fill(new ContestTypeConfigVirtualForm(contestTypeConfigVirtual.getContestDuration()));
+                form = form.fill(new ContestTypeConfigVirtualForm(contestTypeConfigVirtual.getContestDuration(), contestTypeConfigVirtual.getStartTrigger().name()));
                 form1 = form;
             }
 
@@ -554,7 +563,7 @@ public final class ContestController extends Controller {
                         form1.reject("error.contest.config.specific.invalid_contest_duration");
                         check = false;
                     }
-                    contestTypeConfig = new ContestTypeConfigVirtual(data.contestDuration);
+                    contestTypeConfig = new ContestTypeConfigVirtual(data.contestDuration, ContestTypeConfigVirtualStartTrigger.valueOf(data.startTrigger));
                 }
 
                 ContestScopeConfig contestScopeConfig = null;
@@ -2007,7 +2016,7 @@ public final class ContestController extends Controller {
         content.appendLayout(c -> leftSidebarLayout.render(
             IdentityUtils.getUsername(),
             IdentityUtils.getUserRealName(),
-            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(routes.ContestController.index().absoluteURL(request())).absoluteURL(request()),
+            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.ContestController.index().absoluteURL(request())).absoluteURL(request())).absoluteURL(request()),
             org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
             internalLinkBuilder.build(), c)
         );
@@ -2083,7 +2092,20 @@ public final class ContestController extends Controller {
     }
 
     private boolean isAllowedToEnterContest(Contest contest) {
-        return isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && isContestStarted(contest));
+        if (isAdmin() || isManager(contest) || isSupervisor(contest)) {
+            return true;
+        }
+        if (contest.isStandard()) {
+            return (isContestant(contest) && isContestStarted(contest));
+        } else {
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
+                return (isContestant(contest) && (isContestStarted(contest)));
+            } else {
+                return ((isContestStarted(contest)) && (contestService.isUserCoachInAnyTeam(contest.getJid(), IdentityUtils.getUserJid()) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
+            }
+        }
     }
 
     private boolean isAllowedToDoContest(Contest contest) {

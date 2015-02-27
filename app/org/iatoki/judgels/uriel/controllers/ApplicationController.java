@@ -2,13 +2,17 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarWithoutProfileLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
+import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.jophiel.commons.views.html.auth.authView;
+import org.iatoki.judgels.uriel.AvatarCacheService;
+import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRole;
 import org.iatoki.judgels.uriel.UserRoleService;
@@ -45,12 +49,8 @@ public final class ApplicationController extends Controller {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
+            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request());
             return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
-//            LazyHtml content = new LazyHtml(authView.render(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri)));
-//            content.appendLayout(c -> headingLayout.render(Messages.get("commons.auth.login"), c));
-//            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(), c));
-//            appendTemplateLayout(content);
-//            return getResult(content, Http.Status.OK);
         }
     }
 
@@ -69,6 +69,18 @@ public final class ApplicationController extends Controller {
                 return redirect(returnUri);
             }
         }
+    }
+
+    public Result afterLogin(String returnUri) {
+        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
+        JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+        return redirect(returnUri);
+    }
+
+    public Result afterProfile(String returnUri) {
+        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
+        JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+        return redirect(returnUri);
     }
 
     private void appendTemplateLayout(LazyHtml content) {

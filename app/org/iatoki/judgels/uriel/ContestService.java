@@ -6,6 +6,7 @@ import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,9 @@ public interface ContestService {
 
     long getContestContestantCount(String contestJid);
 
-    void enterContest(String contestJid, String contestContestantJid);
+    void enterContestAsContestant(String contestJid, String userJid);
+
+    void enterContestAsCoach(String contestJid, String coachJid);
 
     boolean isContestEntered(String contestJid, String contestContestantJid);
 
@@ -95,6 +98,8 @@ public interface ContestService {
     void updateContestTeam(long contestTeamId, String name, File teamImage, String extension);
 
     boolean isUserInAnyTeam(String contestJid, String userJid);
+
+    boolean isUserCoachInAnyTeam(String contestJid, String userJid);
 
     ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 
@@ -149,6 +154,8 @@ public interface ContestService {
     List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter);
 
     void updateContestScoreBySubmissions(String contestJid, List<Submission> submissions, ScoreAdapter adapter, ContestScoreState contestScoreState);
+
+    Map<String, URL> getMapContestantJidToImageUrlInContest(String contestJid);
 
     void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard);
 

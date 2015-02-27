@@ -10,4 +10,6 @@ public interface ContestTeamMemberDao extends Dao<Long, ContestTeamMemberModel> 
     boolean isUserRegisteredAsMemberInAnyTeam(String userJid, List<String> teamJids);
 
     List<ContestTeamMemberModel> findContestTeamMembersInTeam(String teamJid);
+
+    ContestTeamMemberModel findContestTeamMemberByMemberJidInAnyTeam(String userJid, List<String> teamJids);
 }
