@@ -1361,9 +1361,12 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
             Page<ContestProblem> contestProblems = contestService.pageContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestProblemStatus.OPEN.name());
+            ImmutableList.Builder<ContestProblem> replacementBuilder = ImmutableList.builder();
             for (ContestProblem contestProblem : contestProblems.getData()) {
                 contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
+                replacementBuilder.add(contestProblem);
             }
+            contestProblems.setData(replacementBuilder.build());
 
             LazyHtml content = new LazyHtml(listContestantProblemsView.render(contest.getId(), contestProblems, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));

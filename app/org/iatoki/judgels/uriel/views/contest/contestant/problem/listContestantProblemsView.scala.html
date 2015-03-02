@@ -15,7 +15,7 @@
                     - @displayNamesMap.get(contestProblem.getProblemJid)
                 </a>
                 @if(contestProblem.getSubmissionsLimit != 0) {
-                    <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLimit - contestProblem.getTotalSubmissions)</div>
+                    <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLeft)</div>
                 }
                 <div class="clearfix"></div>
             </div>
