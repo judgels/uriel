@@ -63,4 +63,8 @@ public final class ContestProblem {
     public void setTotalSubmissions(long totalSubmissions) {
         this.totalSubmissions = totalSubmissions;
     }
+
+    public long getSubmissionsLeft() {
+        return submissionsLimit - totalSubmissions;
+    }
 }
