@@ -25,6 +25,7 @@ import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
 import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
 import org.iatoki.judgels.gabriel.GradingSource;
+import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
@@ -163,6 +164,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -754,8 +756,21 @@ public final class ContestController extends Controller {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
                 String problemName = SandalphonUtils.verifyProblemJid(contestProblemCreateForm.problemJid);
                 if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJid(contest.getJid(), contestProblemCreateForm.problemJid))) {
-                    contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
-                    JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                    try {
+                        boolean processed = false;
+                        while (!processed) {
+                            if (GabrielUtils.getScoreboardLock().tryLock()) {
+                                contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
+                                JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                                GabrielUtils.getScoreboardLock().unlock();
+                                processed = true;
+                            } else {
+                                Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
                 } else {
@@ -793,7 +808,21 @@ public final class ContestController extends Controller {
                 return showUpdateSupervisorProblem(form, contest, contestProblem);
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+
+                try {
+                    boolean processed = false;
+                    while (!processed) {
+                        if (GabrielUtils.getScoreboardLock().tryLock()) {
+                            contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+                            GabrielUtils.getScoreboardLock().unlock();
+                            processed = true;
+                        } else {
+                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
             }
@@ -924,7 +953,20 @@ public final class ContestController extends Controller {
                 String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
                     userRoleService.upsertUserRoleFromJophielUserJid(userJid);
-                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+                    try {
+                        boolean processed = false;
+                        while (!processed) {
+                            if (GabrielUtils.getScoreboardLock().tryLock()) {
+                                contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+                                GabrielUtils.getScoreboardLock().unlock();
+                                processed = true;
+                            } else {
+                                Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
                     return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
                 } else {
@@ -963,7 +1005,20 @@ public final class ContestController extends Controller {
                 return showUpdateSupervisorContestant(form, contest, contestContestant);
             } else {
                 ContestContestantUpdateForm contestContestantUpdateForm = form.get();
-                contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
+                try {
+                    boolean processed = false;
+                    while (!processed) {
+                        if (GabrielUtils.getScoreboardLock().tryLock()) {
+                            contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
+                            GabrielUtils.getScoreboardLock().unlock();
+                            processed = true;
+                        } else {
+                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 return redirect(routes.ContestController.viewSupervisorContestants(contest.getId()));
             }
@@ -983,15 +1038,24 @@ public final class ContestController extends Controller {
             if (file != null) {
                 File userFile = file.getFile();
                 try {
-                    String[] usernames = FileUtils.readFileToString(userFile).split("\n");
-                    for (String username : usernames) {
-                        String userJid = JophielUtils.verifyUsername(username);
-                        if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                            userRoleService.upsertUserRoleFromJophielUserJid(userJid);
-                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                    boolean processed = false;
+                    while (!processed) {
+                        if (GabrielUtils.getScoreboardLock().tryLock()) {
+                            String[] usernames = FileUtils.readFileToString(userFile).split("\n");
+                            for (String username : usernames) {
+                                String userJid = JophielUtils.verifyUsername(username);
+                                if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
+                                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                                }
+                            }
+                            GabrielUtils.getScoreboardLock().unlock();
+                            processed = true;
+                        } else {
+                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
                         }
                     }
-                } catch (IOException e) {
+                } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -1366,7 +1430,7 @@ public final class ContestController extends Controller {
                 contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
                 replacementBuilder.add(contestProblem);
             }
-            contestProblems.setData(replacementBuilder.build());
+            contestProblems = new Page<>(replacementBuilder.build(), contestProblems.getTotalRowsCount(), contestProblems.getPageIndex(), contestProblems.getPageSize());
 
             LazyHtml content = new LazyHtml(listContestantProblemsView.render(contest.getId(), contestProblems, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
@@ -1567,6 +1631,7 @@ public final class ContestController extends Controller {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
+                // TODO recreate frozen scoreboard if not existed
                 contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
             } else {
                 contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);

@@ -46,11 +46,17 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
 import play.Play;
 import play.libs.Akka;
+import play.mvc.Action;
 import play.mvc.Controller;
 import play.mvc.Http;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
+import java.io.DataOutputStream;
+import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -132,4 +138,5 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         }
         return controllerClass.cast(cache.get(controllerClass));
     }
+
 }

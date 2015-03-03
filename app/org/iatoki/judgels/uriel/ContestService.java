@@ -25,7 +25,7 @@ public interface ContestService {
 
     boolean isThereNewProblemsOrContestants(String contestJid, long lastTime);
 
-    ContestScoreState getContestConfigByJid(String contestJid);
+    ContestScoreState getContestStateByJid(String contestJid);
 
     List<Contest> getRunningContests(Date timeNow);
 

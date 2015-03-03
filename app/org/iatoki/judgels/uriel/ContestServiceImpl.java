@@ -45,7 +45,6 @@ import org.iatoki.judgels.uriel.models.domains.ContestTeamMemberModel;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamModel;
 import play.Play;
 import play.i18n.Messages;
-import play.mvc.Http;
 
 import javax.persistence.NoResultException;
 import java.io.File;
@@ -126,7 +125,7 @@ public final class ContestServiceImpl implements ContestService {
         contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
         ScoreAdapter adapter = ScoreAdapters.fromContestStyle(style);
-        ContestScoreState config = getContestConfigByJid(contestModel.jid);
+        ContestScoreState config = getContestStateByJid(contestModel.jid);
         ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
         Scoreboard scoreboard = adapter.createScoreboard(config, content);
 
@@ -172,7 +171,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
                 ScoreAdapter adapter = ScoreAdapters.fromContestStyle(style);
-                ContestScoreState config = getContestConfigByJid(contestModel.jid);
+                ContestScoreState config = getContestStateByJid(contestModel.jid);
                 ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
                 Scoreboard scoreboard = adapter.createScoreboard(config, content);
 
@@ -198,7 +197,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestScoreState getContestConfigByJid(String contestJid) {
+    public ContestScoreState getContestStateByJid(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findOpenedByContestJidOrderedByAlias(contestJid);
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
 

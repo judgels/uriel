@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import com.google.gson.Gson;
+import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
@@ -10,6 +11,7 @@ import play.db.jpa.JPA;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public final class ScoreUpdater implements Runnable {
     private final ContestService contestService;
@@ -25,24 +27,24 @@ public final class ScoreUpdater implements Runnable {
         JPA.withTransaction(() -> {
             Date timeNow = new Date();
             for (Contest contest : contestService.getRunningContests(timeNow)) {
-                ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
-                ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-                if ((contest.isStandard()) && (!contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((ContestTypeConfigStandard) new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime())) {
-                    contestService.createFrozenScoreboard(contestScoreboard.getId());
+                if (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS)) {
+                    ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+                    ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+                    ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+                    if ((contest.isStandard()) && (!contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((ContestTypeConfigStandard) new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime())) {
+                        contestService.createFrozenScoreboard(contestScoreboard.getId());
+                    }
+                    ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
+                    List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByUsers(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());
+
+                    contestService.updateContestScoreBySubmissions(contest.getJid(), submissions, adapter, state);
+
+                    ScoreboardContent content = adapter.computeScoreboardContent(state, contestService.findContestScoresInContest(contest.getJid(), adapter), contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+                    Scoreboard scoreboard = adapter.createScoreboard(state, content);
+                    contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+
+                    GabrielUtils.getScoreboardLock().unlock();
                 }
-                ContestScoreState state = contestService.getContestConfigByJid(contest.getJid());
-                List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByUsers(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());
-
-                contestService.updateContestScoreBySubmissions(contest.getJid(), submissions, adapter, state);
-
-                ScoreboardContent content = adapter.computeScoreboardContent(state, contestService.findContestScoresInContest(contest.getJid(), adapter), contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
-
-                Scoreboard scoreboard = adapter.createScoreboard(state, content);
-
-                contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
-
-                // TODO: update frozen scoreboard
             }
         });
     }
