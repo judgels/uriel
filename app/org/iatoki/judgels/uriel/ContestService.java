@@ -21,7 +21,7 @@ public interface ContestService {
 
     void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isIncognitoScoreboard);
 
-    Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+    Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin);
 
     boolean isThereNewProblemsOrContestants(String contestJid, long lastTime);
 

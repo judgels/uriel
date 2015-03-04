@@ -1706,7 +1706,7 @@ public final class ContestController extends Controller {
     /* list ********************************************************************************************************* */
 
     public Result list(long pageIndex, String orderBy, String orderDir, String filterString) {
-        Page<Contest> contests = contestService.pageContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+        Page<Contest> contests = contestService.pageAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), isAdmin());
 
         LazyHtml content = new LazyHtml(listView.render(contests, pageIndex, orderBy, orderDir, filterString));
         if (isAdmin()) {

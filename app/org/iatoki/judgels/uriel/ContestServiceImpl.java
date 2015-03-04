@@ -183,12 +183,12 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Page<Contest> pageContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestDao.countByFilters(filterString, ImmutableMap.of());
-        List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
+    public Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin) {
+        long totalRowsCount = contestDao.countAllowedContests(filterString, userJid, isAdmin);
+        List<ContestModel> contestModels = contestDao.findSortedAllowedContestsByFilters(orderBy, orderDir, filterString, userJid, isAdmin, pageIndex * pageSize, pageSize);
 
         List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
-        return new Page<>(contests, totalPages, pageIndex, pageSize);
+        return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
     }
 
     @Override
