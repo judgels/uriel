@@ -151,3 +151,4 @@ team.list=Teams
 team.view=View Team
 team.coach.name=Coach Name
 team.member.name=Member Name
+team.update=Update Team

@@ -519,7 +519,7 @@ public final class ContestServiceImpl implements ContestService {
             contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
             String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-            FileUtils.copyFile(teamImage, new File("public/images/team/", newImageName));
+            FileUtils.copyFile(teamImage, new File(UrielProperties.getInstance().getTeamAvatarDir(), newImageName));
 
             contestTeamModel.teamImageName = newImageName;
 
@@ -542,7 +542,7 @@ public final class ContestServiceImpl implements ContestService {
         try {
             ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
             String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-            FileUtils.copyFile(teamImage, new File("public/images/team/", newImageName));
+            FileUtils.copyFile(teamImage, new File(UrielProperties.getInstance().getTeamAvatarDir(), newImageName));
 
             contestTeamModel.name = name;
             contestTeamModel.teamImageName = newImageName;
@@ -954,6 +954,11 @@ public final class ContestServiceImpl implements ContestService {
         contestConfigurationDao.edit(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
+    @Override
+    public File getTeamAvatarImageFile(String imageName) {
+        return FileUtils.getFile(UrielProperties.getInstance().getTeamAvatarDir(), imageName);
+    }
+
     private Contest createContestFromModel(ContestModel contestModel) {
         return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime), new Date(contestModel.clarificationEndTime), contestModel.isIncognitoScoreboard);
     }
@@ -1008,7 +1013,7 @@ public final class ContestServiceImpl implements ContestService {
 
     private URL getTeamImageURLFromImageName(String imageName) {
         try {
-            return new URL(Play.application().configuration().getString("uriel.baseUrl") + controllers.routes.Assets.at("images/team/" + imageName));
+            return new URL(Play.application().configuration().getString("uriel.baseUrl") + org.iatoki.judgels.uriel.controllers.routes.ContestController.renderTeamAvatarImage(imageName));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

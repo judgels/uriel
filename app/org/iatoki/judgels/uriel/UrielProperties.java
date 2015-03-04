@@ -13,6 +13,7 @@ public final class UrielProperties {
     private static UrielProperties INSTANCE;
 
     private File submissionDir;
+    private File teamAvatarDir;
 
     private UrielProperties() {
 
@@ -20,6 +21,10 @@ public final class UrielProperties {
 
     public File getSubmissionDir() {
         return this.submissionDir;
+    }
+
+    public File getTeamAvatarDir() {
+        return teamAvatarDir;
     }
 
     public static UrielProperties getInstance() {
@@ -30,16 +35,18 @@ public final class UrielProperties {
 
             verifyConfiguration(conf);
 
-            String baseDirName = conf.getString("uriel.baseDir").replaceAll("\"", "");
+            String baseDirName = conf.getString("uriel.baseDataDir").replaceAll("\"", "");
 
             File baseDir = new File(baseDirName);
             if (!baseDir.isDirectory()) {
-                throw new RuntimeException("uriel.baseDir: " + baseDirName + " does not exist");
+                throw new RuntimeException("uriel.baseDataDir: " + baseDirName + " does not exist");
             }
 
             try {
                 INSTANCE.submissionDir = new File(baseDir, "submission");
                 FileUtils.forceMkdir(INSTANCE.submissionDir);
+                INSTANCE.teamAvatarDir = new File(baseDir, "teamAvatar");
+                FileUtils.forceMkdir(INSTANCE.teamAvatarDir);
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create folder inside " + baseDir.getAbsolutePath());
             }
@@ -56,7 +63,8 @@ public final class UrielProperties {
                 "sealtiel.clientJid",
                 "sealtiel.clientSecret",
                 "sealtiel.gabrielClientJid",
-                "uriel.baseDir",
+                "uriel.baseUrl",
+                "uriel.baseDataDir",
                 "sandalphon.baseUrl"
         );
 

@@ -158,9 +158,13 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -1772,6 +1776,29 @@ public final class ContestController extends Controller {
             ObjectNode objectNode = Json.newObject();
             objectNode.put("success", false);
             return ok(objectNode);
+        }
+    }
+
+    public Result renderTeamAvatarImage(String imageName) {
+        File image = contestService.getTeamAvatarImageFile(imageName);
+        if (!image.exists()) {
+            return notFound();
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+        response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
+        response().setHeader("Last-Modified", sdf.format(new Date(image.lastModified())));
+
+        try {
+            BufferedImage in = ImageIO.read(image);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            String type = FilenameUtils.getExtension(image.getAbsolutePath());
+
+            ImageIO.write(in, type, baos);
+            return ok(baos.toByteArray()).as("image/" + type);
+        } catch (IOException e) {
+            return internalServerError();
         }
     }
 

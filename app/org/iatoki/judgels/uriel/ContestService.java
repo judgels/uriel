@@ -162,4 +162,6 @@ public interface ContestService {
     ContestConfiguration findContestConfigurationByContestJid(String contestJid);
 
     void updateContestConfigurationByContestJid(String contestJid, ContestTypeConfig typeConfig, ContestScopeConfig scopeConfig, ContestStyleConfig styleConfig);
+
+    File getTeamAvatarImageFile(String imageName);
 }

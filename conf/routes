@@ -123,3 +123,5 @@ GET         /userRole/:uId/update                                         @org.i
 POST        /userRole/:uId/update                                         @org.iatoki.judgels.uriel.controllers.UserRoleController.postUpdate(uId: Long)
 
 GET         /userRole/:uId/delete                                         @org.iatoki.judgels.uriel.controllers.UserRoleController.delete(uId: Long)
+
+GET         /team/avatar/:imageName                                       @org.iatoki.judgels.uriel.controllers.ContestController.renderTeamAvatarImage(imageName: String)
