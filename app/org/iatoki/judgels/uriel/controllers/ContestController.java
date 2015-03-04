@@ -198,18 +198,23 @@ public final class ContestController extends Controller {
 
     public Result viewAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        LazyHtml content = new LazyHtml(viewView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isAllowedToRegisterContest(contest), isContestant(contest) && !isContestEnded(contest), isAllowedToEnterContest(contest), isAdmin()));
-        content.appendLayout(c -> headingLayout.render(contest.getName(), c));
+        if (isAllowedToViewContest(contest)) {
+            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.view(contest.getId()))
-        ), c));
-        appendTemplateLayout(content);
+            LazyHtml content = new LazyHtml(viewView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isAllowedToRegisterContest(contest), isContestant(contest) && !isContestEnded(contest), isAllowedToEnterContest(contest), isAdmin()));
+            content.appendLayout(c -> headingLayout.render(contest.getName(), c));
 
-        return lazyOk(content);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.view(contest.getId()))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return redirect(routes.ContestController.index());
+        }
     }
 
 
@@ -2139,6 +2144,10 @@ public final class ContestController extends Controller {
         }
     }
 
+    private boolean isAllowedToViewContest(Contest contest) {
+        return isAdmin() || isManager(contest) || isSupervisor(contest) || contest.isPublic() || isContestant(contest);
+    }
+
     private boolean isAllowedToManageContest(Contest contest) {
         return isAdmin() || isManager(contest);
     }
@@ -2154,6 +2163,8 @@ public final class ContestController extends Controller {
             ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
 
             result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants());
+        } else {
+            result = false;
         }
 
         return result;

@@ -64,8 +64,6 @@ public final class ContestHibernateDao extends AbstractJudgelsHibernateDao<Conte
             query.setParameter(7, userJid);
         }
 
-        System.out.println(query.toString());
-
         BigInteger result = (BigInteger) query.getSingleResult();
         return result.longValue();
     }
