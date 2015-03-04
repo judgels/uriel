@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.jophiel.User;
@@ -81,7 +82,7 @@ public final class UserRoleServiceImpl implements UserRoleService {
             userRoleDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
 
-        JidCacheService.getInstance().putDisplayName(user.getJid(), user.getUsername(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
