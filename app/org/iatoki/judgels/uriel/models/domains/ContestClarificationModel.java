@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel.models.domains;
 
-import org.iatoki.judgels.commons.models.JidPrefix;
 import org.iatoki.judgels.commons.models.domains.AbstractModel;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -22,8 +22,10 @@ public final class ContestClarificationModel extends AbstractModel {
 
     public String title;
 
+    @Column(columnDefinition = "TEXT")
     public String question;
 
+    @Column(columnDefinition = "TEXT")
     public String answer;
 
     public String status;
