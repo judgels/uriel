@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "uriel_contest_permission")
+@Table(name = "uriel_contest_supervisor")
 public final class ContestSupervisorModel extends AbstractModel {
 
     @Id
