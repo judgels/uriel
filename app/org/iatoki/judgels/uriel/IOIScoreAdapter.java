@@ -14,6 +14,7 @@ import org.iatoki.judgels.uriel.commons.ScoreEntry;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.commons.views.html.ioiScoreboardView;
+import play.i18n.Messages;
 import play.twirl.api.Html;
 
 import java.net.URL;
@@ -128,7 +129,11 @@ public final class IOIScoreAdapter implements ScoreAdapter {
 
     @Override
     public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
-        IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
-        return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
+        if (scoreboard == null) {
+            return new Html(Messages.get("scoreboard.not_available"));
+        } else {
+            IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
+            return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
+        }
     }
 }
