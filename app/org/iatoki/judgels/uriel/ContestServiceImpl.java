@@ -768,14 +768,19 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void createFrozenScoreboard(long contestScoreboardId) {
+    public void upsertFrozenScoreboard(long contestScoreboardId) {
         ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findById(contestScoreboardId);
-        ContestScoreboardModel frozenContestScoreboardModel = new ContestScoreboardModel();
+        ContestScoreboardModel frozenContestScoreboardModel;
+        if (contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name())) {
+            frozenContestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name());
+        } else {
+            frozenContestScoreboardModel = new ContestScoreboardModel();
+        }
         frozenContestScoreboardModel.contestJid = contestScoreboardModel.contestJid;
         frozenContestScoreboardModel.scoreboard = contestScoreboardModel.scoreboard;
         frozenContestScoreboardModel.type = ContestScoreboardType.FROZEN.name();
 
-        contestScoreboardDao.persist(frozenContestScoreboardModel, "scoreUpdater", "localhost");
+        contestScoreboardDao.edit(frozenContestScoreboardModel, "scoreUpdater", "localhost");
     }
 
     @Override

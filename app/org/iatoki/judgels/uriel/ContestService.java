@@ -149,7 +149,7 @@ public interface ContestService {
 
     ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
 
-    void createFrozenScoreboard(long contestScoreboardId);
+    void upsertFrozenScoreboard(long contestScoreboardId);
 
     List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter);
 

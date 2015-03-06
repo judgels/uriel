@@ -13,25 +13,25 @@ import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.ListTableSelectionForm;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
+import org.iatoki.judgels.commons.views.html.layouts.alertLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
-import org.iatoki.judgels.commons.views.html.layouts.alertLayout;
-import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
+import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
+import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
 import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
 import org.iatoki.judgels.gabriel.GradingSource;
 import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.Submission;
+import org.iatoki.judgels.gabriel.commons.SubmissionAdapters;
+import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
-import org.iatoki.judgels.gabriel.commons.SubmissionAdapters;
-import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
@@ -48,6 +48,11 @@ import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.ContestProblem;
+import org.iatoki.judgels.uriel.ContestProblemCreateForm;
+import org.iatoki.judgels.uriel.ContestProblemStatus;
+import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
+import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
 import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
 import org.iatoki.judgels.uriel.ContestScopeConfigPrivateForm;
@@ -55,19 +60,14 @@ import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
 import org.iatoki.judgels.uriel.ContestScopeConfigPublicForm;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.ContestService;
+import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
 import org.iatoki.judgels.uriel.ContestStyleConfigICPCForm;
 import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
 import org.iatoki.judgels.uriel.ContestStyleConfigIOIForm;
 import org.iatoki.judgels.uriel.ContestSupervisor;
-import org.iatoki.judgels.uriel.ContestProblem;
-import org.iatoki.judgels.uriel.ContestProblemCreateForm;
-import org.iatoki.judgels.uriel.ContestProblemStatus;
-import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
-import org.iatoki.judgels.uriel.ContestScope;
-import org.iatoki.judgels.uriel.ContestService;
-import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -95,58 +95,40 @@ import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-
 import org.iatoki.judgels.uriel.views.html.contest.admin.general.createAdminView;
-
 import org.iatoki.judgels.uriel.views.html.contest.admin.manager.createAdminManagerView;
 import org.iatoki.judgels.uriel.views.html.contest.admin.manager.listAdminManagersView;
-
+import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.announcement.listContestantAnnouncementsView;
-
 import org.iatoki.judgels.uriel.views.html.contest.contestant.clarification.createContestantClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.clarification.listContestantClarificationsView;
-
 import org.iatoki.judgels.uriel.views.html.contest.contestant.problem.listContestantProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.problem.viewContestantProblemView;
-
 import org.iatoki.judgels.uriel.views.html.contest.contestant.submission.listContestantSubmissionsView;
-
+import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.manager.general.updateManagerGeneralView;
-
 import org.iatoki.judgels.uriel.views.html.contest.manager.specific.updateManagerSpecificView;
-
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.createManagerSupervisorView;
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.listManagerSupervisorsView;
 import org.iatoki.judgels.uriel.views.html.contest.manager.supervisor.updateManagerSupervisorView;
-
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.createSupervisorAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.listSupervisorAnnouncementsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.announcement.updateSupervisorAnnouncementView;
-
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.clarification.listSupervisorClarificationsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.clarification.updateSupervisorClarificationView;
-
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.createSupervisorContestantView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.listSupervisorContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.contestant.updateSupervisorContestantView;
-
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupervisorProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemsView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.submission.listSupervisorSubmissionsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.createSupervisorTeamView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.listSupervisorTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.updateSupervisorTeamView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.team.viewSupervisorTeamView;
-
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.createSupervisorProblemView;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.listSupervisorProblemsView;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.problem.updateSupervisorProblemView;
-
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.submission.listSupervisorSubmissionsView;
-
-import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
-import org.iatoki.judgels.uriel.views.html.contest.listView;
 import org.iatoki.judgels.uriel.views.html.contest.viewView;
-
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
-
 import play.Play;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -164,10 +146,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -1640,18 +1624,26 @@ public final class ContestController extends Controller {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
-                // TODO recreate frozen scoreboard if not existed
-                contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
+                if (contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) {
+                    contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
+                } else {
+                    // TODO recreate frozen scoreboard if not existed
+                    contestScoreboard = null;
+                }
             } else {
                 contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             }
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
-            Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content;
-            if (contest.isIncognitoScoreboard()) {
-                content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
+            if (contestScoreboard == null) {
+                content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
             } else {
-                content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+                Scoreboard scoreboard = contestScoreboard.getScoreboard();
+                if (contest.isIncognitoScoreboard()) {
+                    content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
+                } else {
+                    content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+                }
             }
 
             if (isAllowedToSuperviseScoreboard(contest)) {
@@ -1789,16 +1781,35 @@ public final class ContestController extends Controller {
         response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
         response().setHeader("Last-Modified", sdf.format(new Date(image.lastModified())));
 
-        try {
-            BufferedImage in = ImageIO.read(image);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        if (request().hasHeader("If-Modified-Since")) {
+            try {
+                Date lastUpdate = sdf.parse(request().getHeader("If-Modified-Since"));
+                if (image.lastModified() > lastUpdate.getTime()) {
+                    BufferedImage in = ImageIO.read(image);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            String type = FilenameUtils.getExtension(image.getAbsolutePath());
+                    String type = FilenameUtils.getExtension(image.getAbsolutePath());
 
-            ImageIO.write(in, type, baos);
-            return ok(baos.toByteArray()).as("image/" + type);
-        } catch (IOException e) {
-            return internalServerError();
+                    ImageIO.write(in, type, baos);
+                    return ok(baos.toByteArray()).as("image/" + type);
+                } else {
+                    return status(304);
+                }
+            } catch (ParseException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            try {
+                BufferedImage in = ImageIO.read(image);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                String type = FilenameUtils.getExtension(image.getAbsolutePath());
+
+                ImageIO.write(in, type, baos);
+                return ok(baos.toByteArray()).as("image/" + type);
+            } catch (IOException e) {
+                return internalServerError();
+            }
         }
     }
 

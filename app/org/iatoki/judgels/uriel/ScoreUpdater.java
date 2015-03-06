@@ -32,7 +32,7 @@ public final class ScoreUpdater implements Runnable {
                     ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
                     ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
                     if ((contest.isStandard()) && (!contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((ContestTypeConfigStandard) new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime())) {
-                        contestService.createFrozenScoreboard(contestScoreboard.getId());
+                        contestService.upsertFrozenScoreboard(contestScoreboard.getId());
                     }
                     ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
                     List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByUsers(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());

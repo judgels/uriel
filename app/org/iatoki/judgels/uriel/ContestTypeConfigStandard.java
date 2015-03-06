@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel;
 public class ContestTypeConfigStandard implements ContestTypeConfig {
 
     public static ContestTypeConfigStandard defaultConfig(Contest contest) {
-        return new ContestTypeConfigStandard(contest.getEndTime().getTime(), false);
+        return new ContestTypeConfigStandard(contest.getEndTime().getTime(), true);
     }
 
     public ContestTypeConfigStandard(long scoreboardFreezeTime, boolean isOfficialScoreboardAllowed) {

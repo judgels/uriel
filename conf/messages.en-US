@@ -152,3 +152,5 @@ team.view=View Team
 team.coach.name=Coach Name
 team.member.name=Member Name
 team.update=Update Team
+
+scoreboard.not_available=Scoreboard is not available at the moment.
