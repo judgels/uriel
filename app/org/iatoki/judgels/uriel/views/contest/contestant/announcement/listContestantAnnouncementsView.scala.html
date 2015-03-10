@@ -10,7 +10,7 @@
             <span class="panel-title">@contestAnnouncement.getTitle</span>
             <span class="panel-title pull-right"><small>@JidCacheService.getInstance().getDisplayName(contestAnnouncement.getAuthorJid) @@ @JudgelsUtils.formatDate(contestAnnouncement.getLastUpdated)</small></span>
         </div>
-        <div class="panel-body">
+        <div class="panel-body content-text">
             @Html(contestAnnouncement.getContent)
         </div>
     </div>
