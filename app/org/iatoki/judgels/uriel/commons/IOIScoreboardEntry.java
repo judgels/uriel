@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.commons;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class IOIScoreboardEntry implements ScoreboardEntry, Comparable<IOIScoreboardEntry> {
@@ -10,6 +11,10 @@ public final class IOIScoreboardEntry implements ScoreboardEntry, Comparable<IOI
     public URL imageURL;
     public List<Integer> scores;
     public int totalScores;
+
+    public IOIScoreboardEntry() {
+        scores = new ArrayList<>();
+    }
 
     @Override
     public int compareTo(IOIScoreboardEntry o) {
