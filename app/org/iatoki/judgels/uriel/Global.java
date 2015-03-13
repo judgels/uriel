@@ -18,7 +18,6 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestReadHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestScoreboardHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestSupervisorHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestTeamCoachHibernateDao;
@@ -36,7 +35,6 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
@@ -46,17 +44,10 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
 import play.Application;
 import play.Play;
 import play.libs.Akka;
-import play.mvc.Action;
 import play.mvc.Controller;
-import play.mvc.Http;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
-import java.io.DataOutputStream;
-import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -99,11 +90,10 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
         ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
         ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
-        ContestScoreDao contestScoreDao = new ContestScoreHibernateDao();
         ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
-        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
+        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
 
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
 

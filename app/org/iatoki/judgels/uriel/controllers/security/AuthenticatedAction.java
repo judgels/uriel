@@ -21,7 +21,7 @@ public final class AuthenticatedAction extends Action<Authenticated> {
                     try {
                         context.request().setUsername(var3);
                     } finally {
-                        context.request().setUsername((String) null);
+                        context.request().setUsername(null);
                     }
                 }
             }

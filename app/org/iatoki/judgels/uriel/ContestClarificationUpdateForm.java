@@ -7,7 +7,7 @@ public final class ContestClarificationUpdateForm {
 
     public ContestClarificationUpdateForm(ContestClarification contestClarification) {
         this.answer = contestClarification.getAnswer();
-        this.status = status;
+        this.status = contestClarification.getStatus().name();
     }
 
     public String answer;

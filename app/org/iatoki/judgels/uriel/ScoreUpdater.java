@@ -35,11 +35,10 @@ public final class ScoreUpdater implements Runnable {
                         contestService.upsertFrozenScoreboard(contestScoreboard.getId());
                     }
                     ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
-                    List<Submission> submissions = submissionService.findNewSubmissionsByContestJidByUsers(contest.getJid(), state.getProblemJids(), state.getContestantJids(), contestScoreboard.getLastUpdateTime().getTime());
 
-                    contestService.updateContestScoreBySubmissions(contest.getJid(), submissions, adapter, state);
+                    List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
-                    ScoreboardContent content = adapter.computeScoreboardContent(state, contestService.findContestScoresInContest(contest.getJid(), adapter), contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+                    ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
                     Scoreboard scoreboard = adapter.createScoreboard(state, content);
                     contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 

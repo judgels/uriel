@@ -10,9 +10,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
-import org.iatoki.judgels.uriel.commons.ScoreEntry;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
@@ -23,7 +21,6 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestReadDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestScoreboardDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
@@ -37,7 +34,6 @@ import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.domains.ContestReadModel;
-import org.iatoki.judgels.uriel.models.domains.ContestScoreModel;
 import org.iatoki.judgels.uriel.models.domains.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamCoachModel;
@@ -51,9 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -71,12 +65,11 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestTeamMemberDao contestTeamMemberDao;
     private final ContestSupervisorDao contestSupervisorDao;
     private final ContestManagerDao contestManagerDao;
-    private final ContestScoreDao contestScoreDao;
     private final ContestScoreboardDao contestScoreboardDao;
     private final ContestConfigurationDao contestConfigurationDao;
     private final ContestReadDao contestReadDao;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreDao contestScoreDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -87,7 +80,6 @@ public final class ContestServiceImpl implements ContestService {
         this.contestTeamMemberDao = contestTeamMemberDao;
         this.contestSupervisorDao = contestSupervisorDao;
         this.contestManagerDao = contestManagerDao;
-        this.contestScoreDao = contestScoreDao;
         this.contestScoreboardDao = contestScoreboardDao;
         this.contestConfigurationDao = contestConfigurationDao;
         this.contestReadDao = contestReadDao;
@@ -781,54 +773,6 @@ public final class ContestServiceImpl implements ContestService {
         frozenContestScoreboardModel.type = ContestScoreboardType.FROZEN.name();
 
         contestScoreboardDao.edit(frozenContestScoreboardModel, "scoreUpdater", "localhost");
-    }
-
-    @Override
-    public List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter) {
-        List<ContestScoreModel> contestScoreModels = contestScoreDao.findByContestJid(contestJid);
-
-        return contestScoreModels.stream().map(cs -> new ContestScore(cs.id, cs.contestJid, cs.contestantJid, adapter.parseScoreFromJson(cs.scores))).collect(Collectors.toList());
-    }
-
-    @Override
-    public void updateContestScoreBySubmissions(String contestJid, List<Submission> submissions, ScoreAdapter adapter, ContestScoreState contestScoreState) {
-        List<ContestScoreModel> contestScoreModels = contestScoreDao.findByContestJid(contestJid);
-        Map<String, List<Submission>> listSubmissionMap = new HashMap<>();
-        for (Submission submission : submissions) {
-            if (listSubmissionMap.containsKey(submission.getAuthorJid())) {
-                listSubmissionMap.get(submission.getAuthorJid()).add(submission);
-            } else {
-                List<Submission> submissionList = new ArrayList<>();
-                submissionList.add(submission);
-                listSubmissionMap.put(submission.getAuthorJid(), submissionList);
-            }
-        }
-
-        for (String contestantJid : contestScoreState.getContestantJids()) {
-            if (!contestScoreDao.isExistByContestJidAndContestantJid(contestJid, contestantJid)) {
-                ContestScoreModel contestScoreModel = new ContestScoreModel();
-                contestScoreModel.contestJid = contestJid;
-                contestScoreModel.contestantJid = contestantJid;
-                contestScoreModel.scores = new Gson().toJson(adapter.createEmptyScoreEntry(contestScoreState.getProblemJids()));
-
-                contestScoreDao.persist(contestScoreModel, "scoreboardUpdater", "localhost");
-
-                contestScoreModels.add(contestScoreModel);
-            }
-        }
-
-        for (ContestScoreModel contestScoreModel : contestScoreModels) {
-            List<Submission> submissionList;
-            if (listSubmissionMap.containsKey(contestScoreModel.contestantJid)) {
-                submissionList = listSubmissionMap.get(contestScoreModel.contestantJid);
-            } else {
-                submissionList = ImmutableList.of();
-            }
-            ScoreEntry scoreEntry = adapter.updateScoreEntry(adapter.parseScoreFromJson(contestScoreModel.scores), contestScoreState.getProblemJids(), submissionList);
-            contestScoreModel.scores = new Gson().toJson(scoreEntry);
-
-            contestScoreDao.edit(contestScoreModel, "scoreboardUpdater", "localhost");
-        }
     }
 
     @Override

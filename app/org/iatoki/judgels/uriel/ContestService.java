@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 
@@ -150,10 +149,6 @@ public interface ContestService {
     ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
 
     void upsertFrozenScoreboard(long contestScoreboardId);
-
-    List<ContestScore> findContestScoresInContest(String contestJid, ScoreAdapter adapter);
-
-    void updateContestScoreBySubmissions(String contestJid, List<Submission> submissions, ScoreAdapter adapter, ContestScoreState contestScoreState);
 
     Map<String, URL> getMapContestantJidToImageUrlInContest(String contestJid);
 

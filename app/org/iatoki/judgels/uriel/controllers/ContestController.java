@@ -223,9 +223,7 @@ public final class ContestController extends Controller {
 
         if (isAllowedToEnterContest(contest)) {
             boolean isContestantInContest = (isContestant(contest));
-            if (isContestantInContest) {
-                contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
-            } else if (contest.isVirtual()) {
+            if (contest.isVirtual()) {
                 ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
                 ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
                 if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (contestService.isUserCoachInAnyTeam(contest.getJid(), IdentityUtils.getUserJid()))) {
@@ -233,6 +231,8 @@ public final class ContestController extends Controller {
                 } else if (isContestantInContest) {
                     contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
                 }
+            } else if (isContestantInContest) {
+                contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
             }
         }
 
