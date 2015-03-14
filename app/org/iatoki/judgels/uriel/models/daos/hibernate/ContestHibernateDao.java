@@ -21,7 +21,7 @@ public final class ContestHibernateDao extends AbstractJudgelsHibernateDao<Conte
 
     private static final String publicContestJids = "(SELECT jid FROM uriel_contest WHERE scope = ?1)";
     private static final String privateContestJidsForManager = "(SELECT jid FROM uriel_contest c JOIN uriel_contest_manager cm ON c.jid=cm.contestJid WHERE c.scope = ?2 AND cm.userJid = ?3)";
-    private static final String privateContestJidsForSupervisor = "(SELECT jid FROM uriel_contest c JOIN uriel_contest_permission cs ON c.jid=cs.contestJid WHERE c.scope = ?4 AND cs.userJid = ?5)";
+    private static final String privateContestJidsForSupervisor = "(SELECT jid FROM uriel_contest c JOIN uriel_contest_supervisor cs ON c.jid=cs.contestJid WHERE c.scope = ?4 AND cs.userJid = ?5)";
     private static final String privateContestJidsForContestant = "(SELECT jid FROM uriel_contest c JOIN uriel_contest_contestant cc ON c.jid=cc.contestJid WHERE c.scope = ?6 AND cc.userJid = ?7)";
 
     public ContestHibernateDao() {
