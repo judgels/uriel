@@ -45,6 +45,9 @@ problem.status=Status
 problem.submissionsLimit=Submissions Limit
 problem.problemSecret=Problem Secret
 
+problem.allowAll=Allow All
+problem.allowedLanguages=Allowed Languages
+
 submission.submissions=Submissions
 submission.list=Submissions
 submission.view=View Submission

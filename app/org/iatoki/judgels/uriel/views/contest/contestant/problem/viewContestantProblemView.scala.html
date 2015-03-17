@@ -1,4 +1,4 @@
-@(requestURL: String, submissionLeft: Long)
+@(requestURL: String, requestBody: String, submissionLeft: Long)
 
 @import play.i18n.Messages
 
@@ -15,5 +15,6 @@
 </div>
 <script type="text/javascript">
     var sandalphonTOTPURL = "@requestURL";
+    var body = '@Html(requestBody)';
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/problemTOTPStatement.js")"></script>

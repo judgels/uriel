@@ -32,6 +32,8 @@ import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
+import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestriction;
+import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
@@ -497,12 +499,12 @@ public final class ContestController extends Controller {
             if (contest.isICPC()) {
                 ContestStyleConfigICPC contestStyleConfigICPC = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigICPC.class);
                 Form<ContestStyleConfigICPCForm> form = Form.form(ContestStyleConfigICPCForm.class);
-                form = form.fill(new ContestStyleConfigICPCForm(contestStyleConfigICPC.getTimePenalty()));
+                form = form.fill(new ContestStyleConfigICPCForm(contestStyleConfigICPC.getTimePenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction())));
                 form3 = form;
             } else if (contest.isIOI()) {
                 ContestStyleConfigIOI contestStyleConfigIOI = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigIOI.class);
                 Form<ContestStyleConfigIOIForm> form = Form.form(ContestStyleConfigIOIForm.class);
-                form = form.fill(new ContestStyleConfigIOIForm());
+                form = form.fill(new ContestStyleConfigIOIForm(LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction())));
                 form3 = form;
             }
 
@@ -579,10 +581,10 @@ public final class ContestController extends Controller {
                 ContestStyleConfig contestStyleConfig = null;
                 if (contest.isICPC()) {
                     ContestStyleConfigICPCForm data = (ContestStyleConfigICPCForm) form3.get();
-                    contestStyleConfig = new ContestStyleConfigICPC(data.timePenalty);
+                    contestStyleConfig = new ContestStyleConfigICPC(data.timePenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
                 } else if (contest.isIOI()) {
                     ContestStyleConfigIOIForm data = (ContestStyleConfigIOIForm) form3.get();
-                    contestStyleConfig = new ContestStyleConfigIOI();
+                    contestStyleConfig = new ContestStyleConfigIOI(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
                 }
 
 
@@ -1456,7 +1458,18 @@ public final class ContestController extends Controller {
 
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
             String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName(), routes.ContestController.postSubmitContestantProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request())).toString();
-            LazyHtml content = new LazyHtml(viewContestantProblemView.render(requestUrl, submissionLeft));
+            String requestBody = "";
+
+            ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
+            String styleConfig = config.getStyleConfig();
+
+            if (contest.isICPC()) {
+                requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigICPC.class).getLanguageRestriction());
+            } else if (contest.isIOI()) {
+                requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
+            }
+
+            LazyHtml content = new LazyHtml(viewContestantProblemView.render(requestUrl, requestBody, submissionLeft));
 
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -1495,7 +1508,7 @@ public final class ContestController extends Controller {
 
                 try {
                     GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-                    String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, source);
+                    String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, ImmutableSet.of(), source);
                     SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
                 } catch (SubmissionException e) {
                     flash("submissionError", e.getMessage());

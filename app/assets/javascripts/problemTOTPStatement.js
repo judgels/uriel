@@ -1,5 +1,11 @@
 require(["jquery"], function( __tes__ ) {
-    $.get(sandalphonTOTPURL, function( data ) {
-        $(".problem_statement").html(data);
+    $.ajax({
+        url: sandalphonTOTPURL,
+        type: 'POST',
+        data: body,
+        contentType: 'text/plain',
+        success: function (data) {
+            $(".problem_statement").html(data);
+        }
     });
 });

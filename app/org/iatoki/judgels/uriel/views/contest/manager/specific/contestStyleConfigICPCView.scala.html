@@ -1,6 +1,26 @@
 @(formStyle: Form[_])(implicit fieldConstructor: b3.B3FieldConstructor)
 
 @import play.i18n.Messages
+@import org.iatoki.judgels.gabriel.GradingLanguageRegistry
+
+<script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('#isAllowedAll').on('click', function() {
+            if ($('#isAllowedAll').prop('checked')) {
+                $('.allowedLanguageName').each(function() {
+                    $(this).prop('disabled', true);
+                    $(this).prop('checked', true);
+                });
+            } else {
+                $('.allowedLanguageName').each(function() {
+                    $(this).prop('disabled', false);
+                });
+            }
+        });
+    });
+</script>
 
 @b3.inputWrapped("timePenalty", formStyle("timePenalty"), '_label -> Messages.get("contest.style.ICPC.timePenalty")) { input =>
     <div class="input-group">
@@ -8,3 +28,26 @@
         <div class="input-group-addon">milliseconds</div>
     </div>
 }
+
+
+<div class="form-group">
+
+    <label class="control-label col-md-3">@Messages.get("problem.allowedLanguages")</label>
+
+    <div class="col-md-9">
+
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="isAllowedAll" name="isAllowedAll" value="true" @if(formStyle("isAllowedAll").value && formStyle("isAllowedAll").value.equals("true")){ checked="checked" }> @Messages.get("problem.allowAll")
+            </label>
+        </div>
+
+        @for((k, v) <- GradingLanguageRegistry.getInstance().getGradingLanguages) {
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" class="allowedLanguageName" name="allowedLanguageNames[@k]" value="@k" @if(formStyle("allowedLanguageNames[" + k + "]").value && formStyle("allowedLanguageNames[" + k + "]").value.equals(k)){ checked="checked" }> @v
+                </label>
+            </div>
+        }
+    </div>
+</div>
