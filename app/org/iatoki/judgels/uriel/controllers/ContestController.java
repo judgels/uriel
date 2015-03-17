@@ -190,7 +190,7 @@ public final class ContestController extends Controller {
         if (isAllowedToViewContest(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(viewView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isAllowedToRegisterContest(contest), isContestant(contest) && !isContestEnded(contest), isAllowedToEnterContest(contest), isAdmin()));
+            LazyHtml content = new LazyHtml(viewView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isAllowedToRegisterContest(contest), isContestant(contest) && !isContestEnded(contest), isAllowedToEnterContest(contest), isAllowedToManageContest(contest)));
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
 
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
