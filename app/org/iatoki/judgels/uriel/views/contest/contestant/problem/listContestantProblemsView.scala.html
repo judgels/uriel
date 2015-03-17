@@ -4,7 +4,10 @@
 @import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.uriel.controllers.routes
 @import scala.collection.JavaConversions
+@import org.iatoki.judgels.commons.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.listContestantProblems(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
 @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
     @for(contestProblem <- page.getData) {
@@ -22,5 +25,7 @@
         </div>
     }
 }
+
+@paginationView(page, orderBy, orderDir, filterString, listFunc)
 
 @contestantjs(contestId)
