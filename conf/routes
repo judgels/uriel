@@ -91,6 +91,7 @@ GET         /contest/:cId/supervisor/submission/:sId/regrade              @org.i
 POST        /contest/:cId/supervisor/submission/regrade                   @org.iatoki.judgels.uriel.controllers.ContestController.regradeSupervisorSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
 
 GET         /contest/:cId/supervisor/scoreboard                           @org.iatoki.judgels.uriel.controllers.ContestController.viewSupervisorScoreboard(cId: Long)
+GET         /contest/:cId/supervisor/scoreboard/refresh                   @org.iatoki.judgels.uriel.controllers.ContestController.refreshAllScoreboard(cId: Long)
 
 GET         /contest/:cId/contestant/announcement                         @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantAnnouncements(cId: Long)
 GET         /contest/:cId/contestant/announcement/                        @org.iatoki.judgels.uriel.controllers.ContestController.listContestantAnnouncements(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")

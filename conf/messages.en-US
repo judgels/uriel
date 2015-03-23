@@ -76,6 +76,7 @@ clarification.status=Status
 clarification.unanswered=Unanswered
 
 scoreboard.scoreboard=Scoreboard
+scoreboard.refresh=Refresh Scoreboard
 
 contestant.contestants=Contestants
 contestant.contestant=Contestant
