@@ -267,28 +267,38 @@ public final class ContestController extends Controller {
 
     /* admin/manager ************************************************************************************************ */
 
-    @Authorized(value = {"admin"})
     public Result viewAdminManagers(long contestId) {
         return listAdminManagers(contestId, 0, "id", "asc", "");
     }
 
-    @Authorized(value = {"admin"})
     public Result listAdminManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        Page<ContestManager> contestManager = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        LazyHtml content = new LazyHtml(listAdminManagersView.render(contest.getId(), contestManager, pageIndex, orderBy, orderDir, filterString));
+        if (isSupervisorOrAbove(contest)) {
+            Page<ContestManager> contestManager = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("manager.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createAdminManager(contestId)), c));
-        appendTabsLayout(content, contest);
-        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
-                new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contestId))
-        ), c));
-        appendTemplateLayout(content);
+            boolean canUpdate = isAdmin();
 
-        return lazyOk(content);
+            LazyHtml content = new LazyHtml(listAdminManagersView.render(contest.getId(), contestManager, pageIndex, orderBy, orderDir, filterString));
+
+            if (canUpdate) {
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("manager.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createAdminManager(contestId)), c));
+            } else {
+                content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
+            }
+
+            appendTabsLayout(content, contest);
+            content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                    new InternalLink(contest.getName(), routes.ContestController.view(contest.getId())),
+                    new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contestId))
+            ), c));
+            appendTemplateLayout(content);
+
+            return lazyOk(content);
+        } else {
+            return tryEnteringContest(contest);
+        }
     }
 
 
@@ -368,12 +378,19 @@ public final class ContestController extends Controller {
 
     public Result listManagerSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToManageSupervisors(contest)) {
+        if (isSupervisorOrAbove(contest)) {
             Page<ContestSupervisor> contestPermissionPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(listManagerSupervisorsView.render(contest.getId(), contestPermissionPage, pageIndex, orderBy, orderDir, filterString));
+            boolean canUpdate = isAllowedToManageSupervisors(contest);
 
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("supervisor.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createManagerSupervisor(contestId)), c));
+            LazyHtml content = new LazyHtml(listManagerSupervisorsView.render(contest.getId(), contestPermissionPage, pageIndex, orderBy, orderDir, filterString, canUpdate));
+
+            if (canUpdate) {
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("supervisor.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createManagerSupervisor(contestId)), c));
+            } else {
+                content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
+            }
+
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
                     new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -898,12 +915,19 @@ public final class ContestController extends Controller {
 
     public Result listSupervisorContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseContestants(contest)) {
+        if (isSupervisorOrAbove(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(listSupervisorContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString));
+            boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorContestant(contestId)), c));
+            LazyHtml content = new LazyHtml(listSupervisorContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate));
+
+            if (canUpdate) {
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorContestant(contestId)), c));
+            } else {
+                content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
+            }
+
             content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -1066,12 +1090,19 @@ public final class ContestController extends Controller {
 
     public Result listSupervisorTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseContestants(contest)) {
+        if (isSupervisorOrAbove(contest)) {
             Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(listSupervisorTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString));
+            boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("team.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorTeam(contestId)), c));
+            LazyHtml content = new LazyHtml(listSupervisorTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate));
+
+            if (canUpdate) {
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("team.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createSupervisorTeam(contestId)), c));
+            } else {
+                content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
+            }
+
             content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
             appendTabsLayout(content, contest);
             content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
@@ -1170,11 +1201,11 @@ public final class ContestController extends Controller {
     public Result viewSupervisorTeam(long contestId, long contestTeamId) {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
-        if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
+        if (isSupervisorOrAbove(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
             Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
 
-            return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+            return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         } else {
             return tryEnteringContest(contest);
         }
@@ -1189,7 +1220,7 @@ public final class ContestController extends Controller {
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
                 Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
-                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
             } else {
                 ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
 
@@ -1202,7 +1233,7 @@ public final class ContestController extends Controller {
                     form.reject("team.user_already_has_team");
                     Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
 
-                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                 }
             }
         } else {
@@ -1232,7 +1263,7 @@ public final class ContestController extends Controller {
 
             if (form2.hasErrors() || form2.hasGlobalErrors()) {
                 Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
-                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
             } else {
                 ContestTeamMemberCreateForm contestTeamMemberCreateForm = form2.get();
 
@@ -1245,7 +1276,7 @@ public final class ContestController extends Controller {
                     form2.reject("team.user_already_has_team");
                     Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
 
-                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()));
+                    return showViewSupervisorTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                 }
             }
         } else {
@@ -2056,8 +2087,8 @@ public final class ContestController extends Controller {
         return lazyOk(content);
     }
 
-    private Result showViewSupervisorTeam(Form<ContestTeamCoachCreateForm> form, Form<ContestTeamMemberCreateForm> form2, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers) {
-        LazyHtml content = new LazyHtml(viewSupervisorTeamView.render(contest.getId(), contestTeam, form, form2, contestTeamCoaches, contestTeamMembers));
+    private Result showViewSupervisorTeam(Form<ContestTeamCoachCreateForm> form, Form<ContestTeamMemberCreateForm> form2, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers, boolean canUpdate) {
+        LazyHtml content = new LazyHtml(viewSupervisorTeamView.render(contest.getId(), contestTeam, form, form2, contestTeamCoaches, contestTeamMembers, canUpdate));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.view"), c));
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestController.viewSupervisorTeams(contest.getId()))), c));
         appendTabsLayout(content, contest);
@@ -2102,15 +2133,9 @@ public final class ContestController extends Controller {
         internalLinkBuilder.add(new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId())));
 
-        if (isAllowedToSuperviseContestants(contest)) {
+        if (isSupervisorOrAbove(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())));
-        }
-
-        if (isAllowedToManageContest(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.viewManagerSupervisors(contest.getId())));
-        }
-
-        if (isAdmin()) {
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.viewAdminManagers(contest.getId())));
         }
 
@@ -2238,6 +2263,10 @@ public final class ContestController extends Controller {
 
     private boolean isAllowedToDoContest(Contest contest) {
         return isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid()))  && isContestStarted(contest) && !isContestEnded(contest));
+    }
+
+    private boolean isSupervisorOrAbove(Contest contest) {
+        return isAdmin() || isManager(contest) || (isSupervisor(contest));
     }
 
     private boolean isAllowedToSuperviseAnnouncements(Contest contest) {
