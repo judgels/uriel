@@ -13,6 +13,8 @@ public interface ContestProblemDao extends Dao<Long, ContestProblemModel> {
 
     boolean existsByProblemJid(String contestJid, String problemJid);
 
+    boolean existsByProblemAlias(String contestJid, String problemAlias);
+
     List<ContestProblemModel> findOpenedByContestJidOrderedByAlias(String contestJid);
 
     boolean isThereNewProblem(String contestJid, long lastTime);

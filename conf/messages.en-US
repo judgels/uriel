@@ -157,3 +157,5 @@ team.member.name=Member Name
 team.update=Update Team
 
 scoreboard.not_available=Scoreboard is not available at the moment.
+
+error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.

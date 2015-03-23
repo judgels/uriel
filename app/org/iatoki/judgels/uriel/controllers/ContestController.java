@@ -32,7 +32,6 @@ import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
-import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestriction;
 import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
@@ -153,7 +152,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -731,7 +729,7 @@ public final class ContestController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
-            form.fill(new ContestProblemCreateForm(0));
+            form = form.fill(new ContestProblemCreateForm(0));
 
             return showCreateSupervisorProblem(form, contest);
         } else {
@@ -750,7 +748,7 @@ public final class ContestController extends Controller {
             } else {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
                 String problemName = SandalphonUtils.verifyProblemJid(contestProblemCreateForm.problemJid);
-                if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJid(contest.getJid(), contestProblemCreateForm.problemJid))) {
+                if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
                     try {
                         boolean processed = false;
                         while (!processed) {
@@ -769,7 +767,7 @@ public final class ContestController extends Controller {
 
                     return redirect(routes.ContestController.viewSupervisorProblems(contest.getId()));
                 } else {
-                    form.reject("error.problem.create.problemJid.invalid");
+                    form.reject("error.problem.create.problemJidOrAlias.invalid");
                     return showCreateSupervisorProblem(form, contest);
                 }
             }

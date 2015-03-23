@@ -46,7 +46,7 @@ public interface ContestService {
 
     ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid);
 
-    boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid);
+    boolean isContestProblemInContestByProblemJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias);
 
     void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 

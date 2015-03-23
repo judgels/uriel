@@ -301,8 +301,8 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public boolean isContestProblemInContestByProblemJid(String contestJid, String contestProblemJid) {
-        return contestProblemDao.existsByProblemJid(contestJid, contestProblemJid);
+    public boolean isContestProblemInContestByProblemJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias) {
+        return ((contestProblemDao.existsByProblemJid(contestJid, contestProblemJid)) || (contestProblemDao.existsByProblemAlias(contestJid, contestProblemAlias)));
     }
 
     @Override

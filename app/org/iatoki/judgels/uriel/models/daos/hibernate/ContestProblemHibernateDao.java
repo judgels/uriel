@@ -58,6 +58,19 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
     }
 
     @Override
+    public boolean existsByProblemAlias(String contestJid, String problemAlias) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.alias), problemAlias), cb.equal(root.get(ContestProblemModel_.contestJid), contestJid)));
+
+        return (JPA.em().createQuery(query).getSingleResult() != 0);
+    }
+
+    @Override
     public List<ContestProblemModel> findOpenedByContestJidOrderedByAlias(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestProblemModel> query = cb.createQuery(ContestProblemModel.class);
