@@ -111,6 +111,8 @@ GET         /contest/:cId/contestant/clarification                        @org.i
 GET         /contest/:cId/contestant/clarification/                       @org.iatoki.judgels.uriel.controllers.ContestController.listContestantClarifications(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contest/:cId/contestant/clarification/create                 @org.iatoki.judgels.uriel.controllers.ContestController.createContestantClarification(cId: Long)
 POST        /contest/:cId/contestant/clarification/create                 @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContestantClarification(cId: Long)
+GET         /contest/:cId/contestant/clarification/:c2Id/update           @org.iatoki.judgels.uriel.controllers.ContestController.updateContestantClarification(cId: Long, c2Id: Long)
+POST        /contest/:cId/contestant/clarification/:c2Id/update           @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestantClarification(cId: Long, c2Id: Long)
 
 GET         /contest/:cId/contestant/scoreboard                           @org.iatoki.judgels.uriel.controllers.ContestController.viewContestantScoreboard(cId: Long)
 

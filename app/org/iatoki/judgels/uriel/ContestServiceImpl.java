@@ -334,21 +334,26 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String askerJid) {
+    public Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, List<String> askerJids) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
-        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
-        filterColumnsBuilder.put("contestJid", contestJid);
-        if (askerJid != null) {
-            filterColumnsBuilder.put("userCreate", askerJid);
+        if (askerJids == null) {
+            ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
+            filterColumnsBuilder.put("contestJid", contestJid);
+            Map<String, String> filterColumns = filterColumnsBuilder.build();
+
+            long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns);
+            List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
+            List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
+
+            return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
+        } else {
+            long totalPages = contestClarificationDao.countClarificationsByContestJidAskedByUserJids(contestModel.jid, askerJids);
+            List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findClarificationsByContestJidAskedByUserJids(contestModel.jid, askerJids);
+            List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
+
+            return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
         }
-        Map<String, String> filterColumns = filterColumnsBuilder.build();
-
-        long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns);
-        List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
-        List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
-
-        return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
     }
 
     @Override
@@ -371,6 +376,15 @@ public final class ContestServiceImpl implements ContestService {
         contestClarificationModel.status = ContestClarificationStatus.ASKED.name();
 
         contestClarificationDao.persist(contestClarificationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+    }
+
+    @Override
+    public void updateContestClarification(long contestClarificationId, String title, String question) {
+        ContestClarificationModel contestClarificationModel = contestClarificationDao.findById(contestClarificationId);
+        contestClarificationModel.title = title;
+        contestClarificationModel.question = question;
+
+        contestClarificationDao.edit(contestClarificationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
@@ -570,6 +584,15 @@ public final class ContestServiceImpl implements ContestService {
         List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
 
         return (contestTeamCoachDao.isUserRegisteredAsCoachInAnyTeam(userJid, teamJids));
+    }
+
+    @Override
+    public ContestTeam findContestTeamJidOfCoach(String contestJid, String userJid) {
+        List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
+
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamCoachDao.findContestTeamCoachByCoachJidInAnyTeam(userJid, teamJids).teamJid);
+
+        return createContestTeamFromModel(contestTeamModel);
     }
 
     @Override

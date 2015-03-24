@@ -1,4 +1,4 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, coach: Boolean)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.JudgelsUtils
@@ -19,6 +19,9 @@
 
             @if(contestClarification.getStatus == ContestClarificationStatus.ASKED) {
                 (@{Messages.get("clarification.unanswered")})
+                @if(contest.isClarificationTimeValid) {
+                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestController.updateContestantClarification(contest.getId, contestClarification.getId)" class="btn btn-primary">@Messages.get("commons.update")</a>
+                }
             }else{
                 @if(contestClarification.getStatus == ContestClarificationStatus.ANSWERED) {
                     <p><strong>@Messages.get("clarification.answer")</strong>:</p>
@@ -29,4 +32,4 @@
     </div>
 }
 
-@contestantjs(contestId)
+@contestantjs(contest.getId)

@@ -52,11 +52,13 @@ public interface ContestService {
 
     void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 
-    Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, String askerJid);
+    Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, List<String> askerJids);
 
     ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId);
 
     void createContestClarification(long contestId, String title, String question, String topicJid);
+
+    void updateContestClarification(long contestClarificationId, String title, String question);
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 
@@ -101,6 +103,8 @@ public interface ContestService {
     boolean isUserInAnyTeam(String contestJid, String userJid);
 
     boolean isUserCoachInAnyTeam(String contestJid, String userJid);
+
+    ContestTeam findContestTeamJidOfCoach(String contestJid, String userJid);
 
     ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 

@@ -16,6 +16,7 @@ public abstract class ContestModel_ extends org.iatoki.judgels.commons.models.do
 	public static volatile SingularAttribute<ContestModel, Long> endTime;
 	public static volatile SingularAttribute<ContestModel, String> type;
     public static volatile SingularAttribute<ContestModel, Long> clarificationEndTime;
+    public static volatile SingularAttribute<ContestModel, Boolean> isUsingScoreboard;
     public static volatile SingularAttribute<ContestModel, Boolean> isIncognitoScoreboard;
 
 }
