@@ -2404,7 +2404,7 @@ public final class ContestController extends Controller {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
 
-            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants());
+            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && ((contestScopeConfigPublic.getMaxRegistrants() == 0) || (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants()));
         } else {
             result = false;
         }
