@@ -83,4 +83,8 @@ public final class ContestClarification {
     public Date getAnsweredTime() {
         return answeredTime;
     }
+
+    public boolean isAnswered() {
+        return status.equals(ContestClarificationStatus.ANSWERED);
+    }
 }
