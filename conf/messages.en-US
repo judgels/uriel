@@ -147,6 +147,7 @@ contest.supervisor.contestant.importTXT=Import via txt
 contest.supervisor.contestant.manualCreate=Manual Create
 
 contestant.username=username
+contest.enter.confirm=Do you really want to enter the contest? If you do, there is no turning back.
 
 team.teams=Teams
 team.image=Logo

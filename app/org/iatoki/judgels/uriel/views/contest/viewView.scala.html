@@ -28,7 +28,7 @@
         }
 
         @if(isAllowedToEnter) {
-            <a href="@routes.ContestController.enter(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
+            <a href="@routes.ContestController.enter(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
         }
 
         @if(isAllowedToUpdate) {
@@ -61,3 +61,8 @@
 }
 
 @paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+<script type="text/javascript">
+    var confirmMessage = "@Messages.get("contest.enter.confirm")";
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertEnterContest.js")"></script>
