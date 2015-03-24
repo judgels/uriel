@@ -7,6 +7,11 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
@@ -19,6 +24,7 @@ import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
+import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
@@ -92,6 +98,8 @@ import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRoleService;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
+import org.iatoki.judgels.uriel.commons.IOIScoreboardContent;
+import org.iatoki.judgels.uriel.commons.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
@@ -1391,7 +1399,7 @@ public final class ContestController extends Controller {
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
 
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestController.refreshAllScoreboard(contest.getId())), c));
+            content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[] {new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestController.downloadContestDataAsXLS(contest.getId()))}, c));
 
             content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestController.viewContestantScoreboard(contest.getId()), routes.ContestController.viewSupervisorScoreboard(contest.getId()), c));
 
@@ -1432,6 +1440,125 @@ public final class ContestController extends Controller {
                 }
                 return redirect(routes.ContestController.viewSupervisorScoreboard(contest.getId()));
             } catch (InterruptedException e) {
+                return internalServerError();
+            }
+        } else {
+            return tryEnteringContest(contest);
+        }
+    }
+
+    public Result downloadContestDataAsXLS(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (isAllowedToSuperviseScoreboard(contest)) {
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ContestScoreState contestScoreState = contestScoreboard.getScoreboard().getState();
+
+            Workbook workbook = new HSSFWorkbook();
+            Sheet sheet = workbook.createSheet(Messages.get("problem.problems"));
+
+            int rowNum = 0;
+            int cellNum = 0;
+            Row row = sheet.createRow(rowNum++);
+            Cell cell = row.createCell(cellNum++);
+            cell.setCellValue(Messages.get("problem.alias"));
+            cell = row.createCell(cellNum++);
+            cell.setCellValue(Messages.get("problem.name"));
+            for (int i=0;i<contestScoreState.getProblemJids().size();++i) {
+                row = sheet.createRow(rowNum++);
+                cellNum = 0;
+                cell = row.createCell(cellNum++);
+                cell.setCellValue(contestScoreState.getProblemAliases().get(i));
+                cell = row.createCell(cellNum++);
+                cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestScoreState.getProblemJids().get(i)));
+            }
+
+            sheet = workbook.createSheet(Messages.get("team.teams"));
+
+            List<ContestTeam> contestTeams = contestService.findAllContestTeams(contest.getJid());
+            rowNum = 0;
+            cellNum = 0;
+            row = sheet.createRow(rowNum++);
+            cell = row.createCell(cellNum++);
+            cell.setCellValue(Messages.get("team.name"));
+            cell = row.createCell(cellNum++);
+            cell.setCellValue(Messages.get("team.coach.name"));
+            cell = row.createCell(cellNum++);
+            cell.setCellValue(Messages.get("team.member.name"));
+            for (ContestTeam contestTeam : contestTeams) {
+                row = sheet.createRow(rowNum++);
+                cell = row.createCell(cellNum++);
+                cell.setCellValue(contestTeam.getName());
+
+                List<ContestTeamCoach> contestTeamCoaches = contestService.findContestTeamCoachesByTeamJid(contestTeam.getContestJid());
+                List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByTeamJid(contestTeam.getJid());
+                if (contestTeamCoaches.size() > 0) {
+                    cell = row.createCell(1);
+                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamCoaches.get(0).getCoachJid()));
+                }
+                if (contestTeamMembers.size() > 0) {
+                    cell = row.createCell(2);
+                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamMembers.get(0).getMemberJid()));
+                }
+                int max = Math.max(contestTeamCoaches.size(), contestTeamMembers.size());
+                for (int i=1;i<max;++i) {
+                    row = sheet.createRow(rowNum++);
+                    if (contestTeamCoaches.size() > i) {
+                        cell = row.createCell(1);
+                        cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamCoaches.get(i).getCoachJid()));
+                    }
+                    if (contestTeamMembers.size() > i) {
+                        cell = row.createCell(2);
+                        cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamMembers.get(i).getMemberJid()));
+                    }
+                }
+            }
+
+            sheet = workbook.createSheet("Rank");
+            if (contest.isIOI()) {
+                IOIScoreboardContent ioiScoreboardContent = (IOIScoreboardContent) contestScoreboard.getScoreboard().getContent();
+                rowNum = 0;
+                row = sheet.createRow(rowNum++);
+
+                cellNum = 0;
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Rank");
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Contestant");
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Total");
+                for (String s : contestScoreState.getProblemAliases()) {
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(s);
+                }
+
+                for (IOIScoreboardEntry entry : ioiScoreboardContent.getEntries()) {
+                    row = sheet.createRow(rowNum++);
+                    cellNum = 0;
+
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(entry.rank);
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(entry.contestantJid));
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(entry.totalScores);
+                    for (Integer score : entry.scores) {
+                        cell = row.createCell(cellNum++);
+                        cell.setCellValue(score);
+                    }
+                }
+                try {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    workbook.write(baos);
+                    baos.close();
+                    response().setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    response().setHeader("Content-Disposition", "attachment; filename=\"" + contest.getName()+ ".xls\"");
+                    return ok(baos.toByteArray());
+                } catch (IOException e) {
+                    return internalServerError();
+                }
+            } else {
+                // TODO FOR ACM ICPC
                 return internalServerError();
             }
         } else {

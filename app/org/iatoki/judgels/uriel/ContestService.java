@@ -86,6 +86,8 @@ public interface ContestService {
 
     Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
+    List<ContestTeam> findAllContestTeams(String contestJid);
+
     ContestTeam findContestTeamByContestTeamId(long contestTeamId);
 
     void createContestTeam(long contestId, String name);

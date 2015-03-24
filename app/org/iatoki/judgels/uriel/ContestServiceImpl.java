@@ -484,6 +484,15 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public List<ContestTeam> findAllContestTeams(String contestJid) {
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid), 0, -1);
+
+        List<ContestTeam> contestTeams = Lists.transform(contestTeamModels, m -> createContestTeamFromModel(m));
+
+        return contestTeams;
+    }
+
+    @Override
     public ContestTeam findContestTeamByContestTeamId(long contestTeamId) {
         return createContestTeamFromModel(contestTeamDao.findById(contestTeamId));
     }
