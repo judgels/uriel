@@ -27,7 +27,7 @@ public final class ScoreUpdater implements Runnable {
         JPA.withTransaction(() -> {
             Date timeNow = new Date();
             for (Contest contest : contestService.getRunningContests(timeNow)) {
-                if (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS)) {
+                if ((contest.isUsingScoreboard()) && (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS))) {
                     ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
                     ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
                     ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());

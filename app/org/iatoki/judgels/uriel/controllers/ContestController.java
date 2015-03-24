@@ -268,7 +268,7 @@ public final class ContestController extends Controller {
             return showCreate(form);
         } else {
             ContestUpsertForm contestUpsertForm = form.get();
-            contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isIncognitoScoreboard);
+            contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
 
             return redirect(routes.ContestController.index());
         }
@@ -370,7 +370,7 @@ public final class ContestController extends Controller {
                 return showUpdateManagerGeneral(form, contest);
             } else {
                 ContestUpsertForm contestUpsertForm = form.get();
-                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isIncognitoScoreboard);
+                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
 
                 return redirect(routes.ContestController.view(contestId));
             }
@@ -1393,7 +1393,7 @@ public final class ContestController extends Controller {
 
     public Result viewSupervisorScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseScoreboard(contest)) {
+        if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
@@ -1420,7 +1420,7 @@ public final class ContestController extends Controller {
 
     public Result refreshAllScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseScoreboard(contest)) {
+        if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             try {
                 if (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS)) {
                     ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
@@ -1449,7 +1449,7 @@ public final class ContestController extends Controller {
 
     public Result downloadContestDataAsXLS(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseScoreboard(contest)) {
+        if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ContestScoreState contestScoreState = contestScoreboard.getScoreboard().getState();
@@ -1822,7 +1822,7 @@ public final class ContestController extends Controller {
 
     public Result viewContestantScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToEnterContest(contest)) {
+        if ((contest.isUsingScoreboard()) && (isAllowedToEnterContest(contest))) {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
@@ -2299,7 +2299,10 @@ public final class ContestController extends Controller {
         internalLinkBuilder.add(new InternalLink(Messages.get("problem.problems"), routes.ContestController.viewContestantProblems(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("submission.submissions"), routes.ContestController.viewContestantSubmissions(contest.getId())));
         internalLinkBuilder.add(new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.viewContestantClarifications(contest.getId())));
-        internalLinkBuilder.add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId())));
+
+        if (contest.isUsingScoreboard()) {
+            internalLinkBuilder.add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.viewContestantScoreboard(contest.getId())));
+        }
 
         if (isSupervisorOrAbove(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.viewSupervisorContestants(contest.getId())));

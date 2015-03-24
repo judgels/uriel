@@ -127,6 +127,7 @@ contest.second-left=second
 
 contest.clarificationEndTime=Clarification End Time
 contest.isOfficialScoreboardAllowed=Official Scoreboard Allowed?
+contest.isUsingScoreboard=Use Scoreboard?
 contest.isIncognitoScoreboard=Incognito Scoreboard?
 
 contest.config.general=General
@@ -156,6 +157,8 @@ team.view=View Team
 team.coach.name=Coach Name
 team.member.name=Member Name
 team.update=Update Team
+
+data.download=Download Contest Data
 
 scoreboard.not_available=Scoreboard is not available at the moment.
 
