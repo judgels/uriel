@@ -2,7 +2,6 @@ package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -11,7 +10,6 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestriction;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 import org.iatoki.judgels.uriel.commons.ScoreboardContent;
@@ -49,9 +47,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -180,11 +181,51 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin) {
-        long totalRowsCount = contestDao.countAllowedContests(filterString, userJid, isAdmin);
-        List<ContestModel> contestModels = contestDao.findSortedAllowedContestsByFilters(orderBy, orderDir, filterString, userJid, isAdmin, pageIndex * pageSize, pageSize);
+        if (isAdmin) {
+            long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of());
+            List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
-        List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
-        return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
+            List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+            return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
+        } else {
+            List<String> contestJidsWhereIsContestant = contestContestantDao.findContestJidsByContestantJid(IdentityUtils.getUserJid());
+            List<ContestModel> contestModels = contestDao.getRunningContestsWithinContestJids(System.currentTimeMillis(), contestJidsWhereIsContestant);
+            long totalRowsCount;
+
+            boolean anyExclusiveContest = false;
+            for (ContestModel contestModel : contestModels) {
+                anyExclusiveContest = anyExclusiveContest || contestModel.isExclusive;
+            }
+
+            if (anyExclusiveContest) {
+                // Disable past contest
+                contestModels = contestModels.stream().filter(c -> c.name.contains(filterString)).collect(Collectors.toList());
+                Collections.sort(contestModels, (c1, c2) -> Long.compare(c1.endTime, c2.endTime));
+
+                totalRowsCount = contestModels.size();
+                contestModels = contestModels.stream().skip(pageIndex * pageSize).limit(pageSize).collect(Collectors.toList());
+
+                List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+            } else {
+                // Enable any contest
+                List<String> contestJidsWhereIsManager = contestManagerDao.findContestJidsByManagerJid(IdentityUtils.getUserJid());
+                List<String> contestJidsWhereIsSupervisor = contestSupervisorDao.findContestJidsBySupervisorJid(IdentityUtils.getUserJid());
+                List<String> contestTeamJids = contestTeamCoachDao.findContestTeamJidsByCoachJid(IdentityUtils.getUserJid());
+                List<String> contestJidsWhereIsCoach = contestTeamDao.findContestJidsByTeamJids(contestTeamJids);
+
+                Set<String> contestJids = new HashSet<>();
+                contestJids.addAll(contestJidsWhereIsManager);
+                contestJids.addAll(contestJidsWhereIsSupervisor);
+                contestJids.addAll(contestJidsWhereIsContestant);
+                contestJids.addAll(contestJidsWhereIsCoach);
+
+                totalRowsCount = contestDao.countContestsWithinContestJidsOrIsRunningPublic(filterString, contestJids, System.currentTimeMillis());
+                contestModels = contestDao.findSortedContestsWithinContestJidsOrIsRunningPublicByFilters(orderBy, orderDir, filterString, contestJids, pageIndex * pageSize, pageSize, System.currentTimeMillis());
+            }
+
+            List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+            return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
+        }
     }
 
     @Override
@@ -425,13 +466,13 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestContestant findContestContestantByContestJidAndContestContestantJid(String contestJid, String contestContestantJid) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findByContestantJid(contestJid, contestContestantJid);
+        ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestContestantJid);
         return createContestContestantFromModel(contestContestantModel);
     }
 
     @Override
     public boolean isContestContestantInContestByUserJid(String contestJid, String contestContestantJid) {
-        return contestContestantDao.existsByContestantJid(contestJid, contestContestantJid);
+        return contestContestantDao.existsByContestJidAndContestantJid(contestJid, contestContestantJid);
     }
 
     @Override
@@ -461,7 +502,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public void enterContestAsContestant(String contestJid, String userJid) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findByContestantJid(contestJid, userJid);
+        ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, userJid);
         if (contestContestantModel.contestEnterTime == 0) {
             contestContestantModel.contestEnterTime = System.currentTimeMillis();
 
@@ -471,13 +512,13 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public void enterContestAsCoach(String contestJid, String coachJid) {
-        List<String> contestTeamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
+        List<String> contestTeamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
 
-        ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findContestTeamCoachByCoachJidInAnyTeam(coachJid, contestTeamJids);
+        ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findContestTeamCoachByCoachJidInTeams(coachJid, contestTeamJids);
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamCoachModel.teamJid);
 
         for (ContestTeamMemberModel contestTeamMemberModel : contestTeamMemberModels) {
-            ContestContestantModel contestContestantModel = contestContestantDao.findByContestantJid(contestJid, contestTeamMemberModel.memberJid);
+            ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestTeamMemberModel.memberJid);
             contestContestantModel.contestEnterTime = System.currentTimeMillis();
 
             contestContestantDao.edit(contestContestantModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -573,24 +614,23 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public boolean isUserInAnyTeam(String contestJid, String userJid) {
-        List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
+    public boolean isUserInAnyTeamByContestJid(String contestJid, String userJid) {
+        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
 
-        return ((contestTeamCoachDao.isUserRegisteredAsCoachInAnyTeam(userJid, teamJids)) || (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(userJid, teamJids)));
+        return ((contestTeamCoachDao.isUserRegisteredAsCoachInTeams(userJid, teamJids)) || (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(userJid, teamJids)));
     }
 
     @Override
-    public boolean isUserCoachInAnyTeam(String contestJid, String userJid) {
-        List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
+    public boolean isUserCoachInAnyTeamByContestJid(String contestJid, String coachJid) {
+        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
 
-        return (contestTeamCoachDao.isUserRegisteredAsCoachInAnyTeam(userJid, teamJids));
+        return (contestTeamCoachDao.isUserRegisteredAsCoachInTeams(coachJid, teamJids));
     }
 
     @Override
-    public ContestTeam findContestTeamJidOfCoach(String contestJid, String userJid) {
-        List<String> teamJids = contestTeamDao.findAllTeamJidsInContest(contestJid);
-
-        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamCoachDao.findContestTeamCoachByCoachJidInAnyTeam(userJid, teamJids).teamJid);
+    public ContestTeam findContestTeamJidByContestJidAndCoachJid(String contestJid, String coachJid) {
+        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamCoachDao.findContestTeamCoachByCoachJidInTeams(coachJid, teamJids).teamJid);
 
         return createContestTeamFromModel(contestTeamModel);
     }
@@ -602,7 +642,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid) {
-        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findContestTeamCoachesInTeam(contestTeamJid);
+        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamJid);
 
         return Lists.transform(contestTeamCoachModels, m -> createContestTeamCoachFromModel(m));
     }
@@ -625,6 +665,15 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) {
         return createContestTeamMemberFromModel(contestTeamMemberDao.findById(contestTeamMemberId));
+    }
+
+    @Override
+    public List<ContestTeamMember> findContestTeamMembersByContestJidAndCoachJid(String contestJid, String coachJid) {
+        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamCoachDao.findContestTeamCoachByCoachJidInTeams(coachJid, teamJids).teamJid);
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
+
+        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
     }
 
     @Override
@@ -651,7 +700,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid) {
-        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findBySupervisorJid(contestJid, userJid);
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findByContestJidAndSupervisorJid(contestJid, userJid);
 
         return createContestSupervisorFromModel(contestSupervisorModel);
     }
@@ -673,7 +722,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid) {
-        return contestSupervisorDao.existsBySupervisorJid(contestJid, contestSupervisorJid);
+        return contestSupervisorDao.existsByContestJidAndSupervisorJid(contestJid, contestSupervisorJid);
     }
 
     @Override
@@ -721,7 +770,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid) {
-        return contestManagerDao.existsByManagerJid(contestJid, contestManagerJid);
+        return contestManagerDao.existsByContestJidAndManagerJid(contestJid, contestManagerJid);
     }
 
     @Override
@@ -815,7 +864,7 @@ public final class ContestServiceImpl implements ContestService {
     public Map<String, URL> getMapContestantJidToImageUrlInContest(String contestJid) {
         ImmutableMap.Builder<String, URL> resultBuilder = ImmutableMap.builder();
 
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findAllContestTeamModelInContest(contestJid);
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.findContestTeamModelsByContestJid(contestJid);
         ImmutableMap.Builder<String, ContestTeamModel> contestTeamModelBuilder = ImmutableMap.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
             contestTeamModelBuilder.put(contestTeamModel.jid, contestTeamModel);

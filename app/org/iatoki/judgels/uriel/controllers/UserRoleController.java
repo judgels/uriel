@@ -3,15 +3,13 @@ package org.iatoki.judgels.uriel.controllers;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
-import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
-import org.iatoki.judgels.commons.views.html.layouts.leftSidebarLayout;
-import org.iatoki.judgels.uriel.JidCacheService;
+import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRole;
 import org.iatoki.judgels.uriel.UserRoleService;
@@ -32,6 +30,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -52,10 +51,11 @@ public final class UserRoleController extends Controller {
     private Result showUpdate(Form<UserRoleUpdateForm> form, long userRoleId) {
         LazyHtml content = new LazyHtml(updateView.render(form, userRoleId));
         content.appendLayout(c -> headingLayout.render(Messages.get("userRole.update"), c));
-        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+        appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index()),
                 new InternalLink(Messages.get("userRole.update"), routes.UserRoleController.update(userRoleId))
-        ), c));
+        ));
         appendTemplateLayout(content);
         return lazyOk(content);
     }
@@ -94,15 +94,21 @@ public final class UserRoleController extends Controller {
 
         LazyHtml content = new LazyHtml(listView.render(currentPage, sortBy, orderBy, filterString));
         content.appendLayout(c -> headingLayout.render(Messages.get("userRole.list"), c));
-        content.appendLayout(c -> breadcrumbsLayout.render(ImmutableList.of(
+
+        appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index())
-        ), c));
+        ));
         appendTemplateLayout(content);
 
         return lazyOk(content);
     }
 
-    private void appendTemplateLayout(LazyHtml content) {
+    private void appendBreadcrumbsLayout(LazyHtml content, List<InternalLink> links) {
+        content.appendLayout(c -> breadcrumbsLayout.render(links, c));
+    }
+
+    private void appendSidebarLayout(LazyHtml content) {
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
 
@@ -110,15 +116,18 @@ public final class UserRoleController extends Controller {
             internalLinkBuilder.add(new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index()));
         }
 
-        content.appendLayout(c -> leftSidebarLayout.render(
-            IdentityUtils.getUsername(),
-            IdentityUtils.getUserRealName(),
-            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.UserRoleController.index().absoluteURL(request())).absoluteURL(request())).absoluteURL(request()),
-            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
-            internalLinkBuilder.build(), c)
+        content.appendLayout(c -> sidebarLayout.render(
+                        IdentityUtils.getUsername(),
+                        IdentityUtils.getUserRealName(),
+                        org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.UserRoleController.index().absoluteURL(request())).absoluteURL(request())).absoluteURL(request()),
+                        org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
+                        internalLinkBuilder.build(), c)
         );
+    }
+
+    private void appendTemplateLayout(LazyHtml content) {
         content.appendLayout(c -> headerFooterLayout.render(c));
-        content.appendLayout(c -> baseLayout.render("TODO", c));
+        content.appendLayout(c -> baseLayout.render("User Role", c));
     }
 
     private Result lazyOk(LazyHtml content) {

@@ -7,10 +7,12 @@ import java.util.List;
 
 public interface ContestTeamCoachDao extends Dao<Long, ContestTeamCoachModel> {
 
-    boolean isUserRegisteredAsCoachInAnyTeam(String userJid, List<String> teamJids);
+    boolean isUserRegisteredAsCoachInTeams(String userJid, List<String> teamJids);
 
-    List<ContestTeamCoachModel> findContestTeamCoachesInTeam(String teamJid);
+    List<ContestTeamCoachModel> findContestTeamCoachesByTeamJid(String teamJid);
 
-    ContestTeamCoachModel findContestTeamCoachByCoachJidInAnyTeam(String userJid, List<String> teamJids);
+    ContestTeamCoachModel findContestTeamCoachByCoachJidInTeams(String coachJid, List<String> teamJids);
+
+    List<String> findContestTeamJidsByCoachJid(String coachJid);
 
 }

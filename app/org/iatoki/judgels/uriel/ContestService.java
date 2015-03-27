@@ -100,11 +100,11 @@ public interface ContestService {
 
     void updateContestTeam(long contestTeamId, String name, File teamImage, String extension);
 
-    boolean isUserInAnyTeam(String contestJid, String userJid);
+    boolean isUserInAnyTeamByContestJid(String contestJid, String userJid);
 
-    boolean isUserCoachInAnyTeam(String contestJid, String userJid);
+    boolean isUserCoachInAnyTeamByContestJid(String contestJid, String coachJid);
 
-    ContestTeam findContestTeamJidOfCoach(String contestJid, String userJid);
+    ContestTeam findContestTeamJidByContestJidAndCoachJid(String contestJid, String coachJid);
 
     ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 
@@ -115,6 +115,8 @@ public interface ContestService {
     void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 
     ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId);
+
+    List<ContestTeamMember> findContestTeamMembersByContestJidAndCoachJid(String contestJid, String coachJid);
 
     List<ContestTeamMember> findContestTeamMembersByTeamJid(String contestTeamJid);
 

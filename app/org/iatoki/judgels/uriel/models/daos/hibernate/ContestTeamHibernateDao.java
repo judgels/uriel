@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
+import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.models.daos.hibernate.AbstractJudgelsHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamModel;
@@ -9,6 +10,7 @@ import play.db.jpa.JPA;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.Collection;
 import java.util.List;
 
 public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<ContestTeamModel> implements ContestTeamDao {
@@ -17,10 +19,10 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
-    public List<ContestTeamModel> findAllContestTeamModelInContest(String contestJid) {
+    public List<ContestTeamModel> findContestTeamModelsByContestJid(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
-        CriteriaQuery<ContestTeamModel> query = cb.createQuery(ContestTeamModel.class);
-        Root<ContestTeamModel> root = query.from(ContestTeamModel.class);
+        CriteriaQuery<ContestTeamModel> query = cb.createQuery(getModelClass());
+        Root<ContestTeamModel> root = query.from(getModelClass());
 
         query.where(cb.equal(root.get(ContestTeamModel_.contestJid), contestJid));
 
@@ -28,13 +30,28 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
-    public List<String> findAllTeamJidsInContest(String contestJid) {
+    public List<String> findTeamJidsByContestJid(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);
-        Root<ContestTeamModel> root = query.from(ContestTeamModel.class);
+        Root<ContestTeamModel> root = query.from(getModelClass());
 
         query.select(root.get(ContestTeamModel_.jid)).where(cb.equal(root.get(ContestTeamModel_.contestJid), contestJid));
 
         return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<String> findContestJidsByTeamJids(Collection<String> teamJids) {
+        if (teamJids.isEmpty()) {
+            return ImmutableList.of();
+        } else {
+            CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+            CriteriaQuery<String> query = cb.createQuery(String.class);
+            Root<ContestTeamModel> root = query.from(getModelClass());
+
+            query.select(root.get(ContestTeamModel_.contestJid)).where(root.get(ContestTeamModel_.jid).in(teamJids));
+
+            return JPA.em().createQuery(query).getResultList();
+        }
     }
 }

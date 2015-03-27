@@ -13,10 +13,17 @@
 
 @for(contest <- page.getData) {
     <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <a href="@routes.ContestController.view(contest.getId)" class="panel-title">@contest.getName</a>
+            <div class="pull-right">
+                <a href="@routes.ContestController.view(contest.getId)" class="btn btn-primary">@Messages.get("commons.view")</a>
+            </div>
+        </div>
         <div class="panel-body">
-        @contest.getName <a href="@routes.ContestController.view(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("commons.view")</a>
-        <hr />
-        <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+            @contest.getDescription
+            <div>
+                <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+            </div>
         </div>
     </div>
 }

@@ -12,29 +12,27 @@
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
 
-<div class="panel panel-default">
-    <div class="panel-body">
-        @Html(contest.getDescription)
-        <hr />
-        <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
-        <hr />
+<div class="well">
+    @Html(contest.getDescription)
+    <hr />
+    <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+    <hr />
 
-        @if(isRegistered) {
-            <p>You have been successfully registered. You can enter after contest starts.</p>
-        }
+    @if(isRegistered) {
+        <p>You have been successfully registered. You can enter after contest starts.</p>
+    }
 
-        @if(isAllowedToRegister) {
-            <a href="@routes.ContestController.register(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.register")</a>
-        }
+    @if(isAllowedToRegister) {
+        <a href="@routes.ContestController.register(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.register")</a>
+    }
 
-        @if(isAllowedToEnter) {
-            <a href="@routes.ContestController.enter(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
-        }
+    @if(isAllowedToEnter) {
+        <a href="@routes.ContestController.enter(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
+    }
 
-        @if(isAllowedToUpdate) {
-            <a href="@routes.ContestController.updateManagerGeneral(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("commons.update")</a>
-        }
-    </div>
+    @if(isAllowedToUpdate) {
+        <a href="@routes.ContestController.updateManagerGeneral(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("commons.update")</a>
+    }
 </div>
 
 <h3>@Messages.get("contest.registrants") (@page.getTotalRowsCount)</h3>
