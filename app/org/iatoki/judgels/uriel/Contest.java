@@ -24,11 +24,13 @@ public final class Contest {
 
     private Date clarificationEndTime;
 
+    private boolean isExclusive;
+
     private boolean isUsingScoreboard;
 
     private boolean isIncognitoScoreboard;
 
-    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
         this.id = id;
         this.jid = jid;
         this.name = name;
@@ -39,6 +41,7 @@ public final class Contest {
         this.startTime = startTime;
         this.endTime = endTime;
         this.clarificationEndTime = clarificationEndTime;
+        this.isExclusive = isExclusive;
         this.isUsingScoreboard = isUsingScoreboard;
         this.isIncognitoScoreboard = isIncognitoScoreboard;
     }
@@ -85,6 +88,10 @@ public final class Contest {
 
     public boolean isClarificationTimeValid() {
         return clarificationEndTime.after(new Date());
+    }
+
+    public boolean isExclusive() {
+        return isExclusive;
     }
 
     public boolean isUsingScoreboard() {
