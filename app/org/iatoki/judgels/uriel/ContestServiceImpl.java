@@ -101,7 +101,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public void createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
         ContestModel contestModel = new ContestModel();
         contestModel.name = name;
         contestModel.description = description;
@@ -111,6 +111,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.startTime = startTime.getTime();
         contestModel.endTime = endTime.getTime();
         contestModel.clarificationEndTime = clarificationEndTime.getTime();
+        contestModel.isExclusive = isExclusive;
         contestModel.isUsingScoreboard = isUsingScoreboard;
         contestModel.isIncognitoScoreboard = isIncognitoScoreboard;
 
@@ -131,7 +132,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
         boolean resetScoreboard = false;
 
         ContestModel contestModel = contestDao.findById(contestId);
@@ -146,6 +147,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.startTime = startTime.getTime();
         contestModel.endTime = endTime.getTime();
         contestModel.clarificationEndTime = clarificationEndTime.getTime();
+        contestModel.isExclusive = isExclusive;
         contestModel.isUsingScoreboard = isUsingScoreboard;
         contestModel.isIncognitoScoreboard = isIncognitoScoreboard;
 
@@ -994,7 +996,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     private Contest createContestFromModel(ContestModel contestModel) {
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime), new Date(contestModel.clarificationEndTime), contestModel.isUsingScoreboard, contestModel.isIncognitoScoreboard);
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime), new Date(contestModel.clarificationEndTime), contestModel.isExclusive, contestModel.isUsingScoreboard, contestModel.isIncognitoScoreboard);
     }
 
     private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {

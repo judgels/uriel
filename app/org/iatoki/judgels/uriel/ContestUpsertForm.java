@@ -16,6 +16,7 @@ public final class ContestUpsertForm {
         this.startTime = UrielUtils.convertDateToString(contest.getStartTime());
         this.endTime = UrielUtils.convertDateToString(contest.getEndTime());
         this.clarificationEndTime = UrielUtils.convertDateToString(contest.getClarificationEndTime());
+        this.isExclusive = contest.isExclusive();
         this.isUsingScoreboard = contest.isUsingScoreboard();
         this.isIncognitoScoreboard = contest.isIncognitoScoreboard();
     }
@@ -42,6 +43,8 @@ public final class ContestUpsertForm {
 
     @Constraints.Required
     public String clarificationEndTime;
+
+    public boolean isExclusive;
 
     public boolean isUsingScoreboard;
 

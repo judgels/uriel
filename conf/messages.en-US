@@ -126,6 +126,7 @@ contest.minute-left=minute
 contest.second-left=second
 
 contest.clarificationEndTime=Clarification End Time
+contest.isExclusive=Exclusive Contest?
 contest.isOfficialScoreboardAllowed=Official Scoreboard Allowed?
 contest.isUsingScoreboard=Use Scoreboard?
 contest.isIncognitoScoreboard=Incognito Scoreboard?
@@ -164,3 +165,4 @@ data.download=Download Contest Data
 scoreboard.not_available=Scoreboard is not available at the moment.
 
 error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
+error.contestant.create.userJid.invalid=User Jid is invalid.
