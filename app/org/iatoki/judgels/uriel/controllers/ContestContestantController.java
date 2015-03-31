@@ -118,20 +118,7 @@ public class ContestContestantController extends Controller {
                 String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
                     userRoleService.upsertUserRoleFromJophielUserJid(userJid);
-                    try {
-                        boolean processed = false;
-                        while (!processed) {
-                            if (GabrielUtils.getScoreboardLock().tryLock()) {
-                                contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
-                                GabrielUtils.getScoreboardLock().unlock();
-                                processed = true;
-                            } else {
-                                Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
                     return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
                 } else {
@@ -170,20 +157,7 @@ public class ContestContestantController extends Controller {
                 return showUpdateContestant(form, contest, contestContestant);
             } else {
                 ContestContestantUpdateForm contestContestantUpdateForm = form.get();
-                try {
-                    boolean processed = false;
-                    while (!processed) {
-                        if (GabrielUtils.getScoreboardLock().tryLock()) {
-                            contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
-                            GabrielUtils.getScoreboardLock().unlock();
-                            processed = true;
-                        } else {
-                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
 
                 return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
             }
@@ -203,24 +177,15 @@ public class ContestContestantController extends Controller {
             if (file != null) {
                 File userFile = file.getFile();
                 try {
-                    boolean processed = false;
-                    while (!processed) {
-                        if (GabrielUtils.getScoreboardLock().tryLock()) {
-                            String[] usernames = FileUtils.readFileToString(userFile).split("\n");
-                            for (String username : usernames) {
-                                String userJid = JophielUtils.verifyUsername(username);
-                                if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
-                                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
-                                }
-                            }
-                            GabrielUtils.getScoreboardLock().unlock();
-                            processed = true;
-                        } else {
-                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
+                    String[] usernames = FileUtils.readFileToString(userFile).split("\n");
+                    for (String username : usernames) {
+                        String userJid = JophielUtils.verifyUsername(username);
+                        if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
+                            userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                         }
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }

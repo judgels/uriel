@@ -12,7 +12,6 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionsLayout;
-import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
@@ -148,27 +147,20 @@ public class ContestScoreboardController extends Controller {
     public Result refreshAllScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
-            try {
-                if (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS)) {
-                    ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
-                    ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
+                ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+                ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
 
-                    List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
+                List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
-                    ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
-                    Scoreboard scoreboard = adapter.createScoreboard(state, content);
-                    contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+                ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+                Scoreboard scoreboard = adapter.createScoreboard(state, content);
+                contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
-                    if (contest.isStandard()) {
-                        refreshFrozenScoreboard(contest, adapter, state);
-                    }
-
-                    GabrielUtils.getScoreboardLock().unlock();
+                if (contest.isStandard()) {
+                    refreshFrozenScoreboard(contest, adapter, state);
                 }
+
                 return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
-            } catch (InterruptedException e) {
-                return internalServerError();
-            }
         } else {
             return tryEnteringContest(contest);
         }

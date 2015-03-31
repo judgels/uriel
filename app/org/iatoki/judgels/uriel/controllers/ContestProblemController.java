@@ -235,22 +235,8 @@ public class ContestProblemController extends Controller {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
                 String problemName = SandalphonUtils.verifyProblemJid(contestProblemCreateForm.problemJid);
                 if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
-                    try {
-                        boolean processed = false;
-                        while (!processed) {
-                            if (GabrielUtils.getScoreboardLock().tryLock()) {
-                                contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
-                                JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-                                GabrielUtils.getScoreboardLock().unlock();
-                                processed = true;
-                            } else {
-                                Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
-
+                    contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
+                    JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
                     return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
                 } else {
                     form.reject("error.problem.create.problemJidOrAlias.invalid");
@@ -287,21 +273,7 @@ public class ContestProblemController extends Controller {
                 return showUpdateProblem(form, contest, contestProblem);
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-
-                try {
-                    boolean processed = false;
-                    while (!processed) {
-                        if (GabrielUtils.getScoreboardLock().tryLock()) {
-                            contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
-                            GabrielUtils.getScoreboardLock().unlock();
-                            processed = true;
-                        } else {
-                            Thread.sleep(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS));
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
 
                 return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
             }

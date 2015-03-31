@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel;
 
 import com.google.gson.Gson;
-import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
@@ -27,7 +26,7 @@ public final class ScoreUpdater implements Runnable {
         JPA.withTransaction(() -> {
             Date timeNow = new Date();
             for (Contest contest : contestService.getRunningContests(timeNow)) {
-                if ((contest.isUsingScoreboard()) && (GabrielUtils.getScoreboardLock().tryLock(10, TimeUnit.SECONDS))) {
+                if (contest.isUsingScoreboard()) {
                     ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
                     ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
                     ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
@@ -41,8 +40,6 @@ public final class ScoreUpdater implements Runnable {
                     ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
                     Scoreboard scoreboard = adapter.createScoreboard(state, content);
                     contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
-
-                    GabrielUtils.getScoreboardLock().unlock();
                 }
             }
         });
