@@ -1,0 +1,30 @@
+@(page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@import org.iatoki.judgels.commons.views.html.table.searchView
+@import org.iatoki.judgels.commons.views.html.table.paginationView
+@import org.iatoki.judgels.commons.JudgelsUtils
+
+@searchView(page.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
+
+<div class="clearfix"></div>
+
+@for(contest <- page.getData) {
+    <div class="panel panel-default">
+        <div class="panel-heading clearfix">
+            <a href="@routes.ContestController.viewContest(contest.getId)" class="panel-title">@contest.getName</a>
+            <div class="pull-right">
+                <a href="@routes.ContestController.viewContest(contest.getId)" class="btn btn-primary">@Messages.get("commons.view")</a>
+            </div>
+        </div>
+        <div class="panel-body">
+            @contest.getDescription
+            <div>
+                <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+            </div>
+        </div>
+    </div>
+}
+@paginationView(page, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)

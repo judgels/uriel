@@ -7,8 +7,18 @@ import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
+import org.iatoki.judgels.uriel.controllers.ContestAnnouncementController;
+import org.iatoki.judgels.uriel.controllers.ContestClarificationController;
+import org.iatoki.judgels.uriel.controllers.ContestContestantController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
+import org.iatoki.judgels.uriel.controllers.ContestManagerController;
+import org.iatoki.judgels.uriel.controllers.ContestProblemController;
+import org.iatoki.judgels.uriel.controllers.ContestScoreboardController;
+import org.iatoki.judgels.uriel.controllers.ContestSubmissionController;
+import org.iatoki.judgels.uriel.controllers.ContestSupervisorController;
+import org.iatoki.judgels.uriel.controllers.ContestTeamController;
 import org.iatoki.judgels.uriel.controllers.UserRoleController;
+import org.iatoki.judgels.uriel.controllers.apis.ContestAPIController;
 import org.iatoki.judgels.uriel.models.daos.hibernate.AvatarCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibernateDao;
@@ -116,8 +126,47 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
 
-                ContestController contestController = new ContestController(contestService, userRoleService, submissionService);
+                ContestController contestController = new ContestController(contestService);
                 cache.put(ContestController.class, contestController);
+            } else if (controllerClass.equals(ContestAnnouncementController.class)) {
+                ContestAnnouncementController contestAnnouncementController = new ContestAnnouncementController(contestService);
+                cache.put(ContestAnnouncementController.class, contestAnnouncementController);
+            } else if (controllerClass.equals(ContestClarificationController.class)) {
+                ContestClarificationController contestClarificationController = new ContestClarificationController(contestService);
+                cache.put(ContestClarificationController.class, contestClarificationController);
+            } else if (controllerClass.equals(ContestContestantController.class)) {
+                UserRoleDao userRoleDao = new UserRoleHibernateDao();
+                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+
+                ContestContestantController contestContestantController = new ContestContestantController(contestService, userRoleService);
+                cache.put(ContestContestantController.class, contestContestantController);
+            } else if (controllerClass.equals(ContestManagerController.class)) {
+                UserRoleDao userRoleDao = new UserRoleHibernateDao();
+                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+
+                ContestManagerController contestManagerController = new ContestManagerController(contestService, userRoleService);
+                cache.put(ContestManagerController.class, contestManagerController);
+            } else if (controllerClass.equals(ContestProblemController.class)) {
+                ContestProblemController contestProblemController = new ContestProblemController(contestService, submissionService);
+                cache.put(ContestProblemController.class, contestProblemController);
+            } else if (controllerClass.equals(ContestScoreboardController.class)) {
+                ContestScoreboardController contestScoreboardController = new ContestScoreboardController(contestService, submissionService);
+                cache.put(ContestScoreboardController.class, contestScoreboardController);
+            } else if (controllerClass.equals(ContestSubmissionController.class)) {
+                ContestSubmissionController contestSubmissionController = new ContestSubmissionController(contestService, submissionService);
+                cache.put(ContestSubmissionController.class, contestSubmissionController);
+            } else if (controllerClass.equals(ContestSupervisorController.class)) {
+                UserRoleDao userRoleDao = new UserRoleHibernateDao();
+                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+
+                ContestSupervisorController contestSupervisorController = new ContestSupervisorController(contestService, userRoleService);
+                cache.put(ContestSupervisorController.class, contestSupervisorController);
+            } else if (controllerClass.equals(ContestTeamController.class)) {
+                ContestTeamController contestTeamController = new ContestTeamController(contestService);
+                cache.put(ContestTeamController.class, contestTeamController);
+            } else if (controllerClass.equals(ContestAPIController.class)) {
+                ContestAPIController contestAPIController = new ContestAPIController(contestService);
+                cache.put(ContestAPIController.class, contestAPIController);
             } else if (controllerClass.equals(UserRoleController.class)) {
                 UserRoleDao userRoleDao = new UserRoleHibernateDao();
                 UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);

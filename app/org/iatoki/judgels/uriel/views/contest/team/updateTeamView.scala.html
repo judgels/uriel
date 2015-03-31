@@ -1,0 +1,19 @@
+@(contestId: Long, contestTeamId: Long, form: Form[org.iatoki.judgels.uriel.ContestTeamUpsertForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.formErrorView
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
+
+@b3.form(routes.ContestTeamController.postUpdateTeam(contestId, contestTeamId), 'enctype->"multipart/form-data") {
+
+    @upsertTeamView(form)
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}
+
+@supervisorjs(contestId)

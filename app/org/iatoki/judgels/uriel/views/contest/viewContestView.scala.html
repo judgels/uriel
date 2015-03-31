@@ -1,0 +1,66 @@
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToEnter: Boolean, isAllowedToUpdate: Boolean)
+
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.table.tableView
+@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
+@import org.iatoki.judgels.commons.views.html.table.paginationView
+
+
+@import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.uriel.JidCacheService
+@import scala.collection.JavaConversions
+
+<div class="well">
+    @Html(contest.getDescription)
+    <hr />
+    <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+    <hr />
+
+    @if(isRegistered) {
+        <p>You have been successfully registered. You can enter after contest starts.</p>
+    }
+
+    @if(isAllowedToRegister) {
+        <a href="@routes.ContestController.registerToAContest(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.register")</a>
+    }
+
+    @if(isAllowedToEnter) {
+        <a href="@routes.ContestController.enterContest(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
+    }
+
+    @if(isAllowedToUpdate) {
+        <a href="@routes.ContestController.postUpdateContestGeneralConfig(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("commons.update")</a>
+    }
+</div>
+
+<h3>@Messages.get("contest.registrants") (@page.getTotalRowsCount)</h3>
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.viewContestAndListRegistrants(contest.getId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+
+@tableView() {
+    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "userJid" -> Messages.get("contestant.name")
+    )
+    <tbody>
+    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestContestant <- page.getData) {
+            <tr>
+                <td>@contestContestant.getId</td>
+                <td>@displayNamesMap.get(contestContestant.getUserJid)</td>
+                <td class="text-center">
+            </td>
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+@paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+<script type="text/javascript">
+    var confirmMessage = "@Messages.get("contest.enter.confirm")";
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertEnterContest.js")"></script>
