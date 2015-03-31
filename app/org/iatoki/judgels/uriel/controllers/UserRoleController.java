@@ -1,8 +1,10 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
@@ -10,6 +12,7 @@ import org.iatoki.judgels.commons.views.html.layouts.breadcrumbsLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
+import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserRole;
 import org.iatoki.judgels.uriel.UserRoleService;
@@ -38,10 +41,12 @@ import java.util.List;
 public final class UserRoleController extends Controller {
 
     private static final long PAGE_SIZE = 20;
-    private final UserRoleService userRoleService;
+    private UserRoleService userRoleService;
 
     public UserRoleController(UserRoleService userRoleService) {
         this.userRoleService = userRoleService;
+
+        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
     }
 
     public Result index() {
@@ -49,21 +54,24 @@ public final class UserRoleController extends Controller {
     }
 
     private Result showUpdate(Form<UserRoleUpdateForm> form, long userRoleId) {
+        UserRole userRole = userRoleService.findUserRoleById(userRoleId);
         LazyHtml content = new LazyHtml(updateView.render(form, userRoleId));
         content.appendLayout(c -> headingLayout.render(Messages.get("userRole.update"), c));
-        appendSidebarLayout(content);
-        appendBreadcrumbsLayout(content, ImmutableList.of(
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index()),
                 new InternalLink(Messages.get("userRole.update"), routes.UserRoleController.update(userRoleId))
         ));
-        appendTemplateLayout(content);
-        return lazyOk(content);
+        ControllerUtils.getInstance().appendTemplateLayout(content, "User Roles - Update");
+
+        return ControllerUtils.getInstance().lazyOk(content);
     }
 
     @AddCSRFToken
     public Result update(long userRoleId) {
         UserRole userRole = userRoleService.findUserRoleById(userRoleId);
-        UserRoleUpdateForm userRoleUpdateForm = new UserRoleUpdateForm(userRole);
+        UserRoleUpdateForm userRoleUpdateForm = new UserRoleUpdateForm();
+        userRoleUpdateForm.roles = StringUtils.join(userRole.getRoles(), ",");
         Form<UserRoleUpdateForm> form = Form.form(UserRoleUpdateForm.class).fill(userRoleUpdateForm);
 
         return showUpdate(form, userRoleId);
@@ -94,54 +102,12 @@ public final class UserRoleController extends Controller {
 
         LazyHtml content = new LazyHtml(listView.render(currentPage, sortBy, orderBy, filterString));
         content.appendLayout(c -> headingLayout.render(Messages.get("userRole.list"), c));
-
-        appendSidebarLayout(content);
-        appendBreadcrumbsLayout(content, ImmutableList.of(
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index())
         ));
-        appendTemplateLayout(content);
+        ControllerUtils.getInstance().appendTemplateLayout(content, "User Roles - List");
 
-        return lazyOk(content);
-    }
-
-    private void appendBreadcrumbsLayout(LazyHtml content, List<InternalLink> links) {
-        content.appendLayout(c -> breadcrumbsLayout.render(links, c));
-    }
-
-    private void appendSidebarLayout(LazyHtml content) {
-        ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
-
-        if (UrielUtils.hasRole("admin")) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("userRole.userRoles"), routes.UserRoleController.index()));
-        }
-
-        content.appendLayout(c -> sidebarLayout.render(
-                        IdentityUtils.getUsername(),
-                        IdentityUtils.getUserRealName(),
-                        org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.UserRoleController.index().absoluteURL(request())).absoluteURL(request())).absoluteURL(request()),
-                        org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(request())).absoluteURL(request()),
-                        internalLinkBuilder.build(), c)
-        );
-    }
-
-    private void appendTemplateLayout(LazyHtml content) {
-        content.appendLayout(c -> headerFooterLayout.render(c));
-        content.appendLayout(c -> baseLayout.render("User Role", c));
-    }
-
-    private Result lazyOk(LazyHtml content) {
-        return getResult(content, Http.Status.OK);
-    }
-
-    private Result getResult(LazyHtml content, int statusCode) {
-        switch (statusCode) {
-            case Http.Status.OK:
-                return ok(content.render(0));
-            case Http.Status.NOT_FOUND:
-                return notFound(content.render(0));
-            default:
-                return badRequest(content.render(0));
-        }
+        return ControllerUtils.getInstance().lazyOk(content);
     }
 }
