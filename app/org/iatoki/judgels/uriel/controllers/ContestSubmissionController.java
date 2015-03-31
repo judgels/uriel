@@ -58,15 +58,15 @@ public class ContestSubmissionController extends Controller {
         return listScreenedSubmissions(contestId, 0, "id", "desc", "");
     }
 
-    public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) {
         Contest contest = contestService.findContestById(contestId);
 
         if (isAllowedToEnterContest(contest)) {
-            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), null, contest.getJid());
+            Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), problemJid, contest.getJid());
             Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
-            LazyHtml content = new LazyHtml(listScreenedSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listScreenedSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, problemJid));
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
             if (isAllowedToSuperviseSubmissions(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestSubmissionController.viewSubmissions(contest.getId()), c));
