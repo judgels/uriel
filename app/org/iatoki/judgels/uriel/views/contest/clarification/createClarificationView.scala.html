@@ -28,7 +28,14 @@
         </div>
     </div>
 
-    @b3.textarea(form("question"), '_label -> Messages.get("clarification.question"))
+    <div class="form-group">
+        <label class="control-label col-md-3" for="question">@Messages.get("clarification.question")</label>
+        <div class="col-md-9">
+            <textarea class="ckeditor" name="question">
+                @form("question").value
+            </textarea>
+        </div>
+    </div>
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }
