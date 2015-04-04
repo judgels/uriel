@@ -38,6 +38,7 @@ import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.updateProblemView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.Play;
+import play.data.DynamicForm;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -111,7 +112,7 @@ public class ContestProblemController extends Controller {
             }
 
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, Play.langCookieName(), routes.ContestProblemController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request())).toString();
+            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestProblemController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request())).toString();
             String requestBody = "";
 
             ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
@@ -178,6 +179,13 @@ public class ContestProblemController extends Controller {
         } else {
             return tryEnteringContest(contest);
         }
+    }
+
+    public Result switchLanguage(long contestId, long contestProblemId) {
+        String languageCode = DynamicForm.form().bindFromRequest().get("langCode");
+        ContestControllerUtils.getInstance().setCurrentStatementLanguage(languageCode);
+
+        return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblemId));
     }
 
     public Result viewProblems(long contestId) {

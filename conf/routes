@@ -60,6 +60,7 @@ GET         /contests/:cId/problems/                                @org.iatoki.
 GET         /contests/:cId/problems/:pId/view                       @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblem(cId: Long, pId: Long)
 GET         /contests/:cId/problems/:pId/render/:name               @org.iatoki.judgels.uriel.controllers.ContestProblemController.renderImage(cId: Long, pId: Long, name: String)
 POST        /contests/:cId/problems/:pJid/submit                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.postSubmitProblem(cId: Long, pJid: String)
+POST        /contests/:cId/problems/:cpId/switchLanguage            @org.iatoki.judgels.uriel.controllers.ContestProblemController.switchLanguage(cId: Long, cpId: Long)
 GET         /contests/:cId/problems/all                             @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblems(cId: Long)
 GET         /contests/:cId/problems/all/                            @org.iatoki.judgels.uriel.controllers.ContestProblemController.listProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contests/:cId/problems/create                          @org.iatoki.judgels.uriel.controllers.ContestProblemController.createProblem(cId: Long)

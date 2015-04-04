@@ -8,6 +8,7 @@ import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import play.i18n.Messages;
+import play.mvc.Controller;
 
 import java.util.Date;
 
@@ -32,6 +33,19 @@ public final class ContestControllerUtils {
         content.appendLayout(c -> contestTimeLayout.render(contest.getStartTime(), contestEndTime, c));
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
         content.appendLayout(c -> headingLayout.render(contest.getName(), c));
+    }
+
+    public void setCurrentStatementLanguage(String languageCode) {
+        Controller.session("currentStatementLanguage", languageCode);
+    }
+
+    public String getCurrentStatementLanguage() {
+        String lang = Controller.session("currentStatementLanguage");
+        if (lang == null) {
+            return "en-US";
+        } else {
+            return lang;
+        }
     }
 
     static ContestControllerUtils getInstance() {
