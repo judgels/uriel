@@ -10,7 +10,6 @@ import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.gabriel.GradingSource;
-import org.iatoki.judgels.gabriel.commons.GabrielUtils;
 import org.iatoki.judgels.gabriel.commons.SubmissionAdapters;
 import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
