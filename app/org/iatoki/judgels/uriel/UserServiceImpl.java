@@ -68,8 +68,8 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserById(long userRoleId) {
-        UserModel userModel = userDao.findById(userRoleId);
+    public User findUserById(long userId) {
+        UserModel userModel = userDao.findById(userId);
         return createUserFromUserModel(userModel);
     }
 
