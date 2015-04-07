@@ -92,6 +92,7 @@ supervisor.list=Supervisors
 supervisor.create=Create Supervisor
 supervisor.update=Update Supervisor
 
+supervisor.username=username
 supervisor.name=Name
 supervisor.userJid=User JID
 supervisor.permissions=Permissions
@@ -100,6 +101,7 @@ manager.managers=Managers
 manager.list=Manager
 manager.create=Create Manager
 
+manager.username=username
 manager.userJid=User JID
 manager.name=Name
 
@@ -148,6 +150,7 @@ contest.supervisor.contestant.importTXT=Import via txt
 contest.supervisor.contestant.manualCreate=Manual Create
 
 contestant.username=username
+contestant.usernames=usernames
 contest.enter.confirm=Do you really want to enter the contest? If you do, there is no turning back.
 
 team.teams=Teams
@@ -165,4 +168,6 @@ data.download=Download Contest Data
 scoreboard.not_available=Scoreboard is not available at the moment.
 
 error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
-error.contestant.create.userJid.invalid=User Jid is invalid.
+error.contestant.create.userJid.invalid=Username is invalid.
+error.supervisor.create.userJid.invalid=Username is invalid.
+error.manager.create.userJid.invalid=Username is invalid.

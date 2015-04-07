@@ -7,7 +7,6 @@ import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
@@ -22,8 +21,7 @@ import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.manager.createManagerView;
-import org.iatoki.judgels.uriel.views.html.contest.manager.listManagersView;
+import org.iatoki.judgels.uriel.views.html.contest.manager.listCreateManagersView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -50,60 +48,38 @@ public class ContestManagerController extends Controller {
     }
 
     public Result viewManagers(long contestId) {
-        return listManagers(contestId, 0, "id", "asc", "");
+        return listCreateManagers(contestId, 0, "id", "asc", "");
     }
 
-    public Result listManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    @AddCSRFToken
+    public Result listCreateManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
 
         if (isSupervisorOrAbove(contest)) {
-            Page<ContestManager> contestManager = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
-            LazyHtml content = new LazyHtml(listManagersView.render(contest.getId(), contestManager, pageIndex, orderBy, orderDir, filterString));
-            if (canUpdate) {
-                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("manager.list"), new InternalLink(Messages.get("commons.create"), routes.ContestManagerController.createManager(contestId)), c));
-            } else {
-                content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
-            }
-            appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("manager.managers"), routes.ContestManagerController.viewManagers(contestId))
-            ));
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Managers");
+            Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class);
 
-            ControllerUtils.getInstance().addActivityLog("Open list of managers in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
+            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
             return tryEnteringContest(contest);
         }
     }
 
-
-    @Authorized(value = {"admin"})
-    @AddCSRFToken
-    public Result createManager(long contestId) {
-        Contest contest = contestService.findContestById(contestId);
-        Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class);
-
-        ControllerUtils.getInstance().addActivityLog("Try to add manager in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-        return showCreateManager(form, contest);
-    }
-
     @Authorized(value = {"admin"})
     @RequireCSRFCheck
-    public Result postCreateManager(long contestId) {
+    public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class).bindFromRequest();
 
         if (form.hasErrors() || form.hasGlobalErrors()) {
-            return showCreateManager(form, contest);
+            Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+            boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+
+            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
             String userJid = JophielUtils.verifyUsername(contestManagerCreateForm.username);
@@ -116,23 +92,29 @@ public class ContestManagerController extends Controller {
                 return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
             } else {
                 form.reject("error.manager.create.userJid.invalid");
-                return showCreateManager(form, contest);
+
+                Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+                boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+
+                return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
             }
         }
     }
 
-    private Result showCreateManager(Form<ContestManagerCreateForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(createManagerView.render(contest.getId(), form));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("manager.create"), c));
+    private Result showListCreateManager(Page<ContestManager> contestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> form, Contest contest){
+        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("manager.managers"), routes.ContestManagerController.viewManagers(contest.getId())),
-                new InternalLink(Messages.get("manager.create"), routes.ContestManagerController.createManager(contest.getId()))
+              new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+              new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+              new InternalLink(Messages.get("manager.managers"), routes.ContestManagerController.viewManagers(contest.getId()))
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Manager - Create");
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Managers");
+
+        ControllerUtils.getInstance().addActivityLog("Open list of managers in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }

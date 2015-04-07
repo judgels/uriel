@@ -1,0 +1,125 @@
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[org.iatoki.judgels.uriel.ContestSupervisorCreateForm])
+
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.commons.views.html.table.tableView
+@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
+@import org.iatoki.judgels.commons.views.html.table.searchView
+@import org.iatoki.judgels.commons.views.html.table.paginationView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import org.iatoki.judgels.commons.views.html.formErrorView
+@import org.iatoki.judgels.uriel.JidCacheService
+@import scala.collection.JavaConversions
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSupervisorController.listCreateSupervisors(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+
+@if(updateable) {
+    @formErrorView(form)
+
+    @b3.form(routes.ContestSupervisorController.postCreateSupervisor(contestId, pageIndex, orderBy, orderDir, filterString)) {
+
+        @helper.CSRF.formField
+
+        @b3.text(form("username"), '_label -> Messages.get("supervisor.username"), 'class -> "form-control user_autocomplete")
+        <div class="form-group" id="">
+            <label class="control-label col-md-3">@Messages.get("supervisor.permissions")</label>
+            <div class="col-md-9">
+                <div class="multi-checkbox-list">
+                    <div class="checkbox-wrap">
+                        <div class="checkbox">
+                            <label for="announcement">
+                                <input type="checkbox" id="announcement" name="announcement">
+                                @Messages.get("permission.announcement")
+                            </label>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrap">
+                        <div class="checkbox">
+                            <label for="problem">
+                                <input type="checkbox" id="problem" name="problem">
+                                @Messages.get("permission.problem")
+                            </label>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrap">
+                        <div class="checkbox">
+                            <label for="submission">
+                                <input type="checkbox" id="submission" name="submission">
+                                @Messages.get("permission.submission")
+                            </label>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrap">
+                        <div class="checkbox">
+                            <label for="clarification">
+                                <input type="checkbox" id="clarification" name="clarification">
+                                @Messages.get("permission.clarification")
+                            </label>
+                        </div>
+                    </div>
+                    <div class="checkbox-wrap">
+                        <div class="checkbox">
+                            <label for="contestant">
+                                <input type="checkbox" id="contestant" name="contestant">
+                                @Messages.get("permission.contestant")
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
+        </script>
+
+        <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+
+        @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.add") }
+    }
+}
+
+@searchView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)
+
+<div class="clearfix"></div>
+
+@tableView() {
+    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "userJid" -> Messages.get("supervisor.name"),
+        "announcement" -> Messages.get("permission.announcement"),
+        "problem" -> Messages.get("permission.problem"),
+        "submission" -> Messages.get("permission.submission"),
+        "clarification" -> Messages.get("permission.clarification"),
+        "contestant" -> Messages.get("permission.contestant")
+    )
+    <tbody>
+    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestSupervisor <- page.getData) {
+            <tr>
+                <td>@contestSupervisor.getId</td>
+                <td>@displayNamesMap.get(contestSupervisor.getUserJid)</td>
+                <td>@contestSupervisor.isAnnouncement</td>
+                <td>@contestSupervisor.isProblem</td>
+                <td>@contestSupervisor.isSubmission</td>
+                <td>@contestSupervisor.isClarification</td>
+                <td>@contestSupervisor.isContestant</td>
+                <td class="text-center">
+                    @if(updateable) {
+                        <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestSupervisorController.updateSupervisor(contestId, contestSupervisor.getId)"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+                    }
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+@paginationView(page, orderBy, orderDir, filterString, listFunc)
+
+@supervisorjs(contestId)

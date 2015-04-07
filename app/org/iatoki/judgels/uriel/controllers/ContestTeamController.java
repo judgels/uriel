@@ -9,7 +9,6 @@ import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
@@ -26,8 +25,7 @@ import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.team.createTeamView;
-import org.iatoki.judgels.uriel.views.html.contest.team.listTeamsView;
+import org.iatoki.judgels.uriel.views.html.contest.team.listCreateTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.team.updateTeamView;
 import org.iatoki.judgels.uriel.views.html.contest.team.viewTeamView;
 import play.data.Form;
@@ -55,63 +53,37 @@ public class ContestTeamController extends Controller {
     }
 
     public Result viewTeams(long contestId) {
-        return listTeams(contestId, 0, "id", "asc", "");
+        return listCreateTeams(contestId, 0, "id", "asc", "");
     }
 
-    public Result listTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    @AddCSRFToken
+    public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         if (isSupervisorOrAbove(contest)) {
             Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
-            LazyHtml content = new LazyHtml(listTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate));
-            if (canUpdate) {
-                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("team.list"), new InternalLink(Messages.get("commons.create"), routes.ContestTeamController.createTeam(contestId)), c));
-            } else {
-                content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
-            }
-            content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
-            appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
-                  new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))
-            ));
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
-
-            ControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
-            return tryEnteringContest(contest);
-        }
-    }
-
-    @AddCSRFToken
-    public Result createTeam(long contestId) {
-        Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class);
 
-            ControllerUtils.getInstance().addActivityLog("Try to create team in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return showCreateTeam(form, contest);
+            return showListCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
             return tryEnteringContest(contest);
         }
     }
 
     @RequireCSRFCheck
-    public Result postCreateTeam(long contestId) {
+    public Result postCreateTeam(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showCreateTeam(form, contest);
+                Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+                boolean canUpdate = isAllowedToSuperviseContestants(contest);
+
+                return showListCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
             } else {
                 ContestTeamUpsertForm contestTeamUpsertForm = form.get();
 
@@ -288,20 +260,21 @@ public class ContestTeamController extends Controller {
         }
     }
 
-    private Result showCreateTeam(Form<ContestTeamUpsertForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(createTeamView.render(contest.getId(), form));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("team.create"), c));
+    private Result showListCreateTeam(Page<ContestTeam> contestTeams, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestTeamUpsertForm> form, Contest contest){
+        LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
-                new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
-                new InternalLink(Messages.get("team.create"), routes.ContestTeamController.createTeam(contest.getId()))
+              new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+              new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+              new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
+              new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - Create");
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
+
+        ControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }

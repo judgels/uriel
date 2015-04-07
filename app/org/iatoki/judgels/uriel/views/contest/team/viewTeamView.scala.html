@@ -25,7 +25,7 @@
         @b3.text(form("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
 
         @b3.submit('class -> "btn btn-primary") {
-            @Messages.get("commons.create")
+            @Messages.get("commons.add")
         }
     }
 }
@@ -66,7 +66,7 @@
         @b3.text(form2("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
 
         @b3.submit('class -> "btn btn-primary") {
-            @Messages.get("commons.create")
+            @Messages.get("commons.add")
         }
     }
 }
@@ -99,7 +99,6 @@
 
 <script type="text/javascript">
     var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
-    var encodedAccessToken = "@JophielUtils.getEncodedAccessToken";
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
 

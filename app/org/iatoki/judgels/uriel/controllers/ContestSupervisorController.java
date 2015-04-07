@@ -7,7 +7,6 @@ import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
@@ -23,8 +22,7 @@ import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.createSupervisorView;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.listSupervisorsView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.listCreateSupervisorsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.updateSupervisorView;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -52,61 +50,37 @@ public class ContestSupervisorController extends Controller {
     }
 
     public Result viewSupervisors(long contestId) {
-        return listSupervisors(contestId, 0, "id", "asc", "");
-    }
-
-    public Result listSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
-        Contest contest = contestService.findContestById(contestId);
-        if (isSupervisorOrAbove(contest)) {
-            Page<ContestSupervisor> contestPermissionPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
-            boolean canUpdate = isAllowedToManageSupervisors(contest);
-
-            LazyHtml content = new LazyHtml(listSupervisorsView.render(contest.getId(), contestPermissionPage, pageIndex, orderBy, orderDir, filterString, canUpdate));
-            if (canUpdate) {
-                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("supervisor.list"), new InternalLink(Messages.get("commons.create"), routes.ContestSupervisorController.createSupervisor(contestId)), c));
-            } else {
-                content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
-            }
-            appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contestId)),
-                  new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
-            ));
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
-
-            ControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
-            return tryEnteringContest(contest);
-        }
+        return listCreateSupervisors(contestId, 0, "id", "asc", "");
     }
 
     @AddCSRFToken
-    public Result createSupervisor(long contestId) {
+    public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToManageSupervisors(contest)) {
+        if (isSupervisorOrAbove(contest)) {
+            Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+            boolean canUpdate = isAllowedToManageSupervisors(contest);
+
             Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class);
 
-            ControllerUtils.getInstance().addActivityLog("Try to add supervisor in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return showCreateSupervisor(form, contest);
+            return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
             return tryEnteringContest(contest);
         }
     }
 
     @RequireCSRFCheck
-    public Result postCreateSupervisor(long contestId) {
+    public Result postCreateSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToManageSupervisors(contest)) {
             Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showCreateSupervisor(form, contest);
+                Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+                boolean canUpdate = isAllowedToManageSupervisors(contest);
+
+                return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
             } else {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
                 String userJid = JophielUtils.verifyUsername(contestSupervisorCreateForm.username);
@@ -119,7 +93,12 @@ public class ContestSupervisorController extends Controller {
                     return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
                 } else {
                     form.reject("error.supervisor.create.userJid.invalid");
-                    return showCreateSupervisor(form, contest);
+
+                    Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+                    boolean canUpdate = isAllowedToManageSupervisors(contest);
+
+                    return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
                 }
             }
         } else {
@@ -165,18 +144,19 @@ public class ContestSupervisorController extends Controller {
         }
     }
 
-    private Result showCreateSupervisor(Form<ContestSupervisorCreateForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(createSupervisorView.render(contest.getId(), form));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.create"), c));
+    private Result showListCreateSupervisor(Page<ContestSupervisor> contestSupervisorPage, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestSupervisorCreateForm> form, Contest contest){
+        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestSupervisorController.viewSupervisors(contest.getId())),
-                new InternalLink(Messages.get("supervisor.create"), routes.ContestSupervisorController.createSupervisor(contest.getId()))
+              new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+              new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+              new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisor - Create");
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
+
+        ControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }

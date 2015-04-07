@@ -25,8 +25,7 @@ import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.contestant.createContestantView;
-import org.iatoki.judgels.uriel.views.html.contest.contestant.listContestantsView;
+import org.iatoki.judgels.uriel.views.html.contest.contestant.listCreateContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.updateContestantView;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -56,64 +55,39 @@ public class ContestContestantController extends Controller {
     }
 
     public Result viewContestants(long contestId) {
-        return listContestants(contestId, 0, "id", "asc", "");
+        return listCreateContestants(contestId, 0, "id", "asc", "");
     }
 
-    public Result listContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    @AddCSRFToken
+    public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         if (isSupervisorOrAbove(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
-            LazyHtml content = new LazyHtml(listContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate));
-            if (canUpdate) {
-                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("contestant.list"), new InternalLink(Messages.get("commons.create"), routes.ContestContestantController.createContestant(contestId)), c));
-            } else {
-                content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
-            }
-            content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
-            appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId()))
-            ));
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
-
-            ControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
-            return tryEnteringContest(contest);
-        }
-    }
-
-    @AddCSRFToken
-    public Result createContestant(long contestId) {
-        Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class);
             Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
 
-            ControllerUtils.getInstance().addActivityLog("Try to add contestant in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return showCreateContestant(form, form2, contest);
+            return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
         } else {
             return tryEnteringContest(contest);
         }
     }
 
     @RequireCSRFCheck
-    public Result postCreateContestant(long contestId) {
+    public Result postCreateContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
                 Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
-                return showCreateContestant(form, form2, contest);
+
+                Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                boolean canUpdate = isAllowedToSuperviseContestants(contest);
+
+                return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
             } else {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
                 String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
@@ -127,7 +101,11 @@ public class ContestContestantController extends Controller {
                 } else {
                     Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                     form.reject("error.contestant.create.userJid.invalid");
-                    return showCreateContestant(form, form2, contest);
+
+                    Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    boolean canUpdate = isAllowedToSuperviseContestants(contest);
+
+                    return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                 }
             }
         } else {
@@ -174,7 +152,7 @@ public class ContestContestantController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUploadContestant(long contestId) {
+    public Result postUploadContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart file;
@@ -199,25 +177,27 @@ public class ContestContestantController extends Controller {
                     throw new RuntimeException(e);
                 }
             }
-            return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
+            return redirect(routes.ContestContestantController.listCreateContestants(contest.getId(), pageIndex, orderBy, orderDir, filterString));
         } else {
             return tryEnteringContest(contest);
         }
     }
 
-    private Result showCreateContestant(Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
-        LazyHtml content = new LazyHtml(createContestantView.render(contest.getId(), form, form2));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.create"), c));
+    private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
+        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
+
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
-                new InternalLink(Messages.get("contestant.create"), routes.ContestContestantController.createContestant(contest.getId()))
+              new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+              new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+              new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId()))
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestant - Create");
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
+
+        ControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }
