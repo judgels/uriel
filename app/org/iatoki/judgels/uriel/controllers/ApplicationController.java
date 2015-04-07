@@ -1,20 +1,17 @@
 package org.iatoki.judgels.uriel.controllers;
 
-import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
-import org.iatoki.judgels.jophiel.commons.views.html.auth.authView;
 import org.iatoki.judgels.uriel.AvatarCacheService;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.UserRole;
-import org.iatoki.judgels.uriel.UserRoleService;
+import org.iatoki.judgels.uriel.User;
+import org.iatoki.judgels.uriel.UserService;
 import play.db.jpa.Transactional;
-import play.i18n.Messages;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -22,10 +19,10 @@ import play.mvc.Result;
 @Transactional
 public final class ApplicationController extends Controller {
 
-    private final UserRoleService userRoleService;
+    private final UserService userService;
 
-    public ApplicationController(UserRoleService userRoleService) {
-        this.userRoleService = userRoleService;
+    public ApplicationController(UserService userService) {
+        this.userService = userService;
     }
 
     public Result index() {
@@ -56,12 +53,12 @@ public final class ApplicationController extends Controller {
             return redirect(routes.ContestController.index());
         } else {
             String userRoleJid = IdentityUtils.getUserJid();
-            if (userRoleService.existsByUserJid(userRoleJid)) {
-                UserRole userRole = userRoleService.findUserRoleByUserJid(userRoleJid);
+            if (userService.existsByUserJid(userRoleJid)) {
+                User userRole = userService.findUserByUserJid(userRoleJid);
                 UrielUtils.saveRoleInSession(userRole.getRoles());
                 return redirect(returnUri);
             } else {
-                userRoleService.createUserRole(userRoleJid, UrielUtils.getDefaultRole());
+                userService.createUser(userRoleJid, UrielUtils.getDefaultRole());
                 UrielUtils.saveRoleInSession(UrielUtils.getDefaultRole());
                 return redirect(returnUri);
             }
@@ -71,29 +68,15 @@ public final class ApplicationController extends Controller {
     public Result afterLogin(String returnUri) {
         JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
         JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+
         return redirect(returnUri);
     }
 
     public Result afterProfile(String returnUri) {
         JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
         JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+
         return redirect(returnUri);
-    }
-
-    private void appendTemplateLayout(LazyHtml content) {
-        content.appendLayout(c -> headerFooterLayout.render(c));
-        content.appendLayout(c -> baseLayout.render("TODO", c));
-    }
-
-    private Result getResult(LazyHtml content, int statusCode) {
-        switch (statusCode) {
-            case Http.Status.OK:
-                return ok(content.render(0));
-            case Http.Status.NOT_FOUND:
-                return notFound(content.render(0));
-            default:
-                return badRequest(content.render(0));
-        }
     }
 
 }

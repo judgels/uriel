@@ -17,7 +17,7 @@ import org.iatoki.judgels.uriel.ContestManagerCreateForm;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
-import org.iatoki.judgels.uriel.UserRoleService;
+import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -30,6 +30,7 @@ import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Date;
@@ -41,9 +42,9 @@ public class ContestManagerController extends Controller {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
-    private final UserRoleService userRoleService;
+    private final UserService userRoleService;
 
-    public ContestManagerController(ContestService contestService, UserRoleService userRoleService) {
+    public ContestManagerController(ContestService contestService, UserService userRoleService) {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
     }
@@ -69,11 +70,13 @@ public class ContestManagerController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("manager.managers"), routes.ContestManagerController.viewManagers(contestId))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("manager.managers"), routes.ContestManagerController.viewManagers(contestId))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Managers");
+
+            ControllerUtils.getInstance().addActivityLog("Open list of managers in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -87,6 +90,8 @@ public class ContestManagerController extends Controller {
     public Result createManager(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class);
+
+        ControllerUtils.getInstance().addActivityLog("Try to add manager in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showCreateManager(form, contest);
     }
@@ -103,8 +108,10 @@ public class ContestManagerController extends Controller {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
             String userJid = JophielUtils.verifyUsername(contestManagerCreateForm.username);
             if ((userJid != null) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
-                userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                userRoleService.upsertUserFromJophielUserJid(userJid);
                 contestService.createContestManager(contest.getId(), userJid);
+
+                ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateForm.username + " in contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
             } else {

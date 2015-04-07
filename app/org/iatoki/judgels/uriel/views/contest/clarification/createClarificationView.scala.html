@@ -19,7 +19,7 @@
     <div class="form-group" id="topicJid_field">
         <label class="control-label col-md-3">@Messages.get("clarification.topic")</label>
         <div class="col-md-9">
-            <select id="topicJid" name="topicJid" class="form-control">
+            <select id="topicJid" name="topicJid" class="form-control selectpicker">
                 <option value="@contest.getJid">@Messages.get("clarification.general")</option>
                 @for(contestProblem <- contestProblems) {
                     <option value="@contestProblem.getProblemJid">@contestProblem.getAlias - @JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid)</option>

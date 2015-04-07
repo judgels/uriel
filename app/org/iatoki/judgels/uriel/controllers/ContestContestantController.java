@@ -21,7 +21,7 @@ import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
-import org.iatoki.judgels.uriel.UserRoleService;
+import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -40,7 +40,6 @@ import play.mvc.Result;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -49,13 +48,12 @@ public class ContestContestantController extends Controller {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
-    private final UserRoleService userRoleService;
+    private final UserService userRoleService;
 
-    public ContestContestantController(ContestService contestService, UserRoleService userRoleService) {
+    public ContestContestantController(ContestService contestService, UserService userRoleService) {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
     }
-
 
     public Result viewContestants(long contestId) {
         return listContestants(contestId, 0, "id", "asc", "");
@@ -78,11 +76,13 @@ public class ContestContestantController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
+
+            ControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -96,6 +96,8 @@ public class ContestContestantController extends Controller {
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class);
             Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
+
+            ControllerUtils.getInstance().addActivityLog("Try to add contestant in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateContestant(form, form2, contest);
         } else {
@@ -116,8 +118,10 @@ public class ContestContestantController extends Controller {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
                 String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                    userRoleService.upsertUserFromJophielUserJid(userJid);
                     contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+
+                    ControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateForm.username + " in contest " + contest.getName() + ".");
 
                     return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
                 } else {
@@ -139,6 +143,8 @@ public class ContestContestantController extends Controller {
             ContestContestantUpdateForm contestContestantUpsertForm = new ContestContestantUpdateForm(contestContestant);
             Form<ContestContestantUpdateForm> form = Form.form(ContestContestantUpdateForm.class).fill(contestContestantUpsertForm);
 
+            ControllerUtils.getInstance().addActivityLog("Try to update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
             return showUpdateContestant(form, contest, contestContestant);
         } else {
             return tryEnteringContest(contest);
@@ -157,6 +163,8 @@ public class ContestContestantController extends Controller {
             } else {
                 ContestContestantUpdateForm contestContestantUpdateForm = form.get();
                 contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
+
+                ControllerUtils.getInstance().addActivityLog("Update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
             }
@@ -180,10 +188,13 @@ public class ContestContestantController extends Controller {
                     for (String username : usernames) {
                         String userJid = JophielUtils.verifyUsername(username);
                         if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                            userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                            userRoleService.upsertUserFromJophielUserJid(userJid);
                             contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                         }
                     }
+
+                    ControllerUtils.getInstance().addActivityLog("Upload contestants in contest " + contest.getName() + ".");
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

@@ -104,11 +104,13 @@ public class ContestScoreboardController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Public Scoreboard");
+
+            ControllerUtils.getInstance().addActivityLog("View public scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -131,12 +133,14 @@ public class ContestScoreboardController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId())),
-                    new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId())),
+                  new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Official Scoreboard");
+
+            ControllerUtils.getInstance().addActivityLog("View official scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -147,20 +151,22 @@ public class ContestScoreboardController extends Controller {
     public Result refreshAllScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
-                ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
-                ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
+            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+            ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
 
-                List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
+            List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
-                ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
-                Scoreboard scoreboard = adapter.createScoreboard(state, content);
-                contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+            ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+            Scoreboard scoreboard = adapter.createScoreboard(state, content);
+            contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
-                if (contest.isStandard()) {
-                    refreshFrozenScoreboard(contest, adapter, state);
-                }
+            if (contest.isStandard()) {
+                refreshFrozenScoreboard(contest, adapter, state);
+            }
 
-                return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
+            ControllerUtils.getInstance().addActivityLog("Refresh all scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+            return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
         } else {
             return tryEnteringContest(contest);
         }
@@ -266,6 +272,9 @@ public class ContestScoreboardController extends Controller {
                         cell.setCellValue(score);
                     }
                 }
+
+                ControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
                 try {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     workbook.write(baos);

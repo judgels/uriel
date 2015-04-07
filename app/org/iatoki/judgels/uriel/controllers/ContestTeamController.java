@@ -75,12 +75,14 @@ public class ContestTeamController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
-                    new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())),
+                  new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
+
+            ControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -93,6 +95,8 @@ public class ContestTeamController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class);
+
+            ControllerUtils.getInstance().addActivityLog("Try to create team in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateTeam(form, contest);
         } else {
@@ -119,6 +123,9 @@ public class ContestTeamController extends Controller {
                 } else {
                     contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name);
                 }
+
+                ControllerUtils.getInstance().addActivityLog("Create team " + contestTeamUpsertForm.name + " in contest " + contest.getName() + ".");
+
                 return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
             }
         } else {
@@ -133,6 +140,8 @@ public class ContestTeamController extends Controller {
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             ContestTeamUpsertForm contestTeamUpsertForm = new ContestTeamUpsertForm(contestTeam);
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).fill(contestTeamUpsertForm);
+
+            ControllerUtils.getInstance().addActivityLog("Try to update team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showUpdateTeam(form, contest, contestTeam);
         } else {
@@ -159,6 +168,9 @@ public class ContestTeamController extends Controller {
                 } else {
                     contestService.updateContestTeam(contest.getId(), contestTeamUpsertForm.name);
                 }
+
+                ControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+
                 return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
             }
         } else {
@@ -173,6 +185,8 @@ public class ContestTeamController extends Controller {
         if (isSupervisorOrAbove(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
             Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+
+            ControllerUtils.getInstance().addActivityLog("View team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         } else {
@@ -197,6 +211,8 @@ public class ContestTeamController extends Controller {
                 if ((userJid != null) && (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid))) {
                     contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
 
+                    ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateForm.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+
                     return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
                 } else {
                     form.reject("team.user_already_has_team");
@@ -216,6 +232,8 @@ public class ContestTeamController extends Controller {
         ContestTeamCoach contestTeamCoach = contestService.findContestTeamCoachByContestTeamCoachId(contestTeamCoachId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamCoach.getTeamJid().equals(contestTeam.getJid())) {
             contestService.removeContestTeamCoachByContestTeamCoachId(contestTeamCoach.getId());
+
+            ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamCoach.getCoachJid() + " from coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
             return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
         } else {
@@ -240,6 +258,8 @@ public class ContestTeamController extends Controller {
                 if ((userJid != null) && (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) && (contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
                     contestService.createContestTeamMember(contestTeam.getJid(), userJid);
 
+                    ControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateForm.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+
                     return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
                 } else {
                     form2.reject("team.user_already_has_team");
@@ -259,6 +279,8 @@ public class ContestTeamController extends Controller {
         ContestTeamMember contestTeamMember = contestService.findContestTeamMemberByContestTeamMemberId(contestTeamMemberId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
             contestService.removeContestTeamMemberByContestTeamMemberId(contestTeamMember.getId());
+
+            ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamMember.getMemberJid() + " from member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
             return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
         } else {

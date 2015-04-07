@@ -42,7 +42,7 @@ import java.util.Map;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestSubmissionController extends Controller {
+public final class ContestSubmissionController extends Controller {
 
     private static final long PAGE_SIZE = 20;
 
@@ -74,11 +74,13 @@ public class ContestSubmissionController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submissions");
+
+            ControllerUtils.getInstance().addActivityLog("List own submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -103,11 +105,13 @@ public class ContestSubmissionController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("submission.view"), routes.ContestSubmissionController.viewSubmission(contest.getId(), submission.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("submission.view"), routes.ContestSubmissionController.viewSubmission(contest.getId(), submission.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submission - View");
+
+            ControllerUtils.getInstance().addActivityLog("View submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -139,12 +143,14 @@ public class ContestSubmissionController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId())),
-                    new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId())),
+                  new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Submissions");
+
+            ControllerUtils.getInstance().addActivityLog("List all submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -159,6 +165,8 @@ public class ContestSubmissionController extends Controller {
             Submission submission = submissionService.findSubmissionById(submissionId);
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
             submissionService.regrade(submission.getJid(), source);
+
+            ControllerUtils.getInstance().addActivityLog("Regrade submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         } else {
@@ -185,6 +193,8 @@ public class ContestSubmissionController extends Controller {
                 GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
                 submissionService.regrade(submission.getJid(), source);
             }
+
+            ControllerUtils.getInstance().addActivityLog("Regrade some submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         } else {

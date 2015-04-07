@@ -5,6 +5,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
+import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
+import org.iatoki.judgels.jophiel.commons.UserActivityService;
+import org.iatoki.judgels.jophiel.commons.controllers.JophielClientController;
 import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestAnnouncementController;
@@ -17,7 +20,7 @@ import org.iatoki.judgels.uriel.controllers.ContestScoreboardController;
 import org.iatoki.judgels.uriel.controllers.ContestSubmissionController;
 import org.iatoki.judgels.uriel.controllers.ContestSupervisorController;
 import org.iatoki.judgels.uriel.controllers.ContestTeamController;
-import org.iatoki.judgels.uriel.controllers.UserRoleController;
+import org.iatoki.judgels.uriel.controllers.UserController;
 import org.iatoki.judgels.uriel.controllers.apis.ContestAPIController;
 import org.iatoki.judgels.uriel.models.daos.hibernate.AvatarCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHibernateDao;
@@ -36,7 +39,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestTeamMemberHibernate
 import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.hibernate.UserRoleHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.UserHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestConfigurationDao;
@@ -50,7 +53,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
-import org.iatoki.judgels.uriel.models.daos.interfaces.UserRoleDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import play.Application;
 import play.Play;
 import play.libs.Akka;
@@ -68,6 +71,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private SubmissionService submissionService;
     private ContestService contestService;
+    private UserActivityService userActivityService;
 
     public Global() {
     }
@@ -104,27 +108,31 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
         contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
-
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
+
+        UserDao userDao = new UserHibernateDao();
+        UserService userService = new UserServiceImpl(userDao);
+        UserActivityPusher userActivityPusher = new UserActivityPusher(userService, UserActivityServiceImpl.getInstance());
 
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityPusher, context);
     }
 
     @Override
     public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
         if (!cache.containsKey(controllerClass)) {
             if (controllerClass.equals(ApplicationController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
-                ApplicationController applicationController = new ApplicationController(userRoleService);
+                ApplicationController applicationController = new ApplicationController(userService);
                 cache.put(ApplicationController.class, applicationController);
             } else if (controllerClass.equals(ContestController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
                 ContestController contestController = new ContestController(contestService);
                 cache.put(ContestController.class, contestController);
@@ -135,16 +143,16 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestClarificationController contestClarificationController = new ContestClarificationController(contestService);
                 cache.put(ContestClarificationController.class, contestClarificationController);
             } else if (controllerClass.equals(ContestContestantController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
-                ContestContestantController contestContestantController = new ContestContestantController(contestService, userRoleService);
+                ContestContestantController contestContestantController = new ContestContestantController(contestService, userService);
                 cache.put(ContestContestantController.class, contestContestantController);
             } else if (controllerClass.equals(ContestManagerController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
-                ContestManagerController contestManagerController = new ContestManagerController(contestService, userRoleService);
+                ContestManagerController contestManagerController = new ContestManagerController(contestService, userService);
                 cache.put(ContestManagerController.class, contestManagerController);
             } else if (controllerClass.equals(ContestProblemController.class)) {
                 ContestProblemController contestProblemController = new ContestProblemController(contestService, submissionService);
@@ -156,10 +164,10 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestSubmissionController contestSubmissionController = new ContestSubmissionController(contestService, submissionService);
                 cache.put(ContestSubmissionController.class, contestSubmissionController);
             } else if (controllerClass.equals(ContestSupervisorController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
-                ContestSupervisorController contestSupervisorController = new ContestSupervisorController(contestService, userRoleService);
+                ContestSupervisorController contestSupervisorController = new ContestSupervisorController(contestService, userService);
                 cache.put(ContestSupervisorController.class, contestSupervisorController);
             } else if (controllerClass.equals(ContestTeamController.class)) {
                 ContestTeamController contestTeamController = new ContestTeamController(contestService);
@@ -167,12 +175,18 @@ public final class Global extends org.iatoki.judgels.commons.Global {
             } else if (controllerClass.equals(ContestAPIController.class)) {
                 ContestAPIController contestAPIController = new ContestAPIController(contestService);
                 cache.put(ContestAPIController.class, contestAPIController);
-            } else if (controllerClass.equals(UserRoleController.class)) {
-                UserRoleDao userRoleDao = new UserRoleHibernateDao();
-                UserRoleService userRoleService = new UserRoleServiceImpl(userRoleDao);
+            } else if (controllerClass.equals(UserController.class)) {
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
 
-                UserRoleController userRoleController = new UserRoleController(userRoleService);
-                cache.put(UserRoleController.class, userRoleController);
+                UserController userController = new UserController(userService);
+                cache.put(UserController.class, userController);
+            } else if (controllerClass.equals(JophielClientController.class)) {
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
+
+                JophielClientController jophielClientController = new JophielClientController(userService);
+                cache.put(JophielClientController.class, jophielClientController);
             }
         }
         return controllerClass.cast(cache.get(controllerClass));

@@ -13,7 +13,7 @@
 
     @helper.CSRF.formField
 
-    @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"))
+    @b3.select(form("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

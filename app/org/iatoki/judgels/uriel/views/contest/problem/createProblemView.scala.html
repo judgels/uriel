@@ -19,7 +19,7 @@
     @b3.text(form("problemJid"), '_label -> Messages.get("problem.problemJid"))
     @b3.text(form("problemSecret"), '_label -> Messages.get("problem.problemSecret"))
     @b3.text(form("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
-    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "HIDDEN" -> "Hidden"), '_label -> Messages.get("problem.status"))
+    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "HIDDEN" -> "Hidden"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }

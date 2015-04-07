@@ -9,6 +9,7 @@ import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
+import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
@@ -36,6 +37,7 @@ import org.iatoki.judgels.uriel.ContestTypeConfigVirtualForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
 import org.iatoki.judgels.uriel.UrielUtils;
+import org.iatoki.judgels.uriel.UserActivityServiceImpl;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -51,6 +53,7 @@ import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Date;
@@ -82,9 +85,11 @@ public final class ContestController extends Controller {
         }
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-            new InternalLink(Messages.get("contest.contests"), routes.ContestController.index())
+              new InternalLink(Messages.get("contest.contests"), routes.ContestController.index())
         ));
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contests");
+
+        ControllerUtils.getInstance().addActivityLog("Open list of allowed contests <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }
@@ -103,10 +108,12 @@ public final class ContestController extends Controller {
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
+
+            ControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -119,6 +126,8 @@ public final class ContestController extends Controller {
 
         if (isAllowedToRegisterContest(contest)) {
             contestService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
+
+            ControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return redirect(routes.ContestController.viewContest(contestId));
         } else {
@@ -136,11 +145,21 @@ public final class ContestController extends Controller {
                 ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
                 if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (isCoach(contest))) {
                     contestService.enterContestAsCoach(contest.getJid(), IdentityUtils.getUserJid());
+
+                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as coach  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
                 } else if (isContestantInContest) {
                     contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+
+                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+                } else {
+                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
                 }
             } else if (isContestantInContest) {
                 contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+
+                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            } else {
+                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
             }
 
             return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
@@ -153,6 +172,8 @@ public final class ContestController extends Controller {
     @AddCSRFToken
     public Result createContest() {
         Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class);
+
+        ControllerUtils.getInstance().addActivityLog("Try to create a contest.");
 
         return showCreateContest(form);
     }
@@ -168,6 +189,8 @@ public final class ContestController extends Controller {
             ContestUpsertForm contestUpsertForm = form.get();
             contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
 
+            ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertForm.name + ".");
+
             return redirect(routes.ContestController.index());
         }
     }
@@ -179,6 +202,8 @@ public final class ContestController extends Controller {
         if (isAllowedToManageContest(contest)) {
             ContestUpsertForm contestUpsertForm = new ContestUpsertForm(contest);
             Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).fill(contestUpsertForm);
+
+            ControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showUpdateContestGeneralConfig(form, contest);
         } else {
@@ -197,6 +222,8 @@ public final class ContestController extends Controller {
             } else {
                 ContestUpsertForm contestUpsertForm = form.get();
                 contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
+
+                ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestController.viewContest(contestId));
             }
@@ -248,6 +275,8 @@ public final class ContestController extends Controller {
                 form = form.fill(new ContestStyleConfigIOIForm(LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction())));
                 form3 = form;
             }
+
+            ControllerUtils.getInstance().addActivityLog("Try to update specific config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showUpdateContestSpecificConfig(form1, form2, form3, contest);
         } else {
@@ -324,6 +353,8 @@ public final class ContestController extends Controller {
                 }
                 if (check) {
                     contestService.updateContestConfigurationByContestJid(contest.getJid(), contestTypeConfig, contestScopeConfig, contestStyleConfig);
+
+                    ControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
 
                     return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
                 } else {

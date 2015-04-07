@@ -31,11 +31,11 @@ import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.problem.listOpenedProblemsView;
-import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.createProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.listOpenedProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.updateProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.Play;
 import play.data.DynamicForm;
@@ -50,8 +50,6 @@ import play.mvc.Result;
 
 import java.net.URI;
 import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -90,11 +88,13 @@ public class ContestProblemController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("problem.problems"), routes.ContestProblemController.viewOpenedProblems(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("problem.problems"), routes.ContestProblemController.viewOpenedProblems(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
+
+            ControllerUtils.getInstance().addActivityLog("Open list of opened problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -128,12 +128,14 @@ public class ContestProblemController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("problem.problems"), routes.ContestProblemController.viewOpenedProblems(contest.getId())),
-                    new InternalLink(contestProblem.getAlias(), routes.ContestProblemController.viewProblem(contest.getId(), contestProblem.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("problem.problems"), routes.ContestProblemController.viewOpenedProblems(contest.getId())),
+                  new InternalLink(contestProblem.getAlias(), routes.ContestProblemController.viewProblem(contest.getId(), contestProblem.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problem - View");
+
+            ControllerUtils.getInstance().addActivityLog("View problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -165,6 +167,9 @@ public class ContestProblemController extends Controller {
                     GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
                     String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, ImmutableSet.of(), source);
                     SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
+
+                    ControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
+
                 } catch (SubmissionException e) {
                     flash("submissionError", e.getMessage());
 
@@ -204,12 +209,14 @@ public class ContestProblemController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("problem.problem"), routes.ContestProblemController.viewOpenedProblems(contest.getId())),
-                    new InternalLink(Messages.get("status.supervisor"), routes.ContestProblemController.viewProblems(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("problem.problem"), routes.ContestProblemController.viewOpenedProblems(contest.getId())),
+                  new InternalLink(Messages.get("status.supervisor"), routes.ContestProblemController.viewProblems(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
+
+            ControllerUtils.getInstance().addActivityLog("Open all problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -223,6 +230,8 @@ public class ContestProblemController extends Controller {
         if (isAllowedToSuperviseProblems(contest)) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
             form = form.fill(new ContestProblemCreateForm(0));
+
+            ControllerUtils.getInstance().addActivityLog("Try to add problem in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateProblem(form, contest);
         } else {
@@ -244,6 +253,9 @@ public class ContestProblemController extends Controller {
                 if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
                     contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
                     JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+                    ControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateForm.alias + " in contest " + contest.getName() + ".");
+
                     return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
                 } else {
                     form.reject("error.problem.create.problemJidOrAlias.invalid");
@@ -263,6 +275,8 @@ public class ContestProblemController extends Controller {
             ContestProblemUpdateForm contestProblemUpdateForm = new ContestProblemUpdateForm(contestProblem);
             Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).fill(contestProblemUpdateForm);
 
+            ControllerUtils.getInstance().addActivityLog("Try to update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
             return showUpdateProblem(form, contest, contestProblem);
         } else {
             return tryEnteringContest(contest);
@@ -281,6 +295,8 @@ public class ContestProblemController extends Controller {
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
                 contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+
+                ControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
             }

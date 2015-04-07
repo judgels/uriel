@@ -3,13 +3,13 @@ package org.iatoki.judgels.uriel;
 import org.apache.commons.lang3.StringUtils;
 import play.data.validation.Constraints;
 
-public final class UserRoleUpdateForm {
+public final class UserUpdateForm {
 
-    public UserRoleUpdateForm() {
+    public UserUpdateForm() {
 
     }
 
-    public UserRoleUpdateForm(UserRole userRole) {
+    public UserUpdateForm(User userRole) {
         this.roles = StringUtils.join(userRole.getRoles(), ",");
     }
 

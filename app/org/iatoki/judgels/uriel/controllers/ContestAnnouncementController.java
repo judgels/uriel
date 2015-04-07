@@ -32,6 +32,7 @@ import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Date;
@@ -67,11 +68,13 @@ public class ContestAnnouncementController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("announcement.announcements"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("announcement.announcements"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Announcements");
+
+            ControllerUtils.getInstance().addActivityLog("Open list of published announcements in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -94,11 +97,13 @@ public class ContestAnnouncementController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                    new InternalLink(Messages.get("announcement.announcements"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+                  new InternalLink(Messages.get("announcement.announcements"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Announcements");
+
+            ControllerUtils.getInstance().addActivityLog("Open all announcements in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -111,6 +116,8 @@ public class ContestAnnouncementController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseAnnouncements(contest)) {
             Form<ContestAnnouncementUpsertForm> form = Form.form(ContestAnnouncementUpsertForm.class);
+
+            ControllerUtils.getInstance().addActivityLog("Try to create announcement in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateAnnouncement(form, contest);
         } else {
@@ -130,6 +137,8 @@ public class ContestAnnouncementController extends Controller {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
                 contestService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
 
+                ControllerUtils.getInstance().addActivityLog("Create " + contestAnnouncementUpsertForm.status + " announcement with title " + contestAnnouncementUpsertForm.title + " in contest " + contest.getName() + ".");
+
                 return redirect(routes.ContestAnnouncementController.viewAnnouncements(contest.getId()));
             }
         } else {
@@ -144,6 +153,8 @@ public class ContestAnnouncementController extends Controller {
         if (isAllowedToSuperviseAnnouncements(contest) && contestAnnouncement.getContestJid().equals(contest.getJid())) {
             ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = new ContestAnnouncementUpsertForm(contestAnnouncement);
             Form<ContestAnnouncementUpsertForm> form = Form.form(ContestAnnouncementUpsertForm.class).fill(contestAnnouncementUpsertForm);
+
+            ControllerUtils.getInstance().addActivityLog("Try to update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showUpdateAnnouncement(form, contest, contestAnnouncement);
         } else {
@@ -163,6 +174,8 @@ public class ContestAnnouncementController extends Controller {
             } else {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
                 contestService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
+
+                ControllerUtils.getInstance().addActivityLog("Update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestAnnouncementController.viewAnnouncements(contest.getId()));
             }

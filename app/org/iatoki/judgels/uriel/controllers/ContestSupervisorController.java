@@ -19,7 +19,7 @@ import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.UserRoleService;
+import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -32,6 +32,7 @@ import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Date;
@@ -43,9 +44,9 @@ public class ContestSupervisorController extends Controller {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
-    private final UserRoleService userRoleService;
+    private final UserService userRoleService;
 
-    public ContestSupervisorController(ContestService contestService, UserRoleService userRoleService) {
+    public ContestSupervisorController(ContestService contestService, UserService userRoleService) {
         this.contestService = contestService;
         this.userRoleService = userRoleService;
     }
@@ -70,11 +71,13 @@ public class ContestSupervisorController extends Controller {
             appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                    new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                    new InternalLink(contest.getName(), routes.ContestController.viewContest(contestId)),
-                    new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
+                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contestId)),
+                  new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
             ));
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
+
+            ControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -87,6 +90,8 @@ public class ContestSupervisorController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToManageSupervisors(contest)) {
             Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class);
+
+            ControllerUtils.getInstance().addActivityLog("Try to add supervisor in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateSupervisor(form, contest);
         } else {
@@ -106,8 +111,10 @@ public class ContestSupervisorController extends Controller {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
                 String userJid = JophielUtils.verifyUsername(contestSupervisorCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
-                    userRoleService.upsertUserRoleFromJophielUserJid(userJid);
+                    userRoleService.upsertUserFromJophielUserJid(userJid);
                     contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
+
+                    ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateForm.username + " as supervisor in contest " + contest.getName() + ".");
 
                     return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
                 } else {
@@ -128,6 +135,8 @@ public class ContestSupervisorController extends Controller {
             ContestSupervisorUpdateForm contestSupervisorUpdateForm = new ContestSupervisorUpdateForm(contestSupervisor);
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateForm);
 
+            ControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
             return showUpdateSupervisor(form, contest, contestSupervisor);
         } else {
             return tryEnteringContest(contest);
@@ -146,6 +155,8 @@ public class ContestSupervisorController extends Controller {
             } else {
                 ContestSupervisorUpdateForm contestSupervisorUpdateForm = form.get();
                 contestService.updateContestSupervisor(contestSupervisor.getId(), contestSupervisorUpdateForm.announcement, contestSupervisorUpdateForm.problem, contestSupervisorUpdateForm.submission, contestSupervisorUpdateForm.clarification, contestSupervisorUpdateForm.contestant);
+
+                ControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
 
                 return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
             }

@@ -1,4 +1,4 @@
-@(form: Form[org.iatoki.judgels.uriel.UserRoleUpdateForm], userRoleId: Long)
+@(form: Form[org.iatoki.judgels.uriel.UserUpdateForm], userRoleId: Long)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.formErrorView
@@ -8,11 +8,11 @@
 
 @formErrorView(form)
 
-@b3.form(routes.UserRoleController.postUpdate(userRoleId)) {
+@b3.form(routes.UserController.postUpdateUser(userRoleId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(form("roles"), '_label -> Messages.get("userRole.roles"))
+    @b3.text(form("roles"), '_label -> Messages.get("user.roles"))
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

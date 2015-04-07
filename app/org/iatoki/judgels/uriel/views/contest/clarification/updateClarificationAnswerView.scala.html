@@ -26,7 +26,7 @@
     </div>
 
     @b3.textarea(form("answer"), '_label -> Messages.get("clarification.answer"))
-    @b3.select(form("status"), Seq("ANSWERED" -> "Answered"), '_label -> Messages.get("clarification.status"))
+    @b3.select(form("status"), Seq("ANSWERED" -> "Answered"), '_label -> Messages.get("clarification.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

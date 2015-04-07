@@ -13,10 +13,10 @@
 
 <script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
 
-    <form class="form-inline pull-right" method="GET" action="@routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, null, null)">
+<form class="form-inline pull-right" method="GET" action="@routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, null, null)">
     <div class="form-group">
         <label for="contestantJid">@Messages.get("contestant.contestant")</label>
-        <select name="contestantJid">
+        <select name="contestantJid" class="form-control selectpicker col-md-3">
             <option value="(none)" @if(contestantJid == null) {selected="selected"}>&#8211;</option>
 
             @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(contestantJids.toSeq))) { displayNamesMap =>
@@ -29,7 +29,7 @@
 
     <div class="form-group">
         <label for="problemJid">@Messages.get("problem.problem")</label>
-        <select name="problemJid">
+        <select name="problemJid" class="form-control selectpicker col-md-3">
             <option value="(none)" @if(problemJid == null) {selected="selected"}>&#8211;</option>
             @for((pJid, pAlias) <- problemJidToAliasMap) {
                 <option value="@pJid" @if(pJid.equals(problemJid)){selected="selected"}>@pAlias</option>
@@ -37,7 +37,7 @@
         </select>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-xs">Filter</button>
+    <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSubmissionController.listSubmissions(contestId, newPageIndex, newOrderBy, newOrderDir, contestantJid, problemJid)}
@@ -54,7 +54,7 @@
 
 <form class="form-inline" method="POST" action="@routes.ContestSubmissionController.regradeSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid)">
 
-<button type="submit" id="regradeButton" class="btn btn-primary btn-xs">Regrade selected</button>
+<button type="submit" id="regradeButton" class="btn btn-primary">Regrade selected</button>
 
 <div class="clearfix"></div>
 

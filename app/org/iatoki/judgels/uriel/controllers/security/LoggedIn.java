@@ -1,34 +1,14 @@
 package org.iatoki.judgels.uriel.controllers.security;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.codec.binary.Base64;
-import play.Play;
-import play.libs.Json;
+import org.iatoki.judgels.jophiel.commons.controllers.security.BaseLoggedIn;
+import play.mvc.Call;
 import play.mvc.Http;
-import play.mvc.Result;
-import play.mvc.Security;
 
-public class LoggedIn extends Security.Authenticator {
+public class LoggedIn extends BaseLoggedIn {
 
     @Override
-    public String getUsername(Http.Context context) {
-        if ((context.session().get("username") != null) && (context.request().cookie("JOID-" + Play.application().configuration().getString("jophiel.clientJid")) != null)) {
-            String jID = context.request().cookie("JOID-" + Play.application().configuration().getString("jophiel.clientJid")).value();
-            if (context.session().get("idToken").startsWith(jID)) {
-                return context.session().get("username");
-            } else {
-                return null;
-            }
-        } else if (context.session().get("username") != null) {
-            context.session().clear();
-            return null;
-        } else {
-            return null;
-        }
+    public Call getRedirectCall(Http.Context context) {
+        return org.iatoki.judgels.uriel.controllers.routes.ApplicationController.auth(context.request().uri());
     }
 
-    @Override
-    public Result onUnauthorized(Http.Context context) {
-        return redirect(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.auth(context.request().uri()));
-    }
 }

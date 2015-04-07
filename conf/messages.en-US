@@ -109,12 +109,12 @@ permission.submission=Supervise submissions
 permission.clarification=Supervise clarifications
 permission.contestant=Supervise contestants
 
-userRole.userRoles=User Roles
-userRole.list=User Roles
-userRole.update=Update User Role
+user.users=Users
+user.list=Users
+user.update=Update User
 
-userRole.name=Name
-userRole.roles=Roles
+user.name=Name
+user.roles=Roles
 
 contest.time_left=Time left
 contest.time.s=s

@@ -69,10 +69,10 @@ GET         /contests/:cId/problems/:pId/update                     @org.iatoki.
 POST        /contests/:cId/problems/:pId/update                     @org.iatoki.judgels.uriel.controllers.ContestProblemController.postUpdateProblem(cId: Long, pId: Long)
 
 GET         /contests/:cId/submissions                              @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewScreenedSubmissions(cId: Long)
-GET         /contests/:cId/submissions/                             @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listScreenedSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", problemJid ?= null)
-GET         /contests/:cId/submissions/:sId                         @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmission(cId: Long, sId: Long)
-GET         /contests/:cId/submissions                              @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmissions(cId: Long)
-GET         /contests/:cId/submissions/                             @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
+GET         /contests/:cId/submissions/                             @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listScreenedSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contests/:cId/submissions/:sId/view                    @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmission(cId: Long, sId: Long)
+GET         /contests/:cId/submissions/all                          @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmissions(cId: Long)
+GET         /contests/:cId/submissions/all/                         @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
 GET         /contests/:cId/submissions/:sId/regrade                 @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.regradeSubmission(cId: Long, sId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
 POST        /contests/:cId/submissions/regrade                      @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.regradeSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)
 
@@ -112,18 +112,16 @@ GET         /contests/:cId/scoreboard/official                      @org.iatoki.
 GET         /contests/:cId/scoreboard/refresh                       @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.refreshAllScoreboard(cId: Long)
 GET         /contests/:cId/data/download                            @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.downloadContestDataAsXLS(cId: Long)
 
-
-
 GET         /contest/:cId/ajax/clarification/unread                 @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unreadClarification(cId: Long)
 GET         /contest/:cId/ajax/clarification/unanswered             @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unansweredClarification(cId: Long)
 GET         /contest/:cId/ajax/announcement/unread                  @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unreadAnnouncement(cId: Long)
 GET         /team/avatar/:imageName                                 @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.renderTeamAvatarImage(imageName: String)
 
-GET         /userRoles                                              @org.iatoki.judgels.uriel.controllers.UserRoleController.index()
-GET         /userRoles/                                             @org.iatoki.judgels.uriel.controllers.UserRoleController.list(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /users                                                  @org.iatoki.judgels.uriel.controllers.UserController.index()
+GET         /users/                                                 @org.iatoki.judgels.uriel.controllers.UserController.listUsers(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 
-GET         /userRoles/:uId/update                                  @org.iatoki.judgels.uriel.controllers.UserRoleController.update(uId: Long)
-POST        /userRoles/:uId/update                                  @org.iatoki.judgels.uriel.controllers.UserRoleController.postUpdate(uId: Long)
+GET         /users/:uId/update                                      @org.iatoki.judgels.uriel.controllers.UserController.updateUser(uId: Long)
+POST        /users/:uId/update                                      @org.iatoki.judgels.uriel.controllers.UserController.postUpdateUser(uId: Long)
 
-GET         /userRoles/:uId/delete                                  @org.iatoki.judgels.uriel.controllers.UserRoleController.delete(uId: Long)
+GET         /users/:uId/delete                                      @org.iatoki.judgels.uriel.controllers.UserController.deleteUser(uId: Long)
 

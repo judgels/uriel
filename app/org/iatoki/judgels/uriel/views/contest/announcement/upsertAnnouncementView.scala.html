@@ -7,14 +7,5 @@
 @helper.CSRF.formField
 
 @b3.text(form("title"), '_label -> Messages.get("announcement.title"))
-
-<div class="form-group">
-    <label class="control-label col-md-3" for="content">@Messages.get("announcement.content")</label>
-    <div class="col-md-9">
-        <textarea class="ckeditor" name="content">
-            @form("content").value
-        </textarea>
-    </div>
-</div>
-
-@b3.select(form("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("announcement.status"))
+@b3.textarea(form("content"), '_label -> Messages.get("announcement.content"), 'class -> "ckeditor")
+@b3.select(form("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("announcement.status"), 'class -> "selectpicker")
