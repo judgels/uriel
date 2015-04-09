@@ -2,8 +2,7 @@ package org.iatoki.judgels.uriel;
 
 import akka.actor.Scheduler;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.commons.AWSFileSystemProvider;
@@ -114,9 +113,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
         FileSystemProvider teamAvatarFileProvider;
         if (Play.isProd()) {
-            teamAvatarFileProvider = new AWSFileSystemProvider(new DefaultAWSCredentialsProviderChain(), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+            teamAvatarFileProvider = new AWSFileSystemProvider(new AmazonS3Client(), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
         } else {
-            teamAvatarFileProvider = new AWSFileSystemProvider(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey()), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+            teamAvatarFileProvider = new AWSFileSystemProvider(new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey())), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
         }
         contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
