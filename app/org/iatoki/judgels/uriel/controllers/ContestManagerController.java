@@ -47,6 +47,7 @@ public class ContestManagerController extends Controller {
         this.userRoleService = userRoleService;
     }
 
+    @AddCSRFToken
     public Result viewManagers(long contestId) {
         return listCreateManagers(contestId, 0, "id", "asc", "");
     }

@@ -49,6 +49,7 @@ public class ContestSupervisorController extends Controller {
         this.userRoleService = userRoleService;
     }
 
+    @AddCSRFToken
     public Result viewSupervisors(long contestId) {
         return listCreateSupervisors(contestId, 0, "id", "asc", "");
     }
