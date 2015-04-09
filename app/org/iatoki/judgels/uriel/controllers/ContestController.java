@@ -443,7 +443,7 @@ public final class ContestController extends Controller {
     }
 
     private boolean isAllowedToViewContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || contest.isPublic() || isContestant(contest);
+        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || contest.isPublic() || isCoach(contest) || isContestant(contest);
     }
 
     private boolean isAllowedToManageContest(Contest contest) {

@@ -33,11 +33,19 @@ public final class UrielProperties {
     }
 
     public String getaWSAccessKey() {
-        return aWSAccessKey;
+        if (Play.isDev()) {
+            return aWSAccessKey;
+        } else {
+            throw new RuntimeException();
+        }
     }
 
     public String getaWSSecretKey() {
-        return aWSSecretKey;
+        if (Play.isDev()) {
+            return aWSSecretKey;
+        } else {
+            throw new RuntimeException();
+        }
     }
 
     public String getTeamAvatarBucketName() {
