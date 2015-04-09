@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
+import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
 import org.iatoki.judgels.commons.JudgelsUtils;
@@ -71,8 +72,9 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestScoreboardDao contestScoreboardDao;
     private final ContestConfigurationDao contestConfigurationDao;
     private final ContestReadDao contestReadDao;
+    private final FileSystemProvider teamAvatarFileProvider;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -86,6 +88,7 @@ public final class ContestServiceImpl implements ContestService {
         this.contestScoreboardDao = contestScoreboardDao;
         this.contestConfigurationDao = contestConfigurationDao;
         this.contestReadDao = contestReadDao;
+        this.teamAvatarFileProvider = teamAvatarFileProvider;
     }
 
     @Override
@@ -570,25 +573,21 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public void createContestTeam(long contestId, String name, File teamImage, String extension) {
-        try {
-            ContestModel contestModel = contestDao.findById(contestId);
+        ContestModel contestModel = contestDao.findById(contestId);
 
-            ContestTeamModel contestTeamModel = new ContestTeamModel();
-            contestTeamModel.contestJid = contestModel.jid;
-            contestTeamModel.name = name;
-            contestTeamModel.teamImageName = "team-default.png";
+        ContestTeamModel contestTeamModel = new ContestTeamModel();
+        contestTeamModel.contestJid = contestModel.jid;
+        contestTeamModel.name = name;
+        contestTeamModel.teamImageName = "team-default.png";
 
-            contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-            String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-            FileUtils.copyFile(teamImage, new File(UrielProperties.getInstance().getTeamAvatarDir(), newImageName));
+        String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+        teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
 
-            contestTeamModel.teamImageName = newImageName;
+        contestTeamModel.teamImageName = newImageName;
 
-            contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
@@ -601,18 +600,14 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) {
-        try {
-            ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
-            String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-            FileUtils.copyFile(teamImage, new File(UrielProperties.getInstance().getTeamAvatarDir(), newImageName));
+        ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
+        String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+        teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
 
-            contestTeamModel.name = name;
-            contestTeamModel.teamImageName = newImageName;
+        contestTeamModel.name = name;
+        contestTeamModel.teamImageName = newImageName;
 
-            contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
@@ -991,8 +986,8 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public File getTeamAvatarImageFile(String imageName) {
-        return FileUtils.getFile(UrielProperties.getInstance().getTeamAvatarDir(), imageName);
+    public String getTeamAvatarImageURL(String imageName) {
+        return teamAvatarFileProvider.getURL(ImmutableList.of(imageName));
     }
 
     private Contest createContestFromModel(ContestModel contestModel) {

@@ -136,9 +136,9 @@ public class ContestTeamController extends Controller {
                 Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
 
                 if (teamImage != null) {
-                    contestService.updateContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                    contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
                 } else {
-                    contestService.updateContestTeam(contest.getId(), contestTeamUpsertForm.name);
+                    contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name);
                 }
 
                 ControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
@@ -187,7 +187,7 @@ public class ContestTeamController extends Controller {
 
                     return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
                 } else {
-                    form.reject("team.user_already_has_team");
+                    form.reject("error.team.userAlreadyHasTeam");
                     Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
 
                     return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
@@ -234,7 +234,7 @@ public class ContestTeamController extends Controller {
 
                     return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
                 } else {
-                    form2.reject("team.user_already_has_team");
+                    form2.reject("error.team.userAlreadyHasTeamOrIsNotContestant");
                     Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
 
                     return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);

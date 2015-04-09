@@ -23,6 +23,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -85,43 +87,50 @@ public final class ContestAPIController extends Controller {
     }
 
     public Result renderTeamAvatarImage(String imageName) {
-        File image = contestService.getTeamAvatarImageFile(imageName);
-        if (!image.exists()) {
-            return notFound();
-        }
+        String imageURL = contestService.getTeamAvatarImageURL(imageName);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
-        response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
-        response().setHeader("Last-Modified", sdf.format(new Date(image.lastModified())));
+        try {
+            new URL(imageURL);
+            return redirect(imageURL);
+        } catch (MalformedURLException e) {
+            File image = new File(imageURL);
+            if (image.exists()) {
+                SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
+                response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
+                response().setHeader("Last-Modified", sdf.format(new Date(image.lastModified())));
 
-        if (request().hasHeader("If-Modified-Since")) {
-            try {
-                Date lastUpdate = sdf.parse(request().getHeader("If-Modified-Since"));
-                if (image.lastModified() > lastUpdate.getTime()) {
-                    BufferedImage in = ImageIO.read(image);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                if (request().hasHeader("If-Modified-Since")) {
+                    try {
+                        Date lastUpdate = sdf.parse(request().getHeader("If-Modified-Since"));
+                        if (image.lastModified() > lastUpdate.getTime()) {
+                            BufferedImage in = ImageIO.read(image);
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-                    String type = FilenameUtils.getExtension(image.getAbsolutePath());
+                            String type = FilenameUtils.getExtension(image.getAbsolutePath());
 
-                    ImageIO.write(in, type, baos);
-                    return ok(baos.toByteArray()).as("image/" + type);
+                            ImageIO.write(in, type, baos);
+                            return ok(baos.toByteArray()).as("image/" + type);
+                        } else {
+                            return status(304);
+                        }
+                    } catch (ParseException | IOException e2) {
+                        throw new RuntimeException(e2);
+                    }
                 } else {
-                    return status(304);
+                    try {
+                        BufferedImage in = ImageIO.read(image);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                        String type = FilenameUtils.getExtension(image.getAbsolutePath());
+
+                        ImageIO.write(in, type, baos);
+                        return ok(baos.toByteArray()).as("image/" + type);
+                    } catch (IOException e2) {
+                        return internalServerError();
+                    }
                 }
-            } catch (ParseException | IOException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            try {
-                BufferedImage in = ImageIO.read(image);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-                String type = FilenameUtils.getExtension(image.getAbsolutePath());
-
-                ImageIO.write(in, type, baos);
-                return ok(baos.toByteArray()).as("image/" + type);
-            } catch (IOException e) {
-                return internalServerError();
+            } else {
+                return notFound();
             }
         }
     }

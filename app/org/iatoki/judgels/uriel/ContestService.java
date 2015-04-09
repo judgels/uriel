@@ -166,5 +166,5 @@ public interface ContestService {
 
     void updateContestConfigurationByContestJid(String contestJid, ContestTypeConfig typeConfig, ContestScopeConfig scopeConfig, ContestStyleConfig styleConfig);
 
-    File getTeamAvatarImageFile(String imageName);
+    String getTeamAvatarImageURL(String imageName);
 }

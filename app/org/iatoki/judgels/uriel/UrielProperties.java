@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel;
 
+import com.amazonaws.services.s3.model.Region;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import play.Configuration;
@@ -14,6 +15,10 @@ public final class UrielProperties {
 
     private File submissionDir;
     private File teamAvatarDir;
+    private String aWSAccessKey;
+    private String aWSSecretKey;
+    private String teamAvatarBucketName;
+    private Region teamAvatarRegion;
 
     private UrielProperties() {
 
@@ -27,15 +32,41 @@ public final class UrielProperties {
         return teamAvatarDir;
     }
 
+    public String getaWSAccessKey() {
+        return aWSAccessKey;
+    }
+
+    public String getaWSSecretKey() {
+        return aWSSecretKey;
+    }
+
+    public String getTeamAvatarBucketName() {
+        return teamAvatarBucketName;
+    }
+
+    public Region getTeamAvatarRegion() {
+        return teamAvatarRegion;
+    }
+
     public static UrielProperties getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new UrielProperties();
 
             Configuration conf = Play.application().configuration();
 
-            verifyConfiguration(conf);
+            if (Play.isProd()) {
+                verifyConfigurationProd(conf);
+            } else if (Play.isDev()) {
+                verifyConfigurationDev(conf);
 
-            String baseDirName = conf.getString("uriel.baseDataDir").replaceAll("\"", "");
+                INSTANCE.aWSAccessKey = conf.getString("aws.access.key");
+                INSTANCE.aWSSecretKey = conf.getString("aws.secret.key");
+            }
+
+            String baseDirName = conf.getString("uriel.baseDataDir");
+
+            INSTANCE.teamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
+            INSTANCE.teamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
 
             File baseDir = new File(baseDirName);
             if (!baseDir.isDirectory()) {
@@ -54,18 +85,45 @@ public final class UrielProperties {
         return INSTANCE;
     }
 
-    private static void verifyConfiguration(Configuration configuration) {
+    private static void verifyConfigurationDev(Configuration configuration) {
         List<String> requiredKeys = ImmutableList.of(
-                "jophiel.baseUrl",
-                "jophiel.clientJid",
-                "jophiel.clientSecret",
-                "sealtiel.baseUrl",
-                "sealtiel.clientJid",
-                "sealtiel.clientSecret",
-                "sealtiel.gabrielClientJid",
-                "uriel.baseUrl",
-                "uriel.baseDataDir",
-                "sandalphon.baseUrl"
+              "jophiel.baseUrl",
+              "jophiel.clientJid",
+              "jophiel.clientSecret",
+              "sealtiel.baseUrl",
+              "sealtiel.clientJid",
+              "sealtiel.clientSecret",
+              "sealtiel.gabrielClientJid",
+              "uriel.baseUrl",
+              "uriel.baseDataDir",
+              "sandalphon.baseUrl",
+              "aws.access.key",
+              "aws.secret.key",
+              "aws.team.avatar.bucket.name",
+              "aws.team.avatar.bucket.region.id"
+        );
+
+        for (String key : requiredKeys) {
+            if (configuration.getString(key) == null) {
+                throw new RuntimeException("Missing " + key + " property in conf/application.conf");
+            }
+        }
+    }
+
+    private static void verifyConfigurationProd(Configuration configuration) {
+        List<String> requiredKeys = ImmutableList.of(
+              "jophiel.baseUrl",
+              "jophiel.clientJid",
+              "jophiel.clientSecret",
+              "sealtiel.baseUrl",
+              "sealtiel.clientJid",
+              "sealtiel.clientSecret",
+              "sealtiel.gabrielClientJid",
+              "uriel.baseUrl",
+              "uriel.baseDataDir",
+              "sandalphon.baseUrl",
+              "aws.team.avatar.bucket.name",
+              "aws.team.avatar.bucket.region.id"
         );
 
         for (String key : requiredKeys) {

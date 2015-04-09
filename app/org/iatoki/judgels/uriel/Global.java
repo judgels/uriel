@@ -1,8 +1,12 @@
 package org.iatoki.judgels.uriel;
 
 import akka.actor.Scheduler;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.iatoki.judgels.commons.AWSFileSystemProvider;
+import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
@@ -107,7 +111,13 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
-        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao);
+        FileSystemProvider teamAvatarFileProvider;
+        if (Play.isProd()) {
+            teamAvatarFileProvider = new AWSFileSystemProvider(new InstanceProfileCredentialsProvider(), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+        } else {
+            teamAvatarFileProvider = new AWSFileSystemProvider(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey()), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+        }
+        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
 
         UserDao userDao = new UserHibernateDao();
