@@ -120,8 +120,8 @@ user.roles=Roles
 
 contest.time_left=Time left
 contest.time.s=s
-contest.time.ended=Contest has Ended
-contest.time.not_started=Contest is not Started
+contest.time.ended=Contest ended
+contest.time.not_started=Contest not started yet
 contest.day-left=day
 contest.hour-left=hour
 contest.minute-left=minute
@@ -137,6 +137,7 @@ contest.config.general=General
 contest.config.specific=Specific
 contest.type.standard.scoreboardFreezeTime=Scoreboard Freeze Time
 contest.type.virtual.duration=Contest Duration
+contest.type.virtual.startTrigger=Who can start the contest?
 contest.scope.public.registerStartTime=Register Start Time
 contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
@@ -149,8 +150,8 @@ submission.left=Submission Left
 contest.supervisor.contestant.importTXT=Import via txt
 contest.supervisor.contestant.manualCreate=Manual Create
 
-contestant.username=username
-contestant.usernames=usernames
+contestant.username=Username
+contestant.usernames=Usernames
 contest.enter.confirm=Do you really want to enter the contest? If you do, there is no turning back.
 
 team.teams=Teams
@@ -171,5 +172,9 @@ error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
 error.contestant.create.userJid.invalid=Username is invalid.
 error.supervisor.create.userJid.invalid=Username is invalid.
 error.manager.create.userJid.invalid=Username is invalid.
-error.team.userAlreadyHasTeam=User has already involved in a team.
-error.team.userAlreadyHasTeamOrIsNotContestant=User has already involved in a team or is not contestant.
+error.team.userAlreadyHasTeam=User has been already involved in a team.
+error.team.userAlreadyHasTeamOrIsNotContestant=User has been already involved in a team or is not contestant.
+
+error.contest.config.specific.invalid_freeze_time=Freeze time must be between start and end time.
+error.contest.config.specific.invalidRegisterTime=Register time window must be within contest time window.
+error.contest.config.specific.invalid_contest_duration=Contest duration must be within contest time window.
