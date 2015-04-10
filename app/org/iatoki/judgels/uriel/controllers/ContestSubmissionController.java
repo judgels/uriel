@@ -36,6 +36,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public final class ContestSubmissionController extends Controller {
     public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToEnterContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), problemJid, contest.getJid());
             Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
@@ -69,22 +70,20 @@ public final class ContestSubmissionController extends Controller {
             LazyHtml content = new LazyHtml(listScreenedSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, problemJid));
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
             if (isAllowedToSuperviseSubmissions(contest)) {
-                content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestSubmissionController.viewSubmissions(contest.getId()), c));
+                appendSubtabsLayout(content, contest);
             }
-            appendTabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("submission.list"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()))
+            );
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submissions");
 
             ControllerUtils.getInstance().addActivityLog("List own submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -92,7 +91,7 @@ public final class ContestSubmissionController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         Submission submission = submissionService.findSubmissionById(submissionId);
 
-        if (isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(UrielProperties.getInstance().getSubmissionDir(), submission.getJid());
             String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
             ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
@@ -102,20 +101,20 @@ public final class ContestSubmissionController extends Controller {
 
             LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, authorName, contestProblemAlias, contestProblemName, gradingLanguageName, contest.getName()));
 
-            appendTabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("submission.view"), routes.ContestSubmissionController.viewSubmission(contest.getId(), submission.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId())),
+                    new InternalLink(Messages.get("submission.view"), routes.ContestSubmissionController.viewSubmission(contest.getId(), submission.getId()))
+            );
+
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submission - View");
 
             ControllerUtils.getInstance().addActivityLog("View submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -139,22 +138,20 @@ public final class ContestSubmissionController extends Controller {
 
             LazyHtml content = new LazyHtml(listSubmissionsView.render(contestId, submissions, contestantJids, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, actualContestantJid, actualProblemJid));
             content.appendLayout(c -> heading3Layout.render(Messages.get("submission.submissions"), c));
-            content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestSubmissionController.viewSubmissions(contest.getId()), c));
-            appendTabsLayout(content, contest);
+            appendSubtabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("submission.submissions"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId())),
-                  new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId()))
+            );
+
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Submissions");
 
             ControllerUtils.getInstance().addActivityLog("List all submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -170,7 +167,7 @@ public final class ContestSubmissionController extends Controller {
 
             return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -198,87 +195,28 @@ public final class ContestSubmissionController extends Controller {
 
             return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
-    private void appendTabsLayout(LazyHtml content, Contest contest) {
-        Date contestEndTime = contest.getEndTime();
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            contestEndTime = new Date(contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration());
-        }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, isSupervisorOrAbove(contest), contestEndTime);
+    private void appendSubtabsLayout(LazyHtml content, Contest contest) {
+        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestSubmissionController.viewSubmissions(contest.getId()), c));
     }
 
-    private boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestStarted(Contest contest) {
-        return (!new Date().before(contest.getStartTime()));
-    }
-
-    private boolean isContestEnded(Contest contest) {
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-
-            return (System.currentTimeMillis() > (contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()));
-        } else {
-            return new Date().after(contest.getEndTime());
-        }
-    }
-
-    private boolean isAllowedToEnterContest(Contest contest) {
-        if (ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest)) {
-            return true;
-        }
-        if (contest.isStandard()) {
-            return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
-        } else {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
-            } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
-            }
-        }
-    }
-
-    private boolean isSupervisorOrAbove(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
+    private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+                ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
+                        .add(new InternalLink(Messages.get("submission.submissions"), routes.ContestController.jumpToSubmissions(contest.getId())))
+                        .addAll(Arrays.asList(lastLinks))
+                        .build()
+        );
     }
 
     private boolean isAllowedToSuperviseSubmissions(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isSubmission());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isSubmission());
     }
 
     private boolean isAllowedToViewSubmission(Contest contest, Submission submission) {
         return submission.getContestJid().equals(contest.getJid()) && (ControllerUtils.getInstance().isAdmin() || isAllowedToSuperviseSubmissions(contest) || submission.getAuthorJid().equals(IdentityUtils.getUserJid()));
-    }
-
-    private Result tryEnteringContest(Contest contest) {
-        if (isAllowedToEnterContest(contest)) {
-            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
-        } else {
-            return redirect(routes.ContestController.viewContest(contest.getId()));
-        }
     }
 }

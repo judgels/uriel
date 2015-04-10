@@ -42,6 +42,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,9 +65,9 @@ public class ContestClarificationController extends Controller {
 
     public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToEnterContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             Page<ContestClarification> contestClarifications;
-            boolean coach = isCoach(contest);
+            boolean coach = ContestControllerUtils.getInstance().isCoach(contest);
             if (coach) {
                 ContestTeam contestTeam = contestService.findContestTeamJidByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
                 List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByTeamJid(contestTeam.getJid());
@@ -86,7 +87,7 @@ public class ContestClarificationController extends Controller {
             if (isAllowedToSuperviseClarifications(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
             }
-            appendTabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                   new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -99,14 +100,14 @@ public class ContestClarificationController extends Controller {
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
     @AddCSRFToken
     public Result createClarification(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToDoContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
             if (contest.isClarificationTimeValid()) {
                 Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class);
 
@@ -117,14 +118,14 @@ public class ContestClarificationController extends Controller {
                 return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
     @RequireCSRFCheck
     public Result postCreateClarification(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToDoContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
             if (contest.isClarificationTimeValid()) {
                 Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class).bindFromRequest();
 
@@ -142,7 +143,7 @@ public class ContestClarificationController extends Controller {
                 return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -150,7 +151,7 @@ public class ContestClarificationController extends Controller {
     public Result updateClarificationContent(long contestId, long contestClarificationId) {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
-        if (isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
+        if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
             ContestClarificationChangeForm contestClarificationChangeForm = new ContestClarificationChangeForm(contestClarification);
             Form<ContestClarificationChangeForm> form = Form.form(ContestClarificationChangeForm.class).fill(contestClarificationChangeForm);
             form = form.fill(contestClarificationChangeForm);
@@ -159,7 +160,7 @@ public class ContestClarificationController extends Controller {
 
             return showUpdateClarificationContent(form, contest, contestClarification);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -167,7 +168,7 @@ public class ContestClarificationController extends Controller {
     public Result postUpdateClarificationContent(long contestId, long contestClarificationId) {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
-        if (isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
+        if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
             Form<ContestClarificationChangeForm> form = Form.form(ContestClarificationChangeForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
@@ -181,7 +182,7 @@ public class ContestClarificationController extends Controller {
                 return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -197,22 +198,19 @@ public class ContestClarificationController extends Controller {
             LazyHtml content = new LazyHtml(listClarificationsView.render(contest.getId(), contestClarifications, pageIndex, orderBy, orderDir, filterString));
 
             content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
-            content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
-            appendTabsLayout(content, contest);
+            appendSubtabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
-                  new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId()))
+            );
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Clarifications");
 
             ControllerUtils.getInstance().addActivityLog("Open all clarifications in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -228,7 +226,7 @@ public class ContestClarificationController extends Controller {
 
             return showUpdateClarificationAnswer(form, contest, contestClarification);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -250,7 +248,7 @@ public class ContestClarificationController extends Controller {
                 return redirect(routes.ContestClarificationController.viewClarifications(contest.getId()));
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -260,16 +258,14 @@ public class ContestClarificationController extends Controller {
         LazyHtml content = new LazyHtml(createClarificationView.render(contest, form, contestProblemList));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.create"), c));
         if (isAllowedToSuperviseClarifications(contest)) {
-            content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
+            appendSubtabsLayout(content, contest);
         }
-        appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("status.contestant"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
                 new InternalLink(Messages.get("clarification.create"), routes.ContestClarificationController.createClarification(contest.getId()))
-        ));
+        );
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarification - Create");
 
         return ControllerUtils.getInstance().lazyOk(content);
@@ -278,14 +274,13 @@ public class ContestClarificationController extends Controller {
     private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> form, Contest contest, ContestClarification contestClarification){
         LazyHtml content = new LazyHtml(updateClarificationContentView.render(contest, contestClarification, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
-        appendTabsLayout(content, contest);
+        appendSubtabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("status.contestant"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
                 new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.updateClarificationContent(contest.getId(), contestClarification.getId()))
-        ));
+        );
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarification - Update Content");
 
         return ControllerUtils.getInstance().lazyOk(content);
@@ -294,97 +289,32 @@ public class ContestClarificationController extends Controller {
     private Result showUpdateClarificationAnswer(Form<ContestClarificationUpdateForm> form, Contest contest, ContestClarification contestClarification){
         LazyHtml content = new LazyHtml(updateClarificationAnswerView.render(contest.getId(), contestClarification, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
-        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
-        appendTabsLayout(content, contest);
+        appendSubtabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
-                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.viewClarifications(contest.getId()))
-        ));
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId())),
+                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.updateClarificationAnswer(contest.getId(), contestClarification.getId()))
+        );
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarification - Update Answer");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private void appendTabsLayout(LazyHtml content, Contest contest) {
-        Date contestEndTime = contest.getEndTime();
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            contestEndTime = new Date(contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration());
-        }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, isSupervisorOrAbove(contest), contestEndTime);
+    private void appendSubtabsLayout(LazyHtml content, Contest contest) {
+        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
     }
 
-    private boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestStarted(Contest contest) {
-        return (!new Date().before(contest.getStartTime()));
-    }
-
-    private boolean isContestEnded(Contest contest) {
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-
-            return (System.currentTimeMillis() > (contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()));
-        } else {
-            return new Date().after(contest.getEndTime());
-        }
-    }
-
-    private boolean isAllowedToEnterContest(Contest contest) {
-        if (ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest)) {
-            return true;
-        }
-        if (contest.isStandard()) {
-            return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
-        } else {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
-            } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
-            }
-        }
-    }
-
-    private boolean isAllowedToDoContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid()))  && isContestStarted(contest) && !isContestEnded(contest));
-    }
-
-    private boolean isSupervisorOrAbove(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
+    private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+                ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
+                        .add(new InternalLink(Messages.get("clarification.clarifications"), routes.ContestController.jumpToClarifications(contest.getId())))
+                        .addAll(Arrays.asList(lastLinks))
+                        .build()
+        );
     }
 
     private boolean isAllowedToSuperviseClarifications(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
-    }
-
-    private Result tryEnteringContest(Contest contest) {
-        if (isAllowedToEnterContest(contest)) {
-            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
-        } else {
-            return redirect(routes.ContestController.viewContest(contest.getId()));
-        }
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
     }
 }

@@ -46,6 +46,7 @@ import play.mvc.Result;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +68,7 @@ public class ContestScoreboardController extends Controller {
 
     public Result viewScoreboard(long contestId) {
         Contest contest = contestService.findContestById(contestId);
-        if ((contest.isUsingScoreboard()) && (isAllowedToEnterContest(contest))) {
+        if ((contest.isUsingScoreboard()) && (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest))) {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
@@ -86,7 +87,7 @@ public class ContestScoreboardController extends Controller {
             } else {
                 Scoreboard scoreboard = contestScoreboard.getScoreboard();
                 if (contest.isIncognitoScoreboard()) {
-                    if (isCoach(contest)) {
+                    if (ContestControllerUtils.getInstance().isCoach(contest)) {
                         List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
                         content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toSet())));
                     } else {
@@ -98,23 +99,21 @@ public class ContestScoreboardController extends Controller {
             }
 
             if (isAllowedToSuperviseScoreboard(contest)) {
-                content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestScoreboardController.viewScoreboard(contest.getId()), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()), c));
+                appendSubtabsLayout(content, contest);
             }
 
-            appendTabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("status.contestant"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
+            );
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Public Scoreboard");
 
             ControllerUtils.getInstance().addActivityLog("View public scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -128,23 +127,20 @@ public class ContestScoreboardController extends Controller {
 
             content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[]{new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestScoreboardController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestScoreboardController.downloadContestDataAsXLS(contest.getId()))}, c));
 
-            content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestScoreboardController.viewScoreboard(contest.getId()), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()), c));
-
-            appendTabsLayout(content, contest);
+            appendSubtabsLayout(content, contest);
+            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestScoreboardController.viewScoreboard(contest.getId())),
-                  new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
-            ));
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
+            );
+
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Official Scoreboard");
 
             ControllerUtils.getInstance().addActivityLog("View official scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -168,7 +164,7 @@ public class ContestScoreboardController extends Controller {
 
             return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -290,7 +286,7 @@ public class ContestScoreboardController extends Controller {
                 return internalServerError();
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -303,67 +299,20 @@ public class ContestScoreboardController extends Controller {
         contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
     }
 
-    private void appendTabsLayout(LazyHtml content, Contest contest) {
-        Date contestEndTime = contest.getEndTime();
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            contestEndTime = new Date(contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration());
-        }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, isSupervisorOrAbove(contest), contestEndTime);
+    private void appendSubtabsLayout(LazyHtml content, Contest contest) {
+        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestScoreboardController.viewScoreboard(contest.getId()), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()), c));
     }
 
-    private boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestStarted(Contest contest) {
-        return (!new Date().before(contest.getStartTime()));
-    }
-
-    private boolean isAllowedToEnterContest(Contest contest) {
-        if (ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest)) {
-            return true;
-        }
-        if (contest.isStandard()) {
-            return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
-        } else {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
-            } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
-            }
-        }
-    }
-
-    private boolean isSupervisorOrAbove(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
+    private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+                ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
+                        .add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.jumpToScoreboard(contest.getId())))
+                        .addAll(Arrays.asList(lastLinks))
+                        .build()
+        );
     }
 
     private boolean isAllowedToSuperviseScoreboard(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest);
-    }
-
-    private Result tryEnteringContest(Contest contest) {
-        if (isAllowedToEnterContest(contest)) {
-            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
-        } else {
-            return redirect(routes.ContestController.viewContest(contest.getId()));
-        }
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || ContestControllerUtils.getInstance().isSupervisor(contest);
     }
 }

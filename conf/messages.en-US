@@ -92,7 +92,7 @@ supervisor.list=Supervisors
 supervisor.create=Create Supervisor
 supervisor.update=Update Supervisor
 
-supervisor.username=username
+supervisor.username=Username
 supervisor.name=Name
 supervisor.userJid=User JID
 supervisor.permissions=Permissions
@@ -101,7 +101,7 @@ manager.managers=Managers
 manager.list=Manager
 manager.create=Create Manager
 
-manager.username=username
+manager.username=Username
 manager.userJid=User JID
 manager.name=Name
 

@@ -56,6 +56,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.util.Arrays;
 import java.util.Date;
 
 @Transactional
@@ -72,6 +73,38 @@ public final class ContestController extends Controller {
 
     public Result index() {
         return listAllowedContests(0, "id", "asc", "");
+    }
+
+    public Result jumpToAnnouncements(long contestId) {
+        return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
+    }
+
+    public Result jumpToProblems(long contestId) {
+        return redirect(routes.ContestProblemController.viewOpenedProblems(contestId));
+    }
+
+    public Result jumpToSubmissions(long contestId) {
+        return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
+    }
+
+    public Result jumpToScoreboard(long contestId) {
+        return redirect(routes.ContestScoreboardController.viewScoreboard(contestId));
+    }
+
+    public Result jumpToClarifications(long contestId) {
+        return redirect(routes.ContestClarificationController.viewScreenedClarifications(contestId));
+    }
+
+    public Result jumpToContestants(long contestId) {
+        return redirect(routes.ContestContestantController.viewContestants(contestId));
+    }
+
+    public Result jumpToSupervisors(long contestId) {
+        return redirect(routes.ContestSupervisorController.viewSupervisors(contestId));
+    }
+
+    public Result jumpToManagers(long contestId) {
+        return redirect(routes.ContestManagerController.viewManagers(contestId));
     }
 
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
@@ -101,10 +134,10 @@ public final class ContestController extends Controller {
     public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToViewContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, isAllowedToRegisterContest(contest), isContestant(contest) && !isContestEnded(contest), isAllowedToEnterContest(contest), isAllowedToManageContest(contest)));
+            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().isContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToEnterContest(contest), ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -124,7 +157,7 @@ public final class ContestController extends Controller {
     public Result registerToAContest(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToRegisterContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest)) {
             contestService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
 
             ControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -138,12 +171,12 @@ public final class ContestController extends Controller {
     public Result enterContest(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToEnterContest(contest)) {
-            boolean isContestantInContest = (isContestant(contest));
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+            boolean isContestantInContest = (ContestControllerUtils.getInstance().isContestant(contest));
             if (contest.isVirtual()) {
                 ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
                 ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (isCoach(contest))) {
+                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (ContestControllerUtils.getInstance().isCoach(contest))) {
                     contestService.enterContestAsCoach(contest.getJid(), IdentityUtils.getUserJid());
 
                     ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as coach  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -187,11 +220,11 @@ public final class ContestController extends Controller {
             return showCreateContest(form);
         } else {
             ContestUpsertForm contestUpsertForm = form.get();
-            contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
+            Contest contest = contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
 
             ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertForm.name + ".");
 
-            return redirect(routes.ContestController.index());
+            return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
         }
     }
 
@@ -199,7 +232,7 @@ public final class ContestController extends Controller {
     public Result updateContestGeneralConfig(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToManageContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             ContestUpsertForm contestUpsertForm = new ContestUpsertForm(contest);
             Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).fill(contestUpsertForm);
 
@@ -207,7 +240,7 @@ public final class ContestController extends Controller {
 
             return showUpdateContestGeneralConfig(form, contest);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -215,7 +248,7 @@ public final class ContestController extends Controller {
     public Result postUpdateContestGeneralConfig(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToManageContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).bindFromRequest();
             if (form.hasErrors()) {
                 return showUpdateContestGeneralConfig(form, contest);
@@ -225,10 +258,10 @@ public final class ContestController extends Controller {
 
                 ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
-                return redirect(routes.ContestController.viewContest(contestId));
+                return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -236,7 +269,7 @@ public final class ContestController extends Controller {
     public Result updateContestSpecificConfig(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToManageContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             Form<?> form1 = null;
             if (contest.isStandard()) {
@@ -280,7 +313,7 @@ public final class ContestController extends Controller {
 
             return showUpdateContestSpecificConfig(form1, form2, form3, contest);
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -288,7 +321,7 @@ public final class ContestController extends Controller {
     public Result postUpdateContestSpecificConfig(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (isAllowedToManageContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             Form form1 = null;
             if (contest.isStandard()) {
                 form1 = Form.form(ContestTypeConfigStandardForm.class).bindFromRequest();
@@ -362,7 +395,7 @@ public final class ContestController extends Controller {
                 }
             }
         } else {
-            return tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 
@@ -382,13 +415,12 @@ public final class ContestController extends Controller {
     private Result showUpdateContestGeneralConfig(Form<ContestUpsertForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(updateContestView.render(form, contest));
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
-        content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
+        content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
+        appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId()))
-        ));
+        );
+
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update General");
 
         return ControllerUtils.getInstance().lazyOk(content);
@@ -397,95 +429,22 @@ public final class ContestController extends Controller {
     private Result showUpdateContestSpecificConfig(Form form1, Form form2, Form form3, Contest contest) {
         LazyHtml content = new LazyHtml(updateContestSpecificView.render(contest, form1, form2, form3));
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
-        content.appendLayout(c -> headingLayout.render(Messages.get("contest.contest") + " #" + contest.getId() + ": " + contest.getName(), c));
+        content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())),
+        appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))
-        ));
+        );
+
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Specific");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }
-
-    private boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+    private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
+        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+                ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
+                        .addAll(Arrays.asList(lastLinks))
+                        .build()
+        );
     }
 
-    private boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
-    }
-
-    private boolean isContestStarted(Contest contest) {
-        return (!new Date().before(contest.getStartTime()));
-    }
-
-    private boolean isContestEnded(Contest contest) {
-        if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-
-            return (System.currentTimeMillis() > (contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()));
-        } else {
-            return new Date().after(contest.getEndTime());
-        }
-    }
-
-    private boolean isAllowedToViewContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || contest.isPublic() || isCoach(contest) || isContestant(contest);
-    }
-
-    private boolean isAllowedToManageContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest);
-    }
-
-    private boolean isAllowedToRegisterContest(Contest contest) {
-        boolean result = !isContestant(contest) && !isContestEnded(contest);
-        if (contest.isPublic()) {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
-
-            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && ((contestScopeConfigPublic.getMaxRegistrants() == 0) || (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants()));
-        } else {
-            result = false;
-        }
-
-        return result;
-    }
-
-    private boolean isAllowedToEnterContest(Contest contest) {
-        if (ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest)) {
-            return true;
-        }
-        if (contest.isStandard()) {
-            return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
-        } else {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
-            } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
-            }
-        }
-    }
-
-    private Result tryEnteringContest(Contest contest) {
-        if (isAllowedToEnterContest(contest)) {
-            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
-        } else {
-            return redirect(routes.ContestController.viewContest(contest.getId()));
-        }
-    }
 }

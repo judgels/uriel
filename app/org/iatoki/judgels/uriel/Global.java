@@ -18,6 +18,7 @@ import org.iatoki.judgels.uriel.controllers.ContestAnnouncementController;
 import org.iatoki.judgels.uriel.controllers.ContestClarificationController;
 import org.iatoki.judgels.uriel.controllers.ContestContestantController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
+import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.ContestManagerController;
 import org.iatoki.judgels.uriel.controllers.ContestProblemController;
 import org.iatoki.judgels.uriel.controllers.ContestScoreboardController;
@@ -119,6 +120,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         }
         contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
+
+        ContestControllerUtils.getInstance().setContestService(contestService);
 
         UserDao userDao = new UserHibernateDao();
         UserService userService = new UserServiceImpl(userDao);

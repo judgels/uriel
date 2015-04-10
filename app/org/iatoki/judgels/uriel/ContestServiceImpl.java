@@ -104,7 +104,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public Contest createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
         ContestModel contestModel = new ContestModel();
         contestModel.name = name;
         contestModel.description = description;
@@ -132,6 +132,8 @@ public final class ContestServiceImpl implements ContestService {
         contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
         contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        return createContestFromModel(contestModel);
     }
 
     @Override
