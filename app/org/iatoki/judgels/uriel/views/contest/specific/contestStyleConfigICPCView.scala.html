@@ -3,24 +3,7 @@
 @import play.i18n.Messages
 @import org.iatoki.judgels.gabriel.GradingLanguageRegistry
 
-<script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
-
-<script type="text/javascript">
-    $(document).ready(function() {
-        $('#isAllowedAll').on('click', function() {
-            if ($('#isAllowedAll').prop('checked')) {
-                $('.allowedLanguageName').each(function() {
-                    $(this).prop('disabled', true);
-                    $(this).prop('checked', true);
-                });
-            } else {
-                $('.allowedLanguageName').each(function() {
-                    $(this).prop('disabled', false);
-                });
-            }
-        });
-    });
-</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/languageRestriction.js")"></script>
 
 @b3.inputWrapped("timePenalty", formStyle("timePenalty"), '_label -> Messages.get("contest.style.ICPC.timePenalty")) { input =>
     <div class="input-group">
