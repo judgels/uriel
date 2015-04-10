@@ -72,7 +72,7 @@ public final class ContestController extends Controller {
     }
 
     public Result index() {
-        return listAllowedContests(0, "id", "asc", "");
+        return listAllowedContests(0, "id", "desc", "");
     }
 
     public Result jumpToAnnouncements(long contestId) {
