@@ -56,7 +56,7 @@ public final class ContestSubmissionController extends Controller {
     }
 
     public Result viewScreenedSubmissions(long contestId) {
-        return listScreenedSubmissions(contestId, 0, "id", "desc", "");
+        return listScreenedSubmissions(contestId, 0, "id", "desc", null);
     }
 
     public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) {

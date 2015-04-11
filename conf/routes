@@ -76,7 +76,7 @@ GET         /contests/:cId/problems/:pId/update                       @org.iatok
 POST        /contests/:cId/problems/:pId/update                       @org.iatoki.judgels.uriel.controllers.ContestProblemController.postUpdateProblem(cId: Long, pId: Long)
 
 GET         /contests/:cId/submissions/view                           @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewScreenedSubmissions(cId: Long)
-GET         /contests/:cId/submissions/view/                          @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listScreenedSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contests/:cId/submissions/view/                          @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listScreenedSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", problemJid ?= null)
 GET         /contests/:cId/submissions/:sId/view                      @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmission(cId: Long, sId: Long)
 GET         /contests/:cId/submissions/all                            @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmissions(cId: Long)
 GET         /contests/:cId/submissions/all/                           @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", contestantJid ?= null, problemJid ?= null)

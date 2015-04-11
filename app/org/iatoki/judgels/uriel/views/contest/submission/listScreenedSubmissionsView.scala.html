@@ -25,7 +25,7 @@
     <button type="submit" class="btn btn-primary btn-xs">Filter</button>
 </form>
 
-@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSubmissionController.listScreenedSubmissions(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSubmissionController.listScreenedSubmissions(contestId, newPageIndex, newOrderBy, newOrderDir, null)}
 
 <div class="clearfix"></div>
 
