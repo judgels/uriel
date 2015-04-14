@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
@@ -46,7 +45,6 @@ import play.i18n.Messages;
 
 import javax.persistence.NoResultException;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -90,6 +88,9 @@ public final class ContestServiceImpl implements ContestService {
         this.contestConfigurationDao = contestConfigurationDao;
         this.contestReadDao = contestReadDao;
         this.teamAvatarFileProvider = teamAvatarFileProvider;
+        if (!teamAvatarFileProvider.fileExists(ImmutableList.of("team-default.png"))) {
+            teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default assets/team-default.png", play.api.Play.current()),"team-default.png");
+        }
     }
 
     @Override
@@ -812,8 +813,16 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public long getUnreadContestClarificationsCount(String userJid, String contestJid) {
-        List<Long> clarificationIds = contestClarificationDao.findAllAnsweredClarificationIdInContestByUserJid(contestJid, userJid);
+    public long getUnreadContestClarificationsCount(List<String> askerJids, String userJid, String contestJid, boolean answered) {
+        List<Long> clarificationIds;
+
+        if (answered) {
+            clarificationIds = contestClarificationDao.findAllAnsweredClarificationIdsInContestByUserJids(contestJid, askerJids);
+
+        } else {
+            clarificationIds = contestClarificationDao.findClarificationIdsByContestJidAskedByUserJids(contestJid, askerJids);
+        }
+
         if (!clarificationIds.isEmpty()) {
             return (clarificationIds.size() - contestReadDao.countReadByUserJidAndTypeAndIdList(userJid, ContestReadType.CLARIFICATION.name(), clarificationIds));
         } else {
