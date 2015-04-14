@@ -16,7 +16,7 @@
 
     @b3.text(form("title"), '_label -> Messages.get("clarification.title"))
 
-    @b3.textarea(form("question"), '_label -> Messages.get("clarification.question"))
+    @b3.textarea(form("question"), '_label -> Messages.get("clarification.question"), 'class -> "form-control")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }
