@@ -135,21 +135,49 @@ public final class ContestServiceImpl implements ContestService {
 
         contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        return createContestFromModel(contestModel);
+        Contest contest = createContestFromModel(contestModel);
+
+        ContestConfigurationModel contestConfigurationModel = new ContestConfigurationModel();
+        contestConfigurationModel.contestJid = contest.getJid();
+
+        if (contestModel.type.equals(ContestType.STANDARD.name())) {
+            contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
+        } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
+            contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
+        }
+
+        if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
+            contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
+        } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
+            contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
+        }
+
+        if (contestModel.style.equals(ContestStyle.ICPC.name())) {
+            contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
+        } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
+            contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
+        }
+
+        contestConfigurationDao.persist(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        return contest;
     }
 
     @Override
     public void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
-        boolean resetScoreboard = false;
+        boolean isTypeChanged;
+        boolean isStyleChanged;
+        boolean isScopeChanged;
 
         ContestModel contestModel = contestDao.findById(contestId);
+
         contestModel.name = name;
         contestModel.description = description;
+        isTypeChanged = !contestModel.type.equals(type.name());
         contestModel.type = type.name();
+        isScopeChanged = !contestModel.scope.equals(type.name());
         contestModel.scope = scope.name();
-        if (!contestModel.style.equals(style.name())) {
-            resetScoreboard = true;
-        }
+        isStyleChanged = !contestModel.style.equals(type.name());
         contestModel.style = style.name();
         contestModel.startTime = startTime.getTime();
         contestModel.endTime = endTime.getTime();
@@ -160,7 +188,30 @@ public final class ContestServiceImpl implements ContestService {
 
         contestDao.edit(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        if (resetScoreboard) {
+        ContestConfigurationModel contestConfigurationModel = contestConfigurationDao.findByContestJid(contestModel.jid);
+        Contest contest = createContestFromModel(contestModel);
+
+        if (isTypeChanged) {
+            if (contestModel.type.equals(ContestType.STANDARD.name())) {
+                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
+            } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
+                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
+            }
+        }
+        if (isScopeChanged) {
+            if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
+                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
+            } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
+                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
+            }
+        }
+        if (isStyleChanged) {
+            if (contestModel.style.equals(ContestStyle.ICPC.name())) {
+                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
+            } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
+                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
+            }
+
             try {
                 ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestModel.jid, ContestScoreboardType.OFFICIAL.name());
                 contestScoreboardDao.remove(contestScoreboardModel);
@@ -185,6 +236,10 @@ public final class ContestServiceImpl implements ContestService {
 
                 contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
+        }
+
+        if (isTypeChanged || isScopeChanged || isStyleChanged) {
+            contestConfigurationDao.edit(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
     }
 
@@ -926,64 +981,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestConfiguration findContestConfigurationByContestJid(String contestJid) {
-        ContestConfigurationModel contestConfigurationModel;
-        if (contestConfigurationDao.isExistByContestJid(contestJid)) {
-            contestConfigurationModel = contestConfigurationDao.findByContestJid(contestJid);
-
-            ContestModel contestModel = contestDao.findByJid(contestJid);
-            Contest contest = createContestFromModel(contestModel);
-
-            if ("{}".equals(contestConfigurationModel.typeConfig)) {
-                if (contestModel.type.equals(ContestType.STANDARD.name())) {
-                    contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
-                } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
-                    contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
-                }
-            }
-
-            if ("{}".equals(contestConfigurationModel.scopeConfig)) {
-                if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
-                    contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
-                } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
-                    contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
-                }
-            }
-
-            if ("{}".equals(contestConfigurationModel.styleConfig)) {
-                if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-                    contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
-                } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-                    contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
-                }
-            }
-
-            contestConfigurationDao.edit(contestConfigurationModel, "urielConfigHandler", "localhost");
-        } else {
-            contestConfigurationModel = new ContestConfigurationModel();
-            contestConfigurationModel.contestJid = contestJid;
-
-            ContestModel contestModel = contestDao.findByJid(contestJid);
-            Contest contest = createContestFromModel(contestModel);
-            if (contestModel.type.equals(ContestType.STANDARD.name())) {
-                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
-            } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
-                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
-            }
-
-            if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
-                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
-            } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
-                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
-            }
-
-            if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
-            } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
-            }
-
-            contestConfigurationDao.persist(contestConfigurationModel, "urielConfigHandler", "localhost");
-        }
+        ContestConfigurationModel contestConfigurationModel = contestConfigurationDao.findByContestJid(contestJid);
 
         return new ContestConfiguration(contestConfigurationModel.id, contestConfigurationModel.contestJid, contestConfigurationModel.typeConfig, contestConfigurationModel.scopeConfig, contestConfigurationModel.styleConfig);
     }
