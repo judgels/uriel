@@ -74,24 +74,42 @@ public final class ContestControllerUtils {
         return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
     }
 
-    boolean isContestStarted(Contest contest) {
+    boolean isCoachOrAbove(Contest contest) {
+        return isCoach(contest) || isSupervisorOrAbove(contest);
+    }
+
+    boolean hasContestBegun(Contest contest) {
         return (!new Date().before(contest.getStartTime()));
     }
 
-    boolean isContestEnded(Contest contest) {
+    boolean hasContestEnded(Contest contest) {
+        return (!new Date().before(contest.getEndTime()));
+    }
+
+    boolean hasContestStarted(Contest contest) {
+        if (contest.isStandard()) {
+            return hasContestBegun(contest);
+        } else if (isContestant(contest)) {
+            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            return contestContestant.getContestStartTime() != 0;
+        }
+        return false;
+    }
+
+    boolean hasContestFinished(Contest contest) {
         if ((contest.isVirtual()) && (isContestant(contest))) {
             ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
 
-            return (System.currentTimeMillis() > (contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration()));
+            return contestContestant.getContestStartTime() != 0 && (System.currentTimeMillis() > (contestContestant.getContestStartTime() + contestTypeConfigVirtual.getContestDuration()));
         } else {
-            return new Date().after(contest.getEndTime());
+            return hasContestEnded(contest);
         }
     }
 
     boolean isAllowedToViewContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || contest.isPublic() || isCoach(contest) || isContestant(contest);
+        return contest.isPublic() || isCoachOrAbove(contest) || isContestant(contest);
     }
 
     boolean isAllowedToManageContest(Contest contest) {
@@ -99,7 +117,7 @@ public final class ContestControllerUtils {
     }
 
     boolean isAllowedToRegisterContest(Contest contest) {
-        boolean result = !isContestant(contest) && !isContestEnded(contest);
+        boolean result = !isContestant(contest) && !hasContestEnded(contest);
         if (contest.isPublic()) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
@@ -113,24 +131,44 @@ public final class ContestControllerUtils {
     }
 
     boolean isAllowedToEnterContest(Contest contest) {
-        if (ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest)) {
+        if (isCoachOrAbove(contest)) {
             return true;
         }
+        if (!isContestant(contest)) {
+            return false;
+        }
         if (contest.isStandard()) {
-            return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
+            return hasContestBegun(contest);
         } else {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
             if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
+                return (isContestant(contest) && (hasContestStarted(contest)));
             } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
+                return ((hasContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }
         }
     }
 
+    boolean isAllowedToStartContestAsContestant(Contest contest) {
+        if (isSupervisorOrAbove(contest)) {
+            return false;
+        }
+        if (!contest.isVirtual() || !isContestant(contest)) {
+            return false;
+        }
+
+        ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+        ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+        if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
+            return !hasContestStarted(contest) && !hasContestEnded(contest);
+        } else {
+            return false;
+        }
+    }
+
     boolean isAllowedToDoContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || isSupervisor(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid()))  && isContestStarted(contest) && !isContestEnded(contest));
+        return isAllowedToEnterContest(contest) && hasContestStarted(contest) && !hasContestFinished(contest);
     }
 
     Result tryEnteringContest(Contest contest) {
@@ -147,7 +185,7 @@ public final class ContestControllerUtils {
             ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            contestEndTime = new Date(contestContestant.getContestEnterTime() + contestTypeConfigVirtual.getContestDuration());
+            contestEndTime = new Date(Math.min(contestContestant.getContestStartTime() + contestTypeConfigVirtual.getContestDuration(), contest.getEndTime().getTime()));
         } else {
             contestEndTime = contest.getEndTime();
         }
@@ -164,8 +202,12 @@ public final class ContestControllerUtils {
         if (contest.isUsingScoreboard()) {
             internalLinkBuilder.add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.jumpToScoreboard(contest.getId())));
         }
-        if (isSupervisorOrAbove(contest)) {
+
+        if (isCoachOrAbove(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.jumpToContestants(contest.getId())));
+        }
+
+        if (isSupervisorOrAbove(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.jumpToSupervisors(contest.getId())));
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.jumpToManagers(contest.getId())));
         }

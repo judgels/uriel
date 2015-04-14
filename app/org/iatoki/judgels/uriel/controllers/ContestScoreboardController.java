@@ -1,6 +1,5 @@
 package org.iatoki.judgels.uriel.controllers;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -16,7 +15,6 @@ import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestService;
@@ -24,8 +22,6 @@ import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.ScoreAdapter;
 import org.iatoki.judgels.uriel.ScoreAdapters;
@@ -47,9 +43,7 @@ import play.mvc.Result;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Transactional

@@ -24,6 +24,7 @@ GET         /contests/:cId/view/                                      @org.iatok
 
 GET         /contests/:cId/register                                   @org.iatoki.judgels.uriel.controllers.ContestController.registerToAContest(cId: Long)
 GET         /contests/:cId/enter                                      @org.iatoki.judgels.uriel.controllers.ContestController.enterContest(cId: Long)
+GET         /contests/:cId/start                                      @org.iatoki.judgels.uriel.controllers.ContestController.startContest(cId: Long)
 
 GET         /contests/create                                          @org.iatoki.judgels.uriel.controllers.ContestController.createContest()
 POST        /contests/create                                          @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContest()
@@ -101,8 +102,11 @@ POST        /contests/:cId/contestants/upload                         @org.iatok
 GET         /contests/:cId/contestants/:c2Id/update                   @org.iatoki.judgels.uriel.controllers.ContestContestantController.updateContestant(cId: Long, c2Id: Long)
 POST        /contests/:cId/contestants/:c2Id/update                   @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUpdateContestant(cId: Long, c2Id: Long)
 
-GET         /contests/:cId/teams/view                                 @org.iatoki.judgels.uriel.controllers.ContestTeamController.viewTeams(cId: Long)
-GET         /contests/:cId/teams/view/                                @org.iatoki.judgels.uriel.controllers.ContestTeamController.listCreateTeams(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contests/:cId/teams/:tId/start                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.startTeam(cId: Long, tId: Long)
+GET         /contests/:cId/teams/view/all                             @org.iatoki.judgels.uriel.controllers.ContestTeamController.viewTeams(cId: Long)
+GET         /contests/:cId/teams/view/all/                            @org.iatoki.judgels.uriel.controllers.ContestTeamController.listCreateTeams(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contests/:cId/teams/view                                 @org.iatoki.judgels.uriel.controllers.ContestTeamController.viewScreenedTeams(cId: Long)
+GET         /contests/:cId/teams/view/                                @org.iatoki.judgels.uriel.controllers.ContestTeamController.listScreenedTeams(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc")
 POST        /contests/:cId/teams/create                               @org.iatoki.judgels.uriel.controllers.ContestTeamController.postCreateTeam(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contests/:cId/teams/:tId/update                          @org.iatoki.judgels.uriel.controllers.ContestTeamController.updateTeam(cId: Long, tId: Long)
 POST        /contests/:cId/teams/:tId/update                          @org.iatoki.judgels.uriel.controllers.ContestTeamController.postUpdateTeam(cId: Long, tId: Long)

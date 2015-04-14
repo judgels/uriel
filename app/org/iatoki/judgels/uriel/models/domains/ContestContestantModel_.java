@@ -12,6 +12,6 @@ public abstract class ContestContestantModel_ extends org.iatoki.judgels.commons
 	public static volatile SingularAttribute<ContestContestantModel, String> userJid;
 	public static volatile SingularAttribute<ContestContestantModel, String> contestJid;
 	public static volatile SingularAttribute<ContestContestantModel, String> status;
-    public static volatile SingularAttribute<ContestContestantModel, Long> contestEnterTime;
+    public static volatile SingularAttribute<ContestContestantModel, Long> contestStartTime;
 }
 

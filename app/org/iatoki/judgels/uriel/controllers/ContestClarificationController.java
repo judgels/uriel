@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
+import com.google.common.collect.Lists;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
@@ -16,14 +16,10 @@ import org.iatoki.judgels.uriel.ContestClarificationChangeForm;
 import org.iatoki.judgels.uriel.ContestClarificationCreateForm;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 import org.iatoki.judgels.uriel.ContestClarificationUpdateForm;
-import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamMember;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -43,7 +39,6 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,8 +64,12 @@ public class ContestClarificationController extends Controller {
             Page<ContestClarification> contestClarifications;
             boolean coach = ContestControllerUtils.getInstance().isCoach(contest);
             if (coach) {
-                ContestTeam contestTeam = contestService.findContestTeamJidByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
-                List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByTeamJid(contestTeam.getJid());
+                List<ContestTeam> contestTeams = contestService.findContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
+                ImmutableList.Builder<ContestTeamMember> contestTeamMembersBuilder = ImmutableList.builder();
+                for (ContestTeam team : contestTeams) {
+                    contestTeamMembersBuilder.addAll(team.getMembers());
+                }
+                List<ContestTeamMember> contestTeamMembers = contestTeamMembersBuilder.build();
                 contestClarifications = contestService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toList()));
             } else {
                 contestClarifications = contestService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ImmutableList.of(IdentityUtils.getUserJid()));
@@ -79,12 +78,12 @@ public class ContestClarificationController extends Controller {
 
             LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, contestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
             if (coach) {
-                content.appendLayout(c -> headingLayout.render(Messages.get("clarification.list"), c));
+                content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
             } else if (contest.isClarificationTimeValid()) {
                 content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
             } else {
                 content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
-                content.appendLayout(c -> headingLayout.render(Messages.get("clarification.list"), c));
+                content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
             }
             if (isAllowedToSuperviseClarifications(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));

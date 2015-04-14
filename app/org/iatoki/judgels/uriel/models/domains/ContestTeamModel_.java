@@ -13,4 +13,5 @@ public abstract class ContestTeamModel_ extends AbstractJudgelsModel_ {
     public static volatile SingularAttribute<ContestTeamModel, String> contestJid;
     public static volatile SingularAttribute<ContestTeamModel, String> name;
     public static volatile SingularAttribute<ContestTeamModel, String> teamImageName;
+    public static volatile SingularAttribute<ContestTeamModel, Long> contestStartTime;
 }

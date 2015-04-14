@@ -11,5 +11,7 @@ public interface ContestTeamMemberDao extends Dao<Long, ContestTeamMemberModel> 
 
     List<ContestTeamMemberModel> findContestTeamMembersInTeam(String teamJid);
 
+    List<ContestTeamMemberModel> findContestTeamMembersInTeams(List<String> teamJids);
+
     ContestTeamMemberModel findContestTeamMemberByMemberJidInAnyTeam(String userJid, List<String> teamJids);
 }

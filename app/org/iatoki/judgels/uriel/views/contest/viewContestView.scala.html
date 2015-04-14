@@ -1,4 +1,4 @@
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToEnter: Boolean, isAllowedToUpdate: Boolean)
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToEnter: Boolean, isAllowedToUpdate: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -24,6 +24,10 @@
 
     @if(isAllowedToRegister) {
         <a href="@routes.ContestController.registerToAContest(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.register")</a>
+    }
+
+    @if(isAllowedToStart) {
+        <a href="@routes.ContestController.startContest(contest.getId)" class="start-contest-button btn btn-primary btn-sm">@Messages.get("contest.start")</a>
     }
 
     @if(isAllowedToEnter) {
@@ -64,7 +68,7 @@
 
 @if(contest.isVirtual) {
     <script type="text/javascript">
-        var confirmMessage = "@Messages.get("contest.enter.confirm")";
+        var confirmMessage = "@Messages.get("contest.start.confirm")";
     </script>
-    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertEnterContest.js")"></script>
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertStartContest.js")"></script>
 }

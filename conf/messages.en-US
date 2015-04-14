@@ -152,7 +152,10 @@ contest.supervisor.contestant.manualCreate=Manual Create
 
 contestant.username=Username
 contestant.usernames=Usernames
-contest.enter.confirm=Do you really want to enter the contest? If you do, there is no turning back.
+contest.start.confirm=Do you really want to start the contest? If you do, there is no turning back.
+
+contest.start=Start
+contest.started=Started at
 
 team.teams=Teams
 team.image=Logo

@@ -43,14 +43,14 @@ public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Lon
     }
 
     @Override
-    public ContestTeamCoachModel findContestTeamCoachByCoachJidInTeams(String coachJid, List<String> teamJids) {
+    public List<ContestTeamCoachModel> findContestTeamCoachesByCoachJidInTeams(String coachJid, List<String> teamJids) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamCoachModel> query = cb.createQuery(getModelClass());
         Root<ContestTeamCoachModel> root = query.from(getModelClass());
 
         query.where(cb.and(cb.equal(root.get(ContestTeamCoachModel_.coachJid), coachJid), root.get(ContestTeamCoachModel_.teamJid).in(teamJids)));
 
-        return JPA.em().createQuery(query).getSingleResult();
+        return JPA.em().createQuery(query).getResultList();
     }
 
     @Override
@@ -62,5 +62,18 @@ public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Lon
         query.select(root.get(ContestTeamCoachModel_.teamJid)).where(cb.equal(root.get(ContestTeamCoachModel_.coachJid), coachJid));
 
         return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public boolean isUserCoachByUserJidAndTeamJid(String userJid, String teamJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestTeamCoachModel> root = query.from(getModelClass());
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestTeamCoachModel_.coachJid), userJid), cb.equal(root.get(ContestTeamCoachModel_.teamJid), teamJid)));
+
+        return JPA.em().createQuery(query).getSingleResult() != 0;
     }
 }

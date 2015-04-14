@@ -16,4 +16,6 @@ public final class ContestTeamModel extends AbstractJudgelsModel {
     public String name;
 
     public String teamImageName;
+
+    public long contestStartTime;
 }

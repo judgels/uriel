@@ -21,6 +21,6 @@ public final class ContestContestantModel extends AbstractModel {
 
     public String status;
 
-    public long contestEnterTime;
+    public long contestStartTime;
 
 }

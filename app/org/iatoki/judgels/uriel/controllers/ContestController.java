@@ -9,7 +9,6 @@ import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
-import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.sandalphon.commons.programming.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
@@ -37,7 +36,6 @@ import org.iatoki.judgels.uriel.ContestTypeConfigVirtualForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.UserActivityServiceImpl;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -96,6 +94,10 @@ public final class ContestController extends Controller {
     }
 
     public Result jumpToContestants(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
+        if (ContestControllerUtils.getInstance().isCoach(contest)) {
+            return redirect(routes.ContestTeamController.viewScreenedTeams(contestId));
+        }
         return redirect(routes.ContestContestantController.viewContestants(contestId));
     }
 
@@ -137,7 +139,7 @@ public final class ContestController extends Controller {
         if (ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().isContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToEnterContest(contest), ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
+            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToEnterContest(contest), ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -168,34 +170,57 @@ public final class ContestController extends Controller {
         }
     }
 
+//    public Result enterContest(long contestId) {
+//        Contest contest = contestService.findContestById(contestId);
+//
+//        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+//            boolean isContestantInContest = (ContestControllerUtils.getInstance().isContestant(contest));
+//            if (contest.isVirtual()) {
+//                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+//                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+//                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (ContestControllerUtils.getInstance().isCoach(contest))) {
+//                    contestService.startTeamAsCoach(contest.getJid(), IdentityUtils.getUserJid());
+//
+//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as coach  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+//                } else if (isContestantInContest) {
+//                    contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+//
+//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+//                } else {
+//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+//                }
+//            } else if (isContestantInContest) {
+//                contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+//
+//                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+//            } else {
+//                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+//            }
+//
+//            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
+//        } else {
+//            return redirect(routes.ContestController.index());
+//        }
+//    }
+
     public Result enterContest(long contestId) {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            boolean isContestantInContest = (ContestControllerUtils.getInstance().isContestant(contest));
-            if (contest.isVirtual()) {
-                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (ContestControllerUtils.getInstance().isCoach(contest))) {
-                    contestService.enterContestAsCoach(contest.getJid(), IdentityUtils.getUserJid());
+            ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            return redirect(routes.ContestController.jumpToAnnouncements(contestId));
+        } else {
+            return redirect(routes.ContestController.index());
+        }
+    }
 
-                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as coach  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-                } else if (isContestantInContest) {
-                    contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+    public Result startContest(long contestId) {
+        Contest contest = contestService.findContestById(contestId);
 
-                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-                } else {
-                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-                }
-            } else if (isContestantInContest) {
-                contestService.enterContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
-
-                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-            } else {
-                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-            }
-
-            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
+        if (ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest)) {
+            contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+            ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            return redirect(routes.ContestController.jumpToAnnouncements(contestId));
         } else {
             return redirect(routes.ContestController.index());
         }

@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
 import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
@@ -11,8 +10,6 @@ import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
@@ -20,13 +17,12 @@ import org.iatoki.judgels.uriel.ContestTeamCoachCreateForm;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberCreateForm;
 import org.iatoki.judgels.uriel.ContestTeamUpsertForm;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
 import org.iatoki.judgels.uriel.views.html.contest.team.listCreateTeamsView;
+import org.iatoki.judgels.uriel.views.html.contest.team.listScreenedTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.team.updateTeamView;
 import org.iatoki.judgels.uriel.views.html.contest.team.viewTeamView;
 import play.data.Form;
@@ -39,7 +35,6 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @Transactional
@@ -56,8 +51,36 @@ public class ContestTeamController extends Controller {
         this.userRoleService = userRoleService;
     }
 
+    public Result startTeam(long contestId, long contestTeamId) {
+        Contest contest = contestService.findContestById(contestId);
+        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+
+        if (contestTeam.getContestJid().equals(contest.getJid()) && !contestTeam.isStarted() && contestService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
+            contestService.startTeamAsCoach(contest.getJid(), contestTeam.getJid());
+            return redirect(routes.ContestTeamController.viewScreenedTeams(contest.getId()));
+        } else {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        }
+    }
+
     public Result viewTeams(long contestId) {
         return listCreateTeams(contestId, 0, "id", "asc", "");
+    }
+
+    public Result viewScreenedTeams(long contestId) {
+        return listScreenedTeams(contestId, 0, "id", "asc");
+    }
+
+    public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) {
+        Contest contest = contestService.findContestById(contestId);
+
+        if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
+            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
+
+            return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir);
+        } else {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        }
     }
 
     @AddCSRFToken
@@ -278,6 +301,22 @@ public class ContestTeamController extends Controller {
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
 
         ControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return ControllerUtils.getInstance().lazyOk(content);
+    }
+
+    private Result showListScreenedTeams(Page<ContestTeam> contestTeams, Contest contest, long pageIndex, String orderBy, String orderDir){
+        LazyHtml content = new LazyHtml(listScreenedTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("team.list"), routes.ContestTeamController.viewTeams(contest.getId()))
+        );
+
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
+
+        ControllerUtils.getInstance().addActivityLog("List all screened teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }

@@ -66,7 +66,7 @@ public final class ContestAPIController extends Controller {
             long unreadCount;
             if (isCoach(contest)) {
                 List<ContestTeamMember> contestTeamMemberList = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
-                unreadCount = contestService.getUnreadContestClarificationsCount(contestTeamMemberList.stream().map(ctm -> ctm.getMemberJid()).collect(Collectors.toList()), IdentityUtils.getUserJid(), contest.getJid(), true);
+                unreadCount = contestService.getUnreadContestClarificationsCount(contestTeamMemberList.stream().map(ctm -> ctm.getMemberJid()).collect(Collectors.toList()), IdentityUtils.getUserJid(), contest.getJid(), false);
             } else {
                 unreadCount = contestService.getUnreadContestClarificationsCount(ImmutableList.of(IdentityUtils.getUserJid()), IdentityUtils.getUserJid(), contest.getJid(), true);
             }
@@ -181,7 +181,7 @@ public final class ContestAPIController extends Controller {
             if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (isContestStarted(contest)));
             } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestEntered(contest.getJid(), IdentityUtils.getUserJid())))));
+                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }
         }
     }

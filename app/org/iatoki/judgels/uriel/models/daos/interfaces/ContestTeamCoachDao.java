@@ -11,8 +11,10 @@ public interface ContestTeamCoachDao extends Dao<Long, ContestTeamCoachModel> {
 
     List<ContestTeamCoachModel> findContestTeamCoachesByTeamJid(String teamJid);
 
-    ContestTeamCoachModel findContestTeamCoachByCoachJidInTeams(String coachJid, List<String> teamJids);
+    List<ContestTeamCoachModel> findContestTeamCoachesByCoachJidInTeams(String coachJid, List<String> teamJids);
 
     List<String> findContestTeamJidsByCoachJid(String coachJid);
+
+    boolean isUserCoachByUserJidAndTeamJid(String userJid, String teamJid);
 
 }

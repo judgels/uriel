@@ -80,13 +80,15 @@ public interface ContestService {
 
     long getContestContestantCount(String contestJid);
 
-    void enterContestAsContestant(String contestJid, String userJid);
+    void startContestAsContestant(String contestJid, String userJid);
 
-    void enterContestAsCoach(String contestJid, String coachJid);
+    void startTeamAsCoach(String contestJid, String teamJid);
 
-    boolean isContestEntered(String contestJid, String contestContestantJid);
+    boolean isContestStarted(String contestJid, String contestContestantJid);
 
     Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+
+    Page<ContestTeam> pageContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir);
 
     List<ContestTeam> findAllContestTeams(String contestJid);
 
@@ -104,7 +106,9 @@ public interface ContestService {
 
     boolean isUserCoachInAnyTeamByContestJid(String contestJid, String coachJid);
 
-    ContestTeam findContestTeamJidByContestJidAndCoachJid(String contestJid, String coachJid);
+    boolean isUserCoachByUserJidAndTeamJid(String coachJid, String teamJid);
+
+    List<ContestTeam> findContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid);
 
     ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 

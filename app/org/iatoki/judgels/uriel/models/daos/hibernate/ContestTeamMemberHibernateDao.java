@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
+import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.models.daos.hibernate.AbstractHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamMemberModel;
@@ -38,6 +39,21 @@ public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Lo
         Root<ContestTeamMemberModel> root = query.from(ContestTeamMemberModel.class);
 
         query.where(cb.equal(root.get(ContestTeamMemberModel_.teamJid), teamJid));
+
+        return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<ContestTeamMemberModel> findContestTeamMembersInTeams(List<String> teamJids) {
+        if (teamJids.isEmpty()) {
+            return ImmutableList.of();
+        }
+
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<ContestTeamMemberModel> query = cb.createQuery(ContestTeamMemberModel.class);
+        Root<ContestTeamMemberModel> root = query.from(ContestTeamMemberModel.class);
+
+        query.where(root.get(ContestTeamMemberModel_.teamJid).in(teamJids));
 
         return JPA.em().createQuery(query).getResultList();
     }

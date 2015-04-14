@@ -13,7 +13,7 @@ public interface ContestContestantDao extends Dao<Long, ContestContestantModel> 
 
     long countContestContestantByContestJid(String contestJid);
 
-    boolean isContestEntered(String contestJid, String contestantJid);
+    boolean isContestStarted(String contestJid, String contestantJid);
 
     boolean isThereNewContestant(String contestJid, long lastTime);
 
