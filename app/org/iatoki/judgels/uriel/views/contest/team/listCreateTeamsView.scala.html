@@ -55,7 +55,7 @@
             <td>@contestTeam.getMembers.size()</td>
             <td>
                 @if(contestTeam.isStarted) {
-                    @Messages.get("contest.started"): @{new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzzz").format(contestTeam.getContestStartTime)}
+                    @Messages.get("contest.started"): @{new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss Z").format(contestTeam.getContestStartTime)}
                 }else {
                     @if(hasContestBegun) {
                         <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
