@@ -2,15 +2,15 @@ package org.iatoki.judgels.uriel;
 
 public final class ContestContestant {
 
-    private long id;
+    private final long id;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String userJid;
+    private final String userJid;
 
-    private ContestContestantStatus status;
+    private final ContestContestantStatus status;
 
-    private long contestEnterTime;
+    private final long contestEnterTime;
 
     public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status, long contestEnterTime) {
         this.id = id;

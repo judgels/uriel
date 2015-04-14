@@ -5,19 +5,19 @@ import java.util.List;
 
 public final class ContestTeam {
 
-    private long id;
+    private final long id;
 
-    private String jid;
+    private final String jid;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String name;
+    private final String name;
 
-    private URL teamImage;
+    private final URL teamImage;
 
-    private List<ContestTeamCoach> coaches;
+    private final List<ContestTeamCoach> coaches;
 
-    private List<ContestTeamMember> members;
+    private final List<ContestTeamMember> members;
 
     public ContestTeam(long id, String jid, String contestJid, String name, URL teamImage, List<ContestTeamCoach> coaches, List<ContestTeamMember> members) {
         this.id = id;

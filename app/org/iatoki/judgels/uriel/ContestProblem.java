@@ -2,19 +2,19 @@ package org.iatoki.judgels.uriel;
 
 public final class ContestProblem {
 
-    private long id;
+    private final long id;
 
-    private String contestJid;
+    private final String contestJid;
 
-    private String problemJid;
+    private final String problemJid;
 
-    private String problemSecret;
+    private final String problemSecret;
 
-    private String alias;
+    private final String alias;
 
-    private long submissionsLimit;
+    private final long submissionsLimit;
 
-    private ContestProblemStatus status;
+    private final ContestProblemStatus status;
 
     private long totalSubmissions;
 

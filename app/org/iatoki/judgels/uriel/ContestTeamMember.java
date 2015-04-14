@@ -2,11 +2,11 @@ package org.iatoki.judgels.uriel;
 
 public final class ContestTeamMember {
 
-    private long id;
+    private final long id;
 
-    private String teamJid;
+    private final String teamJid;
 
-    private String memberJid;
+    private final String memberJid;
 
     public ContestTeamMember(long id, String teamJid, String memberJid) {
         this.id = id;

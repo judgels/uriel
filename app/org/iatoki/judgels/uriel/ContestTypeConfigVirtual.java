@@ -13,9 +13,9 @@ public class ContestTypeConfigVirtual implements ContestTypeConfig {
         this.startTrigger = startTrigger;
     }
 
-    private long contestDuration;
+    private final long contestDuration;
 
-    private ContestTypeConfigVirtualStartTrigger startTrigger;
+    private final ContestTypeConfigVirtualStartTrigger startTrigger;
 
     public long getContestDuration() {
         return contestDuration;

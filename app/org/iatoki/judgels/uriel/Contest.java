@@ -4,31 +4,31 @@ import java.util.Date;
 
 public final class Contest {
 
-    private long id;
+    private final long id;
 
-    private String jid;
+    private final String jid;
 
-    private String name;
+    private final String name;
 
-    private String description;
+    private final String description;
 
-    private ContestType type;
+    private final ContestType type;
 
-    private ContestScope scope;
+    private final ContestScope scope;
 
-    private ContestStyle style;
+    private final ContestStyle style;
 
-    private Date startTime;
+    private final Date startTime;
 
-    private Date endTime;
+    private final Date endTime;
 
-    private Date clarificationEndTime;
+    private final Date clarificationEndTime;
 
-    private boolean isExclusive;
+    private final boolean isExclusive;
 
-    private boolean isUsingScoreboard;
+    private final boolean isUsingScoreboard;
 
-    private boolean isIncognitoScoreboard;
+    private final boolean isIncognitoScoreboard;
 
     public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
         this.id = id;
