@@ -156,6 +156,8 @@ contest.start.confirm=Do you really want to start the contest? If you do, there 
 
 contest.start=Start
 contest.started=Started at
+contest.notStarted=Not started yet
+contest.cantStart=Cannot start yet for now
 
 team.teams=Teams
 team.image=Logo
@@ -168,6 +170,7 @@ team.member.name=Member Name
 team.update=Update Team
 team.coaches.count=Coaches Count
 team.members.count=Members Count
+team.status=Status
 
 data.download=Download Contest Data
 

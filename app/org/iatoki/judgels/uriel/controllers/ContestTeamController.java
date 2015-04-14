@@ -55,7 +55,7 @@ public class ContestTeamController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
 
-        if (contestTeam.getContestJid().equals(contest.getJid()) && !contestTeam.isStarted() && contestService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
+        if (contestTeam.getContestJid().equals(contest.getJid()) && ContestControllerUtils.getInstance().isAllowedToStartContestAsCoach(contest, contestTeam)) {
             contestService.startTeamAsCoach(contest.getJid(), contestTeam.getJid());
             return redirect(routes.ContestTeamController.viewScreenedTeams(contest.getId()));
         } else {
@@ -77,7 +77,7 @@ public class ContestTeamController extends Controller {
         if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
             Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
 
-            return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir);
+            return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir, ContestControllerUtils.getInstance().isAllowedToStartAnyContestAsCoach(contest));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
@@ -289,7 +289,7 @@ public class ContestTeamController extends Controller {
     }
 
     private Result showListCreateTeam(Page<ContestTeam> contestTeams, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestTeamUpsertForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form));
+        LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, ContestControllerUtils.getInstance().hasContestBegun(contest)));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
@@ -305,8 +305,8 @@ public class ContestTeamController extends Controller {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showListScreenedTeams(Page<ContestTeam> contestTeams, Contest contest, long pageIndex, String orderBy, String orderDir){
-        LazyHtml content = new LazyHtml(listScreenedTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir));
+    private Result showListScreenedTeams(Page<ContestTeam> contestTeams, Contest contest, long pageIndex, String orderBy, String orderDir, boolean isAllowedToStartContest){
+        LazyHtml content = new LazyHtml(listScreenedTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, isAllowedToStartContest));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);

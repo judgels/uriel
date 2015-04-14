@@ -1,7 +1,8 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestTeam], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[org.iatoki.judgels.uriel.ContestTeamUpsertForm])
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestTeam], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[org.iatoki.judgels.uriel.ContestTeamUpsertForm], hasContestBegun: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
+@import java.text.SimpleDateFormat
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
@@ -12,6 +13,7 @@
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
+@import org.iatoki.judgels.commons.JudgelsUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -40,7 +42,8 @@
         "teamImage" -> Messages.get("team.image"),
         "name" -> Messages.get("team.name"),
         "" -> Messages.get("team.coaches.count"),
-        "" -> Messages.get("team.members.count")
+        "" -> Messages.get("team.members.count"),
+        "" -> Messages.get("team.status")
     )
     <tbody>
     @for(contestTeam <- page.getData) {
@@ -50,6 +53,16 @@
             <td>@contestTeam.getName</td>
             <td>@contestTeam.getCoaches.size()</td>
             <td>@contestTeam.getMembers.size()</td>
+            <td>
+                @if(contestTeam.isStarted) {
+                    @Messages.get("contest.started"): @{new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzzz").format(contestTeam.getContestStartTime)}
+                }else {
+                    @if(hasContestBegun) {
+                        <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
+                        @Messages.get("contest.start")</a>
+                    }
+                }
+            </td>
             <td class="text-center">
                 <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.viewTeam(contestId, contestTeam.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                 @if(updateable) {

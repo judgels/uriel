@@ -1,7 +1,9 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestTeam], pageIndex: Long, orderBy: String, orderDir: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestTeam], pageIndex: Long, orderBy: String, orderDir: String, isAllowedToStartContest: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
+
+@import java.text.SimpleDateFormat
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
@@ -31,12 +33,15 @@
             <td><img src="@contestTeam.getTeamImage.toString" class="table-image" alt="team_logo"/></td>
             <td>@contestTeam.getName</td>
             <td class="text-center">
+                @if(!isAllowedToStartContest) {
+                    @Messages.get("contest.cantStart")
+                }else {
                 @if(contestTeam.isStarted) {
-                    @Messages.get("contest.started"): @JudgelsUtils.formatDate(contestTeam.getContestStartTime)
+                    @Messages.get("contest.started"): @{new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss zzzz").format(contestTeam.getContestStartTime)}
                 }else {
                     <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
                         @Messages.get("contest.start")</a>
-                }
+                }}
             </td>
         </tr>
     }

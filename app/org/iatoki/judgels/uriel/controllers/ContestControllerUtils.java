@@ -13,6 +13,7 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
 import org.iatoki.judgels.uriel.ContestService;
+import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
@@ -156,7 +157,7 @@ public final class ContestControllerUtils {
 
     boolean isAllowedToStartContestAsContestant(Contest contest) {
         if (isSupervisorOrAbove(contest)) {
-            return false;
+            return true;
         }
         if (!contest.isVirtual() || !isContestant(contest)) {
             return false;
@@ -165,7 +166,41 @@ public final class ContestControllerUtils {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
         if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-            return !hasContestStarted(contest) && !hasContestEnded(contest);
+            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
+        } else {
+            return false;
+        }
+    }
+
+    boolean isAllowedToStartAnyContestAsCoach(Contest contest) {
+        if (isSupervisorOrAbove(contest)) {
+            return true;
+        }
+        if (!contest.isVirtual() || !isCoach(contest)) {
+            return false;
+        }
+
+        ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+        ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+        if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) {
+            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
+        } else {
+            return false;
+        }
+    }
+
+    boolean isAllowedToStartContestAsCoach(Contest contest, ContestTeam contestTeam) {
+        if (isSupervisorOrAbove(contest)) {
+            return true;
+        }
+        if (!contest.isVirtual() || !contestService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
+            return false;
+        }
+
+        ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
+        ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+        if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) {
+            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
         } else {
             return false;
         }
