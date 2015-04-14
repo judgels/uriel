@@ -274,7 +274,9 @@ public class ContestClarificationController extends Controller {
     private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> form, Contest contest, ContestClarification contestClarification){
         LazyHtml content = new LazyHtml(updateClarificationContentView.render(contest, contestClarification, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
-        appendSubtabsLayout(content, contest);
+        if(ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+            appendSubtabsLayout(content, contest);
+        }
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
