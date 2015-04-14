@@ -62,7 +62,7 @@ public final class ContestSubmissionController extends Controller {
     public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) {
         Contest contest = contestService.findContestById(contestId);
 
-        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && !ContestControllerUtils.getInstance().isCoach(contest)) {
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), problemJid, contest.getJid());
             Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
