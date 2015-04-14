@@ -156,8 +156,12 @@ public final class ContestControllerUtils {
     }
 
     boolean isAllowedToStartContestAsContestant(Contest contest) {
+        if (!hasContestBegun(contest) || hasContestEnded(contest)) {
+            return false;
+        }
+
         if (isSupervisorOrAbove(contest)) {
-            return true;
+            return false;
         }
         if (!contest.isVirtual() || !isContestant(contest)) {
             return false;
@@ -166,13 +170,17 @@ public final class ContestControllerUtils {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
         if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
-            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
+            return !hasContestStarted(contest);
         } else {
             return false;
         }
     }
 
     boolean isAllowedToStartAnyContestAsCoach(Contest contest) {
+        if (!hasContestBegun(contest) || hasContestEnded(contest)) {
+            return false;
+        }
+
         if (isSupervisorOrAbove(contest)) {
             return true;
         }
@@ -183,13 +191,17 @@ public final class ContestControllerUtils {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
         if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) {
-            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
+            return !hasContestStarted(contest);
         } else {
             return false;
         }
     }
 
     boolean isAllowedToStartContestAsCoach(Contest contest, ContestTeam contestTeam) {
+        if (!hasContestBegun(contest) || hasContestEnded(contest)) {
+            return false;
+        }
+
         if (isSupervisorOrAbove(contest)) {
             return true;
         }
@@ -200,7 +212,7 @@ public final class ContestControllerUtils {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
         if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) {
-            return hasContestBegun(contest) && !hasContestStarted(contest) && !hasContestEnded(contest);
+            return !hasContestStarted(contest);
         } else {
             return false;
         }
