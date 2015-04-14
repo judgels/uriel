@@ -12,11 +12,11 @@ public class ContestScopeConfigPublic implements ContestScopeConfig {
         this.maxRegistrants = maxRegistrants;
     }
 
-    private long registerStartTime;
+    private final long registerStartTime;
 
-    private long registerEndTime;
+    private final long registerEndTime;
 
-    private long maxRegistrants;
+    private final long maxRegistrants;
 
     public long getRegisterStartTime() {
         return registerStartTime;

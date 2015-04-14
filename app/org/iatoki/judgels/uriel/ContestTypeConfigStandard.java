@@ -11,9 +11,9 @@ public class ContestTypeConfigStandard implements ContestTypeConfig {
         this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
     }
 
-    private long scoreboardFreezeTime;
+    private final long scoreboardFreezeTime;
 
-    private boolean isOfficialScoreboardAllowed;
+    private final boolean isOfficialScoreboardAllowed;
 
     public long getScoreboardFreezeTime() {
         return scoreboardFreezeTime;

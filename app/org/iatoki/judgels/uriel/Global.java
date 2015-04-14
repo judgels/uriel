@@ -10,7 +10,6 @@ import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
-import org.iatoki.judgels.jophiel.commons.UserActivityService;
 import org.iatoki.judgels.jophiel.commons.controllers.JophielClientController;
 import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
@@ -72,18 +71,18 @@ import java.util.concurrent.TimeUnit;
 
 public final class Global extends org.iatoki.judgels.commons.Global {
 
-    private Map<Class, Controller> cache;
+    private final Map<Class, Controller> cache;
 
     private SubmissionService submissionService;
     private ContestService contestService;
-    private UserActivityService userActivityService;
 
     public Global() {
+        this.cache = new HashMap<>();
+
     }
 
     @Override
     public void onStart(Application application) {
-        cache = new HashMap<>();
 
         super.onStart(application);
 
@@ -95,8 +94,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         AvatarCacheService.getInstance().setDao(new AvatarCacheHibernateDao());
 
         Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
-
         submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
+
         GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel);
 
         ContestDao contestDao = new ContestHibernateDao();

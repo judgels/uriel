@@ -14,7 +14,7 @@ import play.mvc.Http;
 
 public final class ControllerUtils extends AbstractControllerUtils {
 
-    private static ControllerUtils INSTANCE = new ControllerUtils();
+    private static final ControllerUtils INSTANCE = new ControllerUtils();
 
     @Override
     public void appendSidebarLayout(LazyHtml content) {

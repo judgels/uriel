@@ -25,9 +25,9 @@ import java.util.Date;
 
 public final class ContestControllerUtils {
 
-    ContestService contestService;
+    private ContestService contestService;
 
-    static ContestControllerUtils INSTANCE = new ContestControllerUtils();
+    static final ContestControllerUtils INSTANCE = new ContestControllerUtils();
 
     private ContestControllerUtils() {
         // prevent instantiation

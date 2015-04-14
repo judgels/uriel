@@ -4,11 +4,11 @@ import java.util.List;
 
 public final class User {
 
-    private long id;
+    private final long id;
 
-    private String userJid;
+    private final String userJid;
 
-    private List<String> roles;
+    private final List<String> roles;
 
     public User(long id, String userJid, List<String> roles) {
         this.id = id;

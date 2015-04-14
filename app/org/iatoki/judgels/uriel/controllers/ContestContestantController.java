@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
@@ -9,18 +8,14 @@ import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantCreateForm;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestService;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -39,7 +34,6 @@ import play.mvc.Result;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -48,11 +42,11 @@ public class ContestContestantController extends Controller {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
-    private final UserService userRoleService;
+    private final UserService userService;
 
-    public ContestContestantController(ContestService contestService, UserService userRoleService) {
+    public ContestContestantController(ContestService contestService, UserService userService) {
         this.contestService = contestService;
-        this.userRoleService = userRoleService;
+        this.userService = userService;
     }
 
     @AddCSRFToken
@@ -94,7 +88,7 @@ public class ContestContestantController extends Controller {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
                 String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                    userRoleService.upsertUserFromJophielUserJid(userJid);
+                    userService.upsertUserFromJophielUserJid(userJid);
                     contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
                     ControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateForm.username + " in contest " + contest.getName() + ".");
@@ -168,7 +162,7 @@ public class ContestContestantController extends Controller {
                     for (String username : usernames) {
                         String userJid = JophielUtils.verifyUsername(username);
                         if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                            userRoleService.upsertUserFromJophielUserJid(userJid);
+                            userService.upsertUserFromJophielUserJid(userJid);
                             contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                         }
                     }
