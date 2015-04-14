@@ -183,7 +183,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestSupervisorController contestSupervisorController = new ContestSupervisorController(contestService, userService);
                 cache.put(ContestSupervisorController.class, contestSupervisorController);
             } else if (controllerClass.equals(ContestTeamController.class)) {
-                ContestTeamController contestTeamController = new ContestTeamController(contestService);
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
+                ContestTeamController contestTeamController = new ContestTeamController(contestService, userService);
                 cache.put(ContestTeamController.class, contestTeamController);
             } else if (controllerClass.equals(ContestAPIController.class)) {
                 ContestAPIController contestAPIController = new ContestAPIController(contestService);

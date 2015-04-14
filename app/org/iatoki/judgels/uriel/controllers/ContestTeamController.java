@@ -22,6 +22,7 @@ import org.iatoki.judgels.uriel.ContestTeamMemberCreateForm;
 import org.iatoki.judgels.uriel.ContestTeamUpsertForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
+import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -48,9 +49,11 @@ public class ContestTeamController extends Controller {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
+    private final UserService userRoleService;
 
-    public ContestTeamController(ContestService contestService) {
+    public ContestTeamController(ContestService contestService, UserService userRoleService) {
         this.contestService = contestService;
+        this.userRoleService = userRoleService;
     }
 
     public Result viewTeams(long contestId) {
@@ -183,6 +186,7 @@ public class ContestTeamController extends Controller {
                 String userJid = JophielUtils.verifyUsername(contestTeamCoachCreateForm.username);
                 if ((userJid != null) && (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid))) {
                     contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
+                    userRoleService.upsertUserFromJophielUserJid(userJid);
 
                     ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateForm.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
