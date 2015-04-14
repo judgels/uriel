@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import java.net.URL;
+import java.util.List;
 
 public final class ContestTeam {
 
@@ -14,12 +15,18 @@ public final class ContestTeam {
 
     private URL teamImage;
 
-    public ContestTeam(long id, String jid, String contestJid, String name, URL teamImage) {
+    private List<ContestTeamCoach> coaches;
+
+    private List<ContestTeamMember> members;
+
+    public ContestTeam(long id, String jid, String contestJid, String name, URL teamImage, List<ContestTeamCoach> coaches, List<ContestTeamMember> members) {
         this.id = id;
         this.jid = jid;
         this.contestJid = contestJid;
         this.name = name;
         this.teamImage = teamImage;
+        this.coaches = coaches;
+        this.members = members;
     }
 
     public long getId() {
@@ -40,5 +47,13 @@ public final class ContestTeam {
 
     public URL getTeamImage() {
         return teamImage;
+    }
+
+    public List<ContestTeamCoach> getCoaches() {
+        return coaches;
+    }
+
+    public List<ContestTeamMember> getMembers() {
+        return members;
     }
 }
