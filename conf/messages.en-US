@@ -163,6 +163,8 @@ team.view=View Team
 team.coach.name=Coach Name
 team.member.name=Member Name
 team.update=Update Team
+team.coaches.count=Coaches Count
+team.members.count=Members Count
 
 data.download=Download Contest Data
 

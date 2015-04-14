@@ -38,7 +38,9 @@
     @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
         "teamImage" -> Messages.get("team.image"),
-        "name" -> Messages.get("team.name")
+        "name" -> Messages.get("team.name"),
+        "" -> Messages.get("team.coaches.count"),
+        "" -> Messages.get("team.members.count")
     )
     <tbody>
     @for(contestTeam <- page.getData) {
@@ -46,6 +48,8 @@
             <td>@contestTeam.getId</td>
             <td><img src="@contestTeam.getTeamImage.toString" class="table-image" alt="team_logo"/></td>
             <td>@contestTeam.getName</td>
+            <td>@contestTeam.getCoaches.size()</td>
+            <td>@contestTeam.getMembers.size()</td>
             <td class="text-center">
                 <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.viewTeam(contestId, contestTeam.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                 @if(updateable) {
