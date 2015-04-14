@@ -184,7 +184,7 @@ public class ContestTeamController extends Controller {
                 ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
 
                 String userJid = JophielUtils.verifyUsername(contestTeamCoachCreateForm.username);
-                if ((userJid != null) && (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid))) {
+                if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
                     contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
                     userRoleService.upsertUserFromJophielUserJid(userJid);
 
