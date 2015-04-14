@@ -78,7 +78,9 @@ public class ContestClarificationController extends Controller {
             contestService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, contestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
-            if (contest.isClarificationTimeValid()) {
+            if (coach) {
+                content.appendLayout(c -> headingLayout.render(Messages.get("clarification.list"), c));
+            } else if (contest.isClarificationTimeValid()) {
                 content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
             } else {
                 content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
