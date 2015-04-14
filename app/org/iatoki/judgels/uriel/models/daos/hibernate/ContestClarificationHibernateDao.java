@@ -33,14 +33,17 @@ public final class ContestClarificationHibernateDao extends AbstractHibernateDao
     }
 
     @Override
-    public List<Long> findAllAnsweredClarificationIdInContestByUserJid(String contestJid, String userJid) {
+    public List<Long> findAllAnsweredClarificationIdsInContestByUserJids(String contestJid, Collection<String> userJids) {
+        if (userJids.isEmpty()) {
+            return ImmutableList.of();
+        }
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestClarificationModel> root = query.from(ContestClarificationModel.class);
 
         query
                 .select(root.get(ContestClarificationModel_.id))
-                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), cb.equal(root.get(ContestClarificationModel_.userCreate), userJid), cb.notEqual(root.get(ContestClarificationModel_.status), ContestClarificationStatus.ASKED.name())));
+                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids), cb.notEqual(root.get(ContestClarificationModel_.status), ContestClarificationStatus.ASKED.name())));
 
         return JPA.em().createQuery(query).getResultList();
     }
@@ -74,6 +77,23 @@ public final class ContestClarificationHibernateDao extends AbstractHibernateDao
 
         query
                 .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids)));
+
+        return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<Long> findClarificationIdsByContestJidAskedByUserJids(String contestJid, Collection<String> userJids) {
+        if (userJids.size() == 0) {
+            return ImmutableList.of();
+        }
+
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestClarificationModel> root = query.from(ContestClarificationModel.class);
+
+        query
+              .select(root.get(ContestClarificationModel_.id))
+              .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids)));
 
         return JPA.em().createQuery(query).getResultList();
     }

@@ -146,7 +146,7 @@ public interface ContestService {
 
     long getUnreadContestAnnouncementsCount(String userJid, String contestJid);
 
-    long getUnreadContestClarificationsCount(String userJid, String contestJid);
+    long getUnreadContestClarificationsCount(List<String> askerJids, String userJid, String contestJid, boolean answered);
 
     void readContestAnnouncements(String userJid, List<Long> contestAnnouncementIds);
 
