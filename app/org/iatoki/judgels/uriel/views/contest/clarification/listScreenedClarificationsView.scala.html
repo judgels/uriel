@@ -19,7 +19,7 @@
 
             @if(contestClarification.getStatus == ContestClarificationStatus.ASKED) {
                 (@{Messages.get("clarification.unanswered")})
-                @if(contest.isClarificationTimeValid) {
+                @if(contest.isClarificationTimeValid && coach) {
                     <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestClarificationController.updateClarificationContent(contest.getId, contestClarification.getId)" class="btn btn-primary">@Messages.get("commons.update")</a>
                 }
             }else{
