@@ -177,9 +177,9 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.description = description;
         isTypeChanged = !contestModel.type.equals(type.name());
         contestModel.type = type.name();
-        isScopeChanged = !contestModel.scope.equals(type.name());
+        isScopeChanged = !contestModel.scope.equals(scope.name());
         contestModel.scope = scope.name();
-        isStyleChanged = !contestModel.style.equals(type.name());
+        isStyleChanged = !contestModel.style.equals(style.name());
         contestModel.style = style.name();
         contestModel.startTime = startTime.getTime();
         contestModel.endTime = endTime.getTime();
