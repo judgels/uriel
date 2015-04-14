@@ -916,7 +916,6 @@ public final class ContestServiceImpl implements ContestService {
 
         if (answered) {
             clarificationIds = contestClarificationDao.findAllAnsweredClarificationIdsInContestByUserJids(contestJid, askerJids);
-
         } else {
             clarificationIds = contestClarificationDao.findClarificationIdsByContestJidAskedByUserJids(contestJid, askerJids);
         }

@@ -75,7 +75,9 @@ public final class ContestClarificationHibernateDao extends AbstractHibernateDao
         CriteriaQuery<ContestClarificationModel> query = cb.createQuery(ContestClarificationModel.class);
         Root<ContestClarificationModel> root = query.from(ContestClarificationModel.class);
 
+        // TODO fix this in some clean way
         query
+                .orderBy(cb.desc(root.get(ContestClarificationModel_.id)))
                 .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids)));
 
         return JPA.em().createQuery(query).getResultList();

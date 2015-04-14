@@ -181,7 +181,7 @@ public class ContestAnnouncementController extends Controller {
         appendSubtabsLayout(content, contest);ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId())),
+                new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId())),
                 new InternalLink(Messages.get("announcement.create"), routes.ContestAnnouncementController.createAnnouncement(contest.getId()))
         );
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Announcement - Create");

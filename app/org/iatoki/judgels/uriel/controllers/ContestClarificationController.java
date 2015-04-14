@@ -74,7 +74,7 @@ public class ContestClarificationController extends Controller {
             } else {
                 contestClarifications = contestService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ImmutableList.of(IdentityUtils.getUserJid()));
             }
-            contestService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
+            contestService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().filter(c -> c.isAnswered()).map(c -> c.getId()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, contestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
             if (coach) {
@@ -90,11 +90,11 @@ public class ContestClarificationController extends Controller {
             }
             ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
-            ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
-                  new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
-                  new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())),
-                  new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId()))
-            ));
+
+            appendBreadcrumbsLayout(content, contest,
+                    new InternalLink(Messages.get("clarification.clarifications"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId()))
+            );
+
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarifications");
 
             ControllerUtils.getInstance().addActivityLog("Open list of own clarifications in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");

@@ -117,6 +117,10 @@ public final class ContestControllerUtils {
     }
 
     boolean isAllowedToRegisterContest(Contest contest) {
+        if (isSupervisorOrAbove(contest)) {
+            return false;
+        }
+
         boolean result = !isContestant(contest) && !hasContestEnded(contest);
         if (contest.isPublic()) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());

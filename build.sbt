@@ -3,7 +3,7 @@ import de.johoop.jacoco4sbt.JacocoPlugin.jacoco
 
 name := """uriel"""
 
-version := "0.2.0"
+version := "0.2.1"
 
 lazy val uriel = (project.in(file(".")))
                     .enablePlugins(PlayJava)
