@@ -1,12 +1,14 @@
 package org.iatoki.judgels.uriel.controllers.apis;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestService;
+import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.UrielUtils;
@@ -28,6 +30,8 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -59,7 +63,13 @@ public final class ContestAPIController extends Controller {
     public Result unreadClarification(long contestId) {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
-            long unreadCount = contestService.getUnreadContestClarificationsCount(IdentityUtils.getUserJid(), contest.getJid());
+            long unreadCount;
+            if (isCoach(contest)) {
+                List<ContestTeamMember> contestTeamMemberList = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
+                unreadCount = contestService.getUnreadContestClarificationsCount(contestTeamMemberList.stream().map(ctm -> ctm.getMemberJid()).collect(Collectors.toList()), IdentityUtils.getUserJid(), contest.getJid(), true);
+            } else {
+                unreadCount = contestService.getUnreadContestClarificationsCount(ImmutableList.of(IdentityUtils.getUserJid()), IdentityUtils.getUserJid(), contest.getJid(), true);
+            }
             ObjectNode objectNode = Json.newObject();
             objectNode.put("success", true);
             objectNode.put("count", unreadCount);
