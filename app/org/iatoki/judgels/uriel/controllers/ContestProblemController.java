@@ -106,9 +106,9 @@ public class ContestProblemController extends Controller {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
-            long submissionLeft = -1;
+            long submissionsLeft = -1;
             if (contestProblem.getSubmissionsLimit() != 0) {
-                submissionLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
+                submissionsLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
             }
 
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
@@ -124,7 +124,7 @@ public class ContestProblemController extends Controller {
                 requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
             }
 
-            LazyHtml content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionLeft));
+            LazyHtml content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft));
             ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             appendBreadcrumbsLayout(content, contest,
