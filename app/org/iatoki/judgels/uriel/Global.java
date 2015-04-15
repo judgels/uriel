@@ -7,6 +7,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
+import org.iatoki.judgels.commons.LocalFileSystemProvider;
 import org.iatoki.judgels.gabriel.commons.GradingResponsePoller;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
@@ -112,10 +113,16 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
         FileSystemProvider teamAvatarFileProvider;
-        if (Play.isProd()) {
-            teamAvatarFileProvider = new AWSFileSystemProvider(new AmazonS3Client(), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+        if (UrielProperties.getInstance().isUseAWS()) {
+            AmazonS3Client amazonS3Client;
+            if (Play.isProd()) {
+                amazonS3Client = new AmazonS3Client();
+            } else {
+                amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey()));
+            }
+            teamAvatarFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getaWSTeamAvatarBucketName(), UrielProperties.getInstance().getaWSTeamAvatarCloudFrontURL(), UrielProperties.getInstance().getaWSTeamAvatarRegion());
         } else {
-            teamAvatarFileProvider = new AWSFileSystemProvider(new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey())), UrielProperties.getInstance().getTeamAvatarBucketName(), UrielProperties.getInstance().getTeamAvatarRegion());
+            teamAvatarFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getTeamAvatarDir());
         }
         contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
@@ -143,9 +150,6 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ApplicationController applicationController = new ApplicationController(userService);
                 cache.put(ApplicationController.class, applicationController);
             } else if (controllerClass.equals(ContestController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
                 ContestController contestController = new ContestController(contestService);
                 cache.put(ContestController.class, contestController);
             } else if (controllerClass.equals(ContestAnnouncementController.class)) {

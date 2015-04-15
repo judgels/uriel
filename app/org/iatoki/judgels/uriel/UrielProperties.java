@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import com.amazonaws.services.s3.model.Region;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
 import play.Configuration;
 import play.Play;
@@ -17,8 +17,10 @@ public final class UrielProperties {
     private File teamAvatarDir;
     private String aWSAccessKey;
     private String aWSSecretKey;
-    private String teamAvatarBucketName;
-    private Region teamAvatarRegion;
+    private String aWSTeamAvatarBucketName;
+    private Region aWSTeamAvatarRegion;
+    private String aWSTeamAvatarCloudFrontURL;
+    private boolean useAWS;
 
     private UrielProperties() {
 
@@ -33,27 +35,47 @@ public final class UrielProperties {
     }
 
     public String getaWSAccessKey() {
-        if (Play.isDev()) {
+        if ((useAWS) && (Play.isDev())) {
             return aWSAccessKey;
         } else {
-            throw new RuntimeException();
+            throw new UnsupportedOperationException();
         }
     }
 
     public String getaWSSecretKey() {
-        if (Play.isDev()) {
+        if ((useAWS) && (Play.isDev())) {
             return aWSSecretKey;
         } else {
-            throw new RuntimeException();
+            throw new UnsupportedOperationException();
         }
     }
 
-    public String getTeamAvatarBucketName() {
-        return teamAvatarBucketName;
+    public String getaWSTeamAvatarBucketName() {
+        if (useAWS) {
+            return aWSTeamAvatarBucketName;
+        } else {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    public Region getTeamAvatarRegion() {
-        return teamAvatarRegion;
+    public Region getaWSTeamAvatarRegion() {
+        if (useAWS) {
+            return aWSTeamAvatarRegion;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public String getaWSTeamAvatarCloudFrontURL() {
+        if (useAWS) {
+            return aWSTeamAvatarCloudFrontURL;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public boolean isUseAWS() {
+        return useAWS;
     }
 
     public static UrielProperties getInstance() {
@@ -67,14 +89,19 @@ public final class UrielProperties {
             } else if (Play.isDev()) {
                 verifyConfigurationDev(conf);
 
-                INSTANCE.aWSAccessKey = conf.getString("aws.access.key");
-                INSTANCE.aWSSecretKey = conf.getString("aws.secret.key");
+                if (INSTANCE.isUseAWS()) {
+                    INSTANCE.aWSAccessKey = conf.getString("aws.access.key");
+                    INSTANCE.aWSSecretKey = conf.getString("aws.secret.key");
+                }
             }
 
             String baseDirName = conf.getString("uriel.baseDataDir");
 
-            INSTANCE.teamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
-            INSTANCE.teamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
+            if (INSTANCE.isUseAWS()) {
+                INSTANCE.aWSTeamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
+                INSTANCE.aWSTeamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
+                INSTANCE.aWSTeamAvatarCloudFrontURL = conf.getString("aws.team.avatar.cloudfront.url");
+            }
 
             File baseDir = new File(baseDirName);
             if (!baseDir.isDirectory()) {
@@ -94,7 +121,7 @@ public final class UrielProperties {
     }
 
     private static void verifyConfigurationDev(Configuration configuration) {
-        List<String> requiredKeys = ImmutableList.of(
+        List<String> requiredKeys = Lists.newArrayList(
               "jophiel.baseUrl",
               "jophiel.clientJid",
               "jophiel.clientSecret",
@@ -105,11 +132,17 @@ public final class UrielProperties {
               "uriel.baseUrl",
               "uriel.baseDataDir",
               "sandalphon.baseUrl",
-              "aws.access.key",
-              "aws.secret.key",
-              "aws.team.avatar.bucket.name",
-              "aws.team.avatar.bucket.region.id"
+              "aws.use"
         );
+
+        INSTANCE.useAWS = false;
+        if ((configuration.getBoolean("aws.use") != null) && ((configuration.getBoolean("aws.use")))) {
+            INSTANCE.useAWS = true;
+            requiredKeys.add("aws.access.key");
+            requiredKeys.add("aws.secret.key");
+            requiredKeys.add("aws.team.avatar.bucket.name");
+            requiredKeys.add("aws.team.avatar.bucket.region.id");
+        }
 
         for (String key : requiredKeys) {
             if (configuration.getString(key) == null) {
@@ -119,7 +152,7 @@ public final class UrielProperties {
     }
 
     private static void verifyConfigurationProd(Configuration configuration) {
-        List<String> requiredKeys = ImmutableList.of(
+        List<String> requiredKeys = Lists.newArrayList(
               "jophiel.baseUrl",
               "jophiel.clientJid",
               "jophiel.clientSecret",
@@ -130,9 +163,16 @@ public final class UrielProperties {
               "uriel.baseUrl",
               "uriel.baseDataDir",
               "sandalphon.baseUrl",
-              "aws.team.avatar.bucket.name",
-              "aws.team.avatar.bucket.region.id"
+              "aws.use"
         );
+
+        INSTANCE.useAWS = false;
+        if ((configuration.getBoolean("aws.use") != null) && ((configuration.getBoolean("aws.use")))) {
+            INSTANCE.useAWS = true;
+            requiredKeys.add("aws.team.avatar.bucket.name");
+            requiredKeys.add("aws.team.avatar.bucket.region.id");
+        }
+
 
         for (String key : requiredKeys) {
             if (configuration.getString(key) == null) {
