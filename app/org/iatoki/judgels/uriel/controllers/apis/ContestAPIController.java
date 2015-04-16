@@ -97,16 +97,16 @@ public final class ContestAPIController extends Controller {
     }
 
     public Result renderTeamAvatarImage(String imageName) {
-        String imageURL = contestService.getTeamAvatarImageURL(imageName);
+        response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
 
+        String imageURL = contestService.getTeamAvatarImageURL(imageName);
         try {
             new URL(imageURL);
-            return redirect(imageURL);
+            return temporaryRedirect(imageURL);
         } catch (MalformedURLException e) {
             File image = new File(imageURL);
             if (image.exists()) {
                 SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z");
-                response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
                 response().setHeader("Last-Modified", sdf.format(new Date(image.lastModified())));
 
                 if (request().hasHeader("If-Modified-Since")) {
