@@ -97,7 +97,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
         submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
 
-        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel);
+        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
 
         ContestDao contestDao = new ContestHibernateDao();
         ContestAnnouncementDao contestAnnouncementDao = new ContestAnnouncementHibernateDao();

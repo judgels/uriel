@@ -29,10 +29,10 @@ public final class ApplicationController extends Controller {
         if ((session().containsKey("username")) && (session().containsKey("role"))) {
             return redirect(routes.ContestController.index());
         } else if (session().containsKey("username")) {
-            String returnUri = routes.ContestController.index().absoluteURL(request());
+            String returnUri = routes.ContestController.index().absoluteURL(request(), request().secure());
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            String returnUri = routes.ContestController.index().absoluteURL(request());
+            String returnUri = routes.ContestController.index().absoluteURL(request(), request().secure());
             return redirect(routes.ApplicationController.auth(returnUri));
         }
     }
@@ -43,7 +43,7 @@ public final class ApplicationController extends Controller {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request());
+            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
             return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
         }
     }
