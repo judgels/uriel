@@ -12,3 +12,5 @@ addSbtPlugin("com.typesafe.sbt" % "sbt-rjs" % "1.0.1")
 addSbtPlugin("de.johoop" % "sbt-testng-plugin" % "3.0.2")
 
 addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.6")
+
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.3.2")
