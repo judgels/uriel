@@ -9,7 +9,7 @@ lazy val uriel = (project in file("."))
     .aggregate(frontendcommons)
     .settings(
         name := "uriel",
-        version := "0.2.1",
+        version := IO.read(file("version.properties")),
         scalaVersion := "2.11.1",
         libraryDependencies ++= Seq(
             "org.apache.poi" % "poi" % "3.10-FINAL",
