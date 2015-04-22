@@ -64,6 +64,7 @@ public class ContestTeamController extends Controller {
         }
     }
 
+    @AddCSRFToken
     public Result viewTeams(long contestId) {
         return listCreateTeams(contestId, 0, "id", "asc", "");
     }
