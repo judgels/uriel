@@ -63,14 +63,15 @@ public final class ContestTestingAPIController extends Controller {
 
         BlackBoxSubmissionAdapter adapter = new BlackBoxSubmissionAdapter();
 
+        String submissionJid;
         try {
             BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
-            String submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
+            submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
             adapter.storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
         } catch (SubmissionException e) {
             return badRequest();
         }
 
-        return ok();
+        return ok(submissionJid);
     }
 }
