@@ -47,6 +47,7 @@ import play.i18n.Messages;
 import javax.persistence.NoResultException;
 import javax.persistence.metamodel.SingularAttribute;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -91,8 +92,12 @@ public final class ContestServiceImpl implements ContestService {
         this.contestReadDao = contestReadDao;
         this.teamAvatarFileProvider = teamAvatarFileProvider;
         if (!teamAvatarFileProvider.fileExists(ImmutableList.of("team-default.png"))) {
-            teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default assets/team-default.png", play.api.Play.current()),"team-default.png");
-            teamAvatarFileProvider.makeFilePublic(ImmutableList.of("team-default.png"));
+            try {
+                teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default assets/team-default.png", play.api.Play.current()), "team-default.png");
+                teamAvatarFileProvider.makeFilePublic(ImmutableList.of("team-default.png"));
+            } catch (IOException e) {
+                throw new IllegalStateException("Cannot create default avatar.");
+            }
         }
     }
 
@@ -674,7 +679,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void createContestTeam(long contestId, String name, File teamImage, String extension) {
+    public void createContestTeam(long contestId, String name, File teamImage, String extension) throws IOException {
         ContestModel contestModel = contestDao.findById(contestId);
 
         ContestTeamModel contestTeamModel = new ContestTeamModel();
@@ -701,7 +706,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) {
+    public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
         String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);

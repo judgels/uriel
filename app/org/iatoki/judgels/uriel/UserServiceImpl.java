@@ -11,6 +11,7 @@ import org.iatoki.judgels.jophiel.commons.UserTokens;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import org.iatoki.judgels.uriel.models.domains.UserModel;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -112,18 +113,22 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public void upsertUserFromJophielUserJid(String userJid) {
-        org.iatoki.judgels.jophiel.User user = JophielUtils.getUserByUserJid(userJid);
+        try {
+            org.iatoki.judgels.jophiel.User user = JophielUtils.getUserByUserJid(userJid);
 
-        if (!userDao.existsByUserJid(userJid)) {
-            UserModel userRoleModel = new UserModel();
-            userRoleModel.userJid = user.getJid();
-            userRoleModel.roles = "user";
+            if (!userDao.existsByUserJid(userJid)) {
+                UserModel userRoleModel = new UserModel();
+                userRoleModel.userJid = user.getJid();
+                userRoleModel.roles = "user";
 
-            userDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                userDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            }
+
+            JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        } catch (IOException e) {
+            // do nothing
         }
-
-        JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-        AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override

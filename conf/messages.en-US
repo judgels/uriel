@@ -172,6 +172,8 @@ team.coaches.count=#Coaches
 team.members.count=#Members
 team.status=Status
 
+team.avatar.error.cantUpdate=Can't Upload Team Avatar into system
+
 data.download=Download Contest Data
 
 scoreboard.not_available=Scoreboard is not available at the moment.

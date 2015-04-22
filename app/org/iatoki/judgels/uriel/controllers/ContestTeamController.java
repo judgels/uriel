@@ -34,6 +34,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -118,7 +119,15 @@ public class ContestTeamController extends Controller {
                 Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
 
                 if (teamImage != null) {
-                    contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                    try {
+                        contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                    } catch (IOException e) {
+                        Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        boolean canUpdate = isAllowedToSuperviseContestants(contest);
+                        form.reject("team.avatar.error.cantUpdate");
+
+                        return showListCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
+                    }
                 } else {
                     contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name);
                 }
@@ -163,7 +172,13 @@ public class ContestTeamController extends Controller {
                 Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
 
                 if (teamImage != null) {
-                    contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                    try {
+                        contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                    } catch (IOException e) {
+                        form.reject("team.avatar.error.cantUpdate");
+
+                        return showUpdateTeam(form, contest, contestTeam);
+                    }
                 } else {
                     contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name);
                 }

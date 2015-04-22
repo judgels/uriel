@@ -5,6 +5,7 @@ import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
@@ -96,11 +97,11 @@ public interface ContestService {
 
     void createContestTeam(long contestId, String name);
 
-    void createContestTeam(long contestId, String name, File teamImage, String extension);
+    void createContestTeam(long contestId, String name, File teamImage, String extension) throws IOException;
 
     void updateContestTeam(long contestTeamId, String name);
 
-    void updateContestTeam(long contestTeamId, String name, File teamImage, String extension);
+    void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException;
 
     boolean isUserInAnyTeamByContestJid(String contestJid, String userJid);
 
