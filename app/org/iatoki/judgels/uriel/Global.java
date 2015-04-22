@@ -28,6 +28,7 @@ import org.iatoki.judgels.uriel.controllers.ContestSupervisorController;
 import org.iatoki.judgels.uriel.controllers.ContestTeamController;
 import org.iatoki.judgels.uriel.controllers.UserController;
 import org.iatoki.judgels.uriel.controllers.apis.ContestAPIController;
+import org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController;
 import org.iatoki.judgels.uriel.models.daos.hibernate.AvatarCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibernateDao;
@@ -208,6 +209,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
                 JophielClientController jophielClientController = new JophielClientController(userService);
                 cache.put(JophielClientController.class, jophielClientController);
+            } else if (controllerClass.equals(ContestTestingAPIController.class)) {
+                UserDao userDao = new UserHibernateDao();
+                UserService userService = new UserServiceImpl(userDao);
+
+                ContestTestingAPIController contestTestingAPIController = new ContestTestingAPIController(contestService, submissionService);
+                cache.put(ContestTestingAPIController.class, contestTestingAPIController);
             }
         }
         return controllerClass.cast(cache.get(controllerClass));

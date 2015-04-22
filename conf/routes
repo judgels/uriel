@@ -133,3 +133,5 @@ GET         /users/:uId/update                                        @org.iatok
 POST        /users/:uId/update                                        @org.iatoki.judgels.uriel.controllers.UserController.postUpdateUser(uId: Long)
 
 GET         /users/:uId/delete                                        @org.iatoki.judgels.uriel.controllers.UserController.deleteUser(uId: Long)
+
+POST        /apis/testing/singleFileBlackBoxSubmit                    @org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController.singleFileBlackBoxSubmit()
