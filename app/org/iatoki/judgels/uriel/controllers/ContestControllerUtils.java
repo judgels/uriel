@@ -219,6 +219,9 @@ public final class ContestControllerUtils {
     }
 
     boolean isAllowedToDoContest(Contest contest) {
+        if (isSupervisorOrAbove(contest)) {
+            return true;
+        }
         return isAllowedToEnterContest(contest) && hasContestStarted(contest) && !hasContestFinished(contest);
     }
 
