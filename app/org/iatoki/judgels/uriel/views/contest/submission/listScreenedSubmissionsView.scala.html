@@ -14,7 +14,7 @@
 <form class="form-inline pull-right" method="GET" action="@routes.ContestSubmissionController.listScreenedSubmissions(contestId, pageIndex, orderBy, orderDir, null)">
    <div class="form-group">
         <label for="problemJid">@Messages.get("problem.problem")</label>
-        <select name="problemJid">
+        <select name="problemJid" class="form-control selectpicker col-md-3">
             <option value="(none)" @if(problemJid == null) {selected="selected"}>&#8211;</option>
             @for((pJid, pAlias) <- problemJidToAliasMap) {
                 <option value="@pJid" @if(pJid.equals(problemJid)){selected="selected"}>@pAlias</option>
@@ -22,7 +22,7 @@
         </select>
     </div>
 
-    <button type="submit" class="btn btn-primary btn-xs">Filter</button>
+    <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSubmissionController.listScreenedSubmissions(contestId, newPageIndex, newOrderBy, newOrderDir, null)}
