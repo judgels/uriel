@@ -93,7 +93,7 @@ public final class ContestServiceImpl implements ContestService {
         this.teamAvatarFileProvider = teamAvatarFileProvider;
         if (!teamAvatarFileProvider.fileExists(ImmutableList.of("team-default.png"))) {
             try {
-                teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default assets/team-default.png", play.api.Play.current()), "team-default.png");
+                teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default-assets/team-default.png", play.api.Play.current()), "team-default.png");
                 teamAvatarFileProvider.makeFilePublic(ImmutableList.of("team-default.png"));
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot create default avatar.");
