@@ -32,6 +32,11 @@ lazy val uriel = (project in file("."))
         LessKeys.optimization := 3,
         LessKeys.verbose := true
     )
+    .settings(
+        publishArtifact in (Compile, packageDoc) := false,
+        publishArtifact in packageDoc := false,
+        sources in (Compile,doc) := Seq.empty
+    )
     .settings(buildInfoSettings: _*)
     .settings(
         sourceGenerators in Compile <+= buildInfo,
