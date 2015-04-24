@@ -13,7 +13,7 @@ import java.util.Map;
 
 public interface ContestService {
 
-    Contest findContestById(long contestId);
+    Contest findContestById(long contestId) throws ContestNotFoundException;
 
     Contest findContestByJid(String contestJid);
 
@@ -31,7 +31,7 @@ public interface ContestService {
 
     Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
-    ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId);
+    ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId) throws ContestAnnouncementNotFoundException;
 
     void createContestAnnouncement(long contestId, String title, String content, ContestAnnouncementStatus status);
 
@@ -43,7 +43,7 @@ public interface ContestService {
 
     Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
-    ContestProblem findContestProblemByContestProblemId(long contestProblemId);
+    ContestProblem findContestProblemByContestProblemId(long contestProblemId) throws ContestProblemNotFoundException;
 
     ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid);
 
@@ -55,7 +55,7 @@ public interface ContestService {
 
     Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, List<String> askerJids);
 
-    ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId);
+    ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId) throws ContestClarificationNotFoundException;
 
     void createContestClarification(long contestId, String title, String question, String topicJid);
 
@@ -69,7 +69,7 @@ public interface ContestService {
 
     Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    ContestContestant findContestContestantByContestContestantId(long contestContestantId);
+    ContestContestant findContestContestantByContestContestantId(long contestContestantId) throws ContestContestantNotFoundException;
 
     ContestContestant findContestContestantByContestJidAndContestContestantJid(String contestJid, String contestContestantJid);
 
@@ -93,7 +93,7 @@ public interface ContestService {
 
     List<ContestTeam> findAllContestTeams(String contestJid);
 
-    ContestTeam findContestTeamByContestTeamId(long contestTeamId);
+    ContestTeam findContestTeamByContestTeamId(long contestTeamId) throws ContestTeamNotFoundException;
 
     void createContestTeam(long contestId, String name);
 
@@ -111,7 +111,7 @@ public interface ContestService {
 
     List<ContestTeam> findContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid);
 
-    ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
+    ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) throws ContestTeamCoachNotFoundException;
 
     List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid);
 
@@ -119,7 +119,7 @@ public interface ContestService {
 
     void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
 
-    ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId);
+    ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) throws ContestTeamMemberNotFoundException;
 
     List<ContestTeamMember> findContestTeamMembersByContestJidAndCoachJid(String contestJid, String coachJid);
 
@@ -133,7 +133,7 @@ public interface ContestService {
 
     Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId);
+    ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) throws ContestSupervisorNotFoundException;
 
     boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid);
 
@@ -142,8 +142,6 @@ public interface ContestService {
     void updateContestSupervisor(long contestSupervisorId, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant);
 
     Page<ContestManager> pageContestManagersByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
-
-    ContestManager findContestManagerByContestManagerId(long contestManagerId);
 
     boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid);
 

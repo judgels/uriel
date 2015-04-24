@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.controllers;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.headerFooterLayout;
 import org.iatoki.judgels.commons.views.html.layouts.baseLayout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
@@ -17,7 +18,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 
 @Transactional
-public final class ApplicationController extends Controller {
+public final class ApplicationController extends BaseController {
 
     private final UserService userService;
 

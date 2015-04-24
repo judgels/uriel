@@ -6,6 +6,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
@@ -14,6 +15,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
 import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
@@ -59,7 +61,7 @@ import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public final class ContestController extends Controller {
+public final class ContestController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -93,7 +95,7 @@ public final class ContestController extends Controller {
         return redirect(routes.ContestClarificationController.viewScreenedClarifications(contestId));
     }
 
-    public Result jumpToContestants(long contestId) {
+    public Result jumpToContestants(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isCoach(contest)) {
             return redirect(routes.ContestTeamController.viewScreenedTeams(contestId));
@@ -129,11 +131,11 @@ public final class ContestController extends Controller {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    public Result viewContest(long contestId) {
+    public Result viewContest(long contestId) throws ContestNotFoundException {
         return viewContestAndListRegistrants(contestId, 0, "id", "asc", "");
     }
 
-    public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
@@ -156,7 +158,7 @@ public final class ContestController extends Controller {
         }
     }
 
-    public Result registerToAContest(long contestId) {
+    public Result registerToAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest)) {
@@ -203,7 +205,7 @@ public final class ContestController extends Controller {
 //        }
 //    }
 
-    public Result enterContest(long contestId) {
+    public Result enterContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
@@ -214,7 +216,7 @@ public final class ContestController extends Controller {
         }
     }
 
-    public Result startContest(long contestId) {
+    public Result startContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest)) {
@@ -254,7 +256,7 @@ public final class ContestController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateContestGeneralConfig(long contestId) {
+    public Result updateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
@@ -270,7 +272,7 @@ public final class ContestController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateContestGeneralConfig(long contestId) {
+    public Result postUpdateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
@@ -291,7 +293,7 @@ public final class ContestController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateContestSpecificConfig(long contestId) {
+    public Result updateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
@@ -343,7 +345,7 @@ public final class ContestController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateContestSpecificConfig(long contestId) {
+    public Result postUpdateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {

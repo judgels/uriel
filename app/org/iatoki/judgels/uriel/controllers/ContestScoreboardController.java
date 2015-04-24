@@ -10,11 +10,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionsLayout;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestService;
@@ -48,7 +50,7 @@ import java.util.stream.Collectors;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestScoreboardController extends Controller {
+public class ContestScoreboardController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -60,7 +62,7 @@ public class ContestScoreboardController extends Controller {
         this.submissionService = submissionService;
     }
 
-    public Result viewScoreboard(long contestId) {
+    public Result viewScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest))) {
             ContestScoreboard contestScoreboard;
@@ -111,7 +113,7 @@ public class ContestScoreboardController extends Controller {
         }
     }
 
-    public Result viewOfficialScoreboard(long contestId) {
+    public Result viewOfficialScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
@@ -138,7 +140,7 @@ public class ContestScoreboardController extends Controller {
         }
     }
 
-    public Result refreshAllScoreboard(long contestId) {
+    public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
@@ -162,7 +164,7 @@ public class ContestScoreboardController extends Controller {
         }
     }
 
-    public Result downloadContestDataAsXLS(long contestId) {
+    public Result downloadContestDataAsXLS(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());

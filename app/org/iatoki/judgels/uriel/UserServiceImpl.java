@@ -69,9 +69,13 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserById(long userId) {
+    public User findUserById(long userId) throws UserNotFoundException {
         UserModel userModel = userDao.findById(userId);
-        return createUserFromUserModel(userModel);
+        if (userModel != null) {
+            return createUserFromUserModel(userModel);
+        } else {
+            throw new UserNotFoundException("User not found.");
+        }
     }
 
     @Override

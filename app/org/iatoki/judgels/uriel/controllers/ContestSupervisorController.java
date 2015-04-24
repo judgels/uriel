@@ -6,14 +6,17 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
+import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
@@ -38,7 +41,7 @@ import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestSupervisorController extends Controller {
+public class ContestSupervisorController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -51,12 +54,12 @@ public class ContestSupervisorController extends Controller {
     }
 
     @AddCSRFToken
-    public Result viewSupervisors(long contestId) {
+    public Result viewSupervisors(long contestId) throws ContestNotFoundException {
         return listCreateSupervisors(contestId, 0, "id", "asc", "");
     }
 
     @AddCSRFToken
-    public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
             Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -72,7 +75,7 @@ public class ContestSupervisorController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result postCreateSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToManageSupervisors(contest)) {
             Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class).bindFromRequest();
@@ -109,7 +112,7 @@ public class ContestSupervisorController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateSupervisor(long contestId, long contestSupervisorId) {
+    public Result updateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if (isAllowedToManageSupervisors(contest) && contestSupervisor.getContestJid().equals(contest.getJid())) {
@@ -125,7 +128,7 @@ public class ContestSupervisorController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateSupervisor(long contestId, long contestSupervisorId) {
+    public Result postUpdateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if (isAllowedToManageSupervisors(contest) && contestSupervisor.getContestJid().equals(contest.getJid())) {

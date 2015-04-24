@@ -6,6 +6,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
@@ -13,6 +14,7 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
@@ -36,7 +38,7 @@ import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestManagerController extends Controller {
+public class ContestManagerController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -49,12 +51,12 @@ public class ContestManagerController extends Controller {
     }
 
     @AddCSRFToken
-    public Result viewManagers(long contestId) {
+    public Result viewManagers(long contestId) throws ContestNotFoundException {
         return listCreateManagers(contestId, 0, "id", "asc", "");
     }
 
     @AddCSRFToken
-    public Result listCreateManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listCreateManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
@@ -72,7 +74,7 @@ public class ContestManagerController extends Controller {
 
     @Authorized(value = {"admin"})
     @RequireCSRFCheck
-    public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class).bindFromRequest();
 

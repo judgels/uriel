@@ -6,15 +6,18 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantCreateForm;
+import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.ContestContestantUploadForm;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
@@ -37,7 +40,7 @@ import java.util.Arrays;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestContestantController extends Controller {
+public class ContestContestantController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -50,12 +53,12 @@ public class ContestContestantController extends Controller {
     }
 
     @AddCSRFToken
-    public Result viewContestants(long contestId) {
+    public Result viewContestants(long contestId) throws ContestNotFoundException {
         return listCreateContestants(contestId, 0, "id", "asc", "");
     }
 
     @AddCSRFToken
-    public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -72,7 +75,7 @@ public class ContestContestantController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result postCreateContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class).bindFromRequest();
@@ -110,7 +113,7 @@ public class ContestContestantController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateContestant(long contestId, long contestContestantId) {
+    public Result updateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestContestant = contestService.findContestContestantByContestContestantId(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
@@ -126,7 +129,7 @@ public class ContestContestantController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateContestant(long contestId, long contestContestantId) {
+    public Result postUpdateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestContestant = contestService.findContestContestantByContestContestantId(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
@@ -148,7 +151,7 @@ public class ContestContestantController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUploadContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result postUploadContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart file;

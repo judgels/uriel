@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.uriel.User;
+import org.iatoki.judgels.uriel.UserNotFoundException;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.UserUpdateForm;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
@@ -28,7 +30,7 @@ import java.util.Arrays;
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = {"admin"})
-public final class UserController extends Controller {
+public final class UserController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
     private final UserService userService;
@@ -59,7 +61,7 @@ public final class UserController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateUser(long userId) {
+    public Result updateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
         UserUpdateForm userRoleUpdateForm = new UserUpdateForm(user);
         Form<UserUpdateForm> form = Form.form(UserUpdateForm.class).fill(userRoleUpdateForm);
@@ -70,7 +72,7 @@ public final class UserController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateUser(long userId) {
+    public Result postUpdateUser(long userId) throws UserNotFoundException {
         Form<UserUpdateForm> form = Form.form(UserUpdateForm.class).bindFromRequest();
         User user = userService.findUserById(userId);
 
@@ -86,7 +88,7 @@ public final class UserController extends Controller {
         }
     }
 
-    public Result deleteUser(long userId) {
+    public Result deleteUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
         userService.deleteUser(user.getId());
 

@@ -7,6 +7,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
@@ -45,7 +46,7 @@ public final class ContestAPIController extends Controller {
         this.contestService = contestService;
     }
 
-    public Result unreadAnnouncement(long contestId) {
+    public Result unreadAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
             long unreadCount = contestService.getUnreadContestAnnouncementsCount(IdentityUtils.getUserJid(), contest.getJid());
@@ -60,7 +61,7 @@ public final class ContestAPIController extends Controller {
         }
     }
 
-    public Result unreadClarification(long contestId) {
+    public Result unreadClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
             long unreadCount;
@@ -81,7 +82,7 @@ public final class ContestAPIController extends Controller {
         }
     }
 
-    public Result unansweredClarification(long contestId) {
+    public Result unansweredClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
             long unreadCount = contestService.getUnansweredContestClarificationsCount(contest.getJid());

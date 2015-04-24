@@ -7,6 +7,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.gabriel.GradingSource;
@@ -17,8 +18,10 @@ import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemCreateForm;
+import org.iatoki.judgels.uriel.ContestProblemNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
 import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
 import org.iatoki.judgels.uriel.ContestService;
@@ -54,7 +57,7 @@ import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestProblemController extends Controller {
+public class ContestProblemController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -66,11 +69,11 @@ public class ContestProblemController extends Controller {
         this.submissionService = submissionService;
     }
 
-    public Result viewOpenedProblems(long contestId) {
+    public Result viewOpenedProblems(long contestId) throws ContestNotFoundException {
         return listOpenedProblems(contestId, 0, "alias", "asc", "");
     }
 
-    public Result listOpenedProblems(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listOpenedProblems(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             Page<ContestProblem> contestProblems = contestService.pageContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestProblemStatus.OPEN.name());
@@ -102,7 +105,7 @@ public class ContestProblemController extends Controller {
         }
     }
 
-    public Result viewProblem(long contestId, long contestProblemId) {
+    public Result viewProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
@@ -142,15 +145,19 @@ public class ContestProblemController extends Controller {
         }
     }
 
-    public Result renderImage(long contestId, long contestProblemId, String imageFilename) {
+    public Result renderImage(long contestId, long contestProblemId, String imageFilename) throws ContestNotFoundException, ContestProblemNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        if (contest.getJid().equals(contestProblem.getContestJid())) {
+            URI imageUri = SandalphonUtils.getRenderImageUri(contestProblem.getProblemJid(), imageFilename);
 
-        URI imageUri = SandalphonUtils.getRenderImageUri(contestProblem.getProblemJid(), imageFilename);
-
-        return redirect(imageUri.toString());
+            return redirect(imageUri.toString());
+        } else {
+            return notFound();
+        }
     }
 
-    public Result postSubmitProblem(long contestId, String problemJid) {
+    public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
 
@@ -192,11 +199,11 @@ public class ContestProblemController extends Controller {
         return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblemId));
     }
 
-    public Result viewProblems(long contestId) {
+    public Result viewProblems(long contestId) throws ContestNotFoundException {
         return listProblems(contestId, 0, "alias", "asc", "");
     }
 
-    public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) {
+    public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
             Page<ContestProblem> contestProblemPage = contestService.pageContestProblemsByContestJid(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
@@ -220,7 +227,7 @@ public class ContestProblemController extends Controller {
     }
 
     @AddCSRFToken
-    public Result createProblem(long contestId) {
+    public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
@@ -235,7 +242,7 @@ public class ContestProblemController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateProblem(long contestId) {
+    public Result postCreateProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class).bindFromRequest();
@@ -263,7 +270,7 @@ public class ContestProblemController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateProblem(long contestId, long contestProblemId) {
+    public Result updateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
@@ -279,7 +286,7 @@ public class ContestProblemController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateProblem(long contestId, long contestProblemId) {
+    public Result postUpdateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {

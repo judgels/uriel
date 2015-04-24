@@ -8,15 +8,18 @@ import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.ListTableSelectionForm;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
 import org.iatoki.judgels.gabriel.GradingSource;
 import org.iatoki.judgels.gabriel.commons.Submission;
 import org.iatoki.judgels.gabriel.commons.SubmissionAdapters;
+import org.iatoki.judgels.gabriel.commons.SubmissionNotFoundException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
@@ -43,7 +46,7 @@ import java.util.Map;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public final class ContestSubmissionController extends Controller {
+public final class ContestSubmissionController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -55,11 +58,11 @@ public final class ContestSubmissionController extends Controller {
         this.submissionService = submissionService;
     }
 
-    public Result viewScreenedSubmissions(long contestId) {
+    public Result viewScreenedSubmissions(long contestId) throws ContestNotFoundException {
         return listScreenedSubmissions(contestId, 0, "id", "desc", null);
     }
 
-    public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) {
+    public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && !ContestControllerUtils.getInstance().isCoach(contest)) {
@@ -89,7 +92,7 @@ public final class ContestSubmissionController extends Controller {
         }
     }
 
-    public Result viewSubmission(long contestId, long submissionId) {
+    public Result viewSubmission(long contestId, long submissionId) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         Submission submission = submissionService.findSubmissionById(submissionId);
 
@@ -120,11 +123,11 @@ public final class ContestSubmissionController extends Controller {
         }
     }
 
-    public Result viewSubmissions(long contestId) {
+    public Result viewSubmissions(long contestId) throws ContestNotFoundException {
         return listSubmissions(contestId, 0, "id", "desc", null, null);
     }
 
-    public Result listSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
+    public Result listSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (isAllowedToSuperviseSubmissions(contest)) {
@@ -157,7 +160,7 @@ public final class ContestSubmissionController extends Controller {
         }
     }
 
-    public Result regradeSubmission(long contestId, long submissionId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
+    public Result regradeSubmission(long contestId, long submissionId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseSubmissions(contest)) {
 
@@ -173,7 +176,7 @@ public final class ContestSubmissionController extends Controller {
         }
     }
 
-    public Result regradeSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) {
+    public Result regradeSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseSubmissions(contest)) {
             ListTableSelectionForm data = Form.form(ListTableSelectionForm.class).bindFromRequest().get();

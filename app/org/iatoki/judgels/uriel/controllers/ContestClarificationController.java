@@ -6,6 +6,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.alertLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
@@ -14,8 +15,10 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestClarification;
 import org.iatoki.judgels.uriel.ContestClarificationChangeForm;
 import org.iatoki.judgels.uriel.ContestClarificationCreateForm;
+import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 import org.iatoki.judgels.uriel.ContestClarificationUpdateForm;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -44,7 +47,7 @@ import java.util.stream.Collectors;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestClarificationController extends Controller {
+public class ContestClarificationController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -54,11 +57,11 @@ public class ContestClarificationController extends Controller {
         this.contestService = contestService;
     }
 
-    public Result viewScreenedClarifications(long contestId) {
+    public Result viewScreenedClarifications(long contestId) throws ContestNotFoundException {
         return listScreenedClarifications(contestId, 0, "id", "desc", "");
     }
 
-    public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             Page<ContestClarification> contestClarifications;
@@ -106,7 +109,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @AddCSRFToken
-    public Result createClarification(long contestId) {
+    public Result createClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
             if (contest.isClarificationTimeValid()) {
@@ -124,7 +127,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateClarification(long contestId) {
+    public Result postCreateClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
             if (contest.isClarificationTimeValid()) {
@@ -149,7 +152,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateClarificationContent(long contestId, long contestClarificationId) {
+    public Result updateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
@@ -166,7 +169,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateClarificationContent(long contestId, long contestClarificationId) {
+    public Result postUpdateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
@@ -187,11 +190,11 @@ public class ContestClarificationController extends Controller {
         }
     }
 
-    public Result viewClarifications(long contestId) {
+    public Result viewClarifications(long contestId) throws ContestNotFoundException {
         return listClarifications(contestId, 0, "id", "desc", "");
     }
 
-    public Result listClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
             Page<ContestClarification> contestClarifications = contestService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
@@ -216,7 +219,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateClarificationAnswer(long contestId, long contestClarificationId) {
+    public Result updateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (isAllowedToSuperviseClarifications(contest) && contestClarification.getContestJid().equals(contest.getJid())) {
@@ -232,7 +235,7 @@ public class ContestClarificationController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateClarificationAnswer(long contestId, long contestClarificationId) {
+    public Result postUpdateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestClarification contestClarification = contestService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (isAllowedToSuperviseClarifications(contest) && contestClarification.getContestJid().equals(contest.getJid())) {

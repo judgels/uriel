@@ -102,9 +102,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Contest findContestById(long contestId) {
+    public Contest findContestById(long contestId) throws ContestNotFoundException {
         ContestModel contestModel = contestDao.findById(contestId);
-        return createContestFromModel(contestModel);
+        if (contestModel != null) {
+            return createContestFromModel(contestModel);
+        } else {
+            throw new ContestNotFoundException("Contest not found.");
+        }
     }
 
     @Override
@@ -340,9 +344,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId) {
+    public ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId) throws ContestAnnouncementNotFoundException {
         ContestAnnouncementModel contestAnnouncementModel = contestAnnouncementDao.findById(contestAnnouncementId);
-        return createContestAnnouncementFromModel(contestAnnouncementModel);
+        if (contestAnnouncementModel != null) {
+            return createContestAnnouncementFromModel(contestAnnouncementModel);
+        } else {
+            throw new ContestAnnouncementNotFoundException("Contest Announcement not found.");
+        }
     }
 
     @Override
@@ -404,9 +412,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestProblem findContestProblemByContestProblemId(long contestProblemId) {
+    public ContestProblem findContestProblemByContestProblemId(long contestProblemId) throws ContestProblemNotFoundException {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
-        return createContestProblemFromModel(contestProblemModel);
+        if (contestProblemModel != null) {
+            return createContestProblemFromModel(contestProblemModel);
+        } else {
+            throw new ContestProblemNotFoundException("Contest Problem not found.");
+        }
     }
 
     @Override
@@ -470,11 +482,15 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId) {
+    public ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId) throws ContestClarificationNotFoundException {
         ContestClarificationModel contestClarificationModel = contestClarificationDao.findById(contestClarificationId);
-        ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
+        if (contestClarificationModel != null) {
+            ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
 
-        return createContestClarificationFromModel(contestClarificationModel, contestModel);
+            return createContestClarificationFromModel(contestClarificationModel, contestModel);
+        } else {
+            throw new ContestClarificationNotFoundException("Contest Clarification not found.");
+        }
     }
 
     @Override
@@ -531,9 +547,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestContestant findContestContestantByContestContestantId(long contestContestantId) {
+    public ContestContestant findContestContestantByContestContestantId(long contestContestantId) throws ContestContestantNotFoundException {
         ContestContestantModel contestContestantModel = contestContestantDao.findById(contestContestantId);
-        return createContestContestantFromModel(contestContestantModel);
+        if (contestContestantModel != null) {
+            return createContestContestantFromModel(contestContestantModel);
+        } else {
+            throw new ContestContestantNotFoundException("Contest Contestant not found.");
+        }
     }
 
     @Override
@@ -658,12 +678,16 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestTeam findContestTeamByContestTeamId(long contestTeamId) {
+    public ContestTeam findContestTeamByContestTeamId(long contestTeamId) throws ContestTeamNotFoundException {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
-        List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
-        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
+        if (contestTeamModel != null) {
+            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
+            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
 
-        return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
+            return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
+        } else {
+            throw new ContestTeamNotFoundException("Contest Team not found");
+        }
     }
 
     @Override
@@ -755,8 +779,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) {
-        return createContestTeamCoachFromModel(contestTeamCoachDao.findById(contestTeamCoachId));
+    public ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) throws ContestTeamCoachNotFoundException {
+        ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findById(contestTeamCoachId);
+        if (contestTeamCoachModel != null) {
+            return createContestTeamCoachFromModel(contestTeamCoachModel);
+        } else {
+            throw new ContestTeamCoachNotFoundException("Contest Team Coach not found.");
+        }
     }
 
     @Override
@@ -782,8 +811,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) {
-        return createContestTeamMemberFromModel(contestTeamMemberDao.findById(contestTeamMemberId));
+    public ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) throws ContestTeamMemberNotFoundException {
+        ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findById(contestTeamMemberId);
+        if (contestTeamMemberModel != null) {
+            return createContestTeamMemberFromModel(contestTeamMemberModel);
+        } else {
+            throw new ContestTeamMemberNotFoundException("Contest Team Member not found.");
+        }
     }
 
     @Override
@@ -836,10 +870,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) {
+    public ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) throws ContestSupervisorNotFoundException {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
-
-        return createContestSupervisorFromModel(contestSupervisorModel);
+        if (contestSupervisorModel != null) {
+            return createContestSupervisorFromModel(contestSupervisorModel);
+        } else {
+            throw new ContestSupervisorNotFoundException("Contest Supervisor not found.");
+        }
     }
 
     @Override
@@ -882,12 +919,6 @@ public final class ContestServiceImpl implements ContestService {
         List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));
 
         return new Page<>(contestManagers, totalPages, pageIndex, pageSize);
-    }
-
-    @Override
-    public ContestManager findContestManagerByContestManagerId(long contestManagerId) {
-        ContestManagerModel contestManagerModel = contestManagerDao.findById(contestManagerId);
-        return createContestManagerFromModel(contestManagerModel);
     }
 
     @Override

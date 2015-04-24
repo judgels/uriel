@@ -6,16 +6,21 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamCoachCreateForm;
+import org.iatoki.judgels.uriel.ContestTeamCoachNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberCreateForm;
+import org.iatoki.judgels.uriel.ContestTeamMemberNotFoundException;
+import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamUpsertForm;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
@@ -40,7 +45,7 @@ import java.util.List;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-public class ContestTeamController extends Controller {
+public class ContestTeamController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -52,7 +57,7 @@ public class ContestTeamController extends Controller {
         this.userRoleService = userRoleService;
     }
 
-    public Result startTeam(long contestId, long contestTeamId) {
+    public Result startTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
 
@@ -65,15 +70,15 @@ public class ContestTeamController extends Controller {
     }
 
     @AddCSRFToken
-    public Result viewTeams(long contestId) {
+    public Result viewTeams(long contestId) throws ContestNotFoundException {
         return listCreateTeams(contestId, 0, "id", "asc", "");
     }
 
-    public Result viewScreenedTeams(long contestId) {
+    public Result viewScreenedTeams(long contestId) throws ContestNotFoundException {
         return listScreenedTeams(contestId, 0, "id", "asc");
     }
 
-    public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) {
+    public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
@@ -86,7 +91,7 @@ public class ContestTeamController extends Controller {
     }
 
     @AddCSRFToken
-    public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
             Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -102,7 +107,7 @@ public class ContestTeamController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateTeam(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) {
+    public Result postCreateTeam(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseContestants(contest)) {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
@@ -143,7 +148,7 @@ public class ContestTeamController extends Controller {
     }
 
     @AddCSRFToken
-    public Result updateTeam(long contestId, long contestTeamId) {
+    public Result updateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
@@ -159,7 +164,7 @@ public class ContestTeamController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postUpdateTeam(long contestId, long contestTeamId) {
+    public Result postUpdateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
@@ -194,7 +199,7 @@ public class ContestTeamController extends Controller {
     }
 
     @AddCSRFToken
-    public Result viewTeam(long contestId, long contestTeamId) {
+    public Result viewTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
@@ -210,7 +215,7 @@ public class ContestTeamController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateTeamCoach(long contestId, long contestTeamId) {
+    public Result postCreateTeamCoach(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
@@ -242,7 +247,7 @@ public class ContestTeamController extends Controller {
         }
     }
 
-    public Result removeTeamCoach(long contestId, long contestTeamId, long contestTeamCoachId) {
+    public Result removeTeamCoach(long contestId, long contestTeamId, long contestTeamCoachId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamCoachNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         ContestTeamCoach contestTeamCoach = contestService.findContestTeamCoachByContestTeamCoachId(contestTeamCoachId);
@@ -258,7 +263,7 @@ public class ContestTeamController extends Controller {
     }
 
     @RequireCSRFCheck
-    public Result postCreateTeamMember(long contestId, long contestTeamId) {
+    public Result postCreateTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
@@ -289,7 +294,7 @@ public class ContestTeamController extends Controller {
         }
     }
 
-    public Result removeTeamMember(long contestId, long contestTeamId, long contestTeamMemberId) {
+    public Result removeTeamMember(long contestId, long contestTeamId, long contestTeamMemberId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamMemberNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
         ContestTeamMember contestTeamMember = contestService.findContestTeamMemberByContestTeamMemberId(contestTeamMemberId);

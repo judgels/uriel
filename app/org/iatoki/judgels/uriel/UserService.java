@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UserService extends BaseUserService {
 
-    User findUserById(long userId);
+    User findUserById(long userId) throws UserNotFoundException;
 
     User findUserByUserJid(String userJid);
 
