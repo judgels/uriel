@@ -5,6 +5,7 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
+import org.iatoki.judgels.jophiel.commons.views.html.checkLoginLayout;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.uriel.UrielUtils;
@@ -12,9 +13,17 @@ import org.iatoki.judgels.uriel.UserActivityServiceImpl;
 import play.i18n.Messages;
 import play.mvc.Http;
 
+import java.util.concurrent.TimeUnit;
+
 public final class ControllerUtils extends AbstractControllerUtils {
 
     private static final ControllerUtils INSTANCE = new ControllerUtils();
+
+    @Override
+    public void appendTemplateLayout(LazyHtml content, String title) {
+        super.appendTemplateLayout(content, title);
+        content.appendLayout(c -> checkLoginLayout.render(TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.refreshAuth().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), c));
+    }
 
     @Override
     public void appendSidebarLayout(LazyHtml content) {

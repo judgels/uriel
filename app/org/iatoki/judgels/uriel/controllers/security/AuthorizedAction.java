@@ -18,7 +18,7 @@ public final class AuthorizedAction extends Action<Authorized> {
 
             boolean check = true;
             int i = 0;
-            while ((check) && (i<currentRoles.size())) {
+            while ((check) && (i < currentRoles.size())) {
                 if (allowedRoles.contains(currentRoles.get(i))) {
                     check = false;
                 } else {
@@ -37,7 +37,7 @@ public final class AuthorizedAction extends Action<Authorized> {
 
             boolean check = true;
             int i = 0;
-            while ((check) && (i<currentRoles.size())) {
+            while ((check) && (i < currentRoles.size())) {
                 if (restrictedRoles.contains(currentRoles.get(i))) {
                     check = false;
                 } else {

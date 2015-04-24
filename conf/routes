@@ -13,6 +13,7 @@ GET         /vassets/*file                                                      
 GET         /                                                                           @org.iatoki.judgels.uriel.controllers.ApplicationController.index()
 GET         /auth/:returnUri                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri: String)
 GET         /authRole/:returnUri                                                        @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri: String)
+GET         /refreshAuth                                                                @org.iatoki.judgels.uriel.controllers.ApplicationController.refreshAuth()
 GET         /afterLogin/:returnUri                                                      @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri: String)
 GET         /afterProfile/:returnUri                                                    @org.iatoki.judgels.uriel.controllers.ApplicationController.afterProfile(returnUri: String)
 

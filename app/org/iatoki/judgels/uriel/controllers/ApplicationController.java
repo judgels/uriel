@@ -44,7 +44,7 @@ public final class ApplicationController extends BaseController {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
+            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(routes.ApplicationController.authRole(returnUri).absoluteURL(request(), request().secure())).absoluteURL(request(), request().secure());
             return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
         }
     }
@@ -63,6 +63,15 @@ public final class ApplicationController extends BaseController {
                 UrielUtils.saveRoleInSession(UrielUtils.getDefaultRole());
                 return redirect(returnUri);
             }
+        }
+    }
+
+    public Result refreshAuth() {
+        if (JophielUtils.checkSession(Http.Context.current()) != null) {
+            return ok("");
+        } else {
+            String returnUri = routes.ApplicationController.refreshAuth().absoluteURL(request(), request().secure());
+            return redirect(routes.ApplicationController.auth(returnUri));
         }
     }
 
