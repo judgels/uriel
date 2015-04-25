@@ -66,15 +66,6 @@ public final class ApplicationController extends BaseController {
         }
     }
 
-    public Result refreshAuth() {
-        if (JophielUtils.checkSession(Http.Context.current()) != null) {
-            return ok("");
-        } else {
-            String returnUri = routes.ApplicationController.refreshAuth().absoluteURL(request(), request().secure());
-            return redirect(routes.ApplicationController.auth(returnUri));
-        }
-    }
-
     public Result afterLogin(String returnUri) {
         JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
         JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());

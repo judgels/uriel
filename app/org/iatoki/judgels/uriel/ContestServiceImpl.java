@@ -280,8 +280,6 @@ public final class ContestServiceImpl implements ContestService {
 
                 totalRowsCount = contestModels.size();
                 contestModels = contestModels.stream().skip(pageIndex * pageSize).limit(pageSize).collect(Collectors.toList());
-
-                List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
             } else {
                 // Enable any contest
                 List<String> contestJidsWhereIsManager = contestManagerDao.findContestJidsByManagerJid(IdentityUtils.getUserJid());
