@@ -64,10 +64,10 @@
     @tableHeadersWithSelectionFormView(page.getPageIndex, orderBy, orderDir, "", listFunc)(
         "id" -> Messages.get("commons.id"),
         "userCreate" -> Messages.get("contestant.contestant"),
-        "alias" -> Messages.get("problem.problem"),
-        "gradingLanguage" -> Messages.get("submission.gradingLanguage"),
+        "alias" -> Messages.get("submission.prob"),
+        "gradingLanguage" -> Messages.get("submission.lang"),
         "" -> Messages.get("submission.verdict"),
-        "" -> Messages.get("submission.score"),
+        "" -> Messages.get("submission.pts"),
         "timeCreate" -> Messages.get("submission.time")
     )
 
@@ -77,13 +77,13 @@
         @for(submission <- page.getData) {
             <tr>
                 <td><input type="checkbox" class="checkboxJid" name="selectJids[]" value="@submission.getJid"></td>
-                <td>@submission.getId</td>
-                <td>@displayNamesMap.get(submission.getAuthorJid)</td>
-                <td>@problemJidToAliasMap.get(submission.getProblemJid)</td>
-                <td>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</td>
-                <td>@submission.getLatestVerdict.getName</td>
-                <td>@submission.getLatestScore</td>
-                <td>@JudgelsUtils.formatDate(submission.getTime)</td>
+                <td><small>@submission.getId</small></td>
+                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(submission.getAuthorJid)))</td>
+                <td><small>@problemJidToAliasMap.get(submission.getProblemJid)</small></td>
+                <td><small>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</small></td>
+                <td><small>@submission.getLatestVerdict.getName</small></td>
+                <td><small>@submission.getLatestScore</small></td>
+                <td><small>@JudgelsUtils.formatDate(submission.getTime)</small></td>
                 <td class="text-center">
                     <a href="@routes.ContestSubmissionController.viewSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                     <a href="@routes.ContestSubmissionController.regradeSubmission(contestId, submission.getId, pageIndex, orderBy, orderDir, contestantJid, problemJid)" onclick="return confirm('Are you sure you want to regrade?');"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>

@@ -36,7 +36,7 @@
                 <td>@contestClarification.getId</td>
                 <td>@contestClarification.getTitle</td>
                 <td>@contestClarification.getTopic</td>
-                <td>@displayNamesMap.get(contestClarification.getAskerJid)</td>
+                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(contestClarification.getAskerJid)))</td>
                 <td>@UrielUtils.convertDateToString(contestClarification.getAskedTime)</td>
                 <td>@contestClarification.getStatus.name()</td>
                 <td class="text-center">

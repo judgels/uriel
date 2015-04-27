@@ -13,6 +13,7 @@
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
+@import org.iatoki.judgels.commons.JudgelsUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -52,7 +53,7 @@
         @for(contestManager <- page.getData) {
             <tr>
                 <td>@contestManager.getId</td>
-                <td>@JidCacheService.getInstance().getDisplayName(contestManager.getUserJid)</td>
+                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(contestManager.getUserJid)))</td>
                 <td class="text-center">
             </td>
             </tr>

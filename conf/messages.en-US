@@ -56,7 +56,9 @@ submission.author=Author
 submission.time=Time
 submission.gradingLanguage=Language
 submission.verdict=Verdict
-submission.score=Score
+submission.pts=Pts
+submission.prob=Prob
+submission.lang=Lang
 
 clarification.clarifications=Clarifications
 clarification.list=Clarifications

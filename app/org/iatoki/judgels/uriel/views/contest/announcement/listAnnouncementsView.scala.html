@@ -12,6 +12,7 @@
 @import org.iatoki.judgels.uriel.UrielUtils
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
+@import org.iatoki.judgels.commons.JudgelsUtils
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestAnnouncementController.listAnnouncements(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
@@ -33,7 +34,7 @@
             <tr>
                 <td>@contestAnnouncement.getId</td>
                 <td>@contestAnnouncement.getTitle</td>
-                <td>@displayNamesMap.get(contestAnnouncement.getAuthorJid)</td>
+                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(contestAnnouncement.getAuthorJid)))</td>
                 <td>@contestAnnouncement.getStatus.name()</td>
                 <td>@UrielUtils.convertDateToString(contestAnnouncement.getLastUpdated)</td>
                 <td class="text-center">

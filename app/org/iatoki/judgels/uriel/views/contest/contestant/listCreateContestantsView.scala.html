@@ -13,6 +13,7 @@
 @import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
+@import org.iatoki.judgels.commons.JudgelsUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -67,7 +68,7 @@
         @for(contestContestant <- page.getData) {
             <tr>
                 <td>@contestContestant.getId</td>
-                <td>@displayNamesMap.get(contestContestant.getUserJid)</td>
+                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(contestContestant.getUserJid)))</td>
                 <td>@contestContestant.getStatus</td>
                 <td class="text-center">
                     @if(updateable) {
