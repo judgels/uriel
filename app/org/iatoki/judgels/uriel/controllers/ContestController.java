@@ -83,16 +83,31 @@ public final class ContestController extends BaseController {
         return redirect(routes.ContestProblemController.viewUsedProblems(contestId));
     }
 
-    public Result jumpToSubmissions(long contestId) {
-        return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
+    public Result jumpToSubmissions(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+            return redirect(routes.ContestSubmissionController.viewSubmissions(contestId));
+        } else {
+            return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
+        }
     }
 
-    public Result jumpToScoreboard(long contestId) {
-        return redirect(routes.ContestScoreboardController.viewScoreboard(contestId));
+    public Result jumpToScoreboard(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+            return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contestId));
+        } else {
+            return redirect(routes.ContestScoreboardController.viewScoreboard(contestId));
+        }
     }
 
-    public Result jumpToClarifications(long contestId) {
-        return redirect(routes.ContestClarificationController.viewScreenedClarifications(contestId));
+    public Result jumpToClarifications(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+            return redirect(routes.ContestClarificationController.viewClarifications(contestId));
+        } else {
+            return redirect(routes.ContestClarificationController.viewScreenedClarifications(contestId));
+        }
     }
 
     public Result jumpToContestants(long contestId) throws ContestNotFoundException {
