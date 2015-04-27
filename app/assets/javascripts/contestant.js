@@ -1,6 +1,6 @@
 require(["jquery"], function( __tes__ ) {
     $(document).ready(function() {
-        $.get(unreadAnnouncementUrl, function(data) {
+        $.post(unreadAnnouncementUrl, function(data) {
             if ((data.success) && (data.count > 0)) {
                 if ($(".navbar-nav > li > a[href=\"" + contestAnnouncementUrl + "\"]").find(".badge").size() > 0) {
                     $(".navbar-nav > li > a[href=\"" + contestAnnouncementUrl + "\"]").find(".badge").html(data.count);
@@ -19,7 +19,7 @@ require(["jquery"], function( __tes__ ) {
                 }
             }
         }, "json");
-        $.get(unreadClarificationUrl, function(data) {
+        $.post(unreadClarificationUrl, function(data) {
             if ((data.success) && (data.count > 0)) {
                 if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {
                     $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data.count);
@@ -39,7 +39,7 @@ require(["jquery"], function( __tes__ ) {
             }
         }, "json");
         setInterval(function () {
-            $.get(unreadAnnouncementUrl, function(data) {
+            $.post(unreadAnnouncementUrl, function(data) {
                 if ((data.success) && (data.count > 0)) {
                     if ($(".navbar-nav > li > a[href=\"" + contestAnnouncementUrl + "\"]").find(".badge").size() > 0) {
                         $(".navbar-nav > li > a[href=\"" + contestAnnouncementUrl + "\"]").find(".badge").html(data.count);
@@ -58,7 +58,7 @@ require(["jquery"], function( __tes__ ) {
                     }
                 }
             }, "json");
-            $.get(unreadClarificationUrl, function(data) {
+            $.post(unreadClarificationUrl, function(data) {
                 if ((data.success) && (data.count > 0)) {
                     if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {
                         $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data.count);
