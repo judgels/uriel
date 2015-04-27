@@ -296,7 +296,7 @@ public class ContestProblemController extends BaseController {
                 return showUpdateProblem(form, contest, contestProblem);
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.problemSecret, contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
 
                 ControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
@@ -323,8 +323,8 @@ public class ContestProblemController extends BaseController {
     }
 
     private Result showUpdateProblem(Form<ContestProblemUpdateForm> form, Contest contest, ContestProblem contestProblem){
-        LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem.getId(), form));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("problem.update"), c));
+        LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem, form));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("problem.update") + " " + contestProblem.getAlias(), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);

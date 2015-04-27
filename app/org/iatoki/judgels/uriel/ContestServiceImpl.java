@@ -448,9 +448,8 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status) {
+    public void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status) {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
-        contestProblemModel.problemSecret = problemSecret;
         contestProblemModel.alias = alias;
         contestProblemModel.submissionsLimit = submissionsLimit;
         contestProblemModel.status = status.name();

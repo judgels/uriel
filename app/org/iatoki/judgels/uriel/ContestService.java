@@ -51,7 +51,7 @@ public interface ContestService {
 
     void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 
-    void updateContestProblem(long contestProblemId, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
+    void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status);
 
     Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, List<String> askerJids);
 
