@@ -311,7 +311,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public ContestScoreState getContestStateByJid(String contestJid) {
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJid(contestJid, 0, -1);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJidOrderedByAlias(contestJid);
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
 
         List<String> problemJids = Lists.transform(contestProblemModels, m -> m.problemJid);
@@ -415,7 +415,7 @@ public final class ContestServiceImpl implements ContestService {
     public Page<ContestProblem> pageUsedContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize) {
         long totalRows = contestProblemDao.countValidByContestJid(contestJid);
 
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJid(contestJid, pageIndex * pageSize, pageSize);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJidOrderedByStatusAndThenAlias(contestJid, pageIndex * pageSize, pageSize);
         List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalRows, pageIndex, pageSize);

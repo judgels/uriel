@@ -81,7 +81,22 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
 
         query
                 .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.OPEN.name())))
-                        .orderBy(orderBy);
+                .orderBy(orderBy);
+
+        return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public List<ContestProblemModel> findUsedByContestJidOrderedByAlias(String contestJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<ContestProblemModel> query = cb.createQuery(ContestProblemModel.class);
+        Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
+
+        Order orderBy = cb.asc(root.get(ContestProblemModel_.alias));
+
+        query
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.notEqual(root.get(ContestProblemModel_.status), ContestProblemStatus.UNUSED.name())))
+                .orderBy(orderBy);
 
         return JPA.em().createQuery(query).getResultList();
     }
@@ -94,19 +109,19 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
 
         query
                 .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.or(cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.OPEN.name()), cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.CLOSED.name()))));
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.notEqual(root.get(ContestProblemModel_.status), ContestProblemStatus.UNUSED.name())));
 
         return JPA.em().createQuery(query).getSingleResult();
     }
 
     @Override
-    public List<ContestProblemModel> findUsedByContestJid(String contestJid, long offset, long limit) {
+    public List<ContestProblemModel> findUsedByContestJidOrderedByStatusAndThenAlias(String contestJid, long offset, long limit) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestProblemModel> query = cb.createQuery(ContestProblemModel.class);
         Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
 
         query
-                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.or(cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.OPEN.name()), cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.CLOSED.name()))))
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.notEqual(root.get(ContestProblemModel_.status), ContestProblemStatus.UNUSED.name())))
                 .orderBy(cb.desc(root.get(ContestProblemModel_.status)), cb.asc(root.get(ContestProblemModel_.alias)));
 
         TypedQuery<ContestProblemModel> q = JPA.em().createQuery(query).setFirstResult((int) offset);
