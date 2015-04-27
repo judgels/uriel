@@ -123,7 +123,7 @@ public final class UserServiceImpl implements UserService {
             if (!userDao.existsByUserJid(userJid)) {
                 UserModel userRoleModel = new UserModel();
                 userRoleModel.userJid = user.getJid();
-                userRoleModel.roles = "user";
+                userRoleModel.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
 
                 userDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }

@@ -181,6 +181,10 @@ data.download=Download Contest Data
 
 scoreboard.not_available=Scoreboard is not available at the moment.
 
+user.noViewpoint=No Viewpoint
+user.viewAs=View As
+user.resetViewAs=Reset View
+
 error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
 error.contestant.create.userJid.invalid=Username is invalid.
 error.supervisor.create.userJid.invalid=Username is invalid.

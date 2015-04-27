@@ -1,0 +1,41 @@
+@(form: Form[org.iatoki.judgels.uriel.UserViewpointForm])(content: Html)
+
+@import org.iatoki.judgels.commons.views.html.formErrorView
+
+@import org.iatoki.judgels.uriel.UrielUtils
+@import org.iatoki.judgels.jophiel.commons.JophielUtils
+@import org.iatoki.judgels.commons.IdentityUtils
+@import play.i18n.Messages
+
+<div class="clearfix">
+    <div class="col-md-12">
+        <div class="box clearfix">
+            <div class="col-md-12 clearfix">
+                <div class="pull-right">
+                    @formErrorView(form)
+
+                    <form class="form form-inline" action='@org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs()' method="POST">
+                        @if(UrielUtils.hasViewPoint) {
+                            <a href="@org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs()" class="btn btn-primary">@Messages.get("user.resetViewAs")</a>
+                        }
+                        <input type="text" class="form-control user_autocomplete" name="username">
+
+                        <script type="text/javascript">
+                            var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
+                        </script>
+                        <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+
+                        <button type="submit" class="btn btn-primary">@Messages.get("user.viewAs")</button>
+                    </form>
+                </div>
+                @if(UrielUtils.hasViewPoint) {
+                    @Messages.get("user.viewAs") @IdentityUtils.getUsername()
+                } else {
+                    @Messages.get("user.noViewpoint")
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@content

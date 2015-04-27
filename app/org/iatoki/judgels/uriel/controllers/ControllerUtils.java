@@ -6,15 +6,32 @@ import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
+import org.iatoki.judgels.uriel.UserViewpointForm;
+import org.iatoki.judgels.uriel.views.html.layouts.viewAsLayout;
 import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserActivityServiceImpl;
+import play.data.Form;
 import play.i18n.Messages;
 import play.mvc.Http;
 
 public final class ControllerUtils extends AbstractControllerUtils {
 
     private static final ControllerUtils INSTANCE = new ControllerUtils();
+
+    @Override
+    public void appendTemplateLayout(LazyHtml content, String title) {
+        if (UrielUtils.trullyHasRole("admin")) {
+            Form<UserViewpointForm> form = Form.form(UserViewpointForm.class);
+            if (UrielUtils.hasViewPoint()) {
+                UserViewpointForm userViewpointForm = new UserViewpointForm();
+                userViewpointForm.username = IdentityUtils.getUsername();
+                form.fill(userViewpointForm);
+            }
+            content.appendLayout(c -> viewAsLayout.render(form, c));
+        }
+        super.appendTemplateLayout(content, title);
+    }
 
     @Override
     public void appendSidebarLayout(LazyHtml content) {
