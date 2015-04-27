@@ -20,5 +20,7 @@ public interface ScoreAdapter {
 
     Scoreboard createScoreboard(ContestScoreState state, ScoreboardContent content);
 
+    Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids);
+
     Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids);
 }

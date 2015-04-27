@@ -4,6 +4,5 @@ public enum ContestProblemStatus {
 
     OPEN,
     CLOSED,
-    HIDDEN
-
+    UNUSED
 }
