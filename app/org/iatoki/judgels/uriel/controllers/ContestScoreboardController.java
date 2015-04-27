@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -46,6 +47,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Transactional
@@ -82,6 +84,14 @@ public class ContestScoreboardController extends BaseController {
                 content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
             } else {
                 Scoreboard scoreboard = contestScoreboard.getScoreboard();
+
+                Set<String> openProblemJids = contestService.findOpenedContestProblemByContestJid(contest.getJid())
+                        .stream()
+                        .map(c -> c.getProblemJid())
+                        .collect(Collectors.toSet());
+
+                scoreboard = adapter.filterOpenProblems(scoreboard, openProblemJids);
+
                 if (contest.isIncognitoScoreboard()) {
                     if (ContestControllerUtils.getInstance().isCoach(contest)) {
                         List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());

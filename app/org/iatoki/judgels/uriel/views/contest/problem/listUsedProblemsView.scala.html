@@ -1,13 +1,14 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.JidCacheService
+@import org.iatoki.judgels.uriel.ContestProblemStatus
 @import org.iatoki.judgels.uriel.controllers.routes
 @import scala.collection.JavaConversions
 @import org.iatoki.judgels.commons.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
-@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listOpenedProblems(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listUsedProblems(contestId, newPageIndex)}
 
 @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
     @for(contestProblem <- page.getData) {
@@ -17,15 +18,17 @@
                     @contestProblem.getAlias
                     - @displayNamesMap.get(contestProblem.getProblemJid)
                 </a>
-                @if(contestProblem.getSubmissionsLimit != 0) {
+                @if(contestProblem.getStatus == ContestProblemStatus.CLOSED) {
+                    <div class="pull-right"><span class="label label-danger">CLOSED</span></div>
+                }else { @if(contestProblem.getSubmissionsLimit != 0) {
                     <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLeft)</div>
-                }
+                }}
                 <div class="clearfix"></div>
             </div>
         </div>
     }
 }
 
-@paginationView(page, orderBy, orderDir, filterString, listFunc)
+@paginationView(page, "id", "asc", "", listFunc)
 
 @contestantjs(contestId)

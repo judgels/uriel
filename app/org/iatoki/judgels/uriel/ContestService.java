@@ -43,6 +43,8 @@ public interface ContestService {
 
     Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
+    Page<ContestProblem> pageUsedContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize);
+
     ContestProblem findContestProblemByContestProblemId(long contestProblemId) throws ContestProblemNotFoundException;
 
     ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid);

@@ -63,8 +63,8 @@ POST        /contests/$cId<[0-9]{1,18}>/announcements/create                    
 GET         /contests/$cId<[0-9]{1,18}>/announcements/:aId/update                                        @org.iatoki.judgels.uriel.controllers.ContestAnnouncementController.updateAnnouncement(cId: Long, aId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/announcements/:aId/update                                        @org.iatoki.judgels.uriel.controllers.ContestAnnouncementController.postUpdateAnnouncement(cId: Long, aId: Long)
 
-GET         /contests/$cId<[0-9]{1,18}>/problems/view                                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewOpenedProblems(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/problems/view/                                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.listOpenedProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /contests/$cId<[0-9]{1,18}>/problems/view                                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewUsedProblems(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/problems/view/                                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.listUsedProblems(cId: Long, pageIndex: Long ?= 0)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/view                                  @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblem(cId: Long, pId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/render/:name                          @org.iatoki.judgels.uriel.controllers.ContestProblemController.renderImage(cId: Long, pId: Long, name: String)
 POST        /contests/$cId<[0-9]{1,18}>/problems/:pJid/submit                                            @org.iatoki.judgels.uriel.controllers.ContestProblemController.postSubmitProblem(cId: Long, pJid: String)

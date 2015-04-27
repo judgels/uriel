@@ -146,6 +146,7 @@ contest.style.ICPC.timePenalty=Time Penalty
 clarification.time_ended=Clarification Time has ended.
 
 submission.left=Submissions left
+submission.closed=Submissions closed
 
 contest.supervisor.contestant.importTXT=Import via txt
 contest.supervisor.contestant.manualCreate=Manual Create

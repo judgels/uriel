@@ -1,4 +1,4 @@
-@(requestURL: String, requestBody: String, submissionsLeft: Long)
+@(requestURL: String, requestBody: String, submissionsLeft: Long, isClosed: Boolean)
 
 @import play.i18n.Messages
 
@@ -6,9 +6,12 @@
     <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>
 }
 
+@if(isClosed) {
+    <div class="alert alert-info" role="alert">@Messages.get("submission.closed")</div>
+}else{
 @if(submissionsLeft != -1) {
     <div class="alert alert-info" role="alert">@Messages.get("submission.left") : @submissionsLeft</div>
-}
+}}
 
 <div class="problem_statement">
 

@@ -7,6 +7,7 @@ import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel_;
 import play.db.jpa.JPA;
 
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
@@ -83,6 +84,36 @@ public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long,
                         .orderBy(orderBy);
 
         return JPA.em().createQuery(query).getResultList();
+    }
+
+    @Override
+    public long countValidByContestJid(String contestJid) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
+
+        query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.or(cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.OPEN.name()), cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.CLOSED.name()))));
+
+        return JPA.em().createQuery(query).getSingleResult();
+    }
+
+    @Override
+    public List<ContestProblemModel> findUsedByContestJid(String contestJid, long offset, long limit) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<ContestProblemModel> query = cb.createQuery(ContestProblemModel.class);
+        Root<ContestProblemModel> root = query.from(ContestProblemModel.class);
+
+        query
+                .where(cb.and(cb.equal(root.get(ContestProblemModel_.contestJid), contestJid), cb.or(cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.OPEN.name()), cb.equal(root.get(ContestProblemModel_.status), ContestProblemStatus.CLOSED.name()))))
+                .orderBy(cb.desc(root.get(ContestProblemModel_.status)), cb.asc(root.get(ContestProblemModel_.alias)));
+
+        TypedQuery<ContestProblemModel> q = JPA.em().createQuery(query).setFirstResult((int) offset);
+        if (limit != -1) {
+            q.setMaxResults((int) limit);
+        }
+        return q.getResultList();
     }
 
     @Override

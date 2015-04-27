@@ -17,5 +17,9 @@ public interface ContestProblemDao extends Dao<Long, ContestProblemModel> {
 
     List<ContestProblemModel> findOpenedByContestJidOrderedByAlias(String contestJid);
 
+    long countValidByContestJid(String contestJid);
+
+    List<ContestProblemModel> findUsedByContestJid(String contestJid, long offset, long limit);
+
     boolean isThereNewProblem(String contestJid, long lastTime);
 }

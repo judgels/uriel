@@ -80,7 +80,7 @@ public final class ContestController extends BaseController {
     }
 
     public Result jumpToProblems(long contestId) {
-        return redirect(routes.ContestProblemController.viewOpenedProblems(contestId));
+        return redirect(routes.ContestProblemController.viewUsedProblems(contestId));
     }
 
     public Result jumpToSubmissions(long contestId) {

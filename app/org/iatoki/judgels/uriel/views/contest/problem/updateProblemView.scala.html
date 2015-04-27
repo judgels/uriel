@@ -18,7 +18,7 @@
 
     @b3.text(form("alias"), '_label -> Messages.get("problem.alias"))
     @b3.text(form("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
-    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "HIDDEN" -> "Hidden"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
+    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "UNUSED" -> "Unused"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

@@ -1,7 +1,9 @@
 package org.iatoki.judgels.uriel;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.AbstractJidCacheService;
 import org.iatoki.judgels.gabriel.commons.Submission;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class IOIScoreAdapter implements ScoreAdapter {
     @Override
@@ -96,6 +99,57 @@ public final class IOIScoreAdapter implements ScoreAdapter {
     }
 
     @Override
+    public Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids) {
+        ContestScoreState state = scoreboard.getState();
+        IOIScoreboardContent content = (IOIScoreboardContent) scoreboard.getContent();
+
+        if (state.getProblemJids().size() == openProblemJids.size()) {
+            return scoreboard;
+        }
+
+        ImmutableList.Builder<Integer> openProblemIndicesBuilder = ImmutableList.builder();
+
+        for (int i = 0; i < state.getProblemJids().size(); i++) {
+            if (openProblemJids.contains(state.getProblemJids().get(i))) {
+                openProblemIndicesBuilder.add(i);
+            }
+        }
+
+        List<Integer> openProblemIndices = openProblemIndicesBuilder.build();
+
+        ContestScoreState newState = new ContestScoreState(
+                filterIndices(state.getProblemJids(), openProblemIndices),
+                filterIndices(state.getProblemAliases(), openProblemIndices),
+                state.getContestantJids()
+        );
+
+        List<IOIScoreboardEntry> newEntries = Lists.newArrayList();
+
+        for (IOIScoreboardEntry entry : content.getEntries()) {
+            IOIScoreboardEntry newEntry = new IOIScoreboardEntry();
+            newEntry.scores = filterIndices(entry.scores, openProblemIndices);
+            newEntry.contestantJid = entry.contestantJid;
+            newEntry.imageURL = entry.imageURL;
+            newEntry.totalScores = newEntry.scores.stream().mapToInt(s -> s).sum();
+            newEntries.add(newEntry);
+        }
+
+        Collections.sort(newEntries);
+
+        int currentRank = 0;
+        for (int i = 0; i < newEntries.size(); i++) {
+            currentRank++;
+            if (i == 0 || newEntries.get(i).totalScores != newEntries.get(i - 1).totalScores) {
+                newEntries.get(i).rank = currentRank;
+            } else {
+                newEntries.get(i).rank = newEntries.get(i -1).rank;
+            }
+        }
+
+        return new IOIScoreboard(newState, new IOIScoreboardContent(newEntries));
+    }
+
+    @Override
     public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
         if (scoreboard == null) {
             return new Html(Messages.get("scoreboard.not_available"));
@@ -103,5 +157,9 @@ public final class IOIScoreAdapter implements ScoreAdapter {
             IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
             return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
         }
+    }
+
+    private <T> List<T> filterIndices(List<T> list, List<Integer> indices) {
+        return indices.stream().map(i -> list.get(i)).collect(Collectors.toList());
     }
 }

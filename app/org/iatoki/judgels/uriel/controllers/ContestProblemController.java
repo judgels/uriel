@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
@@ -17,7 +16,6 @@ import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemCreateForm;
@@ -27,33 +25,28 @@ import org.iatoki.judgels.uriel.ContestProblemUpdateForm;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
 import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
 import org.iatoki.judgels.uriel.views.html.contest.problem.createProblemView;
-import org.iatoki.judgels.uriel.views.html.contest.problem.listOpenedProblemsView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.listUsedProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.updateProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
-import play.Play;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Date;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -69,14 +62,14 @@ public class ContestProblemController extends BaseController {
         this.submissionService = submissionService;
     }
 
-    public Result viewOpenedProblems(long contestId) throws ContestNotFoundException {
-        return listOpenedProblems(contestId, 0, "alias", "asc", "");
+    public Result viewUsedProblems(long contestId) throws ContestNotFoundException {
+        return listUsedProblems(contestId, 0);
     }
 
-    public Result listOpenedProblems(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result listUsedProblems(long contestId, long pageIndex) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            Page<ContestProblem> contestProblems = contestService.pageContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestProblemStatus.OPEN.name());
+            Page<ContestProblem> contestProblems = contestService.pageUsedContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE);
             ImmutableList.Builder<ContestProblem> replacementBuilder = ImmutableList.builder();
             for (ContestProblem contestProblem : contestProblems.getData()) {
                 contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
@@ -84,7 +77,7 @@ public class ContestProblemController extends BaseController {
             }
             contestProblems = new Page<>(replacementBuilder.build(), contestProblems.getTotalRowsCount(), contestProblems.getPageIndex(), contestProblems.getPageSize());
 
-            LazyHtml content = new LazyHtml(listOpenedProblemsView.render(contest.getId(), contestProblems, pageIndex, orderBy, orderDir, filterString));
+            LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), contestProblems, pageIndex));
             content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
             if (isAllowedToSuperviseProblems(contest)) {
                 appendSubtabsLayout(content, contest);
@@ -92,12 +85,12 @@ public class ContestProblemController extends BaseController {
             ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             appendBreadcrumbsLayout(content, contest,
-                    new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewOpenedProblems(contest.getId()))
+                    new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewUsedProblems(contest.getId()))
             );
 
             ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
 
-            ControllerUtils.getInstance().addActivityLog("Open list of opened problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            ControllerUtils.getInstance().addActivityLog("Open list of valid problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return ControllerUtils.getInstance().lazyOk(content);
         } else {
@@ -127,11 +120,11 @@ public class ContestProblemController extends BaseController {
                 requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
             }
 
-            LazyHtml content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft));
+            LazyHtml content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
             ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             appendBreadcrumbsLayout(content, contest,
-                    new InternalLink(Messages.get("status.contestant"), routes.ContestProblemController.viewOpenedProblems(contest.getId())),
+                    new InternalLink(Messages.get("status.contestant"), routes.ContestProblemController.viewUsedProblems(contest.getId())),
                     new InternalLink(contestProblem.getAlias(), routes.ContestProblemController.viewProblem(contest.getId(), contestProblem.getId()))
             );
 
@@ -161,9 +154,11 @@ public class ContestProblemController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
 
-        if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest) && contestProblem.getContestJid().equals(contest.getJid()) && !ContestControllerUtils.getInstance().isCoach(contest)) {
+        if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest) && contestProblem.getContestJid().equals(contest.getJid()) && !ContestControllerUtils.getInstance().isCoach(contest) && contestProblem.getStatus() != ContestProblemStatus.UNUSED) {
 
-            if ((contestProblem.getSubmissionsLimit() == 0) || (submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()) < contestProblem.getSubmissionsLimit())) {
+            if (contestProblem.getStatus() == ContestProblemStatus.CLOSED) {
+                return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
+            } else if ((contestProblem.getSubmissionsLimit() == 0) || (submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()) < contestProblem.getSubmissionsLimit())) {
                 Http.MultipartFormData body = request().body().asMultipartFormData();
 
                 String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
@@ -339,7 +334,7 @@ public class ContestProblemController extends BaseController {
 
 
     private void appendSubtabsLayout(LazyHtml content, Contest contest) {
-        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestProblemController.viewOpenedProblems(contest.getId()), routes.ContestProblemController.viewProblems(contest.getId()), c));
+        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestProblemController.viewUsedProblems(contest.getId()), routes.ContestProblemController.viewProblems(contest.getId()), c));
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
@@ -356,6 +351,6 @@ public class ContestProblemController extends BaseController {
     }
 
     private boolean isAllowedToViewProblem(Contest contest, ContestProblem contestProblem) {
-        return contestProblem.getContestJid().equals(contest.getJid()) && (ControllerUtils.getInstance().isAdmin() || isAllowedToSuperviseProblems(contest) || contestProblem.getStatus() == ContestProblemStatus.OPEN);
+        return contestProblem.getContestJid().equals(contest.getJid()) && contestProblem.getStatus() != ContestProblemStatus.UNUSED;
     }
 }
