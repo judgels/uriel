@@ -172,39 +172,6 @@ public final class ContestController extends BaseController {
         }
     }
 
-//    public Result enterContest(long contestId) {
-//        Contest contest = contestService.findContestById(contestId);
-//
-//        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-//            boolean isContestantInContest = (ContestControllerUtils.getInstance().isContestant(contest));
-//            if (contest.isVirtual()) {
-//                ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-//                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-//                if ((contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.COACH)) && (ContestControllerUtils.getInstance().isCoach(contest))) {
-//                    contestService.startTeamAsCoach(contest.getJid(), IdentityUtils.getUserJid());
-//
-//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as coach  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-//                } else if (isContestantInContest) {
-//                    contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
-//
-//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-//                } else {
-//                    ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-//                }
-//            } else if (isContestantInContest) {
-//                contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
-//
-//                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " as contestant  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-//            } else {
-//                ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-//            }
-//
-//            return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
-//        } else {
-//            return redirect(routes.ContestController.index());
-//        }
-//    }
-
     public Result enterContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -466,6 +433,7 @@ public final class ContestController extends BaseController {
 
         return ControllerUtils.getInstance().lazyOk(content);
     }
+
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
