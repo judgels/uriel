@@ -6,6 +6,8 @@ import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
+import org.iatoki.judgels.commons.views.html.layouts.profileView;
+import org.iatoki.judgels.commons.views.html.layouts.menusLayout;
 import org.iatoki.judgels.uriel.UserViewpointForm;
 import org.iatoki.judgels.uriel.views.html.layouts.viewAsLayout;
 import org.iatoki.judgels.jophiel.commons.UserActivity;
@@ -20,7 +22,18 @@ public final class ControllerUtils extends AbstractControllerUtils {
     private static final ControllerUtils INSTANCE = new ControllerUtils();
 
     @Override
-    public void appendTemplateLayout(LazyHtml content, String title) {
+    public void appendSidebarLayout(LazyHtml content) {
+        ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
+        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
+        if (isAdmin()) {
+            internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), routes.UserController.index()));
+        }
+        LazyHtml sidebarContent = new LazyHtml(profileView.render(
+              IdentityUtils.getUsername(),
+              IdentityUtils.getUserRealName(),
+              org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.ContestController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()),
+              org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())
+        ));
         if (UrielUtils.trullyHasRole("admin")) {
             Form<UserViewpointForm> form = Form.form(UserViewpointForm.class);
             if (UrielUtils.hasViewPoint()) {
@@ -28,25 +41,11 @@ public final class ControllerUtils extends AbstractControllerUtils {
                 userViewpointForm.username = IdentityUtils.getUsername();
                 form.fill(userViewpointForm);
             }
-            content.appendLayout(c -> viewAsLayout.render(form, c));
+            sidebarContent.appendLayout(c -> viewAsLayout.render(form, c));
         }
-        super.appendTemplateLayout(content, title);
-    }
+        sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
 
-    @Override
-    public void appendSidebarLayout(LazyHtml content) {
-        ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
-        if (isAdmin()) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), routes.UserController.index()));
-        }
-        content.appendLayout(c -> sidebarLayout.render(
-            IdentityUtils.getUsername(),
-            IdentityUtils.getUserRealName(),
-            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.profile(org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterProfile(routes.ContestController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()),
-            org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()),
-            internalLinkBuilder.build(), c)
-        );
+        content.appendLayout(c -> sidebarLayout.render(sidebarContent.render(), c));
     }
 
     public boolean isAdmin() {

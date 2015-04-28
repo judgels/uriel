@@ -51,7 +51,7 @@ public final class ApplicationController extends BaseController {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(routes.ApplicationController.authRole(returnUri).absoluteURL(request(), request().secure())).absoluteURL(request(), request().secure());
+            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
             return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
         }
     }
@@ -74,19 +74,24 @@ public final class ApplicationController extends BaseController {
     }
 
     public Result afterLogin(String returnUri) {
-        JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
-        JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+        if (session().containsKey("role")) {
+            JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
+            JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
 
-        if (UrielUtils.hasViewPoint()) {
-            try {
-                UrielUtils.backupSession();
-                UrielUtils.setUserSession(JophielUtils.getUserByUserJid(UrielUtils.getViewPoint()), userService.findUserByUserJid(UrielUtils.getViewPoint()));
-            } catch (IOException e) {
-                UrielUtils.removeViewPoint();
-                UrielUtils.restoreSession();
+            if (UrielUtils.hasViewPoint()) {
+                try {
+                    UrielUtils.backupSession();
+                    UrielUtils.setUserSession(JophielUtils.getUserByUserJid(UrielUtils.getViewPoint()), userService.findUserByUserJid(UrielUtils.getViewPoint()));
+                } catch (IOException e) {
+                    UrielUtils.removeViewPoint();
+                    UrielUtils.restoreSession();
+                }
             }
+            return redirect(returnUri);
+        } else {
+            returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
+            return redirect(routes.ApplicationController.authRole(returnUri));
         }
-        return redirect(returnUri);
     }
 
     public Result afterProfile(String returnUri) {
