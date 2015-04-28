@@ -33,11 +33,7 @@ public final class IOIScoreAdapter implements ScoreAdapter {
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
         for (String contestantJid : state.getContestantJids()) {
-            Map<String, Integer> problemScores = Maps.newHashMap();
-            for (String problemJid : state.getProblemJids()) {
-                problemScores.put(problemJid, 0);
-            }
-            scores.put(contestantJid, problemScores);
+            scores.put(contestantJid, Maps.newHashMap());
         }
 
         for (Submission submission : submissions) {
@@ -50,8 +46,11 @@ public final class IOIScoreAdapter implements ScoreAdapter {
             String problemJid = submission.getProblemJid();
             int score = submission.getLatestScore();
 
-            int newScore = Math.max(scores.get(contestantJid).get(problemJid), score);
-            scores.get(contestantJid).put(problemJid, newScore);
+            if (scores.get(contestantJid).containsKey(problemJid)) {
+                score = Math.max(scores.get(contestantJid).get(problemJid), score);
+            }
+
+            scores.get(contestantJid).put(problemJid, score);
         }
 
         List<IOIScoreboardEntry> entries = Lists.newArrayList();
@@ -63,9 +62,12 @@ public final class IOIScoreAdapter implements ScoreAdapter {
 
             int totalScores = 0;
             for (String problemJid : state.getProblemJids()) {
-                int score = scores.get(contestantJid).get(problemJid);
+                Integer score = scores.get(contestantJid).get(problemJid) ;
                 entry.scores.add(score);
-                totalScores += score;
+
+                if (score != null) {
+                    totalScores += score;
+                }
             }
 
             entry.totalScores = totalScores;
@@ -73,17 +75,7 @@ public final class IOIScoreAdapter implements ScoreAdapter {
             entries.add(entry);
         }
 
-        Collections.sort(entries);
-
-        int currentRank = 0;
-        for (int i = 0; i < entries.size(); i++) {
-            currentRank++;
-            if (i == 0 || entries.get(i).totalScores != entries.get(i - 1).totalScores) {
-                entries.get(i).rank = currentRank;
-            } else {
-                entries.get(i).rank = entries.get(i -1).rank;
-            }
-        }
+        sortEntriesAndAssignRanks(entries);
 
         return new IOIScoreboardContent(entries);
     }
@@ -130,21 +122,11 @@ public final class IOIScoreAdapter implements ScoreAdapter {
             newEntry.scores = filterIndices(entry.scores, openProblemIndices);
             newEntry.contestantJid = entry.contestantJid;
             newEntry.imageURL = entry.imageURL;
-            newEntry.totalScores = newEntry.scores.stream().mapToInt(s -> s).sum();
+            newEntry.totalScores = newEntry.scores.stream().filter(s -> s != null).mapToInt(s -> s).sum();
             newEntries.add(newEntry);
         }
 
-        Collections.sort(newEntries);
-
-        int currentRank = 0;
-        for (int i = 0; i < newEntries.size(); i++) {
-            currentRank++;
-            if (i == 0 || newEntries.get(i).totalScores != newEntries.get(i - 1).totalScores) {
-                newEntries.get(i).rank = currentRank;
-            } else {
-                newEntries.get(i).rank = newEntries.get(i -1).rank;
-            }
-        }
+        sortEntriesAndAssignRanks(newEntries);
 
         return new IOIScoreboard(newState, new IOIScoreboardContent(newEntries));
     }
@@ -161,5 +143,19 @@ public final class IOIScoreAdapter implements ScoreAdapter {
 
     private <T> List<T> filterIndices(List<T> list, List<Integer> indices) {
         return indices.stream().map(i -> list.get(i)).collect(Collectors.toList());
+    }
+
+    private void sortEntriesAndAssignRanks(List<IOIScoreboardEntry> entries) {
+        Collections.sort(entries);
+
+        int currentRank = 0;
+        for (int i = 0; i < entries.size(); i++) {
+            currentRank++;
+            if (i == 0 || entries.get(i).totalScores != entries.get(i - 1).totalScores) {
+                entries.get(i).rank = currentRank;
+            } else {
+                entries.get(i).rank = entries.get(i -1).rank;
+            }
+        }
     }
 }
