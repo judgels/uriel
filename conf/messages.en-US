@@ -59,6 +59,7 @@ submission.verdict=Verdict
 submission.pts=Pts
 submission.prob=Prob
 submission.lang=Lang
+submission.score=Score
 
 clarification.clarifications=Clarifications
 clarification.list=Clarifications
