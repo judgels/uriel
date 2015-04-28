@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.controllers.apis;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
+import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.gabriel.blackbox.BlackBoxGradingSource;
 import org.iatoki.judgels.gabriel.commons.BlackBoxSubmissionAdapter;
 import org.iatoki.judgels.gabriel.commons.SubmissionException;
@@ -24,10 +25,12 @@ import java.util.Map;
 public final class ContestTestingAPIController extends Controller {
     private final ContestService contestService;
     private final SubmissionService submissionService;
+    private final FileSystemProvider submissionFileProvider;
 
-    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService) {
+    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionFileProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
+        this.submissionFileProvider = submissionFileProvider;
     }
 
     public Result singleFileBlackBoxSubmit() {
@@ -67,7 +70,7 @@ public final class ContestTestingAPIController extends Controller {
         try {
             BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
             submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
-            adapter.storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
+            adapter.storeSubmissionFiles(submissionFileProvider, submissionJid, source);
         } catch (SubmissionException e) {
             return badRequest();
         }

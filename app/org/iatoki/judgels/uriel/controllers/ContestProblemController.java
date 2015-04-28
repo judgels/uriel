@@ -108,7 +108,7 @@ public class ContestProblemController extends BaseController {
             }
 
             int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestProblemController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure())).toString();
+            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure())).toString();
             String requestBody = "";
 
             ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
@@ -147,43 +147,6 @@ public class ContestProblemController extends BaseController {
             return redirect(imageUri.toString());
         } else {
             return notFound();
-        }
-    }
-
-    public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
-
-        if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest) && contestProblem.getContestJid().equals(contest.getJid()) && !ContestControllerUtils.getInstance().isCoach(contest) && contestProblem.getStatus() != ContestProblemStatus.UNUSED) {
-
-            if (contestProblem.getStatus() == ContestProblemStatus.CLOSED) {
-                return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
-            } else if ((contestProblem.getSubmissionsLimit() == 0) || (submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()) < contestProblem.getSubmissionsLimit())) {
-                Http.MultipartFormData body = request().body().asMultipartFormData();
-
-                String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
-                String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
-
-                try {
-                    GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
-                    String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, null, source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(UrielProperties.getInstance().getSubmissionDir(), submissionJid, source);
-
-                    ControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
-
-                } catch (SubmissionException e) {
-                    flash("submissionError", e.getMessage());
-
-                    return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
-                }
-            } else {
-                flash("submissionError", "submission.limit.reached");
-                return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
-            }
-
-            return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
-        } else {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
     }
 

@@ -20,6 +20,8 @@ public final class UrielProperties {
     private String aWSTeamAvatarBucketName;
     private Region aWSTeamAvatarRegion;
     private String aWSTeamAvatarCloudFrontURL;
+    private String aWSSubmissionBucketName;
+    private Region aWSSubmissionRegion;
     private boolean useAWS;
 
     private UrielProperties() {
@@ -74,6 +76,22 @@ public final class UrielProperties {
         }
     }
 
+    public String getaWSSubmissionBucketName() {
+        if (useAWS) {
+            return aWSSubmissionBucketName;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public Region getaWSSubmissionRegion() {
+        if (useAWS) {
+            return aWSSubmissionRegion;
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     public boolean isUseAWS() {
         return useAWS;
     }
@@ -101,6 +119,8 @@ public final class UrielProperties {
                 INSTANCE.aWSTeamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
                 INSTANCE.aWSTeamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
                 INSTANCE.aWSTeamAvatarCloudFrontURL = conf.getString("aws.team.avatar.cloudfront.url");
+                INSTANCE.aWSSubmissionBucketName = conf.getString("aws.submission.bucket.name");
+                INSTANCE.aWSSubmissionRegion = Region.fromValue(conf.getString("aws.submission.bucket.region.id"));
             }
 
             File baseDir = new File(baseDirName);
@@ -142,6 +162,8 @@ public final class UrielProperties {
             requiredKeys.add("aws.secret.key");
             requiredKeys.add("aws.team.avatar.bucket.name");
             requiredKeys.add("aws.team.avatar.bucket.region.id");
+            requiredKeys.add("aws.submission.bucket.name");
+            requiredKeys.add("aws.submission.bucket.region.id");
         }
 
         for (String key : requiredKeys) {
@@ -171,6 +193,8 @@ public final class UrielProperties {
             INSTANCE.useAWS = true;
             requiredKeys.add("aws.team.avatar.bucket.name");
             requiredKeys.add("aws.team.avatar.bucket.region.id");
+            requiredKeys.add("aws.submission.bucket.name");
+            requiredKeys.add("aws.submission.bucket.region.id");
         }
 
 

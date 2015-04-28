@@ -81,6 +81,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private SubmissionService submissionService;
     private ContestService contestService;
+    private FileSystemProvider submissionFileProvider;
 
     public Global() {
         this.cache = new HashMap<>();
@@ -102,7 +103,6 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         AvatarCacheService.getInstance().setDao(new AvatarCacheHibernateDao());
 
         Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
-        submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
 
         GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
 
@@ -128,9 +128,13 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey()));
             }
             teamAvatarFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getaWSTeamAvatarBucketName(), UrielProperties.getInstance().getaWSTeamAvatarCloudFrontURL(), UrielProperties.getInstance().getaWSTeamAvatarRegion());
+            submissionFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getaWSSubmissionBucketName(), UrielProperties.getInstance().getaWSSubmissionRegion());
         } else {
             teamAvatarFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getTeamAvatarDir());
+            submissionFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getSubmissionDir());
         }
+
+        submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
         contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
 
@@ -184,7 +188,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 ContestScoreboardController contestScoreboardController = new ContestScoreboardController(contestService, submissionService);
                 cache.put(ContestScoreboardController.class, contestScoreboardController);
             } else if (controllerClass.equals(ContestSubmissionController.class)) {
-                ContestSubmissionController contestSubmissionController = new ContestSubmissionController(contestService, submissionService);
+                ContestSubmissionController contestSubmissionController = new ContestSubmissionController(contestService, submissionService, submissionFileProvider);
                 cache.put(ContestSubmissionController.class, contestSubmissionController);
             } else if (controllerClass.equals(ContestSupervisorController.class)) {
                 UserDao userDao = new UserHibernateDao();
@@ -213,10 +217,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 JophielClientController jophielClientController = new JophielClientController(userService);
                 cache.put(JophielClientController.class, jophielClientController);
             } else if (controllerClass.equals(ContestTestingAPIController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                ContestTestingAPIController contestTestingAPIController = new ContestTestingAPIController(contestService, submissionService);
+                ContestTestingAPIController contestTestingAPIController = new ContestTestingAPIController(contestService, submissionService, submissionFileProvider);
                 cache.put(ContestTestingAPIController.class, contestTestingAPIController);
             }
         }

@@ -69,7 +69,6 @@ GET         /contests/$cId<[0-9]{1,18}>/problems/view                           
 GET         /contests/$cId<[0-9]{1,18}>/problems/view/                                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.listUsedProblems(cId: Long, pageIndex: Long ?= 0)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/view                                  @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblem(cId: Long, pId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/render/:name                          @org.iatoki.judgels.uriel.controllers.ContestProblemController.renderImage(cId: Long, pId: Long, name: String)
-POST        /contests/$cId<[0-9]{1,18}>/problems/:pJid/submit                                            @org.iatoki.judgels.uriel.controllers.ContestProblemController.postSubmitProblem(cId: Long, pJid: String)
 POST        /contests/$cId<[0-9]{1,18}>/problems/:cpId/switchLanguage                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.switchLanguage(cId: Long, cpId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/all                                                     @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblems(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/all/                                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.listProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
@@ -78,6 +77,7 @@ POST        /contests/$cId<[0-9]{1,18}>/problems/create                         
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/update                                @org.iatoki.judgels.uriel.controllers.ContestProblemController.updateProblem(cId: Long, pId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/update                                @org.iatoki.judgels.uriel.controllers.ContestProblemController.postUpdateProblem(cId: Long, pId: Long)
 
+POST        /contests/$cId<[0-9]{1,18}>/problems/:pJid/submit                                            @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.postSubmitProblem(cId: Long, pJid: String)
 GET         /contests/$cId<[0-9]{1,18}>/submissions/view                                                 @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewScreenedSubmissions(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/submissions/view/                                                @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.listScreenedSubmissions(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", problemJid ?= null)
 GET         /contests/$cId<[0-9]{1,18}>/submissions/$sId<[0-9]{1,18}>/view                               @org.iatoki.judgels.uriel.controllers.ContestSubmissionController.viewSubmission(cId: Long, sId: Long)
