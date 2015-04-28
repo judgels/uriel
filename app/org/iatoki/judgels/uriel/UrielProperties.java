@@ -15,14 +15,14 @@ public final class UrielProperties {
 
     private File submissionDir;
     private File teamAvatarDir;
-    private String aWSAccessKey;
-    private String aWSSecretKey;
-    private String aWSTeamAvatarBucketName;
-    private Region aWSTeamAvatarRegion;
-    private String aWSTeamAvatarCloudFrontURL;
-    private String aWSSubmissionBucketName;
-    private Region aWSSubmissionRegion;
-    private boolean useAWS;
+    private String awsAccessKey;
+    private String awsSecretKey;
+    private String awsTeamAvatarBucketName;
+    private Region awsTeamAvatarRegion;
+    private String awsTeamAvatarCloudFrontURL;
+    private String awsSubmissionBucketName;
+    private Region awsSubmissionRegion;
+    private boolean usingAWS;
 
     private UrielProperties() {
 
@@ -36,64 +36,64 @@ public final class UrielProperties {
         return teamAvatarDir;
     }
 
-    public String getaWSAccessKey() {
-        if ((useAWS) && (Play.isDev())) {
-            return aWSAccessKey;
+    public String getAWSAccessKey() {
+        if ((usingAWS) && (Play.isDev())) {
+            return awsAccessKey;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public String getaWSSecretKey() {
-        if ((useAWS) && (Play.isDev())) {
-            return aWSSecretKey;
+    public String getAWSSecretKey() {
+        if ((usingAWS) && (Play.isDev())) {
+            return awsSecretKey;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public String getaWSTeamAvatarBucketName() {
-        if (useAWS) {
-            return aWSTeamAvatarBucketName;
+    public String getAWSTeamAvatarBucketName() {
+        if (usingAWS) {
+            return awsTeamAvatarBucketName;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public Region getaWSTeamAvatarRegion() {
-        if (useAWS) {
-            return aWSTeamAvatarRegion;
+    public Region getAWSTeamAvatarRegion() {
+        if (usingAWS) {
+            return awsTeamAvatarRegion;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public String getaWSTeamAvatarCloudFrontURL() {
-        if (useAWS) {
-            return aWSTeamAvatarCloudFrontURL;
+    public String getAWSTeamAvatarCloudFrontURL() {
+        if (usingAWS) {
+            return awsTeamAvatarCloudFrontURL;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public String getaWSSubmissionBucketName() {
-        if (useAWS) {
-            return aWSSubmissionBucketName;
+    public String getAWSSubmissionBucketName() {
+        if (usingAWS) {
+            return awsSubmissionBucketName;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public Region getaWSSubmissionRegion() {
-        if (useAWS) {
-            return aWSSubmissionRegion;
+    public Region getAWSSubmissionRegion() {
+        if (usingAWS) {
+            return awsSubmissionRegion;
         } else {
             throw new UnsupportedOperationException();
         }
     }
 
-    public boolean isUseAWS() {
-        return useAWS;
+    public boolean isUsingAWS() {
+        return usingAWS;
     }
 
     public static UrielProperties getInstance() {
@@ -107,20 +107,20 @@ public final class UrielProperties {
             } else if (Play.isDev()) {
                 verifyConfigurationDev(conf);
 
-                if (INSTANCE.isUseAWS()) {
-                    INSTANCE.aWSAccessKey = conf.getString("aws.access.key");
-                    INSTANCE.aWSSecretKey = conf.getString("aws.secret.key");
+                if (INSTANCE.isUsingAWS()) {
+                    INSTANCE.awsAccessKey = conf.getString("aws.access.key");
+                    INSTANCE.awsSecretKey = conf.getString("aws.secret.key");
                 }
             }
 
             String baseDirName = conf.getString("uriel.baseDataDir");
 
-            if (INSTANCE.isUseAWS()) {
-                INSTANCE.aWSTeamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
-                INSTANCE.aWSTeamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
-                INSTANCE.aWSTeamAvatarCloudFrontURL = conf.getString("aws.team.avatar.cloudfront.url");
-                INSTANCE.aWSSubmissionBucketName = conf.getString("aws.submission.bucket.name");
-                INSTANCE.aWSSubmissionRegion = Region.fromValue(conf.getString("aws.submission.bucket.region.id"));
+            if (INSTANCE.isUsingAWS()) {
+                INSTANCE.awsTeamAvatarBucketName = conf.getString("aws.team.avatar.bucket.name");
+                INSTANCE.awsTeamAvatarRegion = Region.fromValue(conf.getString("aws.team.avatar.bucket.region.id"));
+                INSTANCE.awsTeamAvatarCloudFrontURL = conf.getString("aws.team.avatar.cloudfront.url");
+                INSTANCE.awsSubmissionBucketName = conf.getString("aws.submission.bucket.name");
+                INSTANCE.awsSubmissionRegion = Region.fromValue(conf.getString("aws.submission.bucket.region.id"));
             }
 
             File baseDir = new File(baseDirName);
@@ -155,9 +155,9 @@ public final class UrielProperties {
               "aws.use"
         );
 
-        INSTANCE.useAWS = false;
+        INSTANCE.usingAWS = false;
         if ((configuration.getBoolean("aws.use") != null) && ((configuration.getBoolean("aws.use")))) {
-            INSTANCE.useAWS = true;
+            INSTANCE.usingAWS = true;
             requiredKeys.add("aws.access.key");
             requiredKeys.add("aws.secret.key");
             requiredKeys.add("aws.team.avatar.bucket.name");
@@ -188,9 +188,9 @@ public final class UrielProperties {
               "aws.use"
         );
 
-        INSTANCE.useAWS = false;
+        INSTANCE.usingAWS = false;
         if ((configuration.getBoolean("aws.use") != null) && ((configuration.getBoolean("aws.use")))) {
-            INSTANCE.useAWS = true;
+            INSTANCE.usingAWS = true;
             requiredKeys.add("aws.team.avatar.bucket.name");
             requiredKeys.add("aws.team.avatar.bucket.region.id");
             requiredKeys.add("aws.submission.bucket.name");

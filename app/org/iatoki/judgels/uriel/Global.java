@@ -64,13 +64,10 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import play.Application;
 import play.Play;
 import play.libs.Akka;
-import play.mvc.Action;
 import play.mvc.Controller;
-import play.mvc.Http;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -120,15 +117,15 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
         ContestReadDao contestReadDao = new ContestReadHibernateDao();
         FileSystemProvider teamAvatarFileProvider;
-        if (UrielProperties.getInstance().isUseAWS()) {
+        if (UrielProperties.getInstance().isUsingAWS()) {
             AmazonS3Client amazonS3Client;
             if (Play.isProd()) {
                 amazonS3Client = new AmazonS3Client();
             } else {
-                amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getaWSAccessKey(), UrielProperties.getInstance().getaWSSecretKey()));
+                amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getAWSAccessKey(), UrielProperties.getInstance().getAWSSecretKey()));
             }
-            teamAvatarFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getaWSTeamAvatarBucketName(), UrielProperties.getInstance().getaWSTeamAvatarCloudFrontURL(), UrielProperties.getInstance().getaWSTeamAvatarRegion());
-            submissionFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getaWSSubmissionBucketName(), UrielProperties.getInstance().getaWSSubmissionRegion());
+            teamAvatarFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getAWSTeamAvatarBucketName(), UrielProperties.getInstance().getAWSTeamAvatarCloudFrontURL(), UrielProperties.getInstance().getAWSTeamAvatarRegion());
+            submissionFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getAWSSubmissionBucketName(), UrielProperties.getInstance().getAWSSubmissionRegion());
         } else {
             teamAvatarFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getTeamAvatarDir());
             submissionFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getSubmissionDir());
