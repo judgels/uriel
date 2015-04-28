@@ -30,7 +30,11 @@
                 <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
                 <td>@entry.totalScores</td>
                 @for(score <- entry.scores) {
-                    <td>@score</td>
+                    @if(score == null) {
+                        <td>-</td>
+                    }else {
+                        <td>@score</td>
+                    }
                 }
             </tr>
         }
