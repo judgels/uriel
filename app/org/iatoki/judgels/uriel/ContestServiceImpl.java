@@ -1159,7 +1159,7 @@ public final class ContestServiceImpl implements ContestService {
 
     private URL getTeamImageURLFromImageName(String imageName) {
         try {
-            return new URL(Play.application().configuration().getString("uriel.baseUrl") + org.iatoki.judgels.uriel.controllers.apis.routes.ContestAPIController.renderTeamAvatarImage(imageName));
+            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.apis.routes.ContestAPIController.renderTeamAvatarImage(imageName));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

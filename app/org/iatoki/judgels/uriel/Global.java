@@ -3,8 +3,7 @@ package org.iatoki.judgels.uriel;
 import akka.actor.Scheduler;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import com.google.common.collect.ImmutableMap;
 import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.JudgelsProperties;
@@ -47,6 +46,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.GradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.JidCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.SubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.UserHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestConfigurationDao;
@@ -60,6 +60,9 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.GradingDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.JidCacheDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import play.Application;
 import play.Play;
@@ -68,156 +71,183 @@ import play.mvc.Controller;
 import scala.concurrent.ExecutionContextExecutor;
 import scala.concurrent.duration.Duration;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public final class Global extends org.iatoki.judgels.commons.Global {
+    private static final String CONF_LOCATION = "conf/application.conf";
 
-    private final Map<Class, Controller> cache;
+    private AvatarCacheDao avatarCacheDao;
+    private ContestAnnouncementDao contestAnnouncementDao;
+    private ContestClarificationDao contestClarificationDao;
+    private ContestConfigurationDao contestConfigurationDao;
+    private ContestContestantDao contestContestantDao;
+    private ContestDao contestDao;
+    private ContestManagerDao contestManagerDao;
+    private ContestProblemDao contestProblemDao;
+    private ContestReadDao contestReadDao;
+    private ContestScoreboardDao contestScoreboardDao;
+    private ContestSupervisorDao contestSupervisorDao;
+    private ContestTeamCoachDao contestTeamCoachDao;
+    private ContestTeamDao contestTeamDao;
+    private ContestTeamMemberDao contestTeamMemberDao;
+    private GradingDao gradingDao;
+    private JidCacheDao jidCacheDao;
+    private SubmissionDao submissionDao;
+    private UserDao userDao;
+
+    private UrielProperties urielProps;
+
+    private Sealtiel sealtiel;
+
+    private FileSystemProvider teamAvatarFileProvider;
+
+    private FileSystemProvider submissionFileProvider;
+    private ContestService contestService;
 
     private SubmissionService submissionService;
-    private ContestService contestService;
-    private FileSystemProvider submissionFileProvider;
+    private UserService userService;
 
-    public Global() {
-        this.cache = new HashMap<>();
-
-    }
+    private Map<Class<?>, Controller> controllersCache;
 
     @Override
     public void onStart(Application application) {
+        buildDaos();
+        buildProperties();
+        buildSealtiel();
+        buildFileProviders();
+        buildServices();
+        buildUtils();
+        buildControllers();
+        scheduleThreads();
+    }
+
+    @Override
+    public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
+        @SuppressWarnings("unchecked")
+        A controller = (A) controllersCache.get(controllerClass);
+
+        return controller;
+    }
+
+    private void buildDaos() {
+        avatarCacheDao = new AvatarCacheHibernateDao();
+        contestAnnouncementDao = new ContestAnnouncementHibernateDao();
+        contestClarificationDao = new ContestClarificationHibernateDao();
+        contestConfigurationDao = new ContestConfigurationHibernateDao();
+        contestContestantDao = new ContestContestantHibernateDao();
+        contestDao = new ContestHibernateDao();
+        contestManagerDao = new ContestManagerHibernateDao();
+        contestProblemDao = new ContestProblemHibernateDao();
+        contestReadDao = new ContestReadHibernateDao();
+        contestScoreboardDao = new ContestScoreboardHibernateDao();
+        contestSupervisorDao = new ContestSupervisorHibernateDao();
+        contestTeamCoachDao = new ContestTeamCoachHibernateDao();
+        contestTeamDao = new ContestTeamHibernateDao();
+        contestTeamMemberDao = new ContestTeamMemberHibernateDao();
+        gradingDao = new GradingHibernateDao();
+        jidCacheDao = new JidCacheHibernateDao();
+        submissionDao = new SubmissionHibernateDao();
+        userDao = new UserHibernateDao();
+    }
+
+    private void buildProperties() {
         org.iatoki.judgels.uriel.BuildInfo$ buildInfo = org.iatoki.judgels.uriel.BuildInfo$.MODULE$;
-        JudgelsProperties.buildInstance(buildInfo.name(), buildInfo.version());
+        JudgelsProperties.buildInstance(buildInfo.name(), buildInfo.version(), Play.application().configuration(), CONF_LOCATION);
 
-        super.onStart(application);
+        UrielProperties.buildInstance(Play.application().configuration(), CONF_LOCATION);
+        urielProps = UrielProperties.getInstance();
+    }
 
-        Config config = ConfigFactory.load();
+    private void buildSealtiel() {
+        sealtiel = new Sealtiel(urielProps.getSealtielClientJid(), urielProps.getSealtielClientSecret(), urielProps.getSealtielBaseUrl());
+    }
 
-        UrielProperties.getInstance();
-
-        JidCacheService.getInstance().setDao(new JidCacheHibernateDao());
-        AvatarCacheService.getInstance().setDao(new AvatarCacheHibernateDao());
-
-        Sealtiel sealtiel = new Sealtiel(config.getString("sealtiel.clientJid"), config.getString("sealtiel.clientSecret"), Play.application().configuration().getString("sealtiel.baseUrl"));
-
-        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-
-        ContestDao contestDao = new ContestHibernateDao();
-        ContestAnnouncementDao contestAnnouncementDao = new ContestAnnouncementHibernateDao();
-        ContestContestantDao contestContestantDao = new ContestContestantHibernateDao();
-        ContestTeamDao contestTeamDao = new ContestTeamHibernateDao();
-        ContestTeamCoachDao contestTeamCoachDao = new ContestTeamCoachHibernateDao();
-        ContestTeamMemberDao contestTeamMemberDao = new ContestTeamMemberHibernateDao();
-        ContestClarificationDao contestClarificationDao = new ContestClarificationHibernateDao();
-        ContestProblemDao contestProblemDao = new ContestProblemHibernateDao();
-        ContestSupervisorDao contestSupervisorDao = new ContestSupervisorHibernateDao();
-        ContestManagerDao contestManagerDao = new ContestManagerHibernateDao();
-        ContestScoreboardDao contestScoreboardDao = new ContestScoreboardHibernateDao();
-        ContestConfigurationDao contestConfigurationDao = new ContestConfigurationHibernateDao();
-        ContestReadDao contestReadDao = new ContestReadHibernateDao();
-        FileSystemProvider teamAvatarFileProvider;
-        if (UrielProperties.getInstance().isUsingAWS()) {
-            AmazonS3Client amazonS3Client;
-            if (Play.isProd()) {
-                amazonS3Client = new AmazonS3Client();
+    private void buildFileProviders() {
+        if (urielProps.isTeamAvatarUsingAWSS3()) {
+            AmazonS3Client awsS3Client;
+            if (urielProps.isTeamAvatarAWSS3PermittedByIAMRoles()) {
+                awsS3Client = new AmazonS3Client();
             } else {
-                amazonS3Client = new AmazonS3Client(new BasicAWSCredentials(UrielProperties.getInstance().getAWSAccessKey(), UrielProperties.getInstance().getAWSSecretKey()));
+                awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getTeamAvatarAWSAccessKey(), urielProps.getTeamAvatarAWSSecretKey()));
             }
-            teamAvatarFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getAWSTeamAvatarBucketName(), UrielProperties.getInstance().getAWSTeamAvatarCloudFrontURL(), UrielProperties.getInstance().getAWSTeamAvatarRegion());
-            submissionFileProvider = new AWSFileSystemProvider(amazonS3Client, UrielProperties.getInstance().getAWSSubmissionBucketName(), UrielProperties.getInstance().getAWSSubmissionRegion());
+            teamAvatarFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getTeamAvatarAWSS3BucketName(), urielProps.getTeamAvatarAWSCloudFrontUrl(), urielProps.getTeamAvatarAWSS3BucketRegion());
         } else {
-            teamAvatarFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getTeamAvatarDir());
-            submissionFileProvider = new LocalFileSystemProvider(UrielProperties.getInstance().getSubmissionDir());
+            teamAvatarFileProvider = new LocalFileSystemProvider(urielProps.getTeamAvatarLocalDir());
         }
 
-        submissionService = new SubmissionServiceImpl(new SubmissionHibernateDao(), new GradingHibernateDao(), sealtiel, Play.application().configuration().getString("sealtiel.gabrielClientJid"));
-        contestService = new ContestServiceImpl(contestDao, contestAnnouncementDao, contestProblemDao, contestClarificationDao, contestContestantDao, contestTeamDao, contestTeamCoachDao, contestTeamMemberDao, contestSupervisorDao, contestManagerDao, contestScoreboardDao, contestConfigurationDao, contestReadDao, teamAvatarFileProvider);
-        ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
+        if (urielProps.isSubmissionUsingAWSS3()) {
+            AmazonS3Client awsS3Client;
+            if (urielProps.isSubmissionAWSS3PermittedByIAMRoles()) {
+                awsS3Client = new AmazonS3Client();
+            } else {
+                awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getSubmissionAWSAccessKey(), urielProps.getSubmissionAWSSecretKey()));
+            }
+            submissionFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getSubmissionAWSS3BucketName(), urielProps.getSubmissionAWSS3BucketRegion());
+        } else {
+            submissionFileProvider = new LocalFileSystemProvider(urielProps.getSubmissionLocalDir());
+        }
+    }
 
+    private void buildServices() {
+        contestService = new ContestServiceImpl(
+                contestDao,
+                contestAnnouncementDao,
+                contestProblemDao,
+                contestClarificationDao,
+                contestContestantDao,
+                contestTeamDao,
+                contestTeamCoachDao,
+                contestTeamMemberDao,
+                contestSupervisorDao,
+                contestManagerDao,
+                contestScoreboardDao,
+                contestConfigurationDao,
+                contestReadDao,
+                teamAvatarFileProvider
+        );
+
+        submissionService = new SubmissionServiceImpl(submissionDao, gradingDao, sealtiel, urielProps.getSealtielGabrielClientJid());
+        userService = new UserServiceImpl(userDao);
+
+        JidCacheService.getInstance().setDao(jidCacheDao);
+        AvatarCacheService.getInstance().setDao(avatarCacheDao);
+    }
+
+    private void buildUtils() {
         ContestControllerUtils.getInstance().setContestService(contestService);
+    }
 
-        UserDao userDao = new UserHibernateDao();
-        UserService userService = new UserServiceImpl(userDao);
+    private void scheduleThreads() {
+        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
+        ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
         UserActivityPusher userActivityPusher = new UserActivityPusher(userService, UserActivityServiceImpl.getInstance());
 
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
+
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityPusher, context);
     }
 
-    @Override
-    public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
-        if (!cache.containsKey(controllerClass)) {
-            if (controllerClass.equals(ApplicationController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                ApplicationController applicationController = new ApplicationController(userService);
-                cache.put(ApplicationController.class, applicationController);
-            } else if (controllerClass.equals(ContestController.class)) {
-                ContestController contestController = new ContestController(contestService);
-                cache.put(ContestController.class, contestController);
-            } else if (controllerClass.equals(ContestAnnouncementController.class)) {
-                ContestAnnouncementController contestAnnouncementController = new ContestAnnouncementController(contestService);
-                cache.put(ContestAnnouncementController.class, contestAnnouncementController);
-            } else if (controllerClass.equals(ContestClarificationController.class)) {
-                ContestClarificationController contestClarificationController = new ContestClarificationController(contestService);
-                cache.put(ContestClarificationController.class, contestClarificationController);
-            } else if (controllerClass.equals(ContestContestantController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                ContestContestantController contestContestantController = new ContestContestantController(contestService, userService);
-                cache.put(ContestContestantController.class, contestContestantController);
-            } else if (controllerClass.equals(ContestManagerController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                ContestManagerController contestManagerController = new ContestManagerController(contestService, userService);
-                cache.put(ContestManagerController.class, contestManagerController);
-            } else if (controllerClass.equals(ContestProblemController.class)) {
-                ContestProblemController contestProblemController = new ContestProblemController(contestService, submissionService);
-                cache.put(ContestProblemController.class, contestProblemController);
-            } else if (controllerClass.equals(ContestScoreboardController.class)) {
-                ContestScoreboardController contestScoreboardController = new ContestScoreboardController(contestService, submissionService);
-                cache.put(ContestScoreboardController.class, contestScoreboardController);
-            } else if (controllerClass.equals(ContestSubmissionController.class)) {
-                ContestSubmissionController contestSubmissionController = new ContestSubmissionController(contestService, submissionService, submissionFileProvider);
-                cache.put(ContestSubmissionController.class, contestSubmissionController);
-            } else if (controllerClass.equals(ContestSupervisorController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                ContestSupervisorController contestSupervisorController = new ContestSupervisorController(contestService, userService);
-                cache.put(ContestSupervisorController.class, contestSupervisorController);
-            } else if (controllerClass.equals(ContestTeamController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-                ContestTeamController contestTeamController = new ContestTeamController(contestService, userService);
-                cache.put(ContestTeamController.class, contestTeamController);
-            } else if (controllerClass.equals(ContestAPIController.class)) {
-                ContestAPIController contestAPIController = new ContestAPIController(contestService);
-                cache.put(ContestAPIController.class, contestAPIController);
-            } else if (controllerClass.equals(UserController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                UserController userController = new UserController(userService);
-                cache.put(UserController.class, userController);
-            } else if (controllerClass.equals(JophielClientController.class)) {
-                UserDao userDao = new UserHibernateDao();
-                UserService userService = new UserServiceImpl(userDao);
-
-                JophielClientController jophielClientController = new JophielClientController(userService);
-                cache.put(JophielClientController.class, jophielClientController);
-            } else if (controllerClass.equals(ContestTestingAPIController.class)) {
-                ContestTestingAPIController contestTestingAPIController = new ContestTestingAPIController(contestService, submissionService, submissionFileProvider);
-                cache.put(ContestTestingAPIController.class, contestTestingAPIController);
-            }
-        }
-        return controllerClass.cast(cache.get(controllerClass));
+    private void buildControllers() {
+        controllersCache = ImmutableMap.<Class<?>, Controller> builder()
+                .put(ApplicationController.class, new ApplicationController(userService))
+                .put(JophielClientController.class, new JophielClientController(userService))
+                .put(ContestAnnouncementController.class, new ContestAnnouncementController(contestService))
+                .put(ContestClarificationController.class, new ContestClarificationController(contestService))
+                .put(ContestContestantController.class, new ContestContestantController(contestService, userService))
+                .put(ContestController.class, new ContestController(contestService))
+                .put(ContestManagerController.class, new ContestManagerController(contestService, userService))
+                .put(ContestProblemController.class, new ContestProblemController(contestService, submissionService))
+                .put(ContestScoreboardController.class, new ContestScoreboardController(contestService, submissionService))
+                .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionFileProvider))
+                .put(ContestSupervisorController.class, new ContestSupervisorController(contestService, userService))
+                .put(ContestTeamController.class, new ContestTeamController(contestService, userService))
+                .put(UserController.class, new UserController(userService))
+                .put(ContestAPIController.class, new ContestAPIController(contestService))
+                .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionFileProvider))
+                .build();
     }
 }

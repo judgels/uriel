@@ -40,7 +40,7 @@ public final class ContestTestingAPIController extends Controller {
 
         String testingSecret = form.get("stressTestSecret")[0];
 
-        if (!testingSecret.equals(Play.application().configuration().getString("uriel.stressTestSecret"))) {
+        if (!testingSecret.equals(UrielProperties.getInstance().getUrielStressTestSecret())) {
             return notFound();
         }
 
