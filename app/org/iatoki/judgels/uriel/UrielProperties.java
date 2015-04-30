@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel;
 
 import com.amazonaws.services.s3.model.Region;
+import com.typesafe.config.Config;
 import org.apache.commons.io.FileUtils;
-import play.Configuration;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,8 +10,7 @@ import java.io.IOException;
 public final class UrielProperties {
     private static UrielProperties INSTANCE;
 
-    private final Configuration conf;
-    private final String confLocation;
+    private final Config config;
 
     private String urielBaseUrl;
     private File urielBaseDataDir;
@@ -28,39 +27,38 @@ public final class UrielProperties {
     private String sealtielClientSecret;
     private String sealtielGabrielClientJid;
 
+    private Boolean globalAWSUsingKeys;
     private String globalAWSAccessKey;
     private String globalAWSSecretKey;
     private Region globalAWSS3Region;
-    private Boolean globalAWSS3PermittedByIAMRoles;
 
-    private boolean teamAvatarAWSS3Use;
+    private boolean teamAvatarUsingAWSS3;
     private File teamAvatarLocalDir;
+    private Boolean teamAvatarAWSUsingKeys;
     private String teamAvatarAWSAccessKey;
     private String teamAvatarAWSSecretKey;
     private String teamAvatarAWSS3BucketName;
     private Region teamAvatarAWSS3BucketRegion;
-    private Boolean teamAvatarAWSS3PermittedByIAMRoles;
     private String teamAvatarAWSCloudFrontUrl;
 
-    private boolean submissionAWSS3Use;
+    private boolean submissionUsingAWSS3;
+    private Boolean submissionAWSUsingKeys;
     private File submissionLocalDir;
     private String submissionAWSAccessKey;
     private String submissionAWSSecretKey;
     private String submissionAWSS3BucketName;
     private Region submissionAWSS3BucketRegion;
-    private Boolean submissionAWSS3PermittedByIAMRoles;
 
-    private UrielProperties(Configuration conf, String confLocation) {
-        this.conf = conf;
-        this.confLocation = confLocation;
+    private UrielProperties(Config config) {
+        this.config = config;
     }
 
-    public static synchronized void buildInstance(Configuration conf, String confLocation) {
+    public static synchronized void buildInstance(Config config) {
         if (INSTANCE != null) {
             throw new UnsupportedOperationException("UrielProperties instance has already been built");
         }
 
-        INSTANCE = new UrielProperties(conf, confLocation);
+        INSTANCE = new UrielProperties(config);
         INSTANCE.build();
     }
 
@@ -112,7 +110,7 @@ public final class UrielProperties {
     }
 
     public boolean isTeamAvatarUsingAWSS3() {
-        return teamAvatarAWSS3Use;
+        return teamAvatarUsingAWSS3;
     }
 
     public File getTeamAvatarLocalDir() {
@@ -135,7 +133,7 @@ public final class UrielProperties {
             return globalAWSAccessKey;
         }
 
-        throw new RuntimeException("Missing aws.accessKey or teamAvatar.aws.accessKey in " + confLocation);
+        throw new RuntimeException("Missing aws.global.key.access or aws.teamAvatar.key.access");
     }
 
     public String getTeamAvatarAWSSecretKey() {
@@ -151,7 +149,7 @@ public final class UrielProperties {
             return globalAWSSecretKey;
         }
 
-        throw new RuntimeException("Missing aws.secretKey or teamAvatar.aws.secretKey in " + confLocation);
+        throw new RuntimeException("Missing aws.global.key.secret or aws.teamAvatar.key.secret");
     }
 
     public String getTeamAvatarAWSS3BucketName() {
@@ -165,16 +163,14 @@ public final class UrielProperties {
         if (!isTeamAvatarUsingAWSS3()) {
             throw new UnsupportedOperationException("Team avatar is not using AWS S3");
         }
-
         if (teamAvatarAWSS3BucketRegion != null) {
             return teamAvatarAWSS3BucketRegion;
         }
-
         if (globalAWSS3Region != null) {
             return globalAWSS3Region;
         }
 
-        throw new RuntimeException("Missing aws.s3.bucket.regionId or teamAvatar.aws.s3.bucket.regionId in " + confLocation);
+        throw new RuntimeException("Missing aws.global.s3.bucket.regionId or aws.teamAvatar.s3.bucket.regionId in");
     }
 
     public String getTeamAvatarAWSCloudFrontUrl() {
@@ -184,19 +180,22 @@ public final class UrielProperties {
         return teamAvatarAWSCloudFrontUrl;
     }
 
-    public boolean isTeamAvatarAWSS3PermittedByIAMRoles() {
-        if (teamAvatarAWSS3PermittedByIAMRoles != null) {
-            return teamAvatarAWSS3PermittedByIAMRoles;
+    public boolean isTeamAvatarAWSUsingKeys() {
+        if (!isTeamAvatarUsingAWSS3()) {
+            throw new UnsupportedOperationException("Team avatar is not using AWS S3");
         }
-        if (globalAWSS3PermittedByIAMRoles != null) {
-            return globalAWSS3PermittedByIAMRoles;
+        if (teamAvatarAWSUsingKeys != null) {
+            return teamAvatarAWSUsingKeys;
+        }
+        if (globalAWSUsingKeys != null) {
+            return globalAWSUsingKeys;
         }
 
-        throw new RuntimeException("Missing aws.s3.permittedByIAMRoles or teamAvatar.aws.s3.permittedByIAMRoles in " + confLocation);
+        throw new RuntimeException("Missing aws.global.key.use or aws.teamAvatar.key.use");
     }
 
     public boolean isSubmissionUsingAWSS3() {
-        return submissionAWSS3Use;
+        return submissionUsingAWSS3;
     }
 
     public File getSubmissionLocalDir() {
@@ -210,32 +209,28 @@ public final class UrielProperties {
         if (!isSubmissionUsingAWSS3()) {
             throw new UnsupportedOperationException("Submission is not using AWS S3");
         }
-
         if (submissionAWSAccessKey != null) {
             return submissionAWSAccessKey;
         }
-
         if (globalAWSAccessKey != null) {
             return globalAWSAccessKey;
         }
 
-        throw new RuntimeException("Missing aws.accessKey or submission.aws.accessKey in " + confLocation);
+        throw new RuntimeException("Missing aws.global.key.access or aws.submission.key.access");
     }
 
     public String getSubmissionAWSSecretKey() {
         if (!isSubmissionUsingAWSS3()) {
             throw new UnsupportedOperationException("Submission is not using AWS S3");
         }
-
         if (submissionAWSSecretKey != null) {
             return submissionAWSSecretKey;
         }
-
         if (globalAWSSecretKey != null) {
             return globalAWSSecretKey;
         }
 
-        throw new RuntimeException("Missing aws.secretKey or submission.aws.secretKey in " + confLocation);
+        throw new RuntimeException("Missing aws.global.key.secret or aws.submission.key.secret in");
     }
 
     public String getSubmissionAWSS3BucketName() {
@@ -249,27 +244,29 @@ public final class UrielProperties {
         if (!isSubmissionUsingAWSS3()) {
             throw new UnsupportedOperationException("Submission is not using AWS S3");
         }
-
         if (submissionAWSS3BucketRegion != null) {
             return submissionAWSS3BucketRegion;
         }
-
         if (globalAWSS3Region != null) {
             return globalAWSS3Region;
         }
 
-        throw new RuntimeException("Missing aws.bucket.regionId or submission.aws.bucket.regionId in " + confLocation);
+        throw new RuntimeException("Missing aws.global.s3.bucket.regionId or aws.submission.s3.bucket.regionId");
     }
 
-    public boolean isSubmissionAWSS3PermittedByIAMRoles() {
-        if (submissionAWSS3PermittedByIAMRoles != null) {
-            return submissionAWSS3PermittedByIAMRoles;
-        }
-        if (globalAWSS3PermittedByIAMRoles != null) {
-            return globalAWSS3PermittedByIAMRoles;
+    public boolean isSubmissionAWSUsingKeys() {
+        if (!isSubmissionUsingAWSS3()) {
+            throw new UnsupportedOperationException("Submission is not using AWS S3");
         }
 
-        throw new RuntimeException("Missing aws.s3.permittedByIAMRoles or submission.aws.s3.permittedByIAMRoles in " + confLocation);
+        if (submissionAWSUsingKeys != null) {
+            return submissionAWSUsingKeys;
+        }
+        if (globalAWSUsingKeys != null) {
+            return globalAWSUsingKeys;
+        }
+
+        throw new RuntimeException("Missing aws.global.key.use or aws.submission.key.use in");
     }
     
     private void build() {
@@ -288,20 +285,20 @@ public final class UrielProperties {
         sealtielClientSecret = requireStringValue("sealtiel.clientSecret");
         sealtielGabrielClientJid = requireStringValue("sealtiel.gabrielClientJid");
 
-        globalAWSAccessKey = getStringValue("aws.accessKey");
-        globalAWSSecretKey = getStringValue("aws.secretKey");
-        globalAWSS3Region = Region.fromValue(getStringValue("aws.s3.bucket.regionId"));
-        globalAWSS3PermittedByIAMRoles = getBooleanValue("aws.s3.permittedByIAMRoles");
+        globalAWSUsingKeys = getBooleanValue("aws.global.key.use");
+        globalAWSAccessKey = getStringValue("aws.global.key.access");
+        globalAWSSecretKey = getStringValue("aws.global.key.secret");
+        globalAWSS3Region = Region.fromValue(getStringValue("aws.global.s3.bucket.regionId"));
 
-        teamAvatarAWSS3Use = requireBooleanValue("teamAvatar.aws.s3.use");
-        teamAvatarAWSAccessKey = getStringValue("teamAvatar.aws.accessKey");
-        teamAvatarAWSSecretKey = getStringValue("teamAvatar.aws.secretKey");
-        teamAvatarAWSS3BucketName = getStringValue("teamAvatar.aws.s3.bucket.name");
-        teamAvatarAWSS3BucketRegion = Region.fromValue(getStringValue("teamAvatar.aws.s3.bucket.regionId"));
-        teamAvatarAWSS3PermittedByIAMRoles = getBooleanValue("teamAvatar.aws.s3.permittedByIAMRoles");
+        teamAvatarUsingAWSS3 = requireBooleanValue("aws.teamAvatar.s3.use");
+        teamAvatarAWSUsingKeys = getBooleanValue("aws.teamAvatar.key.use");
+        teamAvatarAWSAccessKey = getStringValue("aws.teamAvatar.key.access");
+        teamAvatarAWSSecretKey = getStringValue("aws.teamAvatar.key.secret");
+        teamAvatarAWSS3BucketName = getStringValue("aws.teamAvatar.s3.bucket.name");
+        teamAvatarAWSS3BucketRegion = Region.fromValue(getStringValue("aws.teamAvatar.s3.bucket.regionId"));
 
-        if (teamAvatarAWSS3Use) {
-            teamAvatarAWSCloudFrontUrl = requireStringValue("teamAvatar.aws.cloudFront.baseUrl");
+        if (teamAvatarUsingAWSS3) {
+            teamAvatarAWSCloudFrontUrl = requireStringValue("aws.teamAvatar.cloudFront.baseUrl");
         } else {
             try {
                 teamAvatarLocalDir = new File(urielBaseDataDir, "teamAvatar");
@@ -311,14 +308,14 @@ public final class UrielProperties {
             }
         }
 
-        submissionAWSS3Use = requireBooleanValue("submission.aws.s3.use");
-        submissionAWSAccessKey = getStringValue("submission.aws.accessKey");
-        submissionAWSSecretKey = getStringValue("submission.aws.secretKey");
-        submissionAWSS3BucketName = getStringValue("submission.aws.s3.bucket.name");
-        submissionAWSS3BucketRegion = Region.fromValue(getStringValue("submission.aws.s3.bucket.regionId"));
-        submissionAWSS3PermittedByIAMRoles = getBooleanValue("submission.aws.s3.permittedByIAMRoles");
+        submissionUsingAWSS3 = requireBooleanValue("aws.submission.s3.use");
+        submissionAWSUsingKeys = getBooleanValue("aws.submission.key.use");
+        submissionAWSAccessKey = getStringValue("aws.submission.key.access");
+        submissionAWSSecretKey = getStringValue("aws.submission.key.secret");
+        submissionAWSS3BucketName = getStringValue("aws.submission.s3.bucket.name");
+        submissionAWSS3BucketRegion = Region.fromValue(getStringValue("aws.submission.s3.bucket.regionId"));
 
-        if (!submissionAWSS3Use) {
+        if (!submissionUsingAWSS3) {
             try {
                 submissionLocalDir = new File(urielBaseDataDir, "submission");
                 FileUtils.forceMkdir(submissionLocalDir);
@@ -329,35 +326,33 @@ public final class UrielProperties {
     }
 
     private String getStringValue(String key) {
-        return conf.getString(key);
+        if (!config.hasPath(key)) {
+            return null;
+        }
+        return config.getString(key);
     }
 
     private String requireStringValue(String key) {
-        String value = getStringValue(key);
-        if (value == null) {
-            throw new RuntimeException("Missing " + key + " property in " + confLocation);
-        }
-        return value;
+        return config.getString(key);
     }
 
     private Boolean getBooleanValue(String key) {
-        return conf.getBoolean(key);
+        if (!config.hasPath(key)) {
+            return null;
+        }
+        return config.getBoolean(key);
     }
 
     private boolean requireBooleanValue(String key) {
-        Boolean value = getBooleanValue(key);
-        if (value == null) {
-            throw new RuntimeException("Missing " + key + " property in " + confLocation);
-        }
-        return value;
+        return config.getBoolean(key);
     }
 
     private File requireDirectoryValue(String key) {
-        String filename = getStringValue(key);
+        String filename = config.getString(key);
 
         File dir = new File(filename);
         if (!dir.isDirectory()) {
-            throw new RuntimeException("Directory " + key + " does not exist");
+            throw new RuntimeException("Directory " + dir.getAbsolutePath() + " does not exist");
         }
         return dir;
     }

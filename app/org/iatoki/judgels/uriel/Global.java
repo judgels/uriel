@@ -4,6 +4,8 @@ import akka.actor.Scheduler;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.common.collect.ImmutableMap;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.JudgelsProperties;
@@ -65,7 +67,6 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.JidCacheDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import play.Application;
-import play.Play;
 import play.libs.Akka;
 import play.mvc.Controller;
 import scala.concurrent.ExecutionContextExecutor;
@@ -75,8 +76,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public final class Global extends org.iatoki.judgels.commons.Global {
-    private static final String CONF_LOCATION = "conf/application.conf";
-
     private AvatarCacheDao avatarCacheDao;
     private ContestAnnouncementDao contestAnnouncementDao;
     private ContestClarificationDao contestClarificationDao;
@@ -101,14 +100,13 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private Sealtiel sealtiel;
 
     private FileSystemProvider teamAvatarFileProvider;
-
     private FileSystemProvider submissionFileProvider;
-    private ContestService contestService;
 
+    private ContestService contestService;
     private SubmissionService submissionService;
     private UserService userService;
 
-    private Map<Class<?>, Controller> controllersCache;
+    private Map<Class<?>, Controller> controllersRegistry;
 
     @Override
     public void onStart(Application application) {
@@ -124,10 +122,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     @Override
     public <A> A getControllerInstance(Class<A> controllerClass) throws Exception {
-        @SuppressWarnings("unchecked")
-        A controller = (A) controllersCache.get(controllerClass);
-
-        return controller;
+        return controllerClass.cast(controllersRegistry.get(controllerClass));
     }
 
     private void buildDaos() {
@@ -152,10 +147,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     }
 
     private void buildProperties() {
-        org.iatoki.judgels.uriel.BuildInfo$ buildInfo = org.iatoki.judgels.uriel.BuildInfo$.MODULE$;
-        JudgelsProperties.buildInstance(buildInfo.name(), buildInfo.version(), Play.application().configuration(), CONF_LOCATION);
+        Config config = ConfigFactory.load();
 
-        UrielProperties.buildInstance(Play.application().configuration(), CONF_LOCATION);
+        org.iatoki.judgels.uriel.BuildInfo$ buildInfo = org.iatoki.judgels.uriel.BuildInfo$.MODULE$;
+        JudgelsProperties.buildInstance(buildInfo.name(), buildInfo.version(), config);
+
+        UrielProperties.buildInstance(config);
         urielProps = UrielProperties.getInstance();
     }
 
@@ -166,7 +163,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private void buildFileProviders() {
         if (urielProps.isTeamAvatarUsingAWSS3()) {
             AmazonS3Client awsS3Client;
-            if (urielProps.isTeamAvatarAWSS3PermittedByIAMRoles()) {
+            if (urielProps.isTeamAvatarAWSUsingKeys()) {
                 awsS3Client = new AmazonS3Client();
             } else {
                 awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getTeamAvatarAWSAccessKey(), urielProps.getTeamAvatarAWSSecretKey()));
@@ -178,7 +175,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
         if (urielProps.isSubmissionUsingAWSS3()) {
             AmazonS3Client awsS3Client;
-            if (urielProps.isSubmissionAWSS3PermittedByIAMRoles()) {
+            if (urielProps.isSubmissionAWSUsingKeys()) {
                 awsS3Client = new AmazonS3Client();
             } else {
                 awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getSubmissionAWSAccessKey(), urielProps.getSubmissionAWSSecretKey()));
@@ -218,21 +215,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ContestControllerUtils.getInstance().setContestService(contestService);
     }
 
-    private void scheduleThreads() {
-        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-        ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
-        UserActivityPusher userActivityPusher = new UserActivityPusher(userService, UserActivityServiceImpl.getInstance());
-
-        Scheduler scheduler = Akka.system().scheduler();
-        ExecutionContextExecutor context = Akka.system().dispatcher();
-
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityPusher, context);
-    }
-
     private void buildControllers() {
-        controllersCache = ImmutableMap.<Class<?>, Controller> builder()
+        controllersRegistry = ImmutableMap.<Class<?>, Controller> builder()
                 .put(ApplicationController.class, new ApplicationController(userService))
                 .put(JophielClientController.class, new JophielClientController(userService))
                 .put(ContestAnnouncementController.class, new ContestAnnouncementController(contestService))
@@ -249,5 +233,18 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 .put(ContestAPIController.class, new ContestAPIController(contestService))
                 .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionFileProvider))
                 .build();
+    }
+
+    private void scheduleThreads() {
+        GradingResponsePoller poller = new GradingResponsePoller(submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
+        ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
+        UserActivityPusher userActivityPusher = new UserActivityPusher(userService, UserActivityServiceImpl.getInstance());
+
+        Scheduler scheduler = Akka.system().scheduler();
+        ExecutionContextExecutor context = Akka.system().dispatcher();
+
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityPusher, context);
     }
 }
