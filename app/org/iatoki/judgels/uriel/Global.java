@@ -100,7 +100,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private Sealtiel sealtiel;
 
     private FileSystemProvider teamAvatarFileProvider;
-    private FileSystemProvider submissionFileProvider;
+    private FileSystemProvider submissionLocalFileProvider;
+    private FileSystemProvider submissionRemoteFileProvider;
 
     private ContestService contestService;
     private SubmissionService submissionService;
@@ -180,10 +181,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
             } else {
                 awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getSubmissionAWSAccessKey(), urielProps.getSubmissionAWSSecretKey()));
             }
-            submissionFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getSubmissionAWSS3BucketName(), urielProps.getSubmissionAWSS3BucketRegion());
-        } else {
-            submissionFileProvider = new LocalFileSystemProvider(urielProps.getSubmissionLocalDir());
+            submissionRemoteFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getSubmissionAWSS3BucketName(), urielProps.getSubmissionAWSS3BucketRegion());
         }
+        submissionLocalFileProvider = new LocalFileSystemProvider(urielProps.getSubmissionLocalDir());
     }
 
     private void buildServices() {
@@ -226,12 +226,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 .put(ContestManagerController.class, new ContestManagerController(contestService, userService))
                 .put(ContestProblemController.class, new ContestProblemController(contestService, submissionService))
                 .put(ContestScoreboardController.class, new ContestScoreboardController(contestService, submissionService))
-                .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionFileProvider))
+                .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionLocalFileProvider, submissionRemoteFileProvider))
                 .put(ContestSupervisorController.class, new ContestSupervisorController(contestService, userService))
                 .put(ContestTeamController.class, new ContestTeamController(contestService, userService))
                 .put(UserController.class, new UserController(userService))
                 .put(ContestAPIController.class, new ContestAPIController(contestService))
-                .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionFileProvider))
+                .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionLocalFileProvider))
                 .build();
     }
 

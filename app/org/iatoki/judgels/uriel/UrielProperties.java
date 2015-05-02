@@ -199,9 +199,6 @@ public final class UrielProperties {
     }
 
     public File getSubmissionLocalDir() {
-        if (isSubmissionUsingAWSS3()) {
-            throw new UnsupportedOperationException("Submission is using AWS S3");
-        }
         return submissionLocalDir;
     }
 
@@ -315,13 +312,11 @@ public final class UrielProperties {
         submissionAWSS3BucketName = getStringValue("aws.submission.s3.bucket.name");
         submissionAWSS3BucketRegion = Region.fromValue(getStringValue("aws.submission.s3.bucket.regionId"));
 
-        if (!submissionUsingAWSS3) {
-            try {
-                submissionLocalDir = new File(urielBaseDataDir, "submission");
-                FileUtils.forceMkdir(submissionLocalDir);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            submissionLocalDir = new File(urielBaseDataDir, "submission");
+            FileUtils.forceMkdir(submissionLocalDir);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

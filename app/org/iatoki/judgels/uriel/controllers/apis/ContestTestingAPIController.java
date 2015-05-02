@@ -70,7 +70,7 @@ public final class ContestTestingAPIController extends Controller {
         try {
             BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
             submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
-            adapter.storeSubmissionFiles(submissionFileProvider, submissionJid, source);
+            adapter.storeSubmissionFiles(submissionFileProvider, null, submissionJid, source);
         } catch (SubmissionException e) {
             return badRequest();
         }

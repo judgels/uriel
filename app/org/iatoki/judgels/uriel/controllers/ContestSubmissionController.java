@@ -1,8 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.gson.Gson;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
@@ -19,16 +17,12 @@ import org.iatoki.judgels.gabriel.commons.SubmissionException;
 import org.iatoki.judgels.gabriel.commons.SubmissionNotFoundException;
 import org.iatoki.judgels.gabriel.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
 import org.iatoki.judgels.uriel.ContestService;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.JidCacheService;
-import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -38,12 +32,10 @@ import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -55,12 +47,14 @@ public final class ContestSubmissionController extends BaseController {
 
     private final ContestService contestService;
     private final SubmissionService submissionService;
-    private final FileSystemProvider submissionFileProvider;
+    private final FileSystemProvider submissionLocalFileProvider;
+    private final FileSystemProvider submissionRemoteFileProvider;
 
-    public ContestSubmissionController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionFileProvider) {
+    public ContestSubmissionController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileProvider, FileSystemProvider submissionRemoteFileProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
-        this.submissionFileProvider = submissionFileProvider;
+        this.submissionLocalFileProvider = submissionLocalFileProvider;
+        this.submissionRemoteFileProvider = submissionRemoteFileProvider;
     }
 
     public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
@@ -80,7 +74,7 @@ public final class ContestSubmissionController extends BaseController {
                 try {
                     GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
                     String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, null, source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(submissionFileProvider, submissionJid, source);
+                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(submissionLocalFileProvider, submissionRemoteFileProvider, submissionJid, source);
 
                     ControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
@@ -139,7 +133,7 @@ public final class ContestSubmissionController extends BaseController {
         Submission submission = submissionService.findSubmissionById(submissionId);
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
-            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionFileProvider, submission.getJid());
+            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
             String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
             ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
             String contestProblemAlias = contestProblem.getAlias();
@@ -207,7 +201,7 @@ public final class ContestSubmissionController extends BaseController {
         if (isAllowedToSuperviseSubmissions(contest)) {
 
             Submission submission = submissionService.findSubmissionById(submissionId);
-            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionFileProvider, submission.getJid());
+            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
             submissionService.regrade(submission.getJid(), source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
             ControllerUtils.getInstance().addActivityLog("Regrade submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -234,7 +228,7 @@ public final class ContestSubmissionController extends BaseController {
             }
 
             for (Submission submission : submissions) {
-                GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionFileProvider, submission.getJid());
+                GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
                 submissionService.regrade(submission.getJid(), source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
 
