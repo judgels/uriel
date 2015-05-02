@@ -19,6 +19,6 @@ public final class ContestScoreboardModel extends AbstractModel {
 
     public String type;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     public String scoreboard;
 }
