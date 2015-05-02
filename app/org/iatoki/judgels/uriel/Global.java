@@ -165,9 +165,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         if (urielProps.isTeamAvatarUsingAWSS3()) {
             AmazonS3Client awsS3Client;
             if (urielProps.isTeamAvatarAWSUsingKeys()) {
-                awsS3Client = new AmazonS3Client();
-            } else {
                 awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getTeamAvatarAWSAccessKey(), urielProps.getTeamAvatarAWSSecretKey()));
+            } else {
+                awsS3Client = new AmazonS3Client();
             }
             teamAvatarFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getTeamAvatarAWSS3BucketName(), urielProps.getTeamAvatarAWSCloudFrontUrl(), urielProps.getTeamAvatarAWSS3BucketRegion());
         } else {
@@ -177,9 +177,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         if (urielProps.isSubmissionUsingAWSS3()) {
             AmazonS3Client awsS3Client;
             if (urielProps.isSubmissionAWSUsingKeys()) {
-                awsS3Client = new AmazonS3Client();
-            } else {
                 awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getSubmissionAWSAccessKey(), urielProps.getSubmissionAWSSecretKey()));
+            } else {
+                awsS3Client = new AmazonS3Client();
             }
             submissionRemoteFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getSubmissionAWSS3BucketName(), urielProps.getSubmissionAWSS3BucketRegion());
         }
