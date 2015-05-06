@@ -190,8 +190,10 @@ error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
 error.contestant.create.userJid.invalid=Username is invalid.
 error.supervisor.create.userJid.invalid=Username is invalid.
 error.manager.create.userJid.invalid=Username is invalid.
-error.team.userAlreadyHasTeam=User has been already involved in a team.
-error.team.userAlreadyHasTeamOrIsNotContestant=User has been already involved in a team or is not contestant.
+error.team.userAlreadyHasTeam=User is already involved in a team.
+error.team.userNotFound=User not found.
+error.team.userAlreadyACoach=User is already a coach.
+error.team.userAlreadyAContestant=User is already a contestant.
 
 error.contest.config.specific.invalid_freeze_time=Freeze time must be between start and end time.
 error.contest.config.specific.invalidRegisterTime=Register time window must be within contest time window.

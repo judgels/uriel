@@ -11,6 +11,7 @@ import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -228,15 +229,29 @@ public class ContestTeamController extends BaseController {
                 ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
 
                 String userJid = JophielUtils.verifyUsername(contestTeamCoachCreateForm.username);
-                if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                    contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
-                    userRoleService.upsertUserFromJophielUserJid(userJid);
+                if (userJid != null) {
+                    if (!contestService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
+                        if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                            contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
+                            userRoleService.upsertUserFromJophielUserJid(userJid);
 
-                    ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateForm.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+                            ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateForm.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
-                    return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
+                            return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
+                        } else {
+                            form.reject("error.team.userAlreadyAContestant");
+                            Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+
+                            return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                        }
+                    } else {
+                        form.reject("error.team.userAlreadyACoach");
+                        Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
+
+                        return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                    }
                 } else {
-                    form.reject("error.team.userAlreadyHasTeam");
+                    form.reject("error.team.userNotFound");
                     Form<ContestTeamMemberCreateForm> form2 = Form.form(ContestTeamMemberCreateForm.class);
 
                     return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
@@ -276,14 +291,24 @@ public class ContestTeamController extends BaseController {
                 ContestTeamMemberCreateForm contestTeamMemberCreateForm = form2.get();
 
                 String userJid = JophielUtils.verifyUsername(contestTeamMemberCreateForm.username);
-                if ((userJid != null) && (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) && (contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                    contestService.createContestTeamMember(contestTeam.getJid(), userJid);
+                if (userJid != null) {
+                    if (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
+                        if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        }
+                        contestService.createContestTeamMember(contestTeam.getJid(), userJid);
 
-                    ControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateForm.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+                        ControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateForm.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
-                    return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
+                        return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
+                    } else {
+                        form2.reject("error.team.userAlreadyHasTeam");
+                        Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
+
+                        return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                    }
                 } else {
-                    form2.reject("error.team.userAlreadyHasTeamOrIsNotContestant");
+                    form2.reject("error.team.userNotFound");
                     Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
 
                     return showViewTeam(form, form2, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
