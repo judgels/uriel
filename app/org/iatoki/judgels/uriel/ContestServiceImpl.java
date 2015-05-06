@@ -724,6 +724,7 @@ public final class ContestServiceImpl implements ContestService {
 
         String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
+        teamAvatarFileProvider.makeFilePublic(ImmutableList.of(newImageName));
 
         contestTeamModel.teamImageName = newImageName;
 
@@ -743,6 +744,7 @@ public final class ContestServiceImpl implements ContestService {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
         String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
+        teamAvatarFileProvider.makeFilePublic(ImmutableList.of(newImageName));
 
         contestTeamModel.name = name;
         contestTeamModel.teamImageName = newImageName;
