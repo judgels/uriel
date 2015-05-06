@@ -156,11 +156,11 @@ public class ContestContestantController extends BaseController {
     @RequireCSRFCheck
     public Result postUploadContestant(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        Http.MultipartFormData body = request().body().asMultipartFormData();
-        Http.MultipartFormData.FilePart file;
 
         if (isAllowedToSuperviseContestants(contest)) {
             ImmutableList.Builder<UploadResult> failedUploadsBuilder = ImmutableList.builder();
+            Http.MultipartFormData body = request().body().asMultipartFormData();
+            Http.MultipartFormData.FilePart file;
 
             file = body.getFile("usernames");
             if (file != null) {

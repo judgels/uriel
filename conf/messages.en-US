@@ -166,6 +166,17 @@ contest.started=Started at
 contest.notStarted=Not started yet
 contest.cantStart=Cannot start yet for now
 
+contest.team.coach.upload.result=Coach Upload Result
+contest.team.member.upload.result=Member Upload Result
+
+contest.team.coach.upload.success=Upload Success
+contest.team.member.upload.success=Upload Success
+
+contest.supervisor.team.coaches.importTXT=Import via txt
+contest.supervisor.team.coaches.manualCreate=Manual Create
+contest.supervisor.team.members.importTXT=Import via txt
+contest.supervisor.team.members.manualCreate=Manual Create
+
 team.teams=Teams
 team.image=Logo
 team.teamImage=Team Logo
@@ -182,6 +193,8 @@ team.status=Status
 team.avatar.error.cantUpdate=Can't Upload Team Avatar into system
 
 data.download=Download Contest Data
+upload.value=Value
+upload.status=Status
 
 scoreboard.not_available=Scoreboard is not available at the moment.
 

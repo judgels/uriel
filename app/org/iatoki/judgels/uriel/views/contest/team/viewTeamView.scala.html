@@ -1,4 +1,4 @@
-@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestTeamMemberCreateForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean)
+@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.ContestTeamMemberCreateForm], form4: Form[org.iatoki.judgels.uriel.ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -18,6 +18,20 @@
 
 <h4>Coaches</h4>
 @if(updateable) {
+    <h4>@Messages.get("contest.supervisor.team.coaches.importTXT")</h4>
+    @formErrorView(form2)
+    @b3.form(routes.ContestTeamController.postUploadTeamCoach(contestId, contestTeam.getId), 'enctype->"multipart/form-data") {
+
+        @helper.CSRF.formField
+
+        @b3.file(form2("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+
+    <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
     @formErrorView(form)
     @b3.form(routes.ContestTeamController.postCreateTeamCoach(contestId, contestTeam.getId)) {
 
@@ -59,12 +73,26 @@
 
 <h4>Members</h4>
 @if(updateable) {
-    @formErrorView(form2)
+    <h4>@Messages.get("contest.supervisor.team.coaches.importTXT")</h4>
+    @formErrorView(form4)
+    @b3.form(routes.ContestTeamController.postUploadTeamMember(contestId, contestTeam.getId), 'enctype->"multipart/form-data") {
+
+        @helper.CSRF.formField
+
+        @b3.file(form4("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+
+    <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
+    @formErrorView(form3)
     @b3.form(routes.ContestTeamController.postCreateTeamMember(contestId, contestTeam.getId)) {
 
         @helper.CSRF.formField
 
-        @b3.text(form2("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+        @b3.text(form3("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
 
         @b3.submit('class -> "btn btn-primary") {
             @Messages.get("commons.add")

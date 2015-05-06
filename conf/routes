@@ -114,8 +114,10 @@ GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/update          
 POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/update                                   @org.iatoki.judgels.uriel.controllers.ContestTeamController.postUpdateTeam(cId: Long, tId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/view                                     @org.iatoki.judgels.uriel.controllers.ContestTeamController.viewTeam(cId: Long, tId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/coaches/create                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postCreateTeamCoach(cId: Long, tId: Long)
+POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/coaches/upload                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postUploadTeamCoach(cId: Long, tId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/coaches/$c2Id<[0-9]{1,18}>/remove        @org.iatoki.judgels.uriel.controllers.ContestTeamController.removeTeamCoach(cId: Long, tId: Long, c2Id: Long)
 POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/create                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postCreateTeamMember(cId: Long, tId: Long)
+POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/upload                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postUploadTeamMember(cId: Long, tId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/$mId<[0-9]{1,18}>/remove         @org.iatoki.judgels.uriel.controllers.ContestTeamController.removeTeamMember(cId: Long, tId: Long, mId: Long)
 
 GET         /contests/$cId<[0-9]{1,18}>/scoreboard/view                                                  @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.viewScoreboard(cId: Long)
