@@ -202,8 +202,10 @@ user.noViewpoint=No Viewpoint
 user.viewAs=View As
 user.resetViewAs=Reset View
 
+error.contestant.create.userIsAlreadyContestant=User is already contestant.
+error.contestant.create.userNotExist=User not exist..
 error.contestant.isAlreadyContestant=User is already contestant.
-error.contestant.userNotExist=User not exist
+error.contestant.userNotExist=User not exist.
 error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
 error.contestant.create.userJid.invalid=Username is invalid.
 error.supervisor.create.userJid.invalid=Username is invalid.
