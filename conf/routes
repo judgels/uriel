@@ -100,7 +100,7 @@ POST        /contests/$cId<[0-9]{1,18}>/clarifications/$c2Id<[0-9]{1,18}>/update
 GET         /contests/$cId<[0-9]{1,18}>/contestants/view                                                 @org.iatoki.judgels.uriel.controllers.ContestContestantController.viewContestants(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/contestants/view/                                                @org.iatoki.judgels.uriel.controllers.ContestContestantController.listCreateContestants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 POST        /contests/$cId<[0-9]{1,18}>/contestants/create                                               @org.iatoki.judgels.uriel.controllers.ContestContestantController.postCreateContestant(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
-POST        /contests/$cId<[0-9]{1,18}>/contestants/upload                                               @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUploadContestant(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+POST        /contests/$cId<[0-9]{1,18}>/contestants/upload                                               @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUploadContestant(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/update                            @org.iatoki.judgels.uriel.controllers.ContestContestantController.updateContestant(cId: Long, c2Id: Long)
 POST        /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/update                            @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUpdateContestant(cId: Long, c2Id: Long)
 

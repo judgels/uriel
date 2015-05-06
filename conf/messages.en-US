@@ -90,6 +90,9 @@ contestant.name=Name
 contestant.status=Status
 contestant.userJid=User JID
 
+contestant.upload.success=Upload Success
+contestant.upload.result=Upload Result
+
 supervisor.supervisors=Supervisors
 supervisor.list=Supervisors
 supervisor.create=Create Supervisor
@@ -186,6 +189,8 @@ user.noViewpoint=No Viewpoint
 user.viewAs=View As
 user.resetViewAs=Reset View
 
+error.contestant.isAlreadyContestant=User is already contestant.
+error.contestant.userNotExist=User not exist
 error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
 error.contestant.create.userJid.invalid=Username is invalid.
 error.supervisor.create.userJid.invalid=Username is invalid.

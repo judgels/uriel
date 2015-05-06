@@ -9,6 +9,7 @@ import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
+import org.iatoki.judgels.commons.views.html.layouts.messageView;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
@@ -19,24 +20,26 @@ import org.iatoki.judgels.uriel.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
+import org.iatoki.judgels.uriel.UploadResult;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.listCreateContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.updateContestantView;
+import org.iatoki.judgels.uriel.views.html.uploadResultView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -151,12 +154,14 @@ public class ContestContestantController extends BaseController {
     }
 
     @RequireCSRFCheck
-    public Result postUploadContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result postUploadContestant(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart file;
 
         if (isAllowedToSuperviseContestants(contest)) {
+            ImmutableList.Builder<UploadResult> failedUploadsBuilder = ImmutableList.builder();
+
             file = body.getFile("usernames");
             if (file != null) {
                 File userFile = file.getFile();
@@ -164,9 +169,15 @@ public class ContestContestantController extends BaseController {
                     String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                     for (String username : usernames) {
                         String userJid = JophielUtils.verifyUsername(username);
-                        if ((userJid != null) && (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid))) {
-                            userService.upsertUserFromJophielUserJid(userJid);
-                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        if (userJid != null) {
+                            if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                userService.upsertUserFromJophielUserJid(userJid);
+                                contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                            } else {
+                                failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
+                            }
+                        } else {
+                            failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.userNotExist")));
                         }
                     }
 
@@ -176,7 +187,9 @@ public class ContestContestantController extends BaseController {
                     throw new RuntimeException(e);
                 }
             }
-            return redirect(routes.ContestContestantController.listCreateContestants(contest.getId(), pageIndex, orderBy, orderDir, filterString));
+            List<UploadResult> failedUploads = failedUploadsBuilder.build();
+
+            return showUploadContestantResult(failedUploads, contest);
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
@@ -206,11 +219,30 @@ public class ContestContestantController extends BaseController {
         ControllerUtils.getInstance().appendSidebarLayout(content);
 
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("status.supervisor"), routes.ContestContestantController.viewContestants(contest.getId())),
-                new InternalLink(Messages.get("contestant.update"), routes.ContestContestantController.updateContestant(contest.getId(), contestContestant.getId()))
+              new InternalLink(Messages.get("status.supervisor"), routes.ContestContestantController.viewContestants(contest.getId())),
+              new InternalLink(Messages.get("contestant.update"), routes.ContestContestantController.updateContestant(contest.getId(), contestContestant.getId()))
         );
 
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestant - Update");
+
+        return ControllerUtils.getInstance().lazyOk(content);
+    }
+
+    private Result showUploadContestantResult(List<UploadResult> failedUploads, Contest contest) {
+        LazyHtml content;
+        if (failedUploads.size() > 0) {
+            content = new LazyHtml(uploadResultView.render(failedUploads));
+        } else {
+            content = new LazyHtml(messageView.render(Messages.get("contestant.upload.success")));
+        }
+        content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.upload.result"), c));
+
+        appendSubtabsLayout(content, contest);ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, contest,
+              new InternalLink(Messages.get("contestant.list"), routes.ContestContestantController.viewContestants(contest.getId()))
+        );
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants - Upload Result");
 
         return ControllerUtils.getInstance().lazyOk(content);
     }

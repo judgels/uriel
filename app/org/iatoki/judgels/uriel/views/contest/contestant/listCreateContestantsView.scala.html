@@ -24,7 +24,7 @@
 
     @formErrorView(form2)
 
-    @b3.form(routes.ContestContestantController.postUploadContestant(contestId, pageIndex, orderBy, orderDir, filterString), 'enctype->"multipart/form-data") {
+    @b3.form(routes.ContestContestantController.postUploadContestant(contestId), 'enctype->"multipart/form-data") {
 
         @helper.CSRF.formField
 
