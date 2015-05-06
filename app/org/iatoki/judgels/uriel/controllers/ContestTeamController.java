@@ -47,7 +47,7 @@ import java.util.List;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestTeamController extends BaseController {
 
-    private static final long PAGE_SIZE = 20;
+    private static final long PAGE_SIZE = 1000;
 
     private final ContestService contestService;
     private final UserService userRoleService;
