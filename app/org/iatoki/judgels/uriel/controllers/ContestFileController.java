@@ -89,18 +89,22 @@ public final class ContestFileController extends BaseController {
 
     public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        String fileURL = contestService.getContestFileURL(contest.getJid(), filename);
-        try {
-            new URL(fileURL);
-            return redirect(fileURL);
-        } catch (MalformedURLException e) {
-            File file = new File(fileURL);
-            if (!file.exists()) {
-                return Results.notFound();
+        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+            String fileURL = contestService.getContestFileURL(contest.getJid(), filename);
+            try {
+                new URL(fileURL);
+                return redirect(fileURL);
+            } catch (MalformedURLException e) {
+                File file = new File(fileURL);
+                if (!file.exists()) {
+                    return Results.notFound();
+                }
+                Controller.response().setContentType("application/x-download");
+                Controller.response().setHeader("Content-disposition", "attachment; filename=" + file.getName());
+                return ok(file);
             }
-            Controller.response().setContentType("application/x-download");
-            Controller.response().setHeader("Content-disposition", "attachment; filename=" + file.getName());
-            return ok(file);
+        } else {
+            return notFound();
         }
     }
 
