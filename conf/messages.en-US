@@ -48,6 +48,8 @@ problem.problemSecret=Problem Secret
 problem.allowAll=Allow All
 problem.allowedLanguages=Allowed Languages
 
+problem.critical.warning=(In case you cannot view problem statement, see announcement.)
+
 submission.submissions=Submissions
 submission.list=Submissions
 submission.view=View Submission

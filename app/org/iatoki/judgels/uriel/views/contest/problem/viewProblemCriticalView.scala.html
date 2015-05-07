@@ -1,0 +1,68 @@
+@(requestURL: String, requestBody: String, submissionsLeft: Long, isClosed: Boolean, contest: org.iatoki.judgels.uriel.Contest, contestProblem: org.iatoki.judgels.uriel.ContestProblem)
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.gabriel.GradingLanguageRegistry
+
+@if(play.mvc.Controller.flash("submissionError") != null) {
+    <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>
+}
+
+@if(isClosed) {
+    <div class="alert alert-info" role="alert">@Messages.get("submission.closed")</div>
+}else{
+    @if(submissionsLeft != -1) {
+        <div class="alert alert-info" role="alert">@Messages.get("submission.left") : @submissionsLeft</div>
+    }}
+
+<div class="problem_statement">
+
+</div>
+
+<style>
+    form {
+        display: none;
+    }
+
+    form.critical {
+        display: block;
+    }
+</style>
+
+<script type="text/javascript">
+    var sandalphonTOTPURL = "@requestURL";
+    var body = '@Html(requestBody)';
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/problemTOTPStatement.js")"></script>
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-2", "col-md-10") }
+
+@b3.form(routes.ContestSubmissionController.postSubmitProblem(contest.getId, contestProblem.getProblemJid), 'enctype->"multipart/form-data", 'class->"form-horizontal critical") {
+
+    @b3.hidden("engine", "BatchWithSubtasks")
+    @b3.hidden("sourceFileFieldKeys", "source")
+
+    <div class="form-group">
+        <label for="source" class="col-md-2">Source Code</label>
+        <div class="col-md-10">
+            <input type="file" name="source">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="language" class="col-sm-2 control-label">Language</label>
+        <div class="col-sm-10">
+            <select name="language">
+            @for((k, v) <- GradingLanguageRegistry.getInstance().getGradingLanguages) {
+                @if(!k.equals("Python3")) {
+                    <option value="@k">@v</option>
+                }
+            }
+            </select>
+        </div>
+    </div>
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("Submit") }
+}
+
+<p>@Messages.get("problem.critical.warning")</p>

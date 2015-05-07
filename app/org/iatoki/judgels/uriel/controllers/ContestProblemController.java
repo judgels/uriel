@@ -35,6 +35,7 @@ import org.iatoki.judgels.uriel.views.html.contest.problem.listUsedProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.updateProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemCriticalView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.DynamicForm;
 import play.data.Form;
@@ -47,6 +48,7 @@ import play.mvc.Result;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Set;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -120,7 +122,12 @@ public class ContestProblemController extends BaseController {
                 requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
             }
 
-            LazyHtml content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
+            LazyHtml content;
+            if (UrielProperties.getInstance().isContestCritial(contest.getJid())) {
+                content = new LazyHtml(viewProblemCriticalView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED, contest, contestProblem));
+            } else {
+                content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
+            }
             ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
             ControllerUtils.getInstance().appendSidebarLayout(content);
             appendBreadcrumbsLayout(content, contest,

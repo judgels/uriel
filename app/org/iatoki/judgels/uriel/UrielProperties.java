@@ -1,11 +1,14 @@
 package org.iatoki.judgels.uriel;
 
 import com.amazonaws.services.s3.model.Region;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.typesafe.config.Config;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 public final class UrielProperties {
     private static UrielProperties INSTANCE;
@@ -56,6 +59,8 @@ public final class UrielProperties {
     private String fileAWSSecretKey;
     private String fileAWSS3BucketName;
     private Region fileAWSS3BucketRegion;
+
+    private Set<String> criticalContestJids;
 
     private UrielProperties(Config config) {
         this.config = config;
@@ -345,6 +350,10 @@ public final class UrielProperties {
 
         throw new RuntimeException("Missing aws.global.key.use or aws.file.key.use in");
     }
+
+    public boolean isContestCritial(String contestJid) {
+        return criticalContestJids.contains(contestJid);
+    }
     
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
@@ -413,6 +422,13 @@ public final class UrielProperties {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        String criticalContestJidsAsString = getStringValue("uriel.criticalContestJids");
+        if (criticalContestJidsAsString != null) {
+            criticalContestJids = ImmutableSet.copyOf(Sets.newHashSet(criticalContestJidsAsString.split(",")));
+        } else {
+            criticalContestJids = ImmutableSet.of();
         }
     }
 
