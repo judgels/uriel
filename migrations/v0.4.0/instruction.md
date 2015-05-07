@@ -5,3 +5,4 @@ Migrating database
 ------------------
 
 - Change the type of details in uriel_programming_grading to LONGTEXT.
+- Change the type of scoreboard in uriel_contest_scoreboard to LONGTEXT.
