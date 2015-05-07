@@ -126,6 +126,10 @@ public final class ContestController extends BaseController {
         return redirect(routes.ContestManagerController.viewManagers(contestId));
     }
 
+    public Result jumpToFiles(long contestId) {
+        return redirect(routes.ContestFileController.viewFiles(contestId));
+    }
+
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
         Page<Contest> contests = contestService.pageAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), ControllerUtils.getInstance().isAdmin());
 

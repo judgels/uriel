@@ -192,6 +192,16 @@ team.status=Status
 
 team.avatar.error.cantUpdate=Can't Upload Team Avatar into system
 
+file.files=Files
+file.list=Files
+file.file=File
+file.uploadNew=Upload New File
+file.filename=Filename
+file.lastModified=Last Modified
+file.size=Size
+file.howToUse=To insert a download link, use "download/<filename>" as the URL.
+file.cannotUploadFile=Cannot upload file
+
 data.download=Download Contest Data
 upload.value=Value
 upload.status=Status

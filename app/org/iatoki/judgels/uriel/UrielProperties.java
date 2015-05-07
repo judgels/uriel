@@ -49,6 +49,14 @@ public final class UrielProperties {
     private String submissionAWSS3BucketName;
     private Region submissionAWSS3BucketRegion;
 
+    private boolean fileUsingAWSS3;
+    private Boolean fileAWSUsingKeys;
+    private File fileLocalDir;
+    private String fileAWSAccessKey;
+    private String fileAWSSecretKey;
+    private String fileAWSS3BucketName;
+    private Region fileAWSS3BucketRegion;
+
     private UrielProperties(Config config) {
         this.config = config;
     }
@@ -265,6 +273,78 @@ public final class UrielProperties {
 
         throw new RuntimeException("Missing aws.global.key.use or aws.submission.key.use in");
     }
+
+    public boolean isFileUsingAWSS3() {
+        return fileUsingAWSS3;
+    }
+
+    public File getFileLocalDir() {
+        return fileLocalDir;
+    }
+
+    public String getFileAWSAccessKey() {
+        if (!isFileUsingAWSS3()) {
+            throw new UnsupportedOperationException("File is not using AWS S3");
+        }
+        if (fileAWSAccessKey != null) {
+            return fileAWSAccessKey;
+        }
+        if (globalAWSAccessKey != null) {
+            return globalAWSAccessKey;
+        }
+
+        throw new RuntimeException("Missing aws.global.key.access or aws.submission.key.access");
+    }
+
+    public String getFileAWSSecretKey() {
+        if (!isFileUsingAWSS3()) {
+            throw new UnsupportedOperationException("Submission is not using AWS S3");
+        }
+        if (fileAWSUsingKeys != null) {
+            return fileAWSSecretKey;
+        }
+        if (globalAWSSecretKey != null) {
+            return globalAWSSecretKey;
+        }
+
+        throw new RuntimeException("Missing aws.global.key.secret or aws.aws.key.secret in");
+    }
+
+    public String getFileAWSS3BucketName() {
+        if (!isFileUsingAWSS3()) {
+            throw new UnsupportedOperationException("File is not using AWS S3");
+        }
+        return fileAWSS3BucketName;
+    }
+
+    public Region getFileAWSS3BucketRegion() {
+        if (!isFileUsingAWSS3()) {
+            throw new UnsupportedOperationException("File is not using AWS S3");
+        }
+        if (fileAWSS3BucketRegion != null) {
+            return fileAWSS3BucketRegion;
+        }
+        if (globalAWSS3Region != null) {
+            return globalAWSS3Region;
+        }
+
+        throw new RuntimeException("Missing aws.global.s3.bucket.regionId or aws.file.s3.bucket.regionId");
+    }
+
+    public boolean isFileAWSUsingKeys() {
+        if (!isFileUsingAWSS3()) {
+            throw new UnsupportedOperationException("Submission is not using AWS S3");
+        }
+
+        if (fileAWSUsingKeys != null) {
+            return fileAWSUsingKeys;
+        }
+        if (globalAWSUsingKeys != null) {
+            return globalAWSUsingKeys;
+        }
+
+        throw new RuntimeException("Missing aws.global.key.use or aws.file.key.use in");
+    }
     
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
@@ -317,6 +397,22 @@ public final class UrielProperties {
             FileUtils.forceMkdir(submissionLocalDir);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        fileUsingAWSS3 = requireBooleanValue("aws.file.s3.use");
+        fileAWSUsingKeys = getBooleanValue("aws.file.key.use");
+        fileAWSAccessKey = getStringValue("aws.file.key.access");
+        fileAWSSecretKey = getStringValue("aws.file.key.secret");
+        fileAWSS3BucketName = getStringValue("aws.file.s3.bucket.name");
+        fileAWSS3BucketRegion = Region.fromValue(getStringValue("aws.file.s3.bucket.regionId"));
+
+        if (!fileUsingAWSS3) {
+            try {
+                fileLocalDir = new File(urielBaseDataDir, "file");
+                FileUtils.forceMkdir(fileLocalDir);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

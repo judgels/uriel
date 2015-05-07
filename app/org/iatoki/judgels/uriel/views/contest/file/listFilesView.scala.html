@@ -1,0 +1,48 @@
+@(form: Form[org.iatoki.judgels.uriel.ContestFileUploadForm], contest: org.iatoki.judgels.uriel.Contest, fileInfos: List[org.iatoki.judgels.commons.FileInfo])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.commons.JudgelsUtils
+
+@implicitFieldConstructor = @{b3.horizontal.fieldConstructor("col-md-2", "col-md-10")}
+
+<h3>@Messages.get("file.uploadNew")</h3>
+
+@b3.form(routes.ContestFileController.postUploadFile(contest.getId), 'enctype -> "multipart/form-data") {
+    @helper.CSRF.formField
+
+    @b3.file(form("file"), '_label -> Messages.get("file.file"))
+
+    @b3.submit('class -> "btn btn-primary") {
+        @Messages.get("commons.upload")
+    }
+}
+
+<hr />
+
+
+<h3>@Messages.get("file.files")</h3>
+
+<p>@Messages.get("file.howToUse")</p>
+
+<table class="table table-striped table-condensed table-bordered">
+    <thead>
+        <tr>
+            <th>@Messages.get("file.filename")</th>
+            <th>@Messages.get("file.lastModified")</th>
+            <th>@Messages.get("file.size")</th>
+            <th></th>
+        </tr>
+    </thead>
+
+    <tbody>
+    @for(file <- fileInfos) {
+        <tr>
+            <td>@file.getName</td>
+            <td>@JudgelsUtils.formatDate(file.getLastModifiedTime)</td>
+            <td>@JudgelsUtils.formatBytesCount(file.getSize)</td>
+            <td class="text-center"><a href="@routes.ContestFileController.downloadFile(contest.getId, file.getName, null)"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a></td>
+        </tr>
+    }
+    </tbody>
+</table>

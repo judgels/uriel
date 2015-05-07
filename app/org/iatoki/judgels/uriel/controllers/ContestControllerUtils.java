@@ -264,6 +264,7 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             internalLinkBuilder.add(new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.jumpToSupervisors(contest.getId())));
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.jumpToManagers(contest.getId())));
+            internalLinkBuilder.add(new InternalLink(Messages.get("file.files"), routes.ContestController.jumpToFiles(contest.getId())));
         }
         content.appendLayout(c -> contestTimeLayout.render(contest.getStartTime(), contestEndTime, c));
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));

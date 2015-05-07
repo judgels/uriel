@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel;
 
+import org.iatoki.judgels.commons.FileInfo;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.Scoreboard;
@@ -172,4 +173,10 @@ public interface ContestService {
     void updateContestConfigurationByContestJid(String contestJid, ContestTypeConfig typeConfig, ContestScopeConfig scopeConfig, ContestStyleConfig styleConfig);
 
     String getTeamAvatarImageURL(String imageName);
+
+    List<FileInfo> getContestFiles(String contestJid);
+
+    void uploadContestFile(String contestJid, File file, String filename) throws IOException;
+
+    String getContestFileURL(String contestJid, String filename);
 }

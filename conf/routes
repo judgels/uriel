@@ -39,6 +39,7 @@ GET         /contest/$cId<[0-9]{1,18}>/clarifications                           
 GET         /contest/$cId<[0-9]{1,18}>/contestants                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToContestants(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/supervisors                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToSupervisors(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/managers                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToManagers(cId: Long)
+GET         /contest/$cId<[0-9]{1,18}>/files                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToFiles(cId: Long)
 
 GET         /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.updateContestGeneralConfig(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestGeneralConfig(cId: Long)
@@ -119,6 +120,12 @@ GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/coaches/$c2Id<[0
 POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/create                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postCreateTeamMember(cId: Long, tId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/upload                           @org.iatoki.judgels.uriel.controllers.ContestTeamController.postUploadTeamMember(cId: Long, tId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/members/$mId<[0-9]{1,18}>/remove         @org.iatoki.judgels.uriel.controllers.ContestTeamController.removeTeamMember(cId: Long, tId: Long, mId: Long)
+
+GET         /contests/$cId<[0-9]{1,18}>/files/view                                                       @org.iatoki.judgels.uriel.controllers.ContestFileController.viewFiles(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/files/view/                                                      @org.iatoki.judgels.uriel.controllers.ContestFileController.listFiles(cId: Long)
+POST        /contests/$cId<[0-9]{1,18}>/files                                                            @org.iatoki.judgels.uriel.controllers.ContestFileController.postUploadFile(cId: Long)
+
+GET         /contests/$cId<[0-9]{1,18}>/$any<[a-zA-Z]*>/download/:filename                               @org.iatoki.judgels.uriel.controllers.ContestFileController.downloadFile(cId: Long, filename: String, any: String)
 
 GET         /contests/$cId<[0-9]{1,18}>/scoreboard/view                                                  @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.viewScoreboard(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/scoreboard/official                                              @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.viewOfficialScoreboard(cId: Long)

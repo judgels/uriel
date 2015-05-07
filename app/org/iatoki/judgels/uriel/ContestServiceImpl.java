@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import org.iatoki.judgels.commons.FileInfo;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JidService;
@@ -50,6 +51,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -75,8 +77,9 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestConfigurationDao contestConfigurationDao;
     private final ContestReadDao contestReadDao;
     private final FileSystemProvider teamAvatarFileProvider;
+    private final FileSystemProvider contestFileProvider;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider, FileSystemProvider contestFileProvider) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -99,6 +102,7 @@ public final class ContestServiceImpl implements ContestService {
                 throw new IllegalStateException("Cannot create default avatar.");
             }
         }
+        this.contestFileProvider = contestFileProvider;
     }
 
     @Override
@@ -1105,6 +1109,29 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public String getTeamAvatarImageURL(String imageName) {
         return teamAvatarFileProvider.getURL(ImmutableList.of(imageName));
+    }
+
+    @Override
+    public List<FileInfo> getContestFiles(String contestJid) {
+        return contestFileProvider.listFilesInDirectory(getContestFileDirPath(contestJid));
+    }
+
+    @Override
+    public void uploadContestFile(String contestJid, File file, String filename) throws IOException {
+        contestFileProvider.uploadFile(getContestFileDirPath(contestJid), file, filename);
+    }
+
+    @Override
+    public String getContestFileURL(String contestJid, String filename) {
+        return contestFileProvider.getURL(getContestFilePath(contestJid, filename));
+    }
+
+    private List<String> getContestFileDirPath(String contestJid) {
+        return ImmutableList.of(contestJid);
+    }
+
+    private List<String> getContestFilePath(String contestJid, String filename) {
+        return ImmutableList.of(contestJid, filename);
     }
 
     private Contest createContestFromModel(ContestModel contestModel) {

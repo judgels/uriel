@@ -21,6 +21,7 @@ import org.iatoki.judgels.uriel.controllers.ContestClarificationController;
 import org.iatoki.judgels.uriel.controllers.ContestContestantController;
 import org.iatoki.judgels.uriel.controllers.ContestController;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
+import org.iatoki.judgels.uriel.controllers.ContestFileController;
 import org.iatoki.judgels.uriel.controllers.ContestManagerController;
 import org.iatoki.judgels.uriel.controllers.ContestProblemController;
 import org.iatoki.judgels.uriel.controllers.ContestScoreboardController;
@@ -102,6 +103,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private FileSystemProvider teamAvatarFileProvider;
     private FileSystemProvider submissionLocalFileProvider;
     private FileSystemProvider submissionRemoteFileProvider;
+    private FileSystemProvider contestFileProvider;
 
     private ContestService contestService;
     private SubmissionService submissionService;
@@ -184,6 +186,18 @@ public final class Global extends org.iatoki.judgels.commons.Global {
             submissionRemoteFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getSubmissionAWSS3BucketName(), urielProps.getSubmissionAWSS3BucketRegion());
         }
         submissionLocalFileProvider = new LocalFileSystemProvider(urielProps.getSubmissionLocalDir());
+
+        if (urielProps.isFileUsingAWSS3()) {
+            AmazonS3Client awsS3Client;
+            if (urielProps.isFileAWSUsingKeys()) {
+                awsS3Client = new AmazonS3Client(new BasicAWSCredentials(urielProps.getFileAWSAccessKey(), urielProps.getFileAWSSecretKey()));
+            } else {
+                awsS3Client = new AmazonS3Client();
+            }
+            contestFileProvider = new AWSFileSystemProvider(awsS3Client, urielProps.getFileAWSS3BucketName(), urielProps.getFileAWSS3BucketRegion());
+        } else {
+            contestFileProvider = new LocalFileSystemProvider(urielProps.getFileLocalDir());
+        }
     }
 
     private void buildServices() {
@@ -201,7 +215,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 contestScoreboardDao,
                 contestConfigurationDao,
                 contestReadDao,
-                teamAvatarFileProvider
+                teamAvatarFileProvider,
+                contestFileProvider
         );
 
         submissionService = new SubmissionServiceImpl(submissionDao, gradingDao, sealtiel, urielProps.getSealtielGabrielClientJid());
@@ -229,6 +244,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionLocalFileProvider, submissionRemoteFileProvider))
                 .put(ContestSupervisorController.class, new ContestSupervisorController(contestService, userService))
                 .put(ContestTeamController.class, new ContestTeamController(contestService, userService))
+                .put(ContestFileController.class, new ContestFileController(contestService))
                 .put(UserController.class, new UserController(userService))
                 .put(ContestAPIController.class, new ContestAPIController(contestService))
                 .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionLocalFileProvider))
