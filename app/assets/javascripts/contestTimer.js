@@ -1,4 +1,5 @@
 require(["jquery", "jquery-timer"], function( __tes__ ) {
+    var localTime = new Date();
     var time_index = 0;
     var seconds = secondsLeft % 60;
     if (secondsLeft > 0) {
@@ -37,14 +38,16 @@ require(["jquery", "jquery-timer"], function( __tes__ ) {
         $(document).stopTime("contest");
         $(document).everyTime('1s', "contest", function (i) {
             if (secondsLeft > 0) {
-                secondsLeft--;
-                contestStartTimeLeft--;
+                var currentTime = new Date();
+                secondsLeft = secondsLeft - ((currentTime.getTime() - localTime.getTime()) / 1000);
+                contestStartTimeLeft = contestStartTimeLeft - ((currentTime.getTime() - localTime.getTime()) / 1000);
+                localTime = currentTime;
                 if (contestStartTimeLeft > 0) {
                     $("#contest-time-label").html(contestNotStartedMessage);
                 } else {
                     $("#contest-time-label").html(timeLeftMessage);
                     var time_index = 0;
-                    var seconds = secondsLeft % 60;
+                    var seconds = Math.floor(secondsLeft % 60);
                     if (seconds > 0) {
                         $("#contest-second-left").html(seconds + " " + $("#contest-second-left").attr("span-label") + ((seconds > 1) ? second : ""));
                         time_index++;
