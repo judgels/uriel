@@ -213,11 +213,12 @@ public class ContestScoreboardController extends BaseController {
             cell = row.createCell(cellNum++);
             cell.setCellValue(Messages.get("team.member.name"));
             for (ContestTeam contestTeam : contestTeams) {
+                cellNum = 0;
                 row = sheet.createRow(rowNum++);
                 cell = row.createCell(cellNum++);
                 cell.setCellValue(contestTeam.getName());
 
-                List<ContestTeamCoach> contestTeamCoaches = contestService.findContestTeamCoachesByTeamJid(contestTeam.getContestJid());
+                List<ContestTeamCoach> contestTeamCoaches = contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid());
                 List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByTeamJid(contestTeam.getJid());
                 if (contestTeamCoaches.size() > 0) {
                     cell = row.createCell(1);
