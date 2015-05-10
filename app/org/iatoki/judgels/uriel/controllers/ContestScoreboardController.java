@@ -271,7 +271,9 @@ public class ContestScoreboardController extends BaseController {
                     cell.setCellValue(entry.totalScores);
                     for (Integer score : entry.scores) {
                         cell = row.createCell(cellNum++);
-                        cell.setCellValue(score);
+                        if (score != null) {
+                            cell.setCellValue(score);
+                        }
                     }
                 }
 
