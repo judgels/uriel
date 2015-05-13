@@ -42,7 +42,6 @@ import org.iatoki.judgels.uriel.models.domains.ContestTeamCoachModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamMemberModel;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamModel;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamModel_;
-import play.Play;
 import play.i18n.Messages;
 
 import javax.persistence.NoResultException;
@@ -51,7 +50,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -96,7 +94,7 @@ public final class ContestServiceImpl implements ContestService {
         this.teamAvatarFileProvider = teamAvatarFileProvider;
         if (!teamAvatarFileProvider.fileExists(ImmutableList.of("team-default.png"))) {
             try {
-                teamAvatarFileProvider.uploadFile(ImmutableList.of(), play.api.Play.getFile("default-assets/team-default.png", play.api.Play.current()), "team-default.png");
+                teamAvatarFileProvider.uploadFileFromStream(ImmutableList.of(), getClass().getResourceAsStream("/public/images/team/team-default.png"), "team-default.png");
                 teamAvatarFileProvider.makeFilePublic(ImmutableList.of("team-default.png"));
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot create default avatar.");
