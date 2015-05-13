@@ -56,7 +56,10 @@ public final class ControllerUtils extends AbstractControllerUtils {
 
     public void addActivityLog(String log) {
         try {
-            UserActivityServiceImpl.getInstance().addUserActivity(new UserActivity(System.currentTimeMillis(), IdentityUtils.getUserJid(), log, IdentityUtils.getIpAddress()));
+            if (JudgelsUtils.hasViewPoint()) {
+                log += " view as " +  IdentityUtils.getUserJid();
+            }
+            UserActivityServiceImpl.getInstance().addUserActivity(new UserActivity(System.currentTimeMillis(), UrielUtils.getRealUserJid(), log, IdentityUtils.getIpAddress()));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -2,6 +2,8 @@ package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
+import org.iatoki.judgels.commons.IdentityUtils;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import play.mvc.Http;
 
 import java.text.ParseException;
@@ -85,6 +87,14 @@ public class UrielUtils {
             return Arrays.asList(getFromSession("realRole").split(",")).contains(role);
         } else {
             return hasRole(role);
+        }
+    }
+
+    public static String getRealUserJid() {
+        if (JudgelsUtils.hasViewPoint()) {
+            return getFromSession("realUserJid");
+        } else {
+            return IdentityUtils.getUserJid();
         }
     }
 
