@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
 import org.iatoki.judgels.commons.models.daos.hibernate.AbstractHibernateDao;
+import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel_;
@@ -25,7 +26,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
 
         query
             .select(cb.count(root))
-            .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid)));
+            .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.equal(root.get(ContestContestantModel_.status), ContestContestantStatus.APPROVED.name())));
 
         return (JPA.em().createQuery(query).getSingleResult() != 0);
     }
