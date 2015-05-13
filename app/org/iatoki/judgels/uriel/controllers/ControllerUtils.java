@@ -3,13 +3,15 @@ package org.iatoki.judgels.uriel.controllers;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
+import org.iatoki.judgels.commons.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.profileView;
 import org.iatoki.judgels.commons.views.html.layouts.menusLayout;
-import org.iatoki.judgels.uriel.UserViewpointForm;
-import org.iatoki.judgels.uriel.views.html.layouts.viewAsLayout;
+import org.iatoki.judgels.commons.views.html.layouts.viewAsLayout;
+import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserActivityServiceImpl;
@@ -35,13 +37,13 @@ public final class ControllerUtils extends AbstractControllerUtils {
               org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())
         ));
         if (UrielUtils.trullyHasRole("admin")) {
-            Form<UserViewpointForm> form = Form.form(UserViewpointForm.class);
-            if (UrielUtils.hasViewPoint()) {
-                UserViewpointForm userViewpointForm = new UserViewpointForm();
-                userViewpointForm.username = IdentityUtils.getUsername();
-                form.fill(userViewpointForm);
+            Form<ViewpointForm> form = Form.form(ViewpointForm.class);
+            if (JudgelsUtils.hasViewPoint()) {
+                ViewpointForm viewpointForm = new ViewpointForm();
+                viewpointForm.username = IdentityUtils.getUsername();
+                form.fill(viewpointForm);
             }
-            sidebarContent.appendLayout(c -> viewAsLayout.render(form, c));
+            sidebarContent.appendLayout(c -> viewAsLayout.render(form, JophielUtils.getAutoCompleteEndPoint(), "javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
 

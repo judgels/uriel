@@ -2,19 +2,14 @@ package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
-import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.commons.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.jophiel.commons.JophielUtils;
 import org.iatoki.judgels.uriel.AvatarCacheService;
-import org.iatoki.judgels.uriel.ContestContestant;
-import org.iatoki.judgels.uriel.ContestContestantCreateForm;
-import org.iatoki.judgels.uriel.ContestContestantStatus;
-import org.iatoki.judgels.uriel.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.UserService;
-import org.iatoki.judgels.uriel.UserViewpointForm;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
@@ -78,12 +73,12 @@ public final class ApplicationController extends BaseController {
             JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
             JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
 
-            if (UrielUtils.hasViewPoint()) {
+            if (JudgelsUtils.hasViewPoint()) {
                 try {
                     UrielUtils.backupSession();
-                    UrielUtils.setUserSession(JophielUtils.getUserByUserJid(UrielUtils.getViewPoint()), userService.findUserByUserJid(UrielUtils.getViewPoint()));
+                    UrielUtils.setUserSession(JophielUtils.getUserByUserJid(JudgelsUtils.getViewPoint()), userService.findUserByUserJid(JudgelsUtils.getViewPoint()));
                 } catch (IOException e) {
-                    UrielUtils.removeViewPoint();
+                    JudgelsUtils.removeViewPoint();
                     UrielUtils.restoreSession();
                 }
             }
@@ -103,24 +98,24 @@ public final class ApplicationController extends BaseController {
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result postViewAs() {
-        Form<UserViewpointForm> form = Form.form(UserViewpointForm.class).bindFromRequest();
+        Form<ViewpointForm> form = Form.form(ViewpointForm.class).bindFromRequest();
 
         if ((!(form.hasErrors() || form.hasGlobalErrors())) && (UrielUtils.trullyHasRole("admin"))) {
-            UserViewpointForm userViewpointForm = form.get();
-            String userJid = JophielUtils.verifyUsername(userViewpointForm.username);
+            ViewpointForm viewpointForm = form.get();
+            String userJid = JophielUtils.verifyUsername(viewpointForm.username);
             if (userJid != null) {
                 try {
                     userService.upsertUserFromJophielUserJid(userJid);
-                    if (!UrielUtils.hasViewPoint()) {
+                    if (!JudgelsUtils.hasViewPoint()) {
                         UrielUtils.backupSession();
                     }
-                    UrielUtils.setViewPointInSession(userJid);
+                    JudgelsUtils.setViewPointInSession(userJid);
                     UrielUtils.setUserSession(JophielUtils.getUserByUserJid(userJid), userService.findUserByUserJid(userJid));
 
-                    ControllerUtils.getInstance().addActivityLog("View as user " + userViewpointForm.username + ".");
+                    ControllerUtils.getInstance().addActivityLog("View as user " + viewpointForm.username + ".");
 
                 } catch (IOException e) {
-                    UrielUtils.removeViewPoint();
+                    JudgelsUtils.removeViewPoint();
                     UrielUtils.restoreSession();
                 }
             }
@@ -130,7 +125,7 @@ public final class ApplicationController extends BaseController {
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result resetViewAs() {
-        UrielUtils.removeViewPoint();
+        JudgelsUtils.removeViewPoint();
         UrielUtils.restoreSession();
 
         return redirect(request().getHeader("Referer"));

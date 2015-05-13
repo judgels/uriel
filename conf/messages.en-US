@@ -210,10 +210,6 @@ upload.status=Status
 
 scoreboard.not_available=Scoreboard is not available at the moment.
 
-user.noViewpoint=No Viewpoint
-user.viewAs=View As
-user.resetViewAs=Reset View
-
 error.contestant.create.userIsAlreadyContestant=User is already contestant.
 error.contestant.create.userNotExist=User not exist..
 error.contestant.isAlreadyContestant=User is already contestant.

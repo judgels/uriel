@@ -47,22 +47,6 @@ public class UrielUtils {
         return Arrays.asList(getFromSession("role").split(",")).contains(role);
     }
 
-    public static boolean hasViewPoint() {
-        return Http.Context.current().session().containsKey("viewpoint");
-    }
-
-    public static String getViewPoint() {
-        return getFromSession("viewpoint");
-    }
-
-    public static void setViewPointInSession(String userJid) {
-        putInSession("viewpoint", userJid);
-    }
-
-    public static void removeViewPoint() {
-        Http.Context.current().session().remove("viewpoint");
-    }
-
     public static void backupSession() {
         putInSession("realUserJid", getFromSession("userJid"));
         putInSession("realName", getFromSession("name"));
