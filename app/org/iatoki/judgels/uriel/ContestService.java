@@ -8,6 +8,7 @@ import org.iatoki.judgels.uriel.commons.Scoreboard;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +19,9 @@ public interface ContestService {
 
     Contest findContestByJid(String contestJid);
 
-    Contest createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard);
+    Contest createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard, boolean requiresPassword);
 
-    void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard);
+    void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard, boolean requiresPassword);
 
     Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin);
 
@@ -89,6 +90,14 @@ public interface ContestService {
     void startTeamAsCoach(String contestJid, String teamJid);
 
     boolean isContestStarted(String contestJid, String contestContestantJid);
+
+    void generateContestantPasswordForAllContestants(String contestJid);
+
+    void generateContestantPassword(String contestJid, String contestantJid);
+
+    String getContestantPassword(String contestJid, String contestantJid);
+
+    Map<String, String> getContestantPasswordsMap(String contestJid, Collection<String> contestantJids);
 
     Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 

@@ -33,6 +33,8 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public boolean isIncognitoScoreboard;
 
+    public boolean requiresPassword;
+
     public ContestModel() {
     }
 

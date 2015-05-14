@@ -36,6 +36,7 @@ import org.iatoki.judgels.uriel.models.daos.hibernate.ContestAnnouncementHiberna
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestClarificationHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestConfigurationHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantHibernateDao;
+import org.iatoki.judgels.uriel.models.daos.hibernate.ContestContestantPasswordHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestManagerHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.hibernate.ContestProblemHibernateDao;
@@ -54,6 +55,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestConfigurationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantPasswordDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
@@ -82,6 +84,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private ContestClarificationDao contestClarificationDao;
     private ContestConfigurationDao contestConfigurationDao;
     private ContestContestantDao contestContestantDao;
+    private ContestContestantPasswordDao contestContestantPasswordDao;
     private ContestDao contestDao;
     private ContestManagerDao contestManagerDao;
     private ContestProblemDao contestProblemDao;
@@ -134,6 +137,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         contestClarificationDao = new ContestClarificationHibernateDao();
         contestConfigurationDao = new ContestConfigurationHibernateDao();
         contestContestantDao = new ContestContestantHibernateDao();
+        contestContestantPasswordDao = new ContestContestantPasswordHibernateDao();
         contestDao = new ContestHibernateDao();
         contestManagerDao = new ContestManagerHibernateDao();
         contestProblemDao = new ContestProblemHibernateDao();
@@ -207,6 +211,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 contestProblemDao,
                 contestClarificationDao,
                 contestContestantDao,
+                contestContestantPasswordDao,
                 contestTeamDao,
                 contestTeamCoachDao,
                 contestTeamMemberDao,

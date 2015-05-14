@@ -19,6 +19,7 @@ public abstract class ContestModel_ extends org.iatoki.judgels.commons.models.do
     public static volatile SingularAttribute<ContestModel, Boolean> isExclusive;
     public static volatile SingularAttribute<ContestModel, Boolean> isUsingScoreboard;
     public static volatile SingularAttribute<ContestModel, Boolean> isIncognitoScoreboard;
+    public static volatile SingularAttribute<ContestModel, Boolean> requiresPassword;
 
 }
 

@@ -15,6 +15,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
+import org.iatoki.judgels.uriel.ContestEnterWithPasswordForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
@@ -52,7 +53,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -160,7 +160,14 @@ public final class ContestController extends BaseController {
         if (ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
             Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToEnterContest(contest), ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
+            Form<ContestEnterWithPasswordForm> passwordForm;
+            if (ContestControllerUtils.getInstance().requiresPasswordToEnterContest(contest)) {
+                passwordForm = Form.form(ContestEnterWithPasswordForm.class);
+            } else {
+                passwordForm = null;
+            }
+
+            LazyHtml content = new LazyHtml(viewContestView.render(contest, contestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest), passwordForm, ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
             ControllerUtils.getInstance().appendSidebarLayout(content);
             ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -202,6 +209,32 @@ public final class ContestController extends BaseController {
         }
     }
 
+    public Result enterContestWithPassword(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+
+        if (ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest)) {
+            Form<ContestEnterWithPasswordForm> form = Form.form(ContestEnterWithPasswordForm.class).bindFromRequest();
+
+            String password = form.get().password;
+            String correctPassword = contestService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+
+            if (correctPassword == null) {
+                flash("password", Messages.get("contestant.password.notAvailable"));
+                return redirect(routes.ContestController.viewContest(contest.getId()));
+            } else if (!correctPassword.equals(password)) {
+                flash("password", Messages.get("contestant.password.incorrect"));
+                return redirect(routes.ContestController.viewContest(contest.getId()));
+            }
+
+            ContestControllerUtils.getInstance().establishContestWithPasswordCookie(correctPassword);
+
+            ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            return redirect(routes.ContestController.jumpToAnnouncements(contestId));
+        } else {
+            return redirect(routes.ContestController.index());
+        }
+    }
+
     public Result startContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -233,7 +266,7 @@ public final class ContestController extends BaseController {
             return showCreateContest(form);
         } else {
             ContestUpsertForm contestUpsertForm = form.get();
-            Contest contest = contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
+            Contest contest = contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
 
             ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertForm.name + ".");
 
@@ -267,7 +300,7 @@ public final class ContestController extends BaseController {
                 return showUpdateContestGeneralConfig(form, contest);
             } else {
                 ContestUpsertForm contestUpsertForm = form.get();
-                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard);
+                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
 
                 ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 

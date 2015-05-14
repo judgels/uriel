@@ -19,6 +19,7 @@ public final class ContestUpsertForm {
         this.isExclusive = contest.isExclusive();
         this.isUsingScoreboard = contest.isUsingScoreboard();
         this.isIncognitoScoreboard = contest.isIncognitoScoreboard();
+        this.requiresPassword = contest.requiresPassword();
     }
 
     @Constraints.Required
@@ -50,4 +51,5 @@ public final class ContestUpsertForm {
 
     public boolean isIncognitoScoreboard;
 
+    public boolean requiresPassword;
 }

@@ -1,4 +1,4 @@
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToEnter: Boolean, isAllowedToUpdate: Boolean)
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[org.iatoki.judgels.uriel.ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -11,6 +11,7 @@
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
+@import b3.inline.fieldConstructor
 
 <div class="well">
     @Html(contest.getDescription)
@@ -30,8 +31,19 @@
         <a href="@routes.ContestController.startContest(contest.getId)" class="start-contest-button btn btn-primary btn-sm">@Messages.get("contest.start")</a>
     }
 
-    @if(isAllowedToEnter) {
-        <a href="@routes.ContestController.enterContest(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
+    @if(isAllowedToViewEnterContestButton) {
+        @if(passwordForm == null) {
+            <a href="@routes.ContestController.enterContest(contest.getId)" id="enter-contest-button" class="btn btn-primary btn-sm">@Messages.get("contest.enter")</a>
+        }else {
+            @if(play.mvc.Controller.flash("password") != null) {
+                <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("password")}</div>
+            }
+
+            @b3.form(routes.ContestController.enterContestWithPassword(contest.getId)) {
+                @b3.password(passwordForm("password"), '_label -> "Password")
+                @b3.submit('class -> "btn btn-primary") { @Messages.get("contest.enter") }
+            }
+        }
     }
 
     @if(isAllowedToUpdate) {

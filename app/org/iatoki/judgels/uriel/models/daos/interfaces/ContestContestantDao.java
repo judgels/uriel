@@ -18,4 +18,6 @@ public interface ContestContestantDao extends Dao<Long, ContestContestantModel> 
     boolean isThereNewContestant(String contestJid, long lastTime);
 
     List<String> findContestJidsByContestantJid(String contestantJid);
+
+    List<ContestContestantModel> findAllByContestJid(String contestJid);
 }

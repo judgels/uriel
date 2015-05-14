@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.iatoki.judgels.commons.FileInfo;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.IdentityUtils;
@@ -18,6 +19,7 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestConfigurationDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantDao;
+import org.iatoki.judgels.uriel.models.daos.interfaces.ContestContestantPasswordDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestProblemDao;
@@ -31,6 +33,7 @@ import org.iatoki.judgels.uriel.models.domains.ContestAnnouncementModel;
 import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestConfigurationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
+import org.iatoki.judgels.uriel.models.domains.ContestContestantPasswordModel;
 import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
@@ -50,6 +53,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -66,6 +70,7 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestProblemDao contestProblemDao;
     private final ContestClarificationDao contestClarificationDao;
     private final ContestContestantDao contestContestantDao;
+    private final ContestContestantPasswordDao contestContestantPasswordDao;
     private final ContestTeamDao contestTeamDao;
     private final ContestTeamCoachDao contestTeamCoachDao;
     private final ContestTeamMemberDao contestTeamMemberDao;
@@ -77,12 +82,13 @@ public final class ContestServiceImpl implements ContestService {
     private final FileSystemProvider teamAvatarFileProvider;
     private final FileSystemProvider contestFileProvider;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider, FileSystemProvider contestFileProvider) {
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider, FileSystemProvider contestFileProvider) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
         this.contestClarificationDao = contestClarificationDao;
         this.contestContestantDao = contestContestantDao;
+        this.contestContestantPasswordDao = contestContestantPasswordDao;
         this.contestTeamDao = contestTeamDao;
         this.contestTeamCoachDao = contestTeamCoachDao;
         this.contestTeamMemberDao = contestTeamMemberDao;
@@ -120,7 +126,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Contest createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public Contest createContest(String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard, boolean requiresPassword) {
         ContestModel contestModel = new ContestModel();
         contestModel.name = name;
         contestModel.description = description;
@@ -133,6 +139,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.isExclusive = isExclusive;
         contestModel.isUsingScoreboard = isUsingScoreboard;
         contestModel.isIncognitoScoreboard = isIncognitoScoreboard;
+        contestModel.requiresPassword = requiresPassword;
 
         contestDao.persist(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
@@ -178,7 +185,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    public void updateContest(long contestId, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard, boolean requiresPassword) {
         boolean isTypeChanged;
         boolean isStyleChanged;
         boolean isScopeChanged;
@@ -199,6 +206,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.isExclusive = isExclusive;
         contestModel.isUsingScoreboard = isUsingScoreboard;
         contestModel.isIncognitoScoreboard = isIncognitoScoreboard;
+        contestModel.requiresPassword = requiresPassword;
 
         contestDao.edit(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
@@ -633,6 +641,35 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public boolean isContestStarted(String contestJid, String contestContestantJid) {
         return contestContestantDao.isContestStarted(contestJid, contestContestantJid);
+    }
+
+    @Override
+    public void generateContestantPasswordForAllContestants(String contestJid) {
+        List<ContestContestantModel> contestantModels = contestContestantDao.findAllByContestJid(contestJid);
+
+        for (ContestContestantModel contestantModel : contestantModels) {
+            generateNewPassword(contestJid, contestantModel);
+        }
+    }
+
+    @Override
+    public void generateContestantPassword(String contestJid, String contestantJid) {
+        ContestContestantModel contestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestantJid);
+        generateNewPassword(contestJid, contestantModel);
+    }
+
+    @Override
+    public String getContestantPassword(String contestJid, String contestantJid) {
+        if (contestContestantPasswordDao.existsByContestJidAndContestantJid(contestJid, contestantJid)) {
+            return contestContestantPasswordDao.findByContestJidAndContestantJid(contestJid, contestantJid).password;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Map<String, String> getContestantPasswordsMap(String contestJid, Collection<String> contestantJids) {
+        return contestContestantPasswordDao.getContestantPasswordsByContestJidAndContestantJids(contestJid, contestantJids);
     }
 
     @Override
@@ -1133,7 +1170,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     private Contest createContestFromModel(ContestModel contestModel) {
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime), new Date(contestModel.clarificationEndTime), contestModel.isExclusive, contestModel.isUsingScoreboard, contestModel.isIncognitoScoreboard);
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestType.valueOf(contestModel.type), ContestScope.valueOf(contestModel.scope), ContestStyle.valueOf(contestModel.style), new Date(contestModel.startTime), new Date(contestModel.endTime), new Date(contestModel.clarificationEndTime), contestModel.isExclusive, contestModel.isUsingScoreboard, contestModel.isIncognitoScoreboard, contestModel.requiresPassword);
     }
 
     private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
@@ -1189,6 +1226,21 @@ public final class ContestServiceImpl implements ContestService {
             return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.apis.routes.ContestAPIController.renderTeamAvatarImage(imageName));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void generateNewPassword(String contestJid, ContestContestantModel contestantModel) {
+        String newPassword = RandomStringUtils.random(6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+        if (contestContestantPasswordDao.existsByContestJidAndContestantJid(contestJid, contestantModel.userJid)) {
+            ContestContestantPasswordModel existingModel = contestContestantPasswordDao.findByContestJidAndContestantJid(contestJid, contestantModel.userJid);
+            existingModel.password = newPassword;
+            contestContestantPasswordDao.edit(existingModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        } else {
+            ContestContestantPasswordModel newModel = new ContestContestantPasswordModel();
+            newModel.contestJid = contestJid;
+            newModel.contestantJid = contestantModel.userJid;
+            newModel.password = newPassword;
+            contestContestantPasswordDao.persist(newModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
     }
 }

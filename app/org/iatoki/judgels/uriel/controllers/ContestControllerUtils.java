@@ -16,6 +16,7 @@ import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
+import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import play.i18n.Messages;
 import play.mvc.Controller;
@@ -23,10 +24,13 @@ import play.mvc.Result;
 import play.mvc.Results;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public final class ContestControllerUtils {
 
     private ContestService contestService;
+
+    private static final String CURRENT_CONTEST_WITH_PASSWORD_KEY = "currentContestWithPassword";
 
     static final ContestControllerUtils INSTANCE = new ContestControllerUtils();
 
@@ -135,13 +139,14 @@ public final class ContestControllerUtils {
         return result;
     }
 
-    boolean isAllowedToEnterContest(Contest contest) {
+    boolean isAllowedToViewEnterContestButton(Contest contest) {
         if (isCoachOrAbove(contest)) {
             return true;
         }
         if (!isContestant(contest)) {
             return false;
         }
+
         if (contest.isStandard()) {
             return hasContestBegun(contest);
         } else {
@@ -153,6 +158,36 @@ public final class ContestControllerUtils {
                 return ((hasContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }
         }
+    }
+
+    boolean isAllowedToEnterContest(Contest contest) {
+        if (!isAllowedToViewEnterContestButton(contest)) {
+            return false;
+        }
+        if (isCoachOrAbove(contest)) {
+            return true;
+        }
+        if (!isContestant(contest)) {
+            return false;
+        }
+        if (contest.requiresPassword() && !UrielUtils.trullyHasRole("admin")) {
+            String password = contestService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+            if (password == null) {
+                return false;
+            }
+            return hasEstablishedContestWithPasswordCookie(password);
+        }
+        return true;
+    }
+
+    boolean requiresPasswordToEnterContest(Contest contest) {
+        if (UrielUtils.trullyHasRole("admin")) {
+            return false;
+        }
+        if (isSupervisorOrAbove(contest)) {
+            return false;
+        }
+        return contest.requiresPassword();
     }
 
     boolean isAllowedToStartContestAsContestant(Contest contest) {
@@ -233,6 +268,14 @@ public final class ContestControllerUtils {
         }
     }
 
+    void establishContestWithPasswordCookie(String contestPassword) {
+        Controller.response().setCookie(contestPassword, "true", (int)TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
+    }
+
+    boolean hasEstablishedContestWithPasswordCookie(String contestPassword) {
+        return Controller.request().cookie(contestPassword) != null;
+    }
+
     void appendTabsLayout(LazyHtml content, Contest contest) {
         final Date contestEndTime;
         if ((contest.isVirtual()) && (isContestant(contest))) {
@@ -283,5 +326,9 @@ public final class ContestControllerUtils {
                 .add(new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())));
 
         return internalLinks;
+    }
+
+    private String constructContestPasswordSessionKey(Contest contest) {
+        return contest.getJid() + "-password";
     }
 }
