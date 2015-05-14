@@ -30,7 +30,9 @@ public final class Contest implements Comparable<Contest> {
 
     private final boolean isIncognitoScoreboard;
 
-    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard) {
+    private final boolean requiresPassword;
+
+    public Contest(long id, String jid, String name, String description, ContestType type, ContestScope scope, ContestStyle style, Date startTime, Date endTime, Date clarificationEndTime, boolean isExclusive, boolean isUsingScoreboard, boolean isIncognitoScoreboard, boolean requiresPassword) {
         this.id = id;
         this.jid = jid;
         this.name = name;
@@ -44,6 +46,7 @@ public final class Contest implements Comparable<Contest> {
         this.isExclusive = isExclusive;
         this.isUsingScoreboard = isUsingScoreboard;
         this.isIncognitoScoreboard = isIncognitoScoreboard;
+        this.requiresPassword = requiresPassword;
     }
 
     public long getId() {
@@ -100,6 +103,10 @@ public final class Contest implements Comparable<Contest> {
 
     public boolean isIncognitoScoreboard() {
         return isIncognitoScoreboard;
+    }
+
+    public boolean requiresPassword() {
+        return requiresPassword;
     }
 
     public boolean isStandard() {
