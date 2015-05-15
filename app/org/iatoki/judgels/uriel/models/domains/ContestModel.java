@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.models.domains;
 import org.iatoki.judgels.commons.models.JidPrefix;
 import org.iatoki.judgels.commons.models.domains.AbstractJudgelsModel;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -13,6 +14,7 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public String name;
 
+    @Column(columnDefinition = "TEXT")
     public String description;
 
     public String type;
