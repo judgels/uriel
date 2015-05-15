@@ -40,7 +40,7 @@ GET         /contest/$cId<[0-9]{1,18}>/clarifications                           
 GET         /contest/$cId<[0-9]{1,18}>/contestants                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToContestants(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/supervisors                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToSupervisors(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/managers                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToManagers(cId: Long)
-GET         /contest/$cId<[0-9]{1,18}>/files                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToFiles(cId: Long)
+GET         /contest/$cId<[0-9]{1,18}>/files                                                             @org.iatoki.judgels.uriel.controllers.ContestController.jumpToFiles(cId: Long)
 
 GET         /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.updateContestGeneralConfig(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestGeneralConfig(cId: Long)
@@ -151,3 +151,4 @@ POST        /users/$uId<[0-9]{1,18}>/update                                     
 GET         /users/$uId<[0-9]{1,18}>/delete                                                              @org.iatoki.judgels.uriel.controllers.UserController.deleteUser(uId: Long)
 
 POST        /apis/testing/singleFileBlackBoxSubmit                                                       @org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController.singleFileBlackBoxSubmit()
+POST        /apis/scoreboards                                                                            @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.getScoreboard()

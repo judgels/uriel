@@ -18,6 +18,7 @@ public final class UrielProperties {
     private String urielBaseUrl;
     private File urielBaseDataDir;
     private String urielStressTestSecret;
+    private String urielScoreboardSecret;
 
     private String jophielBaseUrl;
     private String jophielClientJid;
@@ -88,6 +89,10 @@ public final class UrielProperties {
 
     public String getUrielStressTestSecret() {
         return urielStressTestSecret;
+    }
+
+    public String getUrielScoreboardSecret() {
+        return urielScoreboardSecret;
     }
 
     public String getJophielBaseUrl() {
@@ -358,7 +363,8 @@ public final class UrielProperties {
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
         urielBaseDataDir = requireDirectoryValue("uriel.baseDataDir");
-        urielStressTestSecret = requireStringValue("uriel.stressTestSecret");
+        urielStressTestSecret = getStringValue("uriel.stressTestSecret");
+        urielScoreboardSecret = getStringValue("uriel.scoreboardSecret");
 
         jophielBaseUrl = requireStringValue("jophiel.baseUrl");
         jophielClientJid = requireStringValue("jophiel.clientJid");

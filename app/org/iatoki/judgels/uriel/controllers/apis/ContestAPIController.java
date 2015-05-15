@@ -8,14 +8,18 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.ContestScoreboard;
+import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
+import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
 import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
+import play.data.DynamicForm;
 import play.db.jpa.Transactional;
 import play.libs.Json;
 import play.mvc.Controller;
@@ -35,7 +39,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Transactional
-@Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class ContestAPIController extends Controller {
 
     private static final long PAGE_SIZE = 20;
@@ -46,6 +49,8 @@ public final class ContestAPIController extends Controller {
         this.contestService = contestService;
     }
 
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result unreadAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
@@ -61,6 +66,7 @@ public final class ContestAPIController extends Controller {
         }
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result unreadClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
@@ -82,6 +88,8 @@ public final class ContestAPIController extends Controller {
         }
     }
 
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result unansweredClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
@@ -97,6 +105,8 @@ public final class ContestAPIController extends Controller {
         }
     }
 
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result renderTeamAvatarImage(String imageName) {
         response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
 
@@ -144,6 +154,38 @@ public final class ContestAPIController extends Controller {
                 return notFound();
             }
         }
+    }
+
+    public Result getScoreboard() {
+        DynamicForm form = DynamicForm.form().bindFromRequest();
+
+        String secret = form.get("secret");
+        String contestJid = form.get("contestJid");
+        String type = form.get("type");
+
+        if (secret == null || contestJid == null || type == null) {
+            return notFound();
+        }
+
+        if (!UrielProperties.getInstance().getUrielStressTestSecret().equals(secret)) {
+            return notFound();
+        }
+
+        ContestScoreboardType contestScoreboardType;
+        try {
+            contestScoreboardType = ContestScoreboardType.valueOf(type);
+        } catch (IllegalArgumentException e) {
+            return notFound();
+        }
+
+        ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, contestScoreboardType);
+
+        // If the type is invalid, or no frozen scoreboard has been generated, resort to the official one.
+        if (contestScoreboard == null) {
+            contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, ContestScoreboardType.OFFICIAL);
+        }
+
+        return ok(new Gson().toJson(contestScoreboard));
     }
 
     private boolean isAdmin() {
