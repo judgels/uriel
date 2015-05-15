@@ -14,10 +14,11 @@
 @import b3.inline.fieldConstructor
 
 <div class="well">
-    @Html(contest.getDescription)
+    @Html(JudgelsUtils.escapeHtmlString(contest.getDescription))
     <hr />
+    <p>
     <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
-    <hr />
+    </p>
 
     @if(isRegistered) {
         <p>You have been successfully registered. You can enter after contest starts.</p>
