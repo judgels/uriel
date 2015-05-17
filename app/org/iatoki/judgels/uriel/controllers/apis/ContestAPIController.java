@@ -178,10 +178,12 @@ public final class ContestAPIController extends Controller {
             return notFound();
         }
 
-        ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, contestScoreboardType);
+        ContestScoreboard contestScoreboard;
 
-        // If the type is invalid, or no frozen scoreboard has been generated, resort to the official one.
-        if (contestScoreboard == null) {
+        if (contestService.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, contestScoreboardType)) {
+            contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, contestScoreboardType);
+        } else {
+            // Resort to the official one.
             contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, ContestScoreboardType.OFFICIAL);
         }
 
