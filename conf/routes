@@ -22,7 +22,7 @@ GET         /contests                                                           
 GET         /contests/                                                                                   @org.iatoki.judgels.uriel.controllers.ContestController.listAllowedContests(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 
 GET         /contests/$cId<[0-9]{1,18}>/view                                                             @org.iatoki.judgels.uriel.controllers.ContestController.viewContest(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/view/                                                            @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filtertring ?= "")
+GET         /contests/$cId<[0-9]{1,18}>/view/                                                            @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filtertring ?= "")
 
 GET         /contests/$cId<[0-9]{1,18}>/register                                                         @org.iatoki.judgels.uriel.controllers.ContestController.registerToAContest(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/enter                                                            @org.iatoki.judgels.uriel.controllers.ContestController.enterContest(cId: Long)

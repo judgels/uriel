@@ -151,7 +151,7 @@ public final class ContestController extends BaseController {
     }
 
     public Result viewContest(long contestId) throws ContestNotFoundException {
-        return viewContestAndListRegistrants(contestId, 0, "id", "asc", "");
+        return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
     }
 
     public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
