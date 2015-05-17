@@ -134,6 +134,9 @@ public final class ContestHibernateDao extends AbstractJudgelsHibernateDao<Conte
                     )
                 ));
         }
+
+        query.orderBy(cb.desc(root.get(ContestModel_.startTime)), cb.desc(root.get(ContestModel_.name)));
+
         return JPA.em().createQuery(query).setFirstResult((int) offset).setMaxResults((int) limit).getResultList();
     }
 

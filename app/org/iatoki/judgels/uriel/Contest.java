@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel;
 
 import java.util.Date;
 
-public final class Contest implements Comparable<Contest> {
+public final class Contest {
 
     private final long id;
 
@@ -131,10 +131,5 @@ public final class Contest implements Comparable<Contest> {
 
     public boolean isIOI() {
         return style.equals(ContestStyle.IOI);
-    }
-
-    @Override
-    public int compareTo(Contest o) {
-        return o.getStartTime().compareTo(this.getStartTime());
     }
 }

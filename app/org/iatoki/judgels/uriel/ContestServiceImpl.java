@@ -271,9 +271,8 @@ public final class ContestServiceImpl implements ContestService {
             long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of());
             List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
-            List<Contest> contests = Lists.newArrayList(Lists.transform(contestModels, m -> createContestFromModel(m)));
-            Collections.sort(contests);
-            return new Page<>(ImmutableList.copyOf(contests), totalRowsCount, pageIndex, pageSize);
+            List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+            return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
         } else {
             List<String> contestJidsWhereIsContestant = contestContestantDao.findContestJidsByContestantJid(IdentityUtils.getUserJid());
             List<ContestModel> contestModels = contestDao.getRunningContestsWithinContestJids(System.currentTimeMillis(), contestJidsWhereIsContestant);
@@ -308,9 +307,8 @@ public final class ContestServiceImpl implements ContestService {
                 contestModels = contestDao.findSortedContestsWithinContestJidsOrIsRunningPublicByFilters(orderBy, orderDir, filterString, contestJids, pageIndex * pageSize, pageSize, System.currentTimeMillis());
             }
 
-            List<Contest> contests = Lists.newArrayList(Lists.transform(contestModels, m -> createContestFromModel(m)));
-            Collections.sort(contests);
-            return new Page<>(ImmutableList.copyOf(contests), totalRowsCount, pageIndex, pageSize);
+            List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
+            return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
         }
     }
 
