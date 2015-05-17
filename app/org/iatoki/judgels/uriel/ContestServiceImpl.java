@@ -605,6 +605,12 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
+    public void deleteContestContestant(long contestContestantId) {
+        ContestContestantModel contestContestantModel = contestContestantDao.findById(contestContestantId);
+        contestContestantDao.remove(contestContestantModel);
+    }
+
+    @Override
     public long getContestContestantCount(String contestJid) {
         return contestContestantDao.countContestContestantByContestJid(contestJid);
     }

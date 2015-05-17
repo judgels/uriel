@@ -83,6 +83,8 @@ public interface ContestService {
 
     void updateContestContestant(long contestContestantId, ContestContestantStatus status);
 
+    void deleteContestContestant(long contestContestantId);
+
     long getContestContestantCount(String contestJid);
 
     void startContestAsContestant(String contestJid, String userJid);

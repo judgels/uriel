@@ -18,6 +18,7 @@ contest.endTime=End Time
 
 contest.registrants=Registrants
 contest.register=Register
+contest.unregister=Unregister
 contest.enter=Enter
 
 announcement.announcements=Announcements

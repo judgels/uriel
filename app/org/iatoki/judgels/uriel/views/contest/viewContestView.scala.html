@@ -1,4 +1,4 @@
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[org.iatoki.judgels.uriel.ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[org.iatoki.judgels.uriel.ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -26,6 +26,10 @@
 
     @if(isAllowedToRegister) {
         <a href="@routes.ContestController.registerToAContest(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.register")</a>
+    }
+
+    @if(isAllowedToUnregister) {
+        <a href="@routes.ContestController.unregisterFromAContest(contest.getId)" class="btn btn-primary btn-sm">@Messages.get("contest.unregister")</a>
     }
 
     @if(isAllowedToStart) {

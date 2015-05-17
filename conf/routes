@@ -25,6 +25,7 @@ GET         /contests/$cId<[0-9]{1,18}>/view                                    
 GET         /contests/$cId<[0-9]{1,18}>/view/                                                            @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filtertring ?= "")
 
 GET         /contests/$cId<[0-9]{1,18}>/register                                                         @org.iatoki.judgels.uriel.controllers.ContestController.registerToAContest(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/unregister                                                         @org.iatoki.judgels.uriel.controllers.ContestController.unregisterFromAContest(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/enter                                                            @org.iatoki.judgels.uriel.controllers.ContestController.enterContest(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/enterWithPassword                                                @org.iatoki.judgels.uriel.controllers.ContestController.enterContestWithPassword(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/start                                                            @org.iatoki.judgels.uriel.controllers.ContestController.startContest(cId: Long)

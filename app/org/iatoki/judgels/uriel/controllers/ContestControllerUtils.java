@@ -139,6 +139,10 @@ public final class ContestControllerUtils {
         return result;
     }
 
+    boolean isAllowedToUnregisterContest(Contest contest) {
+        return isContestant(contest) && contest.isPublic() && !hasContestStarted(contest);
+    }
+
     boolean isAllowedToViewEnterContestButton(Contest contest) {
         if (isCoachOrAbove(contest)) {
             return true;
