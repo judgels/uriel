@@ -167,7 +167,7 @@ public final class ContestAPIController extends Controller {
             return notFound();
         }
 
-        if (!UrielProperties.getInstance().getUrielStressTestSecret().equals(secret)) {
+        if (!UrielProperties.getInstance().getUrielScoreboardSecret().equals(secret)) {
             return notFound();
         }
 
