@@ -118,7 +118,7 @@ public final class UserServiceImpl implements UserService {
     @Override
     public void upsertUserFromJophielUserJid(String userJid) {
         try {
-            org.iatoki.judgels.jophiel.User user = JophielUtils.getUserByUserJid(userJid);
+            org.iatoki.judgels.jophiel.commons.User user = JophielUtils.getUserByUserJid(userJid);
 
             if (!userDao.existsByUserJid(userJid)) {
                 UserModel userRoleModel = new UserModel();
