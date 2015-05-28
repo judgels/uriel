@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.AbstractJidCacheService;
-import org.iatoki.judgels.gabriel.commons.Submission;
+import org.iatoki.judgels.sandalphon.commons.Submission;
 import org.iatoki.judgels.uriel.commons.ContestScoreState;
 import org.iatoki.judgels.uriel.commons.IOIScoreboard;
 import org.iatoki.judgels.uriel.commons.IOIScoreboardContent;
