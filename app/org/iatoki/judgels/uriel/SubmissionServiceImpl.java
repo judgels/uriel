@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.FileSystemProvider;
-import org.iatoki.judgels.gabriel.commons.AbstractSubmissionServiceImpl;
+import org.iatoki.judgels.sandalphon.commons.AbstractSubmissionServiceImpl;
 import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.models.daos.interfaces.GradingDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;

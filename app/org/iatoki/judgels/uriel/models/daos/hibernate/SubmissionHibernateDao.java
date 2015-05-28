@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
-import org.iatoki.judgels.gabriel.commons.models.daos.hibernate.AbstractSubmissionHibernateDao;
+import org.iatoki.judgels.sandalphon.commons.models.daos.hibernate.AbstractSubmissionHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;
 import org.iatoki.judgels.uriel.models.domains.SubmissionModel;
 
