@@ -17,7 +17,7 @@
     @Html(JudgelsUtils.escapeHtmlString(contest.getDescription))
     <hr />
     <p>
-    <small>@JudgelsUtils.formatDate(contest.getStartTime) -  @JudgelsUtils.formatDate(contest.getEndTime)</small>
+    <small><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
     </p>
 
     @if(isRegistered) {

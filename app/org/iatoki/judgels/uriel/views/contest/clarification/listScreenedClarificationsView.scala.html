@@ -10,7 +10,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestClarification.getTitle | @contestClarification.getTopic</span>
-            <span class="panel-title pull-right"><small>@JidCacheService.getInstance().getDisplayName(contestClarification.getAskerJid) @@ @JudgelsUtils.formatDate(contestClarification.getAskedTime)</small></span>
+            <span class="panel-title pull-right"><small>@JidCacheService.getInstance().getDisplayName(contestClarification.getAskerJid) @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestClarification.getAskedTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestClarification.getAskedTime.getTime)</time></small></span>
         </div>
         <div class="panel-body">
             @Html(JudgelsUtils.escapeHtmlString(contestClarification.getQuestion))

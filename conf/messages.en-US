@@ -175,7 +175,7 @@ contestant.usernames=Usernames
 contest.start.confirm=Do you really want to start the contest? If you do, there is no turning back.
 
 contest.start=Start
-contest.started=Started at
+contest.started=Started
 contest.notStarted=Not started yet
 contest.cantStart=Cannot start yet for now
 

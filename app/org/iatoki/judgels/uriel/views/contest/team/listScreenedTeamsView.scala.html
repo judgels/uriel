@@ -2,8 +2,6 @@
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
-
-@import java.text.SimpleDateFormat
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
@@ -37,7 +35,7 @@
                     @Messages.get("contest.cantStart")
                 }else {
                 @if(contestTeam.isStarted) {
-                    @Messages.get("contest.started"): @{new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss Z").format(contestTeam.getContestStartTime)}
+                    @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
                 }else {
                     <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
                         @Messages.get("contest.start")</a>

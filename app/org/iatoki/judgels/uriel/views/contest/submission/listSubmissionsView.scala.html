@@ -83,7 +83,7 @@
                 <td><small>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</small></td>
                 <td><small>@submission.getLatestVerdict.getName</small></td>
                 <td><small>@submission.getLatestScore</small></td>
-                <td><small>@JudgelsUtils.formatDate(submission.getTime)</small></td>
+                <td><small><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(submission.getTime.getTime)">@JudgelsUtils.formatDetailedDateTime(submission.getTime.getTime)</time></small></td>
                 <td class="text-center">
                     <a href="@routes.ContestSubmissionController.viewSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                     <a href="@routes.ContestSubmissionController.regradeSubmission(contestId, submission.getId, pageIndex, orderBy, orderDir, contestantJid, problemJid)" onclick="return confirm('Are you sure you want to regrade?');"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
