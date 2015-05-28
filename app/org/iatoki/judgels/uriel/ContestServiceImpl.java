@@ -30,16 +30,22 @@ import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.ContestTeamMemberDao;
 import org.iatoki.judgels.uriel.models.domains.ContestAnnouncementModel;
+import org.iatoki.judgels.uriel.models.domains.ContestAnnouncementModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel;
+import org.iatoki.judgels.uriel.models.domains.ContestClarificationModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestConfigurationModel;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantModel;
+import org.iatoki.judgels.uriel.models.domains.ContestContestantModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestContestantPasswordModel;
 import org.iatoki.judgels.uriel.models.domains.ContestManagerModel;
+import org.iatoki.judgels.uriel.models.domains.ContestManagerModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestModel;
 import org.iatoki.judgels.uriel.models.domains.ContestProblemModel;
+import org.iatoki.judgels.uriel.models.domains.ContestProblemModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestReadModel;
 import org.iatoki.judgels.uriel.models.domains.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel;
+import org.iatoki.judgels.uriel.models.domains.ContestSupervisorModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamCoachModel;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamCoachModel_;
 import org.iatoki.judgels.uriel.models.domains.ContestTeamMemberModel;
@@ -241,7 +247,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestModel.jid, ContestScoreboardType.FROZEN.name());
                 contestScoreboardDao.remove(contestScoreboardModel);
             } catch (NoResultException e) {
-
+                throw new RuntimeException(e);
             } finally {
                 // TODO recompute everything in this fucking scoreboard include fronzen scoreboard
 
@@ -268,8 +274,8 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin) {
         if (isAdmin) {
-            long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of());
-            List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
+            long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
+            List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
             List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m));
             return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
@@ -320,7 +326,7 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public ContestScoreState getContestStateByJid(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJidOrderedByAlias(contestJid);
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid, "status", ContestContestantStatus.APPROVED.name()), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid, ContestContestantModel_.status, ContestContestantStatus.APPROVED.name()), ImmutableMap.of(), 0, -1);
 
         List<String> problemJids = Lists.transform(contestProblemModels, m -> m.problemJid);
         List<String> problemAliases = Lists.transform(contestProblemModels, m -> m.alias);
@@ -337,15 +343,15 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
-        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
-        filterColumnsBuilder.put("contestJid", contestJid);
+        ImmutableMap.Builder<SingularAttribute<? super ContestAnnouncementModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+        filterColumnsBuilder.put(ContestAnnouncementModel_.contestJid, contestJid);
         if (status != null) {
-            filterColumnsBuilder.put("status", status);
+            filterColumnsBuilder.put(ContestAnnouncementModel_.status, status);
         }
-        Map<String, String> filterColumns = filterColumnsBuilder.build();
+        Map<SingularAttribute<? super ContestAnnouncementModel, String>, String> filterColumns = filterColumnsBuilder.build();
 
-        long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns);
-        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex, pageIndex * pageSize);
+        long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
+        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex, pageIndex * pageSize);
         List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> createContestAnnouncementFromModel(m));
 
         return new Page<>(contestAnnouncements, totalPages, pageIndex, pageSize);
@@ -405,15 +411,15 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
-        ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
-        filterColumnsBuilder.put("contestJid", contestJid);
+        ImmutableMap.Builder<SingularAttribute<? super ContestProblemModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+        filterColumnsBuilder.put(ContestProblemModel_.contestJid, contestJid);
         if (status != null) {
-            filterColumnsBuilder.put("status", status);
+            filterColumnsBuilder.put(ContestProblemModel_.status, status);
         }
-        Map<String, String> filterColumns = filterColumnsBuilder.build();
+        Map<SingularAttribute<? super ContestProblemModel, String>, String> filterColumns = filterColumnsBuilder.build();
 
-        long totalPages = contestProblemDao.countByFilters(filterString, filterColumns);
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
+        long totalPages = contestProblemDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalPages, pageIndex, pageSize);
@@ -480,12 +486,12 @@ public final class ContestServiceImpl implements ContestService {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         if (askerJids == null) {
-            ImmutableMap.Builder<String, String> filterColumnsBuilder = ImmutableMap.builder();
-            filterColumnsBuilder.put("contestJid", contestJid);
-            Map<String, String> filterColumns = filterColumnsBuilder.build();
+            ImmutableMap.Builder<SingularAttribute<? super ContestClarificationModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+            filterColumnsBuilder.put(ContestClarificationModel_.contestJid, contestJid);
+            Map<SingularAttribute<? super ContestClarificationModel, String>, String> filterColumns = filterColumnsBuilder.build();
 
-            long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns);
-            List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
+            long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
+            List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
             List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
 
             return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
@@ -549,14 +555,14 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public List<ContestContestant> findAllContestContestantsByContestJid(String contestJid) {
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
         return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
     }
 
     @Override
     public Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+        long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of());
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
         List<ContestContestant> contestContestants = Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
 
@@ -917,8 +923,8 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
-        List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+        long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of());
+        List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> createContestSupervisorFromModel(m));
         return new Page<>(contestSupervisors, totalPages, pageIndex, pageSize);
     }
@@ -968,8 +974,8 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<ContestManager> pageContestManagersByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of("contestJid", contestJid));
-        List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of("contestJid", contestJid), pageIndex * pageSize, pageSize);
+        long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of());
+        List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));
 
         return new Page<>(contestManagers, totalPages, pageIndex, pageSize);
@@ -1086,7 +1092,7 @@ public final class ContestServiceImpl implements ContestService {
         Map<String, ContestTeamModel> contestTeamModelMap = contestTeamModelBuilder.build();
 
         List<String> contestTeamJids = contestTeamModels.stream().map(ct -> ct.jid).collect(Collectors.toList());
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of("contestJid", contestJid), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
 
         for (ContestContestantModel contestContestantModel : contestContestantModels) {
             if (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(contestContestantModel.userJid, contestTeamJids)) {

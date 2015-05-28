@@ -10,6 +10,8 @@ import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.JudgelsProperties;
 import org.iatoki.judgels.commons.LocalFileSystemProvider;
+import org.iatoki.judgels.jophiel.commons.DefaultUserActivityServiceImpl;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.sandalphon.commons.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
@@ -28,6 +30,7 @@ import org.iatoki.judgels.uriel.controllers.ContestScoreboardController;
 import org.iatoki.judgels.uriel.controllers.ContestSubmissionController;
 import org.iatoki.judgels.uriel.controllers.ContestSupervisorController;
 import org.iatoki.judgels.uriel.controllers.ContestTeamController;
+import org.iatoki.judgels.uriel.controllers.ControllerUtils;
 import org.iatoki.judgels.uriel.controllers.UserController;
 import org.iatoki.judgels.uriel.controllers.apis.ContestAPIController;
 import org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController;
@@ -101,6 +104,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private UrielProperties urielProps;
 
+    private Jophiel jophiel;
     private Sealtiel sealtiel;
 
     private FileSystemProvider teamAvatarFileProvider;
@@ -116,9 +120,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     @Override
     public void onStart(Application application) {
-        buildDaos();
         buildProperties();
-        buildSealtiel();
+        buildDaos();
+        buildCommons();
         buildFileProviders();
         buildServices();
         buildUtils();
@@ -163,7 +167,8 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         urielProps = UrielProperties.getInstance();
     }
 
-    private void buildSealtiel() {
+    private void buildCommons() {
+        jophiel = new Jophiel(urielProps.getJophielClientJid(), urielProps.getJophielClientSecret(), urielProps.getJophielBaseUrl());
         sealtiel = new Sealtiel(urielProps.getSealtielClientJid(), urielProps.getSealtielClientSecret(), urielProps.getSealtielBaseUrl());
     }
 
@@ -225,10 +230,12 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         );
 
         submissionService = new SubmissionServiceImpl(submissionDao, gradingDao, sealtiel, urielProps.getSealtielGabrielClientJid());
-        userService = new UserServiceImpl(userDao);
+        userService = new UserServiceImpl(jophiel, userDao);
 
-        JidCacheService.getInstance().setDao(jidCacheDao);
-        AvatarCacheService.getInstance().setDao(avatarCacheDao);
+        JidCacheService.buildInstance(jidCacheDao);
+        AvatarCacheService.buildInstance(jophiel, avatarCacheDao);
+        ControllerUtils.buildInstance(jophiel);
+        DefaultUserActivityServiceImpl.buildInstance(jophiel);
     }
 
     private void buildUtils() {
@@ -237,18 +244,18 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private void buildControllers() {
         controllersRegistry = ImmutableMap.<Class<?>, Controller> builder()
-                .put(ApplicationController.class, new ApplicationController(userService))
-                .put(JophielClientController.class, new JophielClientController(userService))
+                .put(ApplicationController.class, new ApplicationController(jophiel, userService))
+                .put(JophielClientController.class, new JophielClientController(jophiel, userService))
                 .put(ContestAnnouncementController.class, new ContestAnnouncementController(contestService))
                 .put(ContestClarificationController.class, new ContestClarificationController(contestService))
-                .put(ContestContestantController.class, new ContestContestantController(contestService, userService))
+                .put(ContestContestantController.class, new ContestContestantController(jophiel, contestService, userService))
                 .put(ContestController.class, new ContestController(contestService))
-                .put(ContestManagerController.class, new ContestManagerController(contestService, userService))
+                .put(ContestManagerController.class, new ContestManagerController(jophiel, contestService, userService))
                 .put(ContestProblemController.class, new ContestProblemController(contestService, submissionService))
                 .put(ContestScoreboardController.class, new ContestScoreboardController(contestService, submissionService))
                 .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionLocalFileProvider, submissionRemoteFileProvider))
-                .put(ContestSupervisorController.class, new ContestSupervisorController(contestService, userService))
-                .put(ContestTeamController.class, new ContestTeamController(contestService, userService))
+                .put(ContestSupervisorController.class, new ContestSupervisorController(jophiel, contestService, userService))
+                .put(ContestTeamController.class, new ContestTeamController(jophiel, contestService, userService))
                 .put(ContestFileController.class, new ContestFileController(contestService))
                 .put(UserController.class, new UserController(userService))
                 .put(ContestAPIController.class, new ContestAPIController(contestService))
@@ -262,7 +269,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
-        UserActivityPusher userActivityPusher = new UserActivityPusher(userService, UserActivityServiceImpl.getInstance());
+        UserActivityPusher userActivityPusher = new UserActivityPusher(jophiel, userService, UserActivityServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);

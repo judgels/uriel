@@ -2,9 +2,9 @@ package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
-import org.iatoki.judgels.commons.ViewpointForm;
+import org.iatoki.judgels.jophiel.commons.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.BaseController;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.uriel.AvatarCacheService;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
@@ -22,9 +22,11 @@ import java.io.IOException;
 @Transactional
 public final class ApplicationController extends BaseController {
 
+    private final Jophiel jophiel;
     private final UserService userService;
 
-    public ApplicationController(UserService userService) {
+    public ApplicationController(Jophiel jophiel, UserService userService) {
+        this.jophiel = jophiel;
         this.userService = userService;
     }
 
@@ -71,12 +73,12 @@ public final class ApplicationController extends BaseController {
     public Result afterLogin(String returnUri) {
         if (session().containsKey("role")) {
             JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
-            JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+            Jophiel.updateUserAvatarCache(AvatarCacheService.getInstance());
 
             if (JudgelsUtils.hasViewPoint()) {
                 try {
                     UrielUtils.backupSession();
-                    UrielUtils.setUserSession(JophielUtils.getUserByUserJid(JudgelsUtils.getViewPoint()), userService.findUserByUserJid(JudgelsUtils.getViewPoint()));
+                    UrielUtils.setUserSession(jophiel.getUserByUserJid(JudgelsUtils.getViewPoint()), userService.findUserByUserJid(JudgelsUtils.getViewPoint()));
                 } catch (IOException e) {
                     JudgelsUtils.removeViewPoint();
                     UrielUtils.restoreSession();
@@ -91,7 +93,7 @@ public final class ApplicationController extends BaseController {
 
     public Result afterProfile(String returnUri) {
         JudgelsUtils.updateUserJidCache(JidCacheService.getInstance());
-        JophielUtils.updateUserAvatarCache(AvatarCacheService.getInstance());
+        Jophiel.updateUserAvatarCache(AvatarCacheService.getInstance());
 
         return redirect(returnUri);
     }
@@ -102,7 +104,7 @@ public final class ApplicationController extends BaseController {
 
         if ((!(form.hasErrors() || form.hasGlobalErrors())) && (UrielUtils.trullyHasRole("admin"))) {
             ViewpointForm viewpointForm = form.get();
-            String userJid = JophielUtils.verifyUsername(viewpointForm.username);
+            String userJid = jophiel.verifyUsername(viewpointForm.username);
             if (userJid != null) {
                 try {
                     userService.upsertUserFromJophielUserJid(userJid);
@@ -110,7 +112,7 @@ public final class ApplicationController extends BaseController {
                         UrielUtils.backupSession();
                     }
                     JudgelsUtils.setViewPointInSession(userJid);
-                    UrielUtils.setUserSession(JophielUtils.getUserByUserJid(userJid), userService.findUserByUserJid(userJid));
+                    UrielUtils.setUserSession(jophiel.getUserByUserJid(userJid), userService.findUserByUserJid(userJid));
 
                     ControllerUtils.getInstance().addActivityLog("View as user " + viewpointForm.username + ".");
 

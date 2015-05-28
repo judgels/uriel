@@ -1,11 +1,10 @@
-@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.ContestTeamMemberCreateForm], form4: Form[org.iatoki.judgels.uriel.ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean)
+@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.ContestTeamMemberCreateForm], form4: Form[org.iatoki.judgels.uriel.ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.commons.views.html.table.tableView
-@import org.iatoki.judgels.jophiel.commons.JophielUtils
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @import org.iatoki.judgels.uriel.JidCacheService
@@ -127,7 +126,7 @@
 }
 
 <script type="text/javascript">
-    var jophielAutoCompleteUrl = "@JophielUtils.getAutoCompleteEndPoint";
+    var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
 

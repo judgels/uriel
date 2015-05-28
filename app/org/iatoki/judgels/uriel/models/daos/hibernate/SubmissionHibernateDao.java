@@ -4,8 +4,6 @@ import org.iatoki.judgels.sandalphon.commons.models.daos.hibernate.AbstractSubmi
 import org.iatoki.judgels.uriel.models.daos.interfaces.SubmissionDao;
 import org.iatoki.judgels.uriel.models.domains.SubmissionModel;
 
-import java.util.List;
-
 public final class SubmissionHibernateDao extends AbstractSubmissionHibernateDao<SubmissionModel> implements SubmissionDao {
     public SubmissionHibernateDao() {
         super(SubmissionModel.class);

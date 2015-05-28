@@ -11,7 +11,6 @@ import org.iatoki.judgels.sandalphon.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.UrielProperties;
-import play.Play;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Http;

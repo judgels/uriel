@@ -11,7 +11,7 @@ import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.messageView;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
@@ -56,10 +56,12 @@ public class ContestTeamController extends BaseController {
 
     private static final long PAGE_SIZE = 1000;
 
+    private final Jophiel jophiel;
     private final ContestService contestService;
     private final UserService userService;
 
-    public ContestTeamController(ContestService contestService, UserService userService) {
+    public ContestTeamController(Jophiel jophiel, ContestService contestService, UserService userService) {
+        this.jophiel = jophiel;
         this.contestService = contestService;
         this.userService = userService;
     }
@@ -238,7 +240,7 @@ public class ContestTeamController extends BaseController {
             } else {
                 ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
 
-                String userJid = JophielUtils.verifyUsername(contestTeamCoachCreateForm.username);
+                String userJid = jophiel.verifyUsername(contestTeamCoachCreateForm.username);
                 if (userJid != null) {
                     if (!contestService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
                         if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
@@ -293,7 +295,7 @@ public class ContestTeamController extends BaseController {
                 try {
                     String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                     for (String username : usernames) {
-                        String userJid = JophielUtils.verifyUsername(username);
+                        String userJid = jophiel.verifyUsername(username);
                         if (userJid != null) {
                             if (!contestService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
                                 if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
@@ -355,7 +357,7 @@ public class ContestTeamController extends BaseController {
             } else {
                 ContestTeamMemberCreateForm contestTeamMemberCreateForm = form3.get();
 
-                String userJid = JophielUtils.verifyUsername(contestTeamMemberCreateForm.username);
+                String userJid = jophiel.verifyUsername(contestTeamMemberCreateForm.username);
                 if (userJid != null) {
                     if (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
                         if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
@@ -403,7 +405,7 @@ public class ContestTeamController extends BaseController {
                 try {
                     String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                     for (String username : usernames) {
-                        String userJid = JophielUtils.verifyUsername(username);
+                        String userJid = jophiel.verifyUsername(username);
 
                         if (userJid != null) {
                             if (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
@@ -498,7 +500,7 @@ public class ContestTeamController extends BaseController {
     }
 
     private Result showViewTeam(Form<ContestTeamCoachCreateForm> form, Form<ContestTeamCoachUploadForm> form2, Form<ContestTeamMemberCreateForm> form3, Form<ContestTeamMemberUploadForm> form4, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers, boolean canUpdate) {
-        LazyHtml content = new LazyHtml(viewTeamView.render(contest.getId(), contestTeam, form, form2, form3, form4, contestTeamCoaches, contestTeamMembers, canUpdate));
+        LazyHtml content = new LazyHtml(viewTeamView.render(contest.getId(), contestTeam, form, form2, form3, form4, contestTeamCoaches, contestTeamMembers, canUpdate, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.view"), c));
         content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);

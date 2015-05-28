@@ -12,7 +12,7 @@ import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.accessTypesLayout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.messageView;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantCreateForm;
@@ -51,10 +51,12 @@ public class ContestContestantController extends BaseController {
 
     private static final long PAGE_SIZE = 1000;
 
+    private final Jophiel jophiel;
     private final ContestService contestService;
     private final UserService userService;
 
-    public ContestContestantController(ContestService contestService, UserService userService) {
+    public ContestContestantController(Jophiel jophiel, ContestService contestService, UserService userService) {
+        this.jophiel = jophiel;
         this.contestService = contestService;
         this.userService = userService;
     }
@@ -95,7 +97,7 @@ public class ContestContestantController extends BaseController {
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
             } else {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
-                String userJid = JophielUtils.verifyUsername(contestContestantCreateForm.username);
+                String userJid = jophiel.verifyUsername(contestContestantCreateForm.username);
                 if (userJid != null) {
                     if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
                         userService.upsertUserFromJophielUserJid(userJid);
@@ -179,7 +181,7 @@ public class ContestContestantController extends BaseController {
                 try {
                     String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                     for (String username : usernames) {
-                        String userJid = JophielUtils.verifyUsername(username);
+                        String userJid = jophiel.verifyUsername(username);
                         if (userJid != null) {
                             if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
                                 userService.upsertUserFromJophielUserJid(userJid);
@@ -253,7 +255,7 @@ public class ContestContestantController extends BaseController {
     }
 
     private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
-        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2));
+        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 
         appendSubtabsLayout(content, contest);

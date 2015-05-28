@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.jophiel.commons.UserTokens;
 import org.iatoki.judgels.uriel.models.daos.interfaces.UserDao;
 import org.iatoki.judgels.uriel.models.domains.UserModel;
@@ -17,9 +17,11 @@ import java.util.List;
 
 public final class UserServiceImpl implements UserService {
 
+    private final Jophiel jophiel;
     private final UserDao userDao;
 
-    public UserServiceImpl(UserDao userDao) {
+    public UserServiceImpl(Jophiel jophiel, UserDao userDao) {
+        this.jophiel = jophiel;
         this.userDao = userDao;
     }
 
@@ -109,8 +111,8 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public Page<User> pageUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = userDao.countByFilters(filterString, ImmutableMap.of());
-        List<UserModel> userRoleModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
+        List<UserModel> userRoleModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<User> userRoles = Lists.transform(userRoleModels, m -> createUserFromUserModel(m));
         return new Page<>(userRoles, totalPages, pageIndex, pageSize);
     }
@@ -118,7 +120,7 @@ public final class UserServiceImpl implements UserService {
     @Override
     public void upsertUserFromJophielUserJid(String userJid) {
         try {
-            org.iatoki.judgels.jophiel.commons.User user = JophielUtils.getUserByUserJid(userJid);
+            org.iatoki.judgels.jophiel.commons.User user = jophiel.getUserByUserJid(userJid);
 
             if (!userDao.existsByUserJid(userJid)) {
                 UserModel userRoleModel = new UserModel();

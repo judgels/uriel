@@ -1,26 +1,18 @@
 package org.iatoki.judgels.uriel.controllers;
 
-import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
-import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestService;
 import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 import org.iatoki.judgels.uriel.ContestSupervisorUpdateForm;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
-import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserService;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -45,10 +37,12 @@ public class ContestSupervisorController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
+    private final Jophiel jophiel;
     private final ContestService contestService;
     private final UserService userRoleService;
 
-    public ContestSupervisorController(ContestService contestService, UserService userRoleService) {
+    public ContestSupervisorController(Jophiel jophiel, ContestService contestService, UserService userRoleService) {
+        this.jophiel = jophiel;
         this.contestService = contestService;
         this.userRoleService = userRoleService;
     }
@@ -88,7 +82,7 @@ public class ContestSupervisorController extends BaseController {
                 return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
             } else {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
-                String userJid = JophielUtils.verifyUsername(contestSupervisorCreateForm.username);
+                String userJid = jophiel.verifyUsername(contestSupervisorCreateForm.username);
                 if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
                     userRoleService.upsertUserFromJophielUserJid(userJid);
                     contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
@@ -150,7 +144,7 @@ public class ContestSupervisorController extends BaseController {
     }
 
     private Result showListCreateSupervisor(Page<ContestSupervisor> contestSupervisorPage, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestSupervisorCreateForm> form, Contest contest){
-        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form));
+        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);

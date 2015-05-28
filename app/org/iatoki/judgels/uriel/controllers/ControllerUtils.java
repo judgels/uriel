@@ -5,13 +5,13 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
-import org.iatoki.judgels.commons.ViewpointForm;
+import org.iatoki.judgels.jophiel.commons.Jophiel;
+import org.iatoki.judgels.jophiel.commons.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.profileView;
 import org.iatoki.judgels.commons.views.html.layouts.menusLayout;
-import org.iatoki.judgels.commons.views.html.layouts.viewAsLayout;
-import org.iatoki.judgels.jophiel.commons.JophielUtils;
+import org.iatoki.judgels.jophiel.commons.views.html.layouts.viewAsLayout;
 import org.iatoki.judgels.jophiel.commons.UserActivity;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UserActivityServiceImpl;
@@ -21,7 +21,13 @@ import play.mvc.Http;
 
 public final class ControllerUtils extends AbstractControllerUtils {
 
-    private static final ControllerUtils INSTANCE = new ControllerUtils();
+    private static ControllerUtils INSTANCE;
+
+    private final Jophiel jophiel;
+
+    private ControllerUtils(Jophiel jophiel) {
+        this.jophiel = jophiel;
+    }
 
     @Override
     public void appendSidebarLayout(LazyHtml content) {
@@ -43,7 +49,7 @@ public final class ControllerUtils extends AbstractControllerUtils {
                 viewpointForm.username = IdentityUtils.getUsername();
                 form.fill(viewpointForm);
             }
-            sidebarContent.appendLayout(c -> viewAsLayout.render(form, JophielUtils.getAutoCompleteEndPoint(), "javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
+            sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophiel.getAutoCompleteEndPoint(), "javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
 
@@ -65,7 +71,17 @@ public final class ControllerUtils extends AbstractControllerUtils {
         }
     }
 
+    public static synchronized void buildInstance(Jophiel jophiel) {
+        if (INSTANCE != null) {
+            throw new UnsupportedOperationException("ControllerUtils instance has already been built");
+        }
+        INSTANCE = new ControllerUtils(jophiel);
+    }
+
     static ControllerUtils getInstance() {
+        if (INSTANCE == null) {
+            throw new UnsupportedOperationException("ControllerUtils instance has not been built");
+        }
         return INSTANCE;
     }
 
