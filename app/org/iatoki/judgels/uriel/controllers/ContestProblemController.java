@@ -9,11 +9,8 @@ import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.commons.views.html.layouts.heading3WithActionLayout;
-import org.iatoki.judgels.gabriel.GradingSource;
-import org.iatoki.judgels.sandalphon.commons.SubmissionAdapters;
-import org.iatoki.judgels.sandalphon.commons.SubmissionException;
+import org.iatoki.judgels.sandalphon.commons.Sandalphon;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
-import org.iatoki.judgels.sandalphon.commons.SandalphonUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
@@ -48,7 +45,6 @@ import play.mvc.Result;
 
 import java.net.URI;
 import java.util.Arrays;
-import java.util.Set;
 
 @Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -56,10 +52,12 @@ public class ContestProblemController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
+    private final Sandalphon sandalphon;
     private final ContestService contestService;
     private final SubmissionService submissionService;
 
-    public ContestProblemController(ContestService contestService, SubmissionService submissionService) {
+    public ContestProblemController(Sandalphon sandalphon, ContestService contestService, SubmissionService submissionService) {
+        this.sandalphon = sandalphon;
         this.contestService = contestService;
         this.submissionService = submissionService;
     }
@@ -109,8 +107,8 @@ public class ContestProblemController extends BaseController {
                 submissionsLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
             }
 
-            int tOTPCode = SandalphonUtils.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = SandalphonUtils.getTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure())).toString();
+            int tOTPCode = sandalphon.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
+            String requestUrl = sandalphon.getProblemTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure())).toString();
             String requestBody = "";
 
             ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
@@ -149,7 +147,7 @@ public class ContestProblemController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (contest.getJid().equals(contestProblem.getContestJid())) {
-            URI imageUri = SandalphonUtils.getRenderImageUri(contestProblem.getProblemJid(), imageFilename);
+            URI imageUri = sandalphon.getProblemRenderUri(contestProblem.getProblemJid(), imageFilename);
 
             return redirect(imageUri.toString());
         } else {
@@ -216,7 +214,7 @@ public class ContestProblemController extends BaseController {
                 return showCreateProblem(form, contest);
             } else {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
-                String problemName = SandalphonUtils.verifyProblemJid(contestProblemCreateForm.problemJid);
+                String problemName = sandalphon.verifyProblemJid(contestProblemCreateForm.problemJid);
                 if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
                     contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
                     JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

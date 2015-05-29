@@ -10,7 +10,6 @@ import play.db.jpa.JPA;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public final class ScoreUpdater implements Runnable {
     private final ContestService contestService;

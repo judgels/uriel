@@ -12,10 +12,11 @@ import org.iatoki.judgels.commons.JudgelsProperties;
 import org.iatoki.judgels.commons.LocalFileSystemProvider;
 import org.iatoki.judgels.jophiel.commons.DefaultUserActivityServiceImpl;
 import org.iatoki.judgels.jophiel.commons.Jophiel;
-import org.iatoki.judgels.sandalphon.commons.GradingResponsePoller;
-import org.iatoki.judgels.sandalphon.commons.SubmissionService;
 import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
 import org.iatoki.judgels.jophiel.commons.controllers.JophielClientController;
+import org.iatoki.judgels.sandalphon.commons.GradingResponsePoller;
+import org.iatoki.judgels.sandalphon.commons.Sandalphon;
+import org.iatoki.judgels.sandalphon.commons.SubmissionService;
 import org.iatoki.judgels.sealtiel.client.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestAnnouncementController;
@@ -105,6 +106,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     private UrielProperties urielProps;
 
     private Jophiel jophiel;
+    private Sandalphon sandalphon;
     private Sealtiel sealtiel;
 
     private FileSystemProvider teamAvatarFileProvider;
@@ -251,7 +253,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 .put(ContestContestantController.class, new ContestContestantController(jophiel, contestService, userService))
                 .put(ContestController.class, new ContestController(contestService))
                 .put(ContestManagerController.class, new ContestManagerController(jophiel, contestService, userService))
-                .put(ContestProblemController.class, new ContestProblemController(contestService, submissionService))
+                .put(ContestProblemController.class, new ContestProblemController(sandalphon, contestService, submissionService))
                 .put(ContestScoreboardController.class, new ContestScoreboardController(contestService, submissionService))
                 .put(ContestSubmissionController.class, new ContestSubmissionController(contestService, submissionService, submissionLocalFileProvider, submissionRemoteFileProvider))
                 .put(ContestSupervisorController.class, new ContestSupervisorController(jophiel, contestService, userService))

@@ -3,7 +3,6 @@ package org.iatoki.judgels.uriel;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.AbstractJidCacheService;
 import org.iatoki.judgels.sandalphon.commons.Submission;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public final class IOIScoreAdapter implements ScoreAdapter {
     @Override

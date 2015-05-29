@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -39,7 +38,6 @@ import org.iatoki.judgels.uriel.controllers.security.LoggedIn;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 

@@ -176,10 +176,7 @@ public final class ContestControllerUtils {
         }
         if (contest.requiresPassword() && !UrielUtils.trullyHasRole("admin")) {
             String password = contestService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
-            if (password == null) {
-                return false;
-            }
-            return hasEstablishedContestWithPasswordCookie(password);
+            return ((password == null) && (hasEstablishedContestWithPasswordCookie(password)));
         }
         return true;
     }
