@@ -3,7 +3,7 @@
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import scala.collection.JavaConversions
 
-<p><small>Last updated: @JudgelsUtils.formatDate(lastUpdateTime)</small></p>
+<p><small>Last updated: <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
 
 <table class="table table-bordered table-striped table-condensed">
     <thead>
