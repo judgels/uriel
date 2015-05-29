@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel;
 
+import org.iatoki.judgels.commons.JudgelsUtils;
 import play.data.validation.Constraints;
 
 public final class ContestUpsertForm {
@@ -13,9 +14,9 @@ public final class ContestUpsertForm {
         this.type = contest.getType().name();
         this.scope = contest.getScope().name();
         this.style = contest.getStyle().name();
-        this.startTime = UrielUtils.convertDateToString(contest.getStartTime());
-        this.endTime = UrielUtils.convertDateToString(contest.getEndTime());
-        this.clarificationEndTime = UrielUtils.convertDateToString(contest.getClarificationEndTime());
+        this.startTime = JudgelsUtils.formatDateTime(contest.getStartTime().getTime());
+        this.endTime = JudgelsUtils.formatDateTime(contest.getEndTime().getTime());
+        this.clarificationEndTime = JudgelsUtils.formatDateTime(contest.getClarificationEndTime().getTime());
         this.isExclusive = contest.isExclusive();
         this.isUsingScoreboard = contest.isUsingScoreboard();
         this.isIncognitoScoreboard = contest.isIncognitoScoreboard();

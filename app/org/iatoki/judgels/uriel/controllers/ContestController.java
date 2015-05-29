@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.InternalLink;
+import org.iatoki.judgels.commons.JudgelsUtils;
 import org.iatoki.judgels.commons.LazyHtml;
 import org.iatoki.judgels.commons.Page;
 import org.iatoki.judgels.commons.controllers.BaseController;
@@ -38,7 +39,6 @@ import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualForm;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.ContestUpsertForm;
-import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.security.Authenticated;
 import org.iatoki.judgels.uriel.controllers.security.Authorized;
 import org.iatoki.judgels.uriel.controllers.security.HasRole;
@@ -280,12 +280,28 @@ public final class ContestController extends BaseController {
         if (form.hasErrors() || form.hasGlobalErrors()) {
             return showCreateContest(form);
         } else {
+            boolean check = true;
             ContestUpsertForm contestUpsertForm = form.get();
-            Contest contest = contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
+            Date contestStartTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.startTime));
+            Date contestEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.endTime));
+            Date clarificationEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
+            if (contestStartTime.after(contestEndTime)) {
+                form.reject("error.contest.config.general.invalid_start_time");
+                check = false;
+            }
+            if (clarificationEndTime.before(contestStartTime) || clarificationEndTime.after(contestEndTime)) {
+                form.reject("error.contest.config.general.invalid_clarification_end_time");
+                check = false;
+            }
+            if (check) {
+                Contest contest = contestService.createContest(contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), contestStartTime, contestEndTime, clarificationEndTime, contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
 
-            ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertForm.name + ".");
+                ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertForm.name + ".");
 
-            return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+                return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+            } else {
+                return showCreateContest(form);
+            }
         }
     }
 
@@ -311,15 +327,31 @@ public final class ContestController extends BaseController {
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).bindFromRequest();
-            if (form.hasErrors()) {
+            if (form.hasErrors() || form.hasGlobalErrors()) {
                 return showUpdateContestGeneralConfig(form, contest);
             } else {
+                boolean check = true;
                 ContestUpsertForm contestUpsertForm = form.get();
-                contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), UrielUtils.convertStringToDate(contestUpsertForm.startTime), UrielUtils.convertStringToDate(contestUpsertForm.endTime), UrielUtils.convertStringToDate(contestUpsertForm.clarificationEndTime), contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
+                Date contestStartTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.startTime));
+                Date contestEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.endTime));
+                Date clarificationEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
+                if (contestStartTime.after(contestEndTime)) {
+                    form.reject("error.contest.config.general.invalid_start_time");
+                    check = false;
+                }
+                if (clarificationEndTime.before(contestStartTime) || clarificationEndTime.after(contestEndTime)) {
+                    form.reject("error.contest.config.general.invalid_clarification_end_time");
+                    check = false;
+                }
+                if (check) {
+                    contestService.updateContest(contest.getId(), contestUpsertForm.name, contestUpsertForm.description, ContestType.valueOf(contestUpsertForm.type), ContestScope.valueOf(contestUpsertForm.scope), ContestStyle.valueOf(contestUpsertForm.style), contestStartTime, contestEndTime, clarificationEndTime, contestUpsertForm.isExclusive, contestUpsertForm.isUsingScoreboard, contestUpsertForm.isIncognitoScoreboard, contestUpsertForm.requiresPassword);
 
-                ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
+                    ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
-                return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
+                    return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
+                } else {
+                    return showUpdateContestGeneralConfig(form, contest);
+                }
             }
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -336,7 +368,7 @@ public final class ContestController extends BaseController {
             if (contest.isStandard()) {
                 ContestTypeConfigStandard contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class);
                 Form<ContestTypeConfigStandardForm> form = Form.form(ContestTypeConfigStandardForm.class);
-                form = form.fill(new ContestTypeConfigStandardForm(UrielUtils.convertDateToString(new Date(contestTypeConfigStandard.getScoreboardFreezeTime())), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
+                form = form.fill(new ContestTypeConfigStandardForm(JudgelsUtils.formatDateTime(contestTypeConfigStandard.getScoreboardFreezeTime()), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
                 form1 = form;
 
             } else if (contest.isVirtual()) {
@@ -354,7 +386,7 @@ public final class ContestController extends BaseController {
             } else if (contest.isPublic()) {
                 ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
                 Form<ContestScopeConfigPublicForm> form = Form.form(ContestScopeConfigPublicForm.class);
-                form = form.fill(new ContestScopeConfigPublicForm(UrielUtils.convertDateToString(new Date(contestScopeConfigPublic.getRegisterStartTime())), UrielUtils.convertDateToString(new Date(contestScopeConfigPublic.getRegisterEndTime())), contestScopeConfigPublic.getMaxRegistrants()));
+                form = form.fill(new ContestScopeConfigPublicForm(JudgelsUtils.formatDateTime(contestScopeConfigPublic.getRegisterStartTime()), JudgelsUtils.formatDateTime(contestScopeConfigPublic.getRegisterEndTime()), contestScopeConfigPublic.getMaxRegistrants()));
                 form2 = form;
             }
             Form form3 = null;
@@ -408,8 +440,8 @@ public final class ContestController extends BaseController {
                 ContestTypeConfig contestTypeConfig = null;
                 if (contest.isStandard()) {
                     ContestTypeConfigStandardForm data = (ContestTypeConfigStandardForm) form1.get();
-                    Date scoreboardFreezeTime = UrielUtils.convertStringToDate(data.scoreboardFreezeTime);
-                    if ((scoreboardFreezeTime.before(contest.getStartTime())) && (scoreboardFreezeTime.after(contest.getEndTime()))) {
+                    Date scoreboardFreezeTime = new Date(JudgelsUtils.parseDateTime(data.scoreboardFreezeTime));
+                    if (scoreboardFreezeTime.before(contest.getStartTime()) || scoreboardFreezeTime.after(contest.getEndTime())) {
                         form1.reject("error.contest.config.specific.invalid_freeze_time");
                         check = false;
                     }
@@ -429,10 +461,14 @@ public final class ContestController extends BaseController {
                     contestScopeConfig = new ContestScopeConfigPrivate();
                 } else if (contest.isPublic()) {
                     ContestScopeConfigPublicForm data = (ContestScopeConfigPublicForm) form2.get();
-                    Date registerStartTime = UrielUtils.convertStringToDate(data.registerStartTime);
-                    Date registerEndTime = UrielUtils.convertStringToDate(data.registerEndTime);
-                    if ((registerStartTime.after(registerEndTime)) || (registerEndTime.after(contest.getEndTime()))) {
-                        form2.reject("error.contest.config.specific.invalidRegisterTime");
+                    Date registerStartTime = new Date(JudgelsUtils.parseDateTime(data.registerStartTime));
+                    Date registerEndTime = new Date(JudgelsUtils.parseDateTime(data.registerEndTime));
+                    if (registerStartTime.after(registerEndTime)) {
+                        form2.reject("error.contest.config.specific.invalid_register_start_time");
+                        check = false;
+                    }
+                    if (registerEndTime.after(contest.getEndTime())) {
+                        form2.reject("error.contest.config.specific.invalid_register_end_time");
                         check = false;
                     }
                     contestScopeConfig = new ContestScopeConfigPublic(registerStartTime.getTime(), registerEndTime.getTime(), data.maxRegistrants);

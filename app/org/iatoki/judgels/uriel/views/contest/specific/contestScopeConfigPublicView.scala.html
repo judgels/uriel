@@ -2,6 +2,16 @@
 
 @import play.i18n.Messages
 
-@b3.text(formScope("registerStartTime"), '_label -> Messages.get("contest.scope.public.registerStartTime"), 'class -> "form-control form_datetime")
-@b3.text(formScope("registerEndTime"), '_label -> Messages.get("contest.scope.public.registerEndTime"), 'class -> "form-control form_datetime")
+@b3.inputWrapped("text", formScope("registerStartTime"), '_label -> Messages.get("contest.scope.public.registerStartTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+@b3.inputWrapped("text", formScope("registerEndTime"), '_label -> Messages.get("contest.scope.public.registerEndTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
 @b3.number(formScope("maxRegistrants"), '_label -> Messages.get("contest.scope.public.maxRegistrants"))

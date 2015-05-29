@@ -2,5 +2,10 @@
 
 @import play.i18n.Messages
 
-@b3.text(formType("scoreboardFreezeTime"), '_label -> Messages.get("contest.type.standard.scoreboardFreezeTime"), 'class -> "form-control form_datetime")
+@b3.inputWrapped("text", formType("scoreboardFreezeTime"), '_label -> Messages.get("contest.type.standard.scoreboardFreezeTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
 @b3.checkbox(formType("isOfficialScoreboardAllowed"), '_label -> Messages.get("contest.isOfficialScoreboardAllowed"))

@@ -234,6 +234,9 @@ error.team.userNotFound=User not found.
 error.team.userAlreadyACoach=User is already a coach.
 error.team.userAlreadyAContestant=User is already a contestant.
 
-error.contest.config.specific.invalid_freeze_time=Freeze time must be between start and end time.
-error.contest.config.specific.invalidRegisterTime=Register time window must be within contest time window.
+error.contest.config.general.invalid_start_time=Contest start time must be before or equal contest end time.
+error.contest.config.general.invalid_clarification_end_time=Clarification end time must be within contest time window.
+error.contest.config.specific.invalid_freeze_time=Freeze time must be within contest time window.
 error.contest.config.specific.invalid_contest_duration=Contest duration must be within contest time window.
+error.contest.config.specific.invalid_register_start_time=Register start time must be before or equal register end time.
+error.contest.config.specific.invalid_register_end_time=Register end time must be before or equal contest end time.

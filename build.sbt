@@ -12,9 +12,7 @@ lazy val uriel = (project in file("."))
         version := IO.read(file("version.properties")).trim,
         scalaVersion := "2.11.1",
         libraryDependencies ++= Seq(
-            "org.apache.poi" % "poi" % "3.10-FINAL",
-            "org.webjars" % "momentjs" % "2.9.0",
-            "org.webjars" % "Eonasdan-bootstrap-datetimepicker" % "4.0.0"
+            "org.apache.poi" % "poi" % "3.10-FINAL"
         )
     )
     .settings(TestNGPlugin.testNGSettings: _*)

@@ -6,31 +6,13 @@ import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
 import play.mvc.Http;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class UrielUtils {
 
     private UrielUtils() {
         // prevent instantiation
-    }
-
-    public static String convertDateToString(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy, HH:mm");
-        return sdf.format(date);
-    }
-
-    public static Date convertStringToDate(String s) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy, HH:mm");
-            return sdf.parse(s);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     public static List<String> getDefaultRoles() {
