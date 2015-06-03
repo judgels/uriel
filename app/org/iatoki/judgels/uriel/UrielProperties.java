@@ -25,6 +25,8 @@ public final class UrielProperties {
     private String jophielClientSecret;
 
     private String sandalphonBaseUrl;
+    private String sandalphonClientJid;
+    private String sandalphonClientSecret;
 
     private String sealtielBaseUrl;
     private String sealtielClientJid;
@@ -109,6 +111,14 @@ public final class UrielProperties {
 
     public String getSandalphonBaseUrl() {
         return sandalphonBaseUrl;
+    }
+
+    public String getSandalphonClientJid() {
+        return sandalphonClientJid;
+    }
+
+    public String getSandalphonClientSecret() {
+        return sandalphonClientSecret;
     }
 
     public String getSealtielBaseUrl() {
@@ -371,6 +381,8 @@ public final class UrielProperties {
         jophielClientSecret = requireStringValue("jophiel.clientSecret");
 
         sandalphonBaseUrl = requireStringValue("sandalphon.baseUrl");
+        sandalphonClientJid = requireStringValue("sandalphon.clientJid");
+        sandalphonClientSecret = requireStringValue("sandalphon.clientSecret");
 
         sealtielBaseUrl = requireStringValue("sealtiel.baseUrl");
         sealtielClientJid = requireStringValue("sealtiel.clientJid");
