@@ -26,28 +26,10 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void upsertUser(String userJid, String accessToken, String idToken, long expireTime) {
-        if (userDao.existsByUserJid(userJid)) {
-            UserModel userModel = userDao.findByUserJid(userJid);
-            userModel.accessToken = accessToken;
-            userModel.idToken = idToken;
-            userModel.expirationTime = expireTime;
-
-            userDao.edit(userModel, "guest", IdentityUtils.getIpAddress());
-        } else {
-            UserModel userModel = new UserModel();
-            userModel.accessToken = accessToken;
-            userModel.idToken = idToken;
-            userModel.expirationTime = expireTime;
-
-            userDao.persist(userModel, "guest", IdentityUtils.getIpAddress());
-        }
-    }
-
-    @Override
     public void upsertUser(String userJid, String accessToken, String idToken, String refreshToken, long expireTime) {
         if (userDao.existsByUserJid(userJid)) {
             UserModel userModel = userDao.findByUserJid(userJid);
+
             userModel.accessToken = accessToken;
             userModel.refreshToken = refreshToken;
             userModel.idToken = idToken;
@@ -56,6 +38,9 @@ public final class UserServiceImpl implements UserService {
             userDao.edit(userModel, "guest", IdentityUtils.getIpAddress());
         } else {
             UserModel userModel = new UserModel();
+            userModel.userJid = userJid;
+            userModel.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
+
             userModel.accessToken = accessToken;
             userModel.refreshToken = refreshToken;
             userModel.idToken = idToken;
@@ -122,13 +107,8 @@ public final class UserServiceImpl implements UserService {
         try {
             org.iatoki.judgels.jophiel.commons.User user = jophiel.getUserByUserJid(userJid);
 
-            if (!userDao.existsByUserJid(userJid)) {
-                UserModel userRoleModel = new UserModel();
-                userRoleModel.userJid = user.getJid();
-                userRoleModel.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
-
-                userDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-            }
+            if (!userDao.existsByUserJid(userJid))
+                createUser(user.getJid(), UrielUtils.getDefaultRoles());
 
             JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
