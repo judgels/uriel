@@ -16,7 +16,7 @@ GET         /contests/$cId<[0-9]{1,18}>/view                                    
 GET         /contests/$cId<[0-9]{1,18}>/view/                                                            @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filtertring ?= "")
 
 GET         /contests/$cId<[0-9]{1,18}>/register                                                         @org.iatoki.judgels.uriel.controllers.ContestController.registerToAContest(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/unregister                                                         @org.iatoki.judgels.uriel.controllers.ContestController.unregisterFromAContest(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/unregister                                                       @org.iatoki.judgels.uriel.controllers.ContestController.unregisterFromAContest(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/enter                                                            @org.iatoki.judgels.uriel.controllers.ContestController.enterContest(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/enterWithPassword                                                @org.iatoki.judgels.uriel.controllers.ContestController.enterContestWithPassword(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/start                                                            @org.iatoki.judgels.uriel.controllers.ContestController.startContest(cId: Long)
@@ -136,10 +136,11 @@ GET         /team/avatar/:imageName                                             
 
 GET         /users                                                                                       @org.iatoki.judgels.uriel.controllers.UserController.index()
 GET         /users/                                                                                      @org.iatoki.judgels.uriel.controllers.UserController.listUsers(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
-
+GET         /users/create                                                                                @org.iatoki.judgels.uriel.controllers.UserController.createUser()
+POST        /users/create                                                                                @org.iatoki.judgels.uriel.controllers.UserController.postCreateUser()
+GET         /users/$cId<[0-9]{1,18}>                                                                     @org.iatoki.judgels.uriel.controllers.UserController.viewUser(cId: Long)
 GET         /users/$uId<[0-9]{1,18}>/update                                                              @org.iatoki.judgels.uriel.controllers.UserController.updateUser(uId: Long)
 POST        /users/$uId<[0-9]{1,18}>/update                                                              @org.iatoki.judgels.uriel.controllers.UserController.postUpdateUser(uId: Long)
-
 GET         /users/$uId<[0-9]{1,18}>/delete                                                              @org.iatoki.judgels.uriel.controllers.UserController.deleteUser(uId: Long)
 
 POST        /apis/testing/singleFileBlackBoxSubmit                                                       @org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController.singleFileBlackBoxSubmit()

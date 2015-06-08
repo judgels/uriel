@@ -82,10 +82,10 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(long userId, List<String> roles) {
-        UserModel userRoleModel = userDao.findById(userId);
-        userRoleModel.roles = StringUtils.join(roles, ",");
+        UserModel userModel = userDao.findById(userId);
+        userModel.roles = StringUtils.join(roles, ",");
 
-        userDao.edit(userRoleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        userDao.edit(userModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
@@ -97,18 +97,23 @@ public final class UserServiceImpl implements UserService {
     @Override
     public Page<User> pageUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
-        List<UserModel> userRoleModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<User> userRoles = Lists.transform(userRoleModels, m -> createUserFromUserModel(m));
-        return new Page<>(userRoles, totalPages, pageIndex, pageSize);
+        List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        List<User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
+        return new Page<>(users, totalPages, pageIndex, pageSize);
     }
 
     @Override
     public void upsertUserFromJophielUserJid(String userJid) {
+        upsertUserFromJophielUserJid(userJid, UrielUtils.getDefaultRoles());
+    }
+
+    @Override
+    public void upsertUserFromJophielUserJid(String userJid, List<String> roles) {
         try {
             org.iatoki.judgels.jophiel.commons.User user = jophiel.getUserByUserJid(userJid);
 
             if (!userDao.existsByUserJid(userJid))
-                createUser(user.getJid(), UrielUtils.getDefaultRoles());
+                createUser(user.getJid(), roles);
 
             JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

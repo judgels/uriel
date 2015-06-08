@@ -20,4 +20,7 @@ public interface UserService extends BaseUserService {
     Page<User> pageUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     void upsertUserFromJophielUserJid(String userJid);
+
+    void upsertUserFromJophielUserJid(String userJid, List<String> roles);
+
 }

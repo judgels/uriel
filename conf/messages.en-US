@@ -130,9 +130,18 @@ permission.clarification=Supervise clarifications
 permission.contestant=Supervise contestants
 
 user.users=Users
+user.user=User
+
 user.list=Users
+user.create=Create User
+user.view=View User
 user.update=Update User
 
+user.create.error.usernameNotFound=Username not found
+user.create.error.userAlreadyExists=User already exists
+user.delete.confirmation=Are you sure you want to delete?
+
+user.username=Username
 user.name=Name
 user.roles=Roles
 

@@ -260,7 +260,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
                 .put(ContestSupervisorController.class, new ContestSupervisorController(jophiel, contestService, userService))
                 .put(ContestTeamController.class, new ContestTeamController(jophiel, contestService, userService))
                 .put(ContestFileController.class, new ContestFileController(contestService))
-                .put(UserController.class, new UserController(userService))
+                .put(UserController.class, new UserController(jophiel, userService))
                 .put(ContestAPIController.class, new ContestAPIController(contestService))
                 .put(ContestTestingAPIController.class, new ContestTestingAPIController(contestService, submissionService, submissionLocalFileProvider))
                 .build();
