@@ -3,7 +3,7 @@ require(["jquery"], function( __tes__ ) {
         url: sandalphonTOTPURL,
         type: 'POST',
         data: body,
-        contentType: 'text/plain',
+        contentType: 'application/x-www-form-urlencoded',
         success: function (data) {
             $(".problem_statement").html(data);
         }

@@ -108,16 +108,16 @@ public class ContestProblemController extends BaseController {
             }
 
             int tOTPCode = sandalphon.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = sandalphon.getProblemTOTPEndpoint(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure())).toString();
+            String requestUrl = sandalphon.getProblemTOTPEndpoint().toString();
             String requestBody = "";
 
             ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
             String styleConfig = config.getStyleConfig();
 
             if (contest.isICPC()) {
-                requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigICPC.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemTOTPRequestBody(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigICPC.class).getLanguageRestriction());
             } else if (contest.isIOI()) {
-                requestBody = new Gson().toJson(new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemTOTPRequestBody(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
             }
 
             LazyHtml content;
