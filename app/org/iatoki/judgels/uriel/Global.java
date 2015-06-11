@@ -170,9 +170,9 @@ public final class Global extends org.iatoki.judgels.commons.Global {
     }
 
     private void buildCommons() {
-        jophiel = new Jophiel(urielProps.getJophielClientJid(), urielProps.getJophielClientSecret(), urielProps.getJophielBaseUrl());
+        jophiel = new Jophiel(urielProps.getJophielBaseUrl(), urielProps.getJophielClientJid(), urielProps.getJophielClientSecret());
         sandalphon = new Sandalphon(urielProps.getSandalphonBaseUrl(), urielProps.getSandalphonClientJid(), urielProps.getSandalphonClientSecret());
-        sealtiel = new Sealtiel(urielProps.getSealtielClientJid(), urielProps.getSealtielClientSecret(), urielProps.getSealtielBaseUrl());
+        sealtiel = new Sealtiel(urielProps.getSealtielBaseUrl(), urielProps.getSealtielClientJid(), urielProps.getSealtielClientSecret());
     }
 
     private void buildFileProviders() {
