@@ -108,17 +108,16 @@ public class ContestProblemController extends BaseController {
                 submissionsLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
             }
 
-            int tOTPCode = sandalphon.calculateTOTPCode(contestProblem.getProblemSecret(), System.currentTimeMillis());
-            String requestUrl = sandalphon.getProblemTOTPEndpoint().toString();
+            String requestUrl = sandalphon.getProblemStatementRenderUri().toString();
             String requestBody = "";
 
             ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
             String styleConfig = config.getStyleConfig();
 
             if (contest.isICPC()) {
-                requestBody = sandalphon.getProblemTOTPRequestBody(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigICPC.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigICPC.class).getLanguageRestriction());
             } else if (contest.isIOI()) {
-                requestBody = sandalphon.getProblemTOTPRequestBody(contestProblem.getProblemJid(), tOTPCode, ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ContestStyleConfigIOI.class).getLanguageRestriction());
             }
 
             LazyHtml content;
@@ -148,7 +147,7 @@ public class ContestProblemController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
         if (contest.getJid().equals(contestProblem.getContestJid())) {
-            URI imageUri = sandalphon.getProblemRenderUri(contestProblem.getProblemJid(), imageFilename);
+            URI imageUri = sandalphon.getProblemMediaRenderUri(contestProblem.getProblemJid(), imageFilename);
 
             return redirect(imageUri.toString());
         } else {
