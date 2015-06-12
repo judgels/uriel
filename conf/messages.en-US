@@ -249,3 +249,5 @@ error.contest.config.specific.invalid_freeze_time=Freeze time must be within con
 error.contest.config.specific.invalid_contest_duration=Contest duration must be within contest time window.
 error.contest.config.specific.invalid_register_start_time=Register start time must be before or equal register end time.
 error.contest.config.specific.invalid_register_end_time=Register end time must be before or equal contest end time.
+
+error.system.sandalphon.connection=Sandalphon Connection has problem.

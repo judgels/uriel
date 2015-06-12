@@ -43,6 +43,7 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 
@@ -214,7 +215,14 @@ public class ContestProblemController extends BaseController {
                 return showCreateProblem(form, contest);
             } else {
                 ContestProblemCreateForm contestProblemCreateForm = form.get();
-                String problemName = sandalphon.verifyProblemJid(contestProblemCreateForm.problemJid);
+                String problemName = null;
+                try {
+                    problemName = sandalphon.verifyProblemJid(contestProblemCreateForm.problemJid);
+                } catch (IOException e) {
+                    form.reject("error.system.sandalphon.connection");
+                    return showCreateProblem(form, contest);
+                }
+
                 if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
                     contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
                     JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
