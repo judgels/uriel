@@ -17,7 +17,7 @@ import org.iatoki.judgels.jophiel.commons.controllers.JophielClientController;
 import org.iatoki.judgels.sandalphon.commons.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.commons.Sandalphon;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
-import org.iatoki.judgels.sealtiel.client.Sealtiel;
+import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ApplicationController;
 import org.iatoki.judgels.uriel.controllers.ContestAnnouncementController;
 import org.iatoki.judgels.uriel.controllers.ContestClarificationController;
