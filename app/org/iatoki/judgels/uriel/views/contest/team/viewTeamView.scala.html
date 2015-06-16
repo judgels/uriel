@@ -1,4 +1,6 @@
-@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.ContestTeamMemberCreateForm], form4: Form[org.iatoki.judgels.uriel.ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
+@import org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberUploadForm
+@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberCreateForm], form4: Form[ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
+@import org.iatoki.judgels.uriel.services.impls.JidCacheService
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -6,8 +8,6 @@
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
-
-@import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
 @import org.iatoki.judgels.commons.JudgelsUtils
 

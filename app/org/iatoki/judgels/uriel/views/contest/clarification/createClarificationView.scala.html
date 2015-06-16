@@ -1,7 +1,7 @@
-@(contest: org.iatoki.judgels.uriel.Contest, form: Form[org.iatoki.judgels.uriel.ContestClarificationCreateForm], contestProblems: java.util.List[org.iatoki.judgels.uriel.ContestProblem])
+@(contest: org.iatoki.judgels.uriel.Contest, form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestClarificationCreateForm], contestProblems: java.util.List[org.iatoki.judgels.uriel.ContestProblem])
 
+@import org.iatoki.judgels.uriel.services.impls.JidCacheService
 @import play.i18n.Messages
-@import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.commons.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs

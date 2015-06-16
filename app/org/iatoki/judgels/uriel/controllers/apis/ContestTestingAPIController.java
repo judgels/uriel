@@ -9,7 +9,7 @@ import org.iatoki.judgels.sandalphon.commons.BlackBoxSubmissionAdapter;
 import org.iatoki.judgels.sandalphon.commons.SubmissionException;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestService;
+import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.UrielProperties;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;

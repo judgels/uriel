@@ -3,9 +3,7 @@ package org.iatoki.judgels.uriel;
 import com.google.gson.Gson;
 import org.iatoki.judgels.sandalphon.commons.Submission;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
-import org.iatoki.judgels.uriel.commons.ContestScoreState;
-import org.iatoki.judgels.uriel.commons.Scoreboard;
-import org.iatoki.judgels.uriel.commons.ScoreboardContent;
+import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.JPA;
 
 import java.util.Date;

@@ -1,4 +1,5 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[org.iatoki.judgels.uriel.ContestContestantCreateForm], form2: Form[org.iatoki.judgels.uriel.ContestContestantUploadForm], jophielAutoCompleteUrl: String)
+@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestContestantCreateForm], form2: Form[org.iatoki.judgels.uriel.controllers.forms.ContestContestantUploadForm], jophielAutoCompleteUrl: String)
+@import org.iatoki.judgels.uriel.services.impls.JidCacheService
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -10,7 +11,6 @@
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @import org.iatoki.judgels.commons.views.html.formErrorView
-@import org.iatoki.judgels.uriel.JidCacheService
 @import scala.collection.JavaConversions
 @import org.iatoki.judgels.commons.JudgelsUtils
 
