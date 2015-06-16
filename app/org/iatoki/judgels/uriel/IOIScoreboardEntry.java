@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.commons;
+package org.iatoki.judgels.uriel;
 
 import java.net.URL;
 import java.util.ArrayList;

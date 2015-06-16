@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.commons;
+package org.iatoki.judgels.uriel;
 
 public class IOIScoreboard implements Scoreboard {
     private final ContestScoreState config;
