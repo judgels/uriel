@@ -2,9 +2,9 @@ package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
-import org.iatoki.judgels.jophiel.commons.ViewpointForm;
+import org.iatoki.judgels.jophiel.controllers.forms.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.BaseController;
-import org.iatoki.judgels.jophiel.commons.Jophiel;
+import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.AvatarCacheService;
 import org.iatoki.judgels.uriel.JidCacheService;
 import org.iatoki.judgels.uriel.UrielUtils;
@@ -49,7 +49,7 @@ public final class ApplicationController extends BaseController {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
             returnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
-            return redirect(org.iatoki.judgels.jophiel.commons.controllers.routes.JophielClientController.login(returnUri));
+            return redirect(org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.login(returnUri));
         }
     }
 

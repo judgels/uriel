@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.jophiel.commons.BaseUserService;
+import org.iatoki.judgels.jophiel.services.BaseUserService;
 
 import java.util.List;
 

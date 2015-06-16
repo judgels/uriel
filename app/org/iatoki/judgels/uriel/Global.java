@@ -10,10 +10,10 @@ import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.JudgelsProperties;
 import org.iatoki.judgels.commons.LocalFileSystemProvider;
-import org.iatoki.judgels.jophiel.commons.DefaultUserActivityServiceImpl;
-import org.iatoki.judgels.jophiel.commons.Jophiel;
-import org.iatoki.judgels.jophiel.commons.UserActivityPusher;
-import org.iatoki.judgels.jophiel.commons.controllers.JophielClientController;
+import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.jophiel.UserActivityMessagePusher;
+import org.iatoki.judgels.jophiel.controllers.JophielClientController;
+import org.iatoki.judgels.jophiel.services.impls.DefaultUserActivityMessageServiceImpl;
 import org.iatoki.judgels.sandalphon.commons.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.commons.Sandalphon;
 import org.iatoki.judgels.sandalphon.commons.SubmissionService;
@@ -238,7 +238,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         JidCacheService.buildInstance(jidCacheDao);
         AvatarCacheService.buildInstance(jophiel, avatarCacheDao);
         ControllerUtils.buildInstance(jophiel);
-        DefaultUserActivityServiceImpl.buildInstance(jophiel);
+        DefaultUserActivityMessageServiceImpl.buildInstance(jophiel);
     }
 
     private void buildUtils() {
@@ -272,10 +272,10 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, submissionService, sealtiel, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
         ScoreUpdater updater = new ScoreUpdater(contestService, submissionService);
-        UserActivityPusher userActivityPusher = new UserActivityPusher(jophiel, userService, UserActivityServiceImpl.getInstance());
+        UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(jophiel, userService, UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityPusher, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityMessagePusher, context);
     }
 }

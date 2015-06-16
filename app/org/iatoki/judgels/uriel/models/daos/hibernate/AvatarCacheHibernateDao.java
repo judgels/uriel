@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
-import org.iatoki.judgels.jophiel.commons.models.daos.hibernate.AbstractAvatarCacheHibernateDao;
+import org.iatoki.judgels.jophiel.models.daos.impls.AbstractAvatarCacheHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.interfaces.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.domains.AvatarCacheModel;
 

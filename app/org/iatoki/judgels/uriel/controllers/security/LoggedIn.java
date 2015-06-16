@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.controllers.security;
 
-import org.iatoki.judgels.jophiel.commons.controllers.security.BaseLoggedIn;
+import org.iatoki.judgels.jophiel.controllers.securities.BaseLoggedIn;
 import play.mvc.Call;
 import play.mvc.Http;
 

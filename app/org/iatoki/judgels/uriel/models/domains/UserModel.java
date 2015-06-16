@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.domains;
 
-import org.iatoki.judgels.jophiel.commons.models.domains.AbstractUserModel;
+import org.iatoki.judgels.jophiel.models.entities.AbstractUserModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;
