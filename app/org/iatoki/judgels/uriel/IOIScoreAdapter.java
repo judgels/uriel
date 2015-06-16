@@ -6,13 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.commons.AbstractJidCacheService;
 import org.iatoki.judgels.sandalphon.commons.Submission;
-import org.iatoki.judgels.uriel.commons.ContestScoreState;
-import org.iatoki.judgels.uriel.commons.IOIScoreboard;
-import org.iatoki.judgels.uriel.commons.IOIScoreboardContent;
-import org.iatoki.judgels.uriel.commons.IOIScoreboardEntry;
-import org.iatoki.judgels.uriel.commons.Scoreboard;
-import org.iatoki.judgels.uriel.commons.ScoreboardContent;
-import org.iatoki.judgels.uriel.commons.views.html.ioiScoreboardView;
+import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
 

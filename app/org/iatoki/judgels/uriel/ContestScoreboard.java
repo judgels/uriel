@@ -1,7 +1,5 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.uriel.commons.Scoreboard;
-
 import java.util.Date;
 
 public final class ContestScoreboard {
