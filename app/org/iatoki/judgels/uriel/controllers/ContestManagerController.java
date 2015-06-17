@@ -25,6 +25,7 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 @Transactional
@@ -79,19 +80,27 @@ public class ContestManagerController extends BaseController {
             return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
-            String userJid = jophiel.verifyUsername(contestManagerCreateForm.username);
-            if ((userJid != null) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
-                userRoleService.upsertUserFromJophielUserJid(userJid);
-                contestService.createContestManager(contest.getId(), userJid);
+            try {
+                String userJid = jophiel.verifyUsername(contestManagerCreateForm.username);
+                if ((userJid != null) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
+                    userRoleService.upsertUserFromJophielUserJid(userJid);
+                    contestService.createContestManager(contest.getId(), userJid);
 
-                ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateForm.username + " in contest " + contest.getName() + ".");
+                    ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateForm.username + " in contest " + contest.getName() + ".");
 
-                return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
-            } else {
+                    return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
+                } else {
+                    form.reject("error.manager.create.userJid.invalid");
+
+                    Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+
+                    return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
+                }
+            } catch (IOException e) {
                 form.reject("error.manager.create.userJid.invalid");
 
                 Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
                 boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
                 return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);

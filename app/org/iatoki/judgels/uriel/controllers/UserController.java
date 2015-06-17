@@ -31,6 +31,8 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
+
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = {"admin"})
 @Transactional
@@ -84,21 +86,26 @@ public final class UserController extends BaseController {
             return showCreateUser(form);
         } else {
             UserCreateForm userCreateForm = form.get();
-            String userJid = jophiel.verifyUsername(userCreateForm.username);
-            if (userJid == null) {
-                form.reject(Messages.get("user.create.error.usernameNotFound"));
-                return showCreateUser(form);
-            } else {
-                if (userService.existsByUserJid(userJid)) {
-                    form.reject(Messages.get("user.create.error.userAlreadyExists"));
+            try {
+                String userJid = jophiel.verifyUsername(userCreateForm.username);
+                if (userJid == null) {
+                    form.reject(Messages.get("user.create.error.usernameNotFound"));
                     return showCreateUser(form);
                 } else {
-                    userService.upsertUserFromJophielUserJid(userJid, userCreateForm.getRolesAsList());
+                    if (userService.existsByUserJid(userJid)) {
+                        form.reject(Messages.get("user.create.error.userAlreadyExists"));
+                        return showCreateUser(form);
+                    } else {
+                        userService.upsertUserFromJophielUserJid(userJid, userCreateForm.getRolesAsList());
 
-                    ControllerUtils.getInstance().addActivityLog("Create user " + userJid + ".");
+                        ControllerUtils.getInstance().addActivityLog("Create user " + userJid + ".");
 
-                    return redirect(routes.UserController.index());
+                        return redirect(routes.UserController.index());
+                    }
                 }
+            } catch (IOException e) {
+                form.reject(Messages.get("user.create.error.usernameNotFound"));
+                return showCreateUser(form);
             }
         }
     }

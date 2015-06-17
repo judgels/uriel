@@ -97,24 +97,33 @@ public class ContestContestantController extends BaseController {
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
             } else {
                 ContestContestantCreateForm contestContestantCreateForm = form.get();
-                String userJid = jophiel.verifyUsername(contestContestantCreateForm.username);
-                if (userJid != null) {
-                    if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
-                        userService.upsertUserFromJophielUserJid(userJid);
-                        contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+                try {
+                    String userJid = jophiel.verifyUsername(contestContestantCreateForm.username);
+                    if (userJid != null) {
+                        if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                            userService.upsertUserFromJophielUserJid(userJid);
+                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
-                        ControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateForm.username + " in contest " + contest.getName() + ".");
+                            ControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateForm.username + " in contest " + contest.getName() + ".");
 
-                        return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
+                            return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
+                        } else {
+                            Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
+                            form.reject("error.contestant.create.userIsAlreadyContestant");
+
+                            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                            boolean canUpdate = isAllowedToSuperviseContestants(contest);
+                            return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
+                        }
                     } else {
                         Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
-                        form.reject("error.contestant.create.userIsAlreadyContestant");
+                        form.reject("error.contestant.create.userNotExist");
 
                         Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                         boolean canUpdate = isAllowedToSuperviseContestants(contest);
                         return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                     }
-                } else {
+                } catch (IOException e) {
                     Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                     form.reject("error.contestant.create.userNotExist");
 
@@ -181,15 +190,19 @@ public class ContestContestantController extends BaseController {
                 try {
                     String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                     for (String username : usernames) {
-                        String userJid = jophiel.verifyUsername(username);
-                        if (userJid != null) {
-                            if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
-                                userService.upsertUserFromJophielUserJid(userJid);
-                                contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        try {
+                            String userJid = jophiel.verifyUsername(username);
+                            if (userJid != null) {
+                                if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                    userService.upsertUserFromJophielUserJid(userJid);
+                                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                                } else {
+                                    failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
+                                }
                             } else {
-                                failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
+                                failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.userNotExist")));
                             }
-                        } else {
+                        } catch (IOException e) {
                             failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.userNotExist")));
                         }
                     }

@@ -27,6 +27,7 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 @Transactional
@@ -80,19 +81,27 @@ public class ContestSupervisorController extends BaseController {
                 return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
             } else {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
-                String userJid = jophiel.verifyUsername(contestSupervisorCreateForm.username);
-                if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
-                    userRoleService.upsertUserFromJophielUserJid(userJid);
-                    contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
+                try {
+                    String userJid = jophiel.verifyUsername(contestSupervisorCreateForm.username);
+                    if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
+                        userRoleService.upsertUserFromJophielUserJid(userJid);
+                        contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
 
-                    ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateForm.username + " as supervisor in contest " + contest.getName() + ".");
+                        ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateForm.username + " as supervisor in contest " + contest.getName() + ".");
 
-                    return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
-                } else {
+                        return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
+                    } else {
+                        form.reject("error.supervisor.create.userJid.invalid");
+
+                        Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        boolean canUpdate = isAllowedToManageSupervisors(contest);
+
+                        return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
+                    }
+                } catch (IOException e) {
                     form.reject("error.supervisor.create.userJid.invalid");
 
                     Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
                     boolean canUpdate = isAllowedToManageSupervisors(contest);
 
                     return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
