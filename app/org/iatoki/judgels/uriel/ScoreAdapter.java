@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.commons.AbstractJidCacheService;
-import org.iatoki.judgels.sandalphon.commons.Submission;
+import org.iatoki.judgels.sandalphon.Submission;
 import play.twirl.api.Html;
 
 import java.net.URL;
