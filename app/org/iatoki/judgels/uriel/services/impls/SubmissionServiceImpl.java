@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.services.impls;
 
-import org.iatoki.judgels.sandalphon.commons.AbstractSubmissionServiceImpl;
+import org.iatoki.judgels.sandalphon.services.impls.AbstractSubmissionServiceImpl;
 import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.models.daos.GradingDao;
 import org.iatoki.judgels.uriel.models.daos.SubmissionDao;

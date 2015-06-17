@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.sandalphon.commons.models.domains.AbstractSubmissionModel;
+import org.iatoki.judgels.sandalphon.models.entities.AbstractSubmissionModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.sandalphon.commons.models.domains.AbstractGradingModel;
+import org.iatoki.judgels.sandalphon.models.entities.AbstractGradingModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

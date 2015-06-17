@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel;
 
 import com.google.gson.Gson;
-import org.iatoki.judgels.sandalphon.commons.Submission;
-import org.iatoki.judgels.sandalphon.commons.SubmissionService;
+import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.JPA;
 
