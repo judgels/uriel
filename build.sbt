@@ -5,8 +5,8 @@ import sbtbuildinfo.Plugin._
 lazy val uriel = (project in file("."))
     .enablePlugins(PlayJava, SbtWeb)
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
-    .dependsOn(urielcommons, sandalphoncommons, jophielcommons)
-    .aggregate(urielcommons, sandalphoncommons, jophielcommons)
+    .dependsOn(urielcommons, jophielcommons)
+    .aggregate(urielcommons, jophielcommons)
     .settings(
         name := "uriel",
         version := IO.read(file("version.properties")).trim,
@@ -43,5 +43,4 @@ lazy val uriel = (project in file("."))
     )
 
 lazy val urielcommons = RootProject(file("../judgels-uriel-commons"))
-lazy val sandalphoncommons = RootProject(file("../judgels-sandalphon-commons"))
 lazy val jophielcommons = RootProject(file("../judgels-jophiel-commons"))

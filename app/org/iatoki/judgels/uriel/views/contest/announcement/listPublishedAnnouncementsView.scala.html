@@ -1,7 +1,7 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
+@import org.iatoki.judgels.uriel.services.impls.JidCacheService
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
-@import org.iatoki.judgels.uriel.JidCacheService
 @import org.iatoki.judgels.commons.JudgelsUtils
 
 @for(contestAnnouncement <- page.getData) {
