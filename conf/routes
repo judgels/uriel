@@ -2,10 +2,10 @@
 ->          /                                                                                            jophielcommons.Routes
 
 GET         /                                                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.index()
-GET         /auth/:returnUri                                                                             @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri: String)
-GET         /authRole/:returnUri                                                                         @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri: String)
-GET         /afterLogin/:returnUri                                                                       @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri: String)
-GET         /afterProfile/:returnUri                                                                     @org.iatoki.judgels.uriel.controllers.ApplicationController.afterProfile(returnUri: String)
+GET         /auth                                                                                        @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri: String ?= "")
+GET         /authRole                                                                                    @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri: String ?= "")
+GET         /afterLogin                                                                                  @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri: String ?= "")
+GET         /afterProfile                                                                                @org.iatoki.judgels.uriel.controllers.ApplicationController.afterProfile(returnUri: String ?= "")
 POST        /viewAs                                                                                      @org.iatoki.judgels.uriel.controllers.ApplicationController.postViewAs()
 GET         /resetViewAs                                                                                 @org.iatoki.judgels.uriel.controllers.ApplicationController.resetViewAs()
 
@@ -63,7 +63,7 @@ GET         /contests/$cId<[0-9]{1,18}>/problems/view                           
 GET         /contests/$cId<[0-9]{1,18}>/problems/view/                                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.listUsedProblems(cId: Long, pageIndex: Long ?= 0)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/view                                  @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblem(cId: Long, pId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/$pId<[0-9]{1,18}>/render/:name                          @org.iatoki.judgels.uriel.controllers.ContestProblemController.renderImage(cId: Long, pId: Long, name: String)
-POST        /contests/$cId<[0-9]{1,18}>/problems/:cpId/switchLanguage                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.switchLanguage(cId: Long, cpId: Long)
+POST        /contests/$cId<[0-9]{1,18}>/problems/:cpId<[0-9]{1,18}>/switchLanguage                       @org.iatoki.judgels.uriel.controllers.ContestProblemController.switchLanguage(cId: Long, cpId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/all                                                     @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblems(cId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/problems/all/                                                    @org.iatoki.judgels.uriel.controllers.ContestProblemController.listProblems(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 GET         /contests/$cId<[0-9]{1,18}>/problems/create                                                  @org.iatoki.judgels.uriel.controllers.ContestProblemController.createProblem(cId: Long)
