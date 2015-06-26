@@ -59,7 +59,6 @@ import play.mvc.Result;
 import java.util.Arrays;
 import java.util.Date;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class ContestController extends BaseController {
 
@@ -71,6 +70,7 @@ public final class ContestController extends BaseController {
         this.contestService = contestService;
     }
 
+    @Transactional(readOnly = true)
     public Result index() {
         return listAllowedContests(0, "id", "desc", "");
     }
@@ -83,6 +83,7 @@ public final class ContestController extends BaseController {
         return redirect(routes.ContestProblemController.viewUsedProblems(contestId));
     }
 
+    @Transactional(readOnly = true)
     public Result jumpToSubmissions(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
@@ -92,6 +93,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result jumpToScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
@@ -101,6 +103,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result jumpToClarifications(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
@@ -110,6 +113,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result jumpToContestants(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isCoach(contest)) {
@@ -130,6 +134,7 @@ public final class ContestController extends BaseController {
         return redirect(routes.ContestFileController.viewFiles(contestId));
     }
 
+    @Transactional(readOnly = true)
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
         Page<Contest> contests = contestService.pageAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), ControllerUtils.getInstance().isAdmin());
 
@@ -150,10 +155,12 @@ public final class ContestController extends BaseController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Transactional(readOnly = true)
     public Result viewContest(long contestId) throws ContestNotFoundException {
         return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -184,6 +191,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     public Result registerToAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -198,6 +206,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     public Result unregisterFromAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -213,6 +222,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     public Result enterContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -224,6 +234,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     public Result enterContestWithPassword(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -250,6 +261,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     public Result startContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -263,6 +275,7 @@ public final class ContestController extends BaseController {
     }
 
     @Authorized(value = {"admin"})
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createContest() {
         Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class);
@@ -273,6 +286,7 @@ public final class ContestController extends BaseController {
     }
 
     @Authorized(value = {"admin"})
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateContest() {
         Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).bindFromRequest();
@@ -305,6 +319,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -321,6 +336,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -358,6 +374,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -410,6 +427,7 @@ public final class ContestController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);

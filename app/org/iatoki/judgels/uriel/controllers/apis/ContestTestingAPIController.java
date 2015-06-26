@@ -9,8 +9,8 @@ import org.iatoki.judgels.sandalphon.BlackBoxSubmissionAdapter;
 import org.iatoki.judgels.sandalphon.SubmissionException;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.UrielProperties;
+import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;
 import play.mvc.Http;
@@ -20,8 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-@Transactional
 public final class ContestTestingAPIController extends Controller {
+
     private final ContestService contestService;
     private final SubmissionService submissionService;
     private final FileSystemProvider submissionFileProvider;
@@ -32,6 +32,7 @@ public final class ContestTestingAPIController extends Controller {
         this.submissionFileProvider = submissionFileProvider;
     }
 
+    @Transactional
     public Result singleFileBlackBoxSubmit() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
 

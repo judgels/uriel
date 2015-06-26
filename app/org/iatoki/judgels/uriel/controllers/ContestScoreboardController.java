@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestScoreboardController extends BaseController {
 
@@ -62,6 +61,7 @@ public class ContestScoreboardController extends BaseController {
         this.submissionService = submissionService;
     }
 
+    @Transactional(readOnly = true)
     public Result viewScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest))) {
@@ -121,6 +121,7 @@ public class ContestScoreboardController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewOfficialScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
@@ -148,6 +149,7 @@ public class ContestScoreboardController extends BaseController {
         }
     }
 
+    @Transactional
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
@@ -172,6 +174,7 @@ public class ContestScoreboardController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result downloadContestDataAsXLS(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {

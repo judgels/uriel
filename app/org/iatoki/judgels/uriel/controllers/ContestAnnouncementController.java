@@ -34,7 +34,6 @@ import play.mvc.Result;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestAnnouncementController extends BaseController {
 
@@ -46,10 +45,12 @@ public class ContestAnnouncementController extends BaseController {
         this.contestService = contestService;
     }
 
+    @Transactional(readOnly = true)
     public Result viewPublishedAnnouncements(long contestId) throws ContestNotFoundException {
         return listPublishedAnnouncements(contestId, 0, "timeUpdate", "desc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listPublishedAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
@@ -76,10 +77,12 @@ public class ContestAnnouncementController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewAnnouncements(long contestId) throws ContestNotFoundException {
         return listAnnouncements(contestId, 0, "id", "desc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseAnnouncements(contest)) {
@@ -103,6 +106,7 @@ public class ContestAnnouncementController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -117,6 +121,7 @@ public class ContestAnnouncementController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -138,6 +143,7 @@ public class ContestAnnouncementController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -154,6 +160,7 @@ public class ContestAnnouncementController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);

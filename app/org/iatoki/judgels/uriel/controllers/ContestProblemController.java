@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestProblemController extends BaseController {
 
@@ -63,10 +62,12 @@ public class ContestProblemController extends BaseController {
         this.submissionService = submissionService;
     }
 
+    @Transactional(readOnly = true)
     public Result viewUsedProblems(long contestId) throws ContestNotFoundException {
         return listUsedProblems(contestId, 0);
     }
 
+    @Transactional(readOnly = true)
     public Result listUsedProblems(long contestId, long pageIndex) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
@@ -99,6 +100,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
@@ -143,6 +145,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result renderImage(long contestId, long contestProblemId, String imageFilename) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
@@ -162,10 +165,12 @@ public class ContestProblemController extends BaseController {
         return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblemId));
     }
 
+    @Transactional(readOnly = true)
     public Result viewProblems(long contestId) throws ContestNotFoundException {
         return listProblems(contestId, 0, "alias", "asc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
@@ -189,6 +194,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -204,6 +210,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -239,6 +246,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -255,6 +263,7 @@ public class ContestProblemController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);

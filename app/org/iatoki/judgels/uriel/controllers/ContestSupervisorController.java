@@ -30,7 +30,6 @@ import play.mvc.Result;
 import java.io.IOException;
 import java.util.Arrays;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestSupervisorController extends BaseController {
 
@@ -46,11 +45,13 @@ public class ContestSupervisorController extends BaseController {
         this.userRoleService = userRoleService;
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewSupervisors(long contestId) throws ContestNotFoundException {
         return listCreateSupervisors(contestId, 0, "id", "asc", "");
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -67,6 +68,7 @@ public class ContestSupervisorController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -112,6 +114,7 @@ public class ContestSupervisorController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -128,6 +131,7 @@ public class ContestSupervisorController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);

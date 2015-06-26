@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class ContestSubmissionController extends BaseController {
 
@@ -57,6 +56,7 @@ public final class ContestSubmissionController extends BaseController {
         this.submissionRemoteFileProvider = submissionRemoteFileProvider;
     }
 
+    @Transactional
     public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
@@ -94,10 +94,12 @@ public final class ContestSubmissionController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewScreenedSubmissions(long contestId) throws ContestNotFoundException {
         return listScreenedSubmissions(contestId, 0, "id", "desc", null);
     }
 
+    @Transactional(readOnly = true)
     public Result listScreenedSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -128,6 +130,7 @@ public final class ContestSubmissionController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewSubmission(long contestId, long submissionId) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         Submission submission = submissionService.findSubmissionById(submissionId);
@@ -159,10 +162,12 @@ public final class ContestSubmissionController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewSubmissions(long contestId) throws ContestNotFoundException {
         return listSubmissions(contestId, 0, "id", "desc", null, null);
     }
 
+    @Transactional(readOnly = true)
     public Result listSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -196,6 +201,7 @@ public final class ContestSubmissionController extends BaseController {
         }
     }
 
+    @Transactional
     public Result regradeSubmission(long contestId, long submissionId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseSubmissions(contest)) {
@@ -212,6 +218,7 @@ public final class ContestSubmissionController extends BaseController {
         }
     }
 
+    @Transactional
     public Result regradeSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, SubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseSubmissions(contest)) {

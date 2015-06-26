@@ -2,24 +2,23 @@ package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.commons.IdentityUtils;
 import org.iatoki.judgels.commons.JudgelsUtils;
-import org.iatoki.judgels.jophiel.controllers.forms.ViewpointForm;
 import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.jophiel.Jophiel;
-import org.iatoki.judgels.uriel.services.AvatarCacheService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheService;
+import org.iatoki.judgels.jophiel.controllers.forms.ViewpointForm;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
-import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.services.AvatarCacheService;
+import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheService;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import java.io.IOException;
 
-@Transactional
 public final class ApplicationController extends BaseController {
 
     private final Jophiel jophiel;
@@ -53,6 +52,7 @@ public final class ApplicationController extends BaseController {
         }
     }
 
+    @Transactional
     public Result authRole(String returnUri) {
         if ((session().containsKey("username")) && (session().containsKey("role"))) {
             return redirect(returnUri);
@@ -99,6 +99,7 @@ public final class ApplicationController extends BaseController {
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional
     public Result postViewAs() {
         Form<ViewpointForm> form = Form.form(ViewpointForm.class).bindFromRequest();
 

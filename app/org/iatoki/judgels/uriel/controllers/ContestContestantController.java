@@ -45,7 +45,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestContestantController extends BaseController {
 
@@ -61,11 +60,13 @@ public class ContestContestantController extends BaseController {
         this.userService = userService;
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewContestants(long contestId) throws ContestNotFoundException {
         return listCreateContestants(contestId, 0, "id", "asc", "");
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -83,6 +84,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -137,6 +139,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -153,6 +156,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -175,6 +179,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUploadContestant(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -221,10 +226,12 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewContestantPasswords(long contestId) throws ContestNotFoundException {
         return listContestantPasswords(contestId, 0, "id", "asc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listContestantPasswords(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -244,6 +251,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional
     public Result generateContestantPasswords(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
@@ -255,6 +263,7 @@ public class ContestContestantController extends BaseController {
         }
     }
 
+    @Transactional
     public Result generateContestantPassword(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestant = contestService.findContestContestantByContestContestantId(contestContestantId);

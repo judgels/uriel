@@ -35,7 +35,6 @@ import java.io.IOException;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = {"admin"})
-@Transactional
 public final class UserController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
@@ -48,10 +47,12 @@ public final class UserController extends BaseController {
         this.userService = userService;
     }
 
+    @Transactional(readOnly = true)
     public Result index() {
         return listUsers(0, "id", "asc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listUsers(long pageIndex, String sortBy, String orderBy, String filterString) {
         Page<User> currentPage = userService.pageUsers(pageIndex, PAGE_SIZE, sortBy, orderBy, filterString);
 
@@ -68,6 +69,7 @@ public final class UserController extends BaseController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createUser() {
         UserCreateForm userCreateForm = new UserCreateForm(UrielUtils.getDefaultRoles());
@@ -78,6 +80,7 @@ public final class UserController extends BaseController {
         return showCreateUser(form);
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateUser() {
         Form<UserCreateForm> form = Form.form(UserCreateForm.class).bindFromRequest();
@@ -110,6 +113,7 @@ public final class UserController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
         LazyHtml content = new LazyHtml(viewUserView.render(user));
@@ -126,6 +130,7 @@ public final class UserController extends BaseController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
@@ -137,6 +142,7 @@ public final class UserController extends BaseController {
         return showUpdateUser(form, user);
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
@@ -154,6 +160,7 @@ public final class UserController extends BaseController {
         }
     }
 
+    @Transactional
     public Result deleteUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
         userService.deleteUser(user.getId());

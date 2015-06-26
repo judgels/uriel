@@ -29,7 +29,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class ContestFileController extends BaseController {
     private final ContestService contestService;
@@ -38,11 +37,13 @@ public final class ContestFileController extends BaseController {
         this.contestService = contestService;
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewFiles(long contestId) throws ContestNotFoundException {
         return listFiles(contestId);
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listFiles(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -55,6 +56,7 @@ public final class ContestFileController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUploadFile(long contestId) throws ContestNotFoundException{
         Contest contest = contestService.findContestById(contestId);
@@ -87,6 +89,7 @@ public final class ContestFileController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {

@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestTeamController extends BaseController {
 
@@ -66,6 +65,7 @@ public class ContestTeamController extends BaseController {
         this.userService = userService;
     }
 
+    @Transactional
     public Result startTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
@@ -78,27 +78,13 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewTeams(long contestId) throws ContestNotFoundException {
         return listCreateTeams(contestId, 0, "id", "asc", "");
     }
 
-    public Result viewScreenedTeams(long contestId) throws ContestNotFoundException {
-        return listScreenedTeams(contestId, 0, "id", "asc");
-    }
-
-    public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-
-        if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
-            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
-
-            return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir, ContestControllerUtils.getInstance().isAllowedToStartAnyContestAsCoach(contest));
-        } else {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
-        }
-    }
-
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -115,6 +101,25 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
+    public Result viewScreenedTeams(long contestId) throws ContestNotFoundException {
+        return listScreenedTeams(contestId, 0, "id", "asc");
+    }
+
+    @Transactional(readOnly = true)
+    public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+
+        if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
+            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
+
+            return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir, ContestControllerUtils.getInstance().isAllowedToStartAnyContestAsCoach(contest));
+        } else {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        }
+    }
+
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateTeam(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -156,6 +161,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -172,6 +178,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -207,6 +214,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -225,6 +233,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateTeamCoach(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -289,6 +298,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUploadTeamCoach(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -339,6 +349,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     public Result removeTeamCoach(long contestId, long contestTeamId, long contestTeamCoachId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamCoachNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
@@ -354,6 +365,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -412,6 +424,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUploadTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -461,6 +474,7 @@ public class ContestTeamController extends BaseController {
         }
     }
 
+    @Transactional
     public Result removeTeamMember(long contestId, long contestTeamId, long contestTeamMemberId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamMemberNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);

@@ -42,7 +42,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Transactional
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestClarificationController extends BaseController {
 
@@ -54,10 +53,12 @@ public class ContestClarificationController extends BaseController {
         this.contestService = contestService;
     }
 
+    @Transactional(readOnly = true)
     public Result viewScreenedClarifications(long contestId) throws ContestNotFoundException {
         return listScreenedClarifications(contestId, 0, "id", "desc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
@@ -105,6 +106,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -123,6 +125,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postCreateClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -148,6 +151,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -165,6 +169,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -187,10 +192,12 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result viewClarifications(long contestId) throws ContestNotFoundException {
         return listClarifications(contestId, 0, "id", "desc", "");
     }
 
+    @Transactional(readOnly = true)
     public Result listClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
@@ -215,6 +222,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -231,6 +239,7 @@ public class ContestClarificationController extends BaseController {
         }
     }
 
+    @Transactional
     @RequireCSRFCheck
     public Result postUpdateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);

@@ -38,7 +38,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Transactional
 public final class ContestAPIController extends Controller {
 
     private static final long PAGE_SIZE = 20;
@@ -49,8 +48,8 @@ public final class ContestAPIController extends Controller {
         this.contestService = contestService;
     }
 
-
     @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional(readOnly = true)
     public Result unreadAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
@@ -67,6 +66,7 @@ public final class ContestAPIController extends Controller {
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional(readOnly = true)
     public Result unreadClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
@@ -88,8 +88,8 @@ public final class ContestAPIController extends Controller {
         }
     }
 
-
     @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional(readOnly = true)
     public Result unansweredClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
@@ -105,8 +105,8 @@ public final class ContestAPIController extends Controller {
         }
     }
 
-
     @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional(readOnly = true)
     public Result renderTeamAvatarImage(String imageName) {
         response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
 
@@ -156,6 +156,7 @@ public final class ContestAPIController extends Controller {
         }
     }
 
+    @Transactional(readOnly = true)
     public Result getScoreboard() {
         DynamicForm form = DynamicForm.form().bindFromRequest();
 
