@@ -50,7 +50,7 @@ import java.util.Arrays;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public class ContestProblemController extends BaseController {
 
-    private static final long PAGE_SIZE = 20;
+    private static final long PAGE_SIZE = 50;
 
     private final Sandalphon sandalphon;
     private final ContestService contestService;
