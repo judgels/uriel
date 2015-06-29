@@ -5,39 +5,41 @@
 
 <p><small>Last updated: <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
 
-<table class="table table-bordered table-striped table-condensed">
-    <thead>
-        <tr>
-            <th class="text-center table-col-id">Rank</th>
-            <th class="text-center table-col-logo">Logo</th>
-            <th>Contestant</th>
-            <th class="table-col-score">Total</th>
-            @for(problemAlias <- config.getProblemAliases) {
-                <th class="table-col-score">@problemAlias</th>
-            }
-        </tr>
-    </thead>
-    <tbody>
-    @defining(jidCacheService.getDisplayNames(JavaConversions.seqAsJavaList(config.getContestantJids.toSeq))) { displayNamesMap =>
-        @for(entry <- entries) {
-            <tr @if(entry.contestantJid.equals(currentContestantJid)) { class="warning" }>
-                @if(hiddenRank) {
-                    <td class="text-center">?</td>
-                } else {
-                    <td class="text-center">@entry.rank</td>
-                }
-                <td class="text-center"><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
-                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
-                <td>@entry.totalScores</td>
-                @for(score <- entry.scores) {
-                    @if(score == null) {
-                        <td>-</td>
-                    }else {
-                        <td>@score</td>
-                    }
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-condensed">
+        <thead>
+            <tr>
+                <th class="text-center table-col-id">Rank</th>
+                <th class="text-center table-col-logo">Logo</th>
+                <th>Contestant</th>
+                <th class="table-col-score">Total</th>
+                @for(problemAlias <- config.getProblemAliases) {
+                    <th class="table-col-score">@problemAlias</th>
                 }
             </tr>
+        </thead>
+        <tbody>
+        @defining(jidCacheService.getDisplayNames(JavaConversions.seqAsJavaList(config.getContestantJids.toSeq))) { displayNamesMap =>
+            @for(entry <- entries) {
+                <tr @if(entry.contestantJid.equals(currentContestantJid)) { class="warning" }>
+                    @if(hiddenRank) {
+                        <td class="text-center">?</td>
+                    } else {
+                        <td class="text-center">@entry.rank</td>
+                    }
+                    <td class="text-center"><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
+                    <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
+                    <td>@entry.totalScores</td>
+                    @for(score <- entry.scores) {
+                        @if(score == null) {
+                            <td>-</td>
+                        }else {
+                            <td>@score</td>
+                        }
+                    }
+                </tr>
+            }
         }
-    }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
