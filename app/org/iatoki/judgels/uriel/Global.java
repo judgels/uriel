@@ -14,7 +14,13 @@ import org.iatoki.judgels.uriel.controllers.ControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
 import org.iatoki.judgels.uriel.services.AvatarCacheService;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheService;
 import org.iatoki.judgels.uriel.services.impls.UserActivityMessageServiceImpl;
@@ -67,7 +73,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
 
     private void buildUtils() {
         ControllerUtils.buildInstance(applicationContext.getBean(Jophiel.class));
-        ContestControllerUtils.getInstance().setContestService(applicationContext.getBean(ContestService.class));
+        ContestControllerUtils.buildInstance(applicationContext.getBean(ContestService.class), applicationContext.getBean(ContestContestantService.class), applicationContext.getBean(ContestSupervisorService.class), applicationContext.getBean(ContestManagerService.class), applicationContext.getBean(ContestTeamService.class), applicationContext.getBean(ContestPasswordService.class));
     }
 
     private void scheduleThreads() {
@@ -75,7 +81,7 @@ public final class Global extends org.iatoki.judgels.commons.Global {
         ExecutionContextExecutor context = Akka.system().dispatcher();
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, applicationContext.getBean(SubmissionService.class), applicationContext.getBean(Sealtiel.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-        ScoreUpdater updater = new ScoreUpdater(applicationContext.getBean(ContestService.class), applicationContext.getBean(SubmissionService.class));
+        ScoreUpdater updater = new ScoreUpdater(applicationContext.getBean(ContestService.class), applicationContext.getBean(ContestScoreboardService.class), applicationContext.getBean(SubmissionService.class));
         UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(applicationContext.getBean(Jophiel.class), applicationContext.getBean(UserService.class), UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);

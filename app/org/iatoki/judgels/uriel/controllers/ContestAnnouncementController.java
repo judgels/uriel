@@ -14,10 +14,12 @@ import org.iatoki.judgels.uriel.ContestAnnouncementNotFoundException;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
 import org.iatoki.judgels.uriel.controllers.forms.ContestAnnouncementUpsertForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.createAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.listAnnouncementsView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.updateAnnouncementView;
@@ -45,10 +47,14 @@ public class ContestAnnouncementController extends BaseController {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
+    private final ContestAnnouncementService contestAnnouncementService;
+    private final ContestSupervisorService contestSupervisorService;
 
     @Inject
-    public ContestAnnouncementController(ContestService contestService) {
+    public ContestAnnouncementController(ContestService contestService, ContestAnnouncementService contestAnnouncementService, ContestSupervisorService contestSupervisorService) {
         this.contestService = contestService;
+        this.contestAnnouncementService = contestAnnouncementService;
+        this.contestSupervisorService = contestSupervisorService;
     }
 
     @Transactional(readOnly = true)
@@ -60,8 +66,8 @@ public class ContestAnnouncementController extends BaseController {
     public Result listPublishedAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            Page<ContestAnnouncement> contestAnnouncements = contestService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
-            contestService.readContestAnnouncements(IdentityUtils.getUserJid(), contestAnnouncements.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
+            Page<ContestAnnouncement> contestAnnouncements = contestAnnouncementService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
+            contestAnnouncementService.readContestAnnouncements(IdentityUtils.getUserJid(), contestAnnouncements.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listPublishedAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.list"), c));
@@ -92,7 +98,7 @@ public class ContestAnnouncementController extends BaseController {
     public Result listAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseAnnouncements(contest)) {
-            Page<ContestAnnouncement> contestAnnouncements = contestService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
+            Page<ContestAnnouncement> contestAnnouncements = contestAnnouncementService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
 
             LazyHtml content = new LazyHtml(listAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("announcement.list"), new InternalLink(Messages.get("commons.create"), routes.ContestAnnouncementController.createAnnouncement(contest.getId())), c));
@@ -138,7 +144,7 @@ public class ContestAnnouncementController extends BaseController {
                 return showCreateAnnouncement(form, contest);
             } else {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
-                contestService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
+                contestAnnouncementService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
 
                 ControllerUtils.getInstance().addActivityLog("Create " + contestAnnouncementUpsertForm.status + " announcement with title " + contestAnnouncementUpsertForm.title + " in contest " + contest.getName() + ".");
 
@@ -153,7 +159,7 @@ public class ContestAnnouncementController extends BaseController {
     @AddCSRFToken
     public Result updateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestAnnouncement contestAnnouncement = contestService.findContestAnnouncementByContestAnnouncementId(contestAnnouncementId);
+        ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementByContestAnnouncementId(contestAnnouncementId);
         if (isAllowedToSuperviseAnnouncements(contest) && contestAnnouncement.getContestJid().equals(contest.getJid())) {
             ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = new ContestAnnouncementUpsertForm(contestAnnouncement);
             Form<ContestAnnouncementUpsertForm> form = Form.form(ContestAnnouncementUpsertForm.class).fill(contestAnnouncementUpsertForm);
@@ -170,7 +176,7 @@ public class ContestAnnouncementController extends BaseController {
     @RequireCSRFCheck
     public Result postUpdateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestAnnouncement contestAnnouncement = contestService.findContestAnnouncementByContestAnnouncementId(contestAnnouncementId);
+        ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementByContestAnnouncementId(contestAnnouncementId);
         if (isAllowedToSuperviseAnnouncements(contest) && contestAnnouncement.getContestJid().equals(contest.getJid())) {
             Form<ContestAnnouncementUpsertForm> form = Form.form(ContestAnnouncementUpsertForm.class).bindFromRequest();
 
@@ -178,7 +184,7 @@ public class ContestAnnouncementController extends BaseController {
                 return showUpdateAnnouncement(form, contest, contestAnnouncement);
             } else {
                 ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = form.get();
-                contestService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
+                contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertForm.title, contestAnnouncementUpsertForm.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertForm.status));
 
                 ControllerUtils.getInstance().addActivityLog("Update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + ".");
 
@@ -232,6 +238,6 @@ public class ContestAnnouncementController extends BaseController {
     }
 
     private boolean isAllowedToSuperviseAnnouncements(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isAnnouncement());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isAnnouncement());
     }
 }

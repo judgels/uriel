@@ -10,6 +10,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.controllers.forms.ContestManagerCreateForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -40,13 +41,15 @@ public class ContestManagerController extends BaseController {
 
     private final Jophiel jophiel;
     private final ContestService contestService;
-    private final UserService userRoleService;
+    private final ContestManagerService contestManagerService;
+    private final UserService userService;
 
     @Inject
-    public ContestManagerController(Jophiel jophiel, ContestService contestService, UserService userRoleService) {
+    public ContestManagerController(Jophiel jophiel, ContestService contestService, ContestManagerService contestManagerService, UserService userService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
-        this.userRoleService = userRoleService;
+        this.contestManagerService = contestManagerService;
+        this.userService = userService;
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +64,7 @@ public class ContestManagerController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
@@ -81,7 +84,7 @@ public class ContestManagerController extends BaseController {
         Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class).bindFromRequest();
 
         if (form.hasErrors() || form.hasGlobalErrors()) {
-            Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
@@ -90,9 +93,9 @@ public class ContestManagerController extends BaseController {
             ContestManagerCreateForm contestManagerCreateForm = form.get();
             try {
                 String userJid = jophiel.verifyUsername(contestManagerCreateForm.username);
-                if ((userJid != null) && (!contestService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
-                    userRoleService.upsertUserFromJophielUserJid(userJid);
-                    contestService.createContestManager(contest.getId(), userJid);
+                if ((userJid != null) && (!contestManagerService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
+                    userService.upsertUserFromJophielUserJid(userJid);
+                    contestManagerService.createContestManager(contest.getId(), userJid);
 
                     ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateForm.username + " in contest " + contest.getName() + ".");
 
@@ -100,7 +103,7 @@ public class ContestManagerController extends BaseController {
                 } else {
                     form.reject("error.manager.create.userJid.invalid");
 
-                    Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                     boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
                     return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
@@ -108,7 +111,7 @@ public class ContestManagerController extends BaseController {
             } catch (IOException e) {
                 form.reject("error.manager.create.userJid.invalid");
 
-                Page<ContestManager> contestManagers = contestService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                 boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
                 return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);

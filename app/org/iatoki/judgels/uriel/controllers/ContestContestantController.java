@@ -21,8 +21,11 @@ import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.controllers.forms.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.controllers.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.UploadResult;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -57,12 +60,18 @@ public class ContestContestantController extends BaseController {
 
     private final Jophiel jophiel;
     private final ContestService contestService;
+    private final ContestContestantService contestContestantService;
+    private final ContestSupervisorService contestSupervisorService;
+    private final ContestPasswordService contestPasswordService;
     private final UserService userService;
 
     @Inject
-    public ContestContestantController(Jophiel jophiel, ContestService contestService, UserService userService) {
+    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestPasswordService contestPasswordService, UserService userService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
+        this.contestContestantService = contestContestantService;
+        this.contestSupervisorService = contestSupervisorService;
+        this.contestPasswordService = contestPasswordService;
         this.userService = userService;
     }
 
@@ -77,7 +86,7 @@ public class ContestContestantController extends BaseController {
     public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
@@ -100,7 +109,7 @@ public class ContestContestantController extends BaseController {
             if (form.hasErrors() || form.hasGlobalErrors()) {
                 Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
 
-                Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                 boolean canUpdate = isAllowedToSuperviseContestants(contest);
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
             } else {
@@ -108,9 +117,9 @@ public class ContestContestantController extends BaseController {
                 try {
                     String userJid = jophiel.verifyUsername(contestContestantCreateForm.username);
                     if (userJid != null) {
-                        if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                        if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
                             userService.upsertUserFromJophielUserJid(userJid);
-                            contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
+                            contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
                             ControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateForm.username + " in contest " + contest.getName() + ".");
 
@@ -119,7 +128,7 @@ public class ContestContestantController extends BaseController {
                             Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                             form.reject("error.contestant.create.userIsAlreadyContestant");
 
-                            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                             boolean canUpdate = isAllowedToSuperviseContestants(contest);
                             return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                         }
@@ -127,7 +136,7 @@ public class ContestContestantController extends BaseController {
                         Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                         form.reject("error.contestant.create.userNotExist");
 
-                        Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                         boolean canUpdate = isAllowedToSuperviseContestants(contest);
                         return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                     }
@@ -135,7 +144,7 @@ public class ContestContestantController extends BaseController {
                     Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                     form.reject("error.contestant.create.userNotExist");
 
-                    Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                     boolean canUpdate = isAllowedToSuperviseContestants(contest);
                     return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                 }
@@ -149,7 +158,7 @@ public class ContestContestantController extends BaseController {
     @AddCSRFToken
     public Result updateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestContestant = contestService.findContestContestantByContestContestantId(contestContestantId);
+        ContestContestant contestContestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
             ContestContestantUpdateForm contestContestantUpsertForm = new ContestContestantUpdateForm(contestContestant);
             Form<ContestContestantUpdateForm> form = Form.form(ContestContestantUpdateForm.class).fill(contestContestantUpsertForm);
@@ -166,7 +175,7 @@ public class ContestContestantController extends BaseController {
     @RequireCSRFCheck
     public Result postUpdateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestContestant = contestService.findContestContestantByContestContestantId(contestContestantId);
+        ContestContestant contestContestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
             Form<ContestContestantUpdateForm> form = Form.form(ContestContestantUpdateForm.class).bindFromRequest();
 
@@ -174,7 +183,7 @@ public class ContestContestantController extends BaseController {
                 return showUpdateContestant(form, contest, contestContestant);
             } else {
                 ContestContestantUpdateForm contestContestantUpdateForm = form.get();
-                contestService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
+                contestContestantService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateForm.status));
 
                 ControllerUtils.getInstance().addActivityLog("Update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + ".");
 
@@ -204,9 +213,9 @@ public class ContestContestantController extends BaseController {
                         try {
                             String userJid = jophiel.verifyUsername(username);
                             if (userJid != null) {
-                                if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
                                     userService.upsertUserFromJophielUserJid(userJid);
-                                    contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                                    contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                                 } else {
                                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
                                 }
@@ -242,11 +251,11 @@ public class ContestContestantController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             Map<String, String> passwordsMap;
             if (contest.requiresPassword()) {
-                passwordsMap = contestService.getContestantPasswordsMap(contest.getJid(), Lists.transform(contestContestants.getData(), c -> c.getUserJid()));
+                passwordsMap = contestPasswordService.getContestantPasswordsMap(contest.getJid(), Lists.transform(contestContestants.getData(), c -> c.getUserJid()));
             } else {
                 passwordsMap = ImmutableMap.of();
             }
@@ -262,7 +271,7 @@ public class ContestContestantController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestService.generateContestantPasswordForAllContestants(contest.getJid());
+            contestPasswordService.generateContestantPasswordForAllContestants(contest.getJid());
             return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -272,10 +281,10 @@ public class ContestContestantController extends BaseController {
     @Transactional
     public Result generateContestantPassword(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestant = contestService.findContestContestantByContestContestantId(contestContestantId);
+        ContestContestant contestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
 
         if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
+            contestPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
             return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -374,6 +383,6 @@ public class ContestContestantController extends BaseController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
     }
 }

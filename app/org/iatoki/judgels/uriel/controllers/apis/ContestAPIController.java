@@ -10,7 +10,6 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
@@ -19,6 +18,14 @@ import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
+import org.iatoki.judgels.uriel.services.ContestClarificationService;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestScoreboardService;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.ContestTeamService;
 import play.data.DynamicForm;
 import play.db.jpa.Transactional;
 import play.libs.Json;
@@ -46,10 +53,24 @@ import java.util.stream.Collectors;
 public final class ContestAPIController extends Controller {
 
     private final ContestService contestService;
+    private final ContestTeamService contestTeamService;
+    private final ContestAnnouncementService contestAnnouncementService;
+    private final ContestClarificationService contestClarificationService;
+    private final ContestScoreboardService contestScoreboardService;
+    private final ContestContestantService contestContestantService;
+    private final ContestManagerService contestManagerService;
+    private final ContestSupervisorService contestSupervisorService;
 
     @Inject
-    public ContestAPIController(ContestService contestService) {
+    public ContestAPIController(ContestService contestService, ContestTeamService contestTeamService, ContestAnnouncementService contestAnnouncementService, ContestClarificationService contestClarificationService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestSupervisorService contestSupervisorService) {
         this.contestService = contestService;
+        this.contestTeamService = contestTeamService;
+        this.contestAnnouncementService = contestAnnouncementService;
+        this.contestClarificationService = contestClarificationService;
+        this.contestScoreboardService = contestScoreboardService;
+        this.contestContestantService = contestContestantService;
+        this.contestManagerService = contestManagerService;
+        this.contestSupervisorService = contestSupervisorService;
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -57,7 +78,7 @@ public final class ContestAPIController extends Controller {
     public Result unreadAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToEnterContest(contest)) {
-            long unreadCount = contestService.getUnreadContestAnnouncementsCount(IdentityUtils.getUserJid(), contest.getJid());
+            long unreadCount = contestAnnouncementService.getUnreadContestAnnouncementsCount(IdentityUtils.getUserJid(), contest.getJid());
             ObjectNode objectNode = Json.newObject();
             objectNode.put("success", true);
             objectNode.put("count", unreadCount);
@@ -76,10 +97,10 @@ public final class ContestAPIController extends Controller {
         if (isAllowedToEnterContest(contest)) {
             long unreadCount;
             if (isCoach(contest)) {
-                List<ContestTeamMember> contestTeamMemberList = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
-                unreadCount = contestService.getUnreadContestClarificationsCount(contestTeamMemberList.stream().map(ContestTeamMember::getMemberJid).collect(Collectors.toList()), IdentityUtils.getUserJid(), contest.getJid(), false);
+                List<ContestTeamMember> contestTeamMemberList = contestTeamService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
+                unreadCount = contestClarificationService.getUnreadContestClarificationsCount(contestTeamMemberList.stream().map(ContestTeamMember::getMemberJid).collect(Collectors.toList()), IdentityUtils.getUserJid(), contest.getJid(), false);
             } else {
-                unreadCount = contestService.getUnreadContestClarificationsCount(ImmutableList.of(IdentityUtils.getUserJid()), IdentityUtils.getUserJid(), contest.getJid(), true);
+                unreadCount = contestClarificationService.getUnreadContestClarificationsCount(ImmutableList.of(IdentityUtils.getUserJid()), IdentityUtils.getUserJid(), contest.getJid(), true);
             }
             ObjectNode objectNode = Json.newObject();
             objectNode.put("success", true);
@@ -97,7 +118,7 @@ public final class ContestAPIController extends Controller {
     public Result unansweredClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseClarifications(contest)) {
-            long unreadCount = contestService.getUnansweredContestClarificationsCount(contest.getJid());
+            long unreadCount = contestClarificationService.getUnansweredContestClarificationsCount(contest.getJid());
             ObjectNode objectNode = Json.newObject();
             objectNode.put("success", true);
             objectNode.put("count", unreadCount);
@@ -114,7 +135,7 @@ public final class ContestAPIController extends Controller {
     public Result renderTeamAvatarImage(String imageName) {
         response().setHeader("Cache-Control", "no-transform,public,max-age=300,s-maxage=900");
 
-        String imageURL = contestService.getTeamAvatarImageURL(imageName);
+        String imageURL = contestTeamService.getTeamAvatarImageURL(imageName);
         try {
             new URL(imageURL);
             return temporaryRedirect(imageURL);
@@ -185,11 +206,11 @@ public final class ContestAPIController extends Controller {
 
         ContestScoreboard contestScoreboard;
 
-        if (contestService.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, contestScoreboardType)) {
-            contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, contestScoreboardType);
+        if (contestScoreboardService.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, contestScoreboardType)) {
+            contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contestJid, contestScoreboardType);
         } else {
             // Resort to the official one.
-            contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contestJid, ContestScoreboardType.OFFICIAL);
+            contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contestJid, ContestScoreboardType.OFFICIAL);
         }
 
         return ok(new Gson().toJson(contestScoreboard));
@@ -200,19 +221,19 @@ public final class ContestAPIController extends Controller {
     }
 
     private boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestManagerService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     private boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestSupervisorService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     private boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestTeamService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     private boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     private boolean isContestStarted(Contest contest) {
@@ -231,12 +252,12 @@ public final class ContestAPIController extends Controller {
             if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (isContestStarted(contest)));
             } else {
-                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
+                return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }
         }
     }
 
     private boolean isAllowedToSuperviseClarifications(Contest contest) {
-        return isAdmin() || isManager(contest) || (isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
+        return isAdmin() || isManager(contest) || (isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
     }
 }

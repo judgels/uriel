@@ -15,6 +15,7 @@ import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
@@ -28,6 +29,8 @@ import org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberUploadForm;
 import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
 import org.iatoki.judgels.uriel.controllers.forms.ContestTeamUpsertForm;
 import org.iatoki.judgels.uriel.UploadResult;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -62,22 +65,28 @@ public class ContestTeamController extends BaseController {
 
     private final Jophiel jophiel;
     private final ContestService contestService;
+    private final ContestTeamService contestTeamService;
+    private final ContestContestantService contestContestantService;
+    private final ContestSupervisorService contestSupervisorService;
     private final UserService userService;
 
     @Inject
-    public ContestTeamController(Jophiel jophiel, ContestService contestService, UserService userService) {
+    public ContestTeamController(Jophiel jophiel, ContestService contestService, ContestTeamService contestTeamService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, UserService userService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
+        this.contestTeamService = contestTeamService;
+        this.contestContestantService = contestContestantService;
+        this.contestSupervisorService = contestSupervisorService;
         this.userService = userService;
     }
 
     @Transactional
     public Result startTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
 
         if (contestTeam.getContestJid().equals(contest.getJid()) && ContestControllerUtils.getInstance().isAllowedToStartContestAsCoach(contest, contestTeam)) {
-            contestService.startTeamAsCoach(contest.getJid(), contestTeam.getJid());
+            contestTeamService.startTeamAsCoach(contest.getJid(), contestTeam.getJid());
             return redirect(routes.ContestTeamController.viewScreenedTeams(contest.getId()));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -95,7 +104,7 @@ public class ContestTeamController extends BaseController {
     public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestTeam> contestTeams = contestTeamService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
@@ -116,8 +125,8 @@ public class ContestTeamController extends BaseController {
     public Result listScreenedTeams(long contestId, long pageIndex, String orderBy, String orderDir) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
-            Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
+        if (contestTeamService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid())) {
+            Page<ContestTeam> contestTeams = contestTeamService.pageContestTeamsByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid(), pageIndex, PAGE_SIZE, orderBy, orderDir);
 
             return showListScreenedTeams(contestTeams, contest, pageIndex, orderBy, orderDir, ContestControllerUtils.getInstance().isAllowedToStartAnyContestAsCoach(contest));
         } else {
@@ -133,7 +142,7 @@ public class ContestTeamController extends BaseController {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                Page<ContestTeam> contestTeams = contestTeamService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
                 boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
@@ -146,16 +155,16 @@ public class ContestTeamController extends BaseController {
 
                 if (teamImage != null) {
                     try {
-                        contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                        contestTeamService.createContestTeam(contest.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
                     } catch (IOException e) {
-                        Page<ContestTeam> contestTeams = contestService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        Page<ContestTeam> contestTeams = contestTeamService.pageContestTeamsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                         boolean canUpdate = isAllowedToSuperviseContestants(contest);
                         form.reject("team.avatar.error.cantUpdate");
 
                         return showListCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
                     }
                 } else {
-                    contestService.createContestTeam(contest.getId(), contestTeamUpsertForm.name);
+                    contestTeamService.createContestTeam(contest.getId(), contestTeamUpsertForm.name);
                 }
 
                 ControllerUtils.getInstance().addActivityLog("Create team " + contestTeamUpsertForm.name + " in contest " + contest.getName() + ".");
@@ -171,7 +180,7 @@ public class ContestTeamController extends BaseController {
     @AddCSRFToken
     public Result updateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             ContestTeamUpsertForm contestTeamUpsertForm = new ContestTeamUpsertForm(contestTeam);
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).fill(contestTeamUpsertForm);
@@ -188,7 +197,7 @@ public class ContestTeamController extends BaseController {
     @RequireCSRFCheck
     public Result postUpdateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamUpsertForm> form = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
 
@@ -201,14 +210,14 @@ public class ContestTeamController extends BaseController {
 
                 if (teamImage != null) {
                     try {
-                        contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
+                        contestTeamService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()));
                     } catch (IOException e) {
                         form.reject("team.avatar.error.cantUpdate");
 
                         return showUpdateTeam(form, contest, contestTeam);
                     }
                 } else {
-                    contestService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name);
+                    contestTeamService.updateContestTeam(contestTeam.getId(), contestTeamUpsertForm.name);
                 }
 
                 ControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
@@ -224,7 +233,7 @@ public class ContestTeamController extends BaseController {
     @AddCSRFToken
     public Result viewTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class);
             Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
@@ -233,7 +242,7 @@ public class ContestTeamController extends BaseController {
 
             ControllerUtils.getInstance().addActivityLog("View team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
+            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
@@ -243,7 +252,7 @@ public class ContestTeamController extends BaseController {
     @RequireCSRFCheck
     public Result postCreateTeamCoach(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamCoachCreateForm> form = Form.form(ContestTeamCoachCreateForm.class).bindFromRequest();
 
@@ -251,16 +260,16 @@ public class ContestTeamController extends BaseController {
                 Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
                 Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class);
                 Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
-                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
             } else {
                 ContestTeamCoachCreateForm contestTeamCoachCreateForm = form.get();
 
                 try {
                     String userJid = jophiel.verifyUsername(contestTeamCoachCreateForm.username);
                     if (userJid != null) {
-                        if (!contestService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
-                            if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
-                                contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
+                        if (!contestTeamService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
+                            if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
                                 userService.upsertUserFromJophielUserJid(userJid);
 
                                 ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateForm.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
@@ -272,7 +281,7 @@ public class ContestTeamController extends BaseController {
                                 Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class);
                                 Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                             }
                         } else {
                             form.reject("error.team.userAlreadyACoach");
@@ -280,7 +289,7 @@ public class ContestTeamController extends BaseController {
                             Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class);
                             Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                         }
                     } else {
                         form.reject("error.team.userNotFound");
@@ -288,7 +297,7 @@ public class ContestTeamController extends BaseController {
                         Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class);
                         Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                        return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                        return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                     }
                 } catch (IOException e) {
                     form.reject("error.team.userNotFound");
@@ -296,7 +305,7 @@ public class ContestTeamController extends BaseController {
                     Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class);
                     Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                    return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                    return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                 }
             }
         } else {
@@ -308,7 +317,7 @@ public class ContestTeamController extends BaseController {
     @RequireCSRFCheck
     public Result postUploadTeamCoach(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             ImmutableList.Builder<UploadResult> failedUploadsBuilder = ImmutableList.builder();
             Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -323,10 +332,10 @@ public class ContestTeamController extends BaseController {
                         try {
                             String userJid = jophiel.verifyUsername(username);
                             if (userJid != null) {
-                                if (!contestService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
-                                    if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                if (!contestTeamService.isUserCoachByUserJidAndTeamJid(userJid, contestTeam.getJid())) {
+                                    if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
                                         userService.upsertUserFromJophielUserJid(userJid);
-                                        contestService.createContestTeamCoach(contestTeam.getJid(), userJid);
+                                        contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
                                     } else {
                                         failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userAlreadyAContestant")));
                                     }
@@ -358,10 +367,10 @@ public class ContestTeamController extends BaseController {
     @Transactional
     public Result removeTeamCoach(long contestId, long contestTeamId, long contestTeamCoachId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamCoachNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
-        ContestTeamCoach contestTeamCoach = contestService.findContestTeamCoachByContestTeamCoachId(contestTeamCoachId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeamCoach contestTeamCoach = contestTeamService.findContestTeamCoachByContestTeamCoachId(contestTeamCoachId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamCoach.getTeamJid().equals(contestTeam.getJid())) {
-            contestService.removeContestTeamCoachByContestTeamCoachId(contestTeamCoach.getId());
+            contestTeamService.removeContestTeamCoachByContestTeamCoachId(contestTeamCoach.getId());
 
             ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamCoach.getCoachJid() + " from coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
@@ -375,7 +384,7 @@ public class ContestTeamController extends BaseController {
     @RequireCSRFCheck
     public Result postCreateTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             Form<ContestTeamMemberCreateForm> form3 = Form.form(ContestTeamMemberCreateForm.class).bindFromRequest();
 
@@ -384,18 +393,18 @@ public class ContestTeamController extends BaseController {
                 Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
                 Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
             } else {
                 ContestTeamMemberCreateForm contestTeamMemberCreateForm = form3.get();
 
                 try {
                     String userJid = jophiel.verifyUsername(contestTeamMemberCreateForm.username);
                     if (userJid != null) {
-                        if (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
-                            if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
-                                contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        if (!contestTeamService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
+                            if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                             }
-                            contestService.createContestTeamMember(contestTeam.getJid(), userJid);
+                            contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
 
                             ControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateForm.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
@@ -406,7 +415,7 @@ public class ContestTeamController extends BaseController {
                             Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
                             Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                            return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                         }
                     } else {
                         form3.reject("error.team.userNotFound");
@@ -414,7 +423,7 @@ public class ContestTeamController extends BaseController {
                         Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
                         Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                        return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                        return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                     }
                 } catch (IOException e) {
                     form3.reject("error.team.userNotFound");
@@ -422,7 +431,7 @@ public class ContestTeamController extends BaseController {
                     Form<ContestTeamCoachUploadForm> form2 = Form.form(ContestTeamCoachUploadForm.class);
                     Form<ContestTeamMemberUploadForm> form4 = Form.form(ContestTeamMemberUploadForm.class);
 
-                    return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
+                    return showViewTeam(form, form2, form3, form4, contest, contestTeam, contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid()), contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid()), true);
                 }
             }
         } else {
@@ -434,7 +443,7 @@ public class ContestTeamController extends BaseController {
     @RequireCSRFCheck
     public Result postUploadTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid())) {
             ImmutableList.Builder<UploadResult> failedUploadsBuilder = ImmutableList.builder();
             Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -450,11 +459,11 @@ public class ContestTeamController extends BaseController {
                             String userJid = jophiel.verifyUsername(username);
 
                             if (userJid != null) {
-                                if (!contestService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
-                                    if (!contestService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
-                                        contestService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                                if (!contestTeamService.isUserInAnyTeamByContestJid(contest.getJid(), userJid)) {
+                                    if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                        contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                                     }
-                                    contestService.createContestTeamMember(contestTeam.getJid(), userJid);
+                                    contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
                                 } else {
                                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userAlreadyHasTeam")));
                                 }
@@ -483,10 +492,10 @@ public class ContestTeamController extends BaseController {
     @Transactional
     public Result removeTeamMember(long contestId, long contestTeamId, long contestTeamMemberId) throws ContestNotFoundException, ContestTeamNotFoundException, ContestTeamMemberNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestTeam contestTeam = contestService.findContestTeamByContestTeamId(contestTeamId);
-        ContestTeamMember contestTeamMember = contestService.findContestTeamMemberByContestTeamMemberId(contestTeamMemberId);
+        ContestTeam contestTeam = contestTeamService.findContestTeamByContestTeamId(contestTeamId);
+        ContestTeamMember contestTeamMember = contestTeamService.findContestTeamMemberByContestTeamMemberId(contestTeamMemberId);
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
-            contestService.removeContestTeamMemberByContestTeamMemberId(contestTeamMember.getId());
+            contestTeamService.removeContestTeamMemberByContestTeamMemberId(contestTeamMember.getId());
 
             ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamMember.getMemberJid() + " from member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
@@ -627,6 +636,6 @@ public class ContestTeamController extends BaseController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
     }
 }

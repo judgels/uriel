@@ -21,7 +21,10 @@ import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -50,13 +53,19 @@ public final class ContestSubmissionController extends BaseController {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
+    private final ContestProblemService contestProblemService;
+    private final ContestContestantService contestContestantService;
+    private final ContestSupervisorService contestSupervisorService;
     private final SubmissionService submissionService;
     private final FileSystemProvider submissionLocalFileSystemProvider;
     private final FileSystemProvider submissionRemoteFileSystemProvider;
 
     @Inject
-    public ContestSubmissionController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider, FileSystemProvider submissionRemoteFileSystemProvider) {
+    public ContestSubmissionController(ContestService contestService, ContestProblemService contestProblemService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider, FileSystemProvider submissionRemoteFileSystemProvider) {
         this.contestService = contestService;
+        this.contestProblemService = contestProblemService;
+        this.contestContestantService = contestContestantService;
+        this.contestSupervisorService = contestSupervisorService;
         this.submissionService = submissionService;
         this.submissionLocalFileSystemProvider = submissionLocalFileSystemProvider;
         this.submissionRemoteFileSystemProvider = submissionRemoteFileSystemProvider;
@@ -65,7 +74,7 @@ public final class ContestSubmissionController extends BaseController {
     @Transactional
     public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
+        ContestProblem contestProblem = contestProblemService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), problemJid);
 
         if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest) && contestProblem.getContestJid().equals(contest.getJid()) && !ContestControllerUtils.getInstance().isCoach(contest) && contestProblem.getStatus() != ContestProblemStatus.UNUSED) {
 
@@ -113,7 +122,7 @@ public final class ContestSubmissionController extends BaseController {
             String actualProblemJid = "(none)".equals(problemJid) ? null : problemJid;
 
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, IdentityUtils.getUserJid(), actualProblemJid, contest.getJid());
-            Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
+            Map<String, String> problemJidToAliasMap = contestProblemService.findProblemJidToAliasMapByContestJid(contest.getJid());
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
             LazyHtml content = new LazyHtml(listScreenedSubmissionsView.render(contestId, submissions, problemJidToAliasMap, gradingLanguageToNameMap, pageIndex, orderBy, orderDir, actualProblemJid));
@@ -144,7 +153,7 @@ public final class ContestSubmissionController extends BaseController {
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submission.getJid());
             String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
-            ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
+            ContestProblem contestProblem = contestProblemService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
             String contestProblemAlias = contestProblem.getAlias();
             String contestProblemName = JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid());
             String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
@@ -183,8 +192,8 @@ public final class ContestSubmissionController extends BaseController {
             String actualProblemJid = "(none)".equals(problemJid) ? null : problemJid;
 
             Page<Submission> submissions = submissionService.pageSubmissions(pageIndex, PAGE_SIZE, orderBy, orderDir, actualContestantJid, actualProblemJid, contest.getJid());
-            Map<String, String> problemJidToAliasMap = contestService.findProblemJidToAliasMapByContestJid(contest.getJid());
-            List<ContestContestant> contestants = contestService.findAllContestContestantsByContestJid(contest.getJid());
+            Map<String, String> problemJidToAliasMap = contestProblemService.findProblemJidToAliasMapByContestJid(contest.getJid());
+            List<ContestContestant> contestants = contestContestantService.findAllContestContestantsByContestJid(contest.getJid());
             List<String> contestantJids = Lists.transform(contestants, c -> c.getUserJid());
             Map<String, String> gradingLanguageToNameMap = GradingLanguageRegistry.getInstance().getGradingLanguages();
 
@@ -267,7 +276,7 @@ public final class ContestSubmissionController extends BaseController {
     }
 
     private boolean isAllowedToSuperviseSubmissions(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isSubmission());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isSubmission());
     }
 
     private boolean isAllowedToViewSubmission(Contest contest, Submission submission) {

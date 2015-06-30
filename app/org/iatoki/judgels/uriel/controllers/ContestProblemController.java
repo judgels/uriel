@@ -19,9 +19,11 @@ import org.iatoki.judgels.uriel.controllers.forms.ContestProblemCreateForm;
 import org.iatoki.judgels.uriel.ContestProblemNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
 import org.iatoki.judgels.uriel.controllers.forms.ContestProblemUpdateForm;
+import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
 import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheService;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -59,12 +61,16 @@ public class ContestProblemController extends BaseController {
 
     private final Sandalphon sandalphon;
     private final ContestService contestService;
+    private final ContestProblemService contestProblemService;
+    private final ContestSupervisorService contestSupervisorService;
     private final SubmissionService submissionService;
 
     @Inject
-    public ContestProblemController(Sandalphon sandalphon, ContestService contestService, SubmissionService submissionService) {
+    public ContestProblemController(Sandalphon sandalphon, ContestService contestService, ContestProblemService contestProblemService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService) {
         this.sandalphon = sandalphon;
         this.contestService = contestService;
+        this.contestProblemService = contestProblemService;
+        this.contestSupervisorService = contestSupervisorService;
         this.submissionService = submissionService;
     }
 
@@ -77,7 +83,7 @@ public class ContestProblemController extends BaseController {
     public Result listUsedProblems(long contestId, long pageIndex) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            Page<ContestProblem> contestProblems = contestService.pageUsedContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE);
+            Page<ContestProblem> contestProblems = contestProblemService.pageUsedContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE);
             ImmutableList.Builder<ContestProblem> replacementBuilder = ImmutableList.builder();
             for (ContestProblem contestProblem : contestProblems.getData()) {
                 contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
@@ -109,7 +115,7 @@ public class ContestProblemController extends BaseController {
     @Transactional(readOnly = true)
     public Result viewProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
             long submissionsLeft = -1;
             if (contestProblem.getSubmissionsLimit() != 0) {
@@ -154,7 +160,7 @@ public class ContestProblemController extends BaseController {
     @Transactional(readOnly = true)
     public Result renderImage(long contestId, long contestProblemId, String imageFilename) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
         if (contest.getJid().equals(contestProblem.getContestJid())) {
             URI imageUri = sandalphon.getProblemMediaRenderUri(contestProblem.getProblemJid(), imageFilename);
 
@@ -180,7 +186,7 @@ public class ContestProblemController extends BaseController {
     public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
-            Page<ContestProblem> contestProblemPage = contestService.pageContestProblemsByContestJid(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
+            Page<ContestProblem> contestProblemPage = contestProblemService.pageContestProblemsByContestJid(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
 
             LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), contestProblemPage, page, sortBy, orderBy, filterString));
             content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
@@ -235,8 +241,8 @@ public class ContestProblemController extends BaseController {
                     return showCreateProblem(form, contest);
                 }
 
-                if ((problemName != null) && (!contestService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
-                    contestService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
+                if ((problemName != null) && (!contestProblemService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
+                    contestProblemService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
                     JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
                     ControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateForm.alias + " in contest " + contest.getName() + ".");
@@ -256,7 +262,7 @@ public class ContestProblemController extends BaseController {
     @AddCSRFToken
     public Result updateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
             ContestProblemUpdateForm contestProblemUpdateForm = new ContestProblemUpdateForm(contestProblem);
             Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).fill(contestProblemUpdateForm);
@@ -273,7 +279,7 @@ public class ContestProblemController extends BaseController {
     @RequireCSRFCheck
     public Result postUpdateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestService.findContestProblemByContestProblemId(contestProblemId);
+        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
             Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).bindFromRequest();
 
@@ -281,7 +287,7 @@ public class ContestProblemController extends BaseController {
                 return showUpdateProblem(form, contest, contestProblem);
             } else {
                 ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-                contestService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
+                contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
 
                 ControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
@@ -337,7 +343,7 @@ public class ContestProblemController extends BaseController {
     }
 
     private boolean isAllowedToSuperviseProblems(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isProblem());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isProblem());
     }
 
     private boolean isAllowedToViewProblem(Contest contest, ContestProblem contestProblem) {

@@ -13,6 +13,7 @@ import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.controllers.forms.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 import org.iatoki.judgels.uriel.controllers.forms.ContestSupervisorUpdateForm;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -42,12 +43,14 @@ public class ContestSupervisorController extends BaseController {
 
     private final Jophiel jophiel;
     private final ContestService contestService;
+    private final ContestSupervisorService contestSupervisorService;
     private final UserService userRoleService;
 
     @Inject
-    public ContestSupervisorController(Jophiel jophiel, ContestService contestService, UserService userRoleService) {
+    public ContestSupervisorController(Jophiel jophiel, ContestService contestService, ContestSupervisorService contestSupervisorService, UserService userRoleService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
+        this.contestSupervisorService = contestSupervisorService;
         this.userRoleService = userRoleService;
     }
 
@@ -62,7 +65,7 @@ public class ContestSupervisorController extends BaseController {
     public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestSupervisor> contestSupervisorPage = contestSupervisorService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToManageSupervisors(contest);
 
@@ -82,7 +85,7 @@ public class ContestSupervisorController extends BaseController {
             Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class).bindFromRequest();
 
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                Page<ContestSupervisor> contestSupervisorPage = contestSupervisorService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
                 boolean canUpdate = isAllowedToManageSupervisors(contest);
 
@@ -91,9 +94,9 @@ public class ContestSupervisorController extends BaseController {
                 ContestSupervisorCreateForm contestSupervisorCreateForm = form.get();
                 try {
                     String userJid = jophiel.verifyUsername(contestSupervisorCreateForm.username);
-                    if ((userJid != null) && (!contestService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
+                    if ((userJid != null) && (!contestSupervisorService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
                         userRoleService.upsertUserFromJophielUserJid(userJid);
-                        contestService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
+                        contestSupervisorService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
 
                         ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateForm.username + " as supervisor in contest " + contest.getName() + ".");
 
@@ -101,7 +104,7 @@ public class ContestSupervisorController extends BaseController {
                     } else {
                         form.reject("error.supervisor.create.userJid.invalid");
 
-                        Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        Page<ContestSupervisor> contestSupervisorPage = contestSupervisorService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                         boolean canUpdate = isAllowedToManageSupervisors(contest);
 
                         return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
@@ -109,7 +112,7 @@ public class ContestSupervisorController extends BaseController {
                 } catch (IOException e) {
                     form.reject("error.supervisor.create.userJid.invalid");
 
-                    Page<ContestSupervisor> contestSupervisorPage = contestService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    Page<ContestSupervisor> contestSupervisorPage = contestSupervisorService.pageContestSupervisorsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                     boolean canUpdate = isAllowedToManageSupervisors(contest);
 
                     return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
@@ -124,7 +127,7 @@ public class ContestSupervisorController extends BaseController {
     @AddCSRFToken
     public Result updateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
+        ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if (isAllowedToManageSupervisors(contest) && contestSupervisor.getContestJid().equals(contest.getJid())) {
             ContestSupervisorUpdateForm contestSupervisorUpdateForm = new ContestSupervisorUpdateForm(contestSupervisor);
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateForm);
@@ -141,7 +144,7 @@ public class ContestSupervisorController extends BaseController {
     @RequireCSRFCheck
     public Result postUpdateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestSupervisor contestSupervisor = contestService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
+        ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if (isAllowedToManageSupervisors(contest) && contestSupervisor.getContestJid().equals(contest.getJid())) {
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).bindFromRequest();
 
@@ -149,7 +152,7 @@ public class ContestSupervisorController extends BaseController {
                 return showUpdateSupervisor(form, contest, contestSupervisor);
             } else {
                 ContestSupervisorUpdateForm contestSupervisorUpdateForm = form.get();
-                contestService.updateContestSupervisor(contestSupervisor.getId(), contestSupervisorUpdateForm.announcement, contestSupervisorUpdateForm.problem, contestSupervisorUpdateForm.submission, contestSupervisorUpdateForm.clarification, contestSupervisorUpdateForm.contestant);
+                contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestSupervisorUpdateForm.announcement, contestSupervisorUpdateForm.problem, contestSupervisorUpdateForm.submission, contestSupervisorUpdateForm.clarification, contestSupervisorUpdateForm.contestant);
 
                 ControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
 

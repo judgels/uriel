@@ -12,11 +12,16 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
 import org.iatoki.judgels.uriel.UrielUtils;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
 import play.i18n.Messages;
 import play.mvc.Controller;
@@ -29,20 +34,36 @@ import java.util.concurrent.TimeUnit;
 public final class ContestControllerUtils {
 
     private ContestService contestService;
+    private ContestContestantService contestContestantService;
+    private ContestSupervisorService contestSupervisorService;
+    private ContestManagerService contestManagerService;
+    private ContestTeamService contestTeamService;
+    private ContestPasswordService contestPasswordService;
 
     private static final String CURRENT_CONTEST_WITH_PASSWORD_KEY = "currentContestWithPassword";
 
-    static final ContestControllerUtils INSTANCE = new ContestControllerUtils();
+    static ContestControllerUtils INSTANCE;
 
-    private ContestControllerUtils() {
-        // prevent instantiation
+    private ContestControllerUtils(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestPasswordService contestPasswordService) {
+        this.contestService = contestService;
+        this.contestContestantService = contestContestantService;
+        this.contestSupervisorService = contestSupervisorService;
+        this.contestManagerService = contestManagerService;
+        this.contestTeamService = contestTeamService;
+        this.contestPasswordService = contestPasswordService;
     }
 
-    public void setContestService(ContestService contestService) {
-        this.contestService = contestService;
+    public static synchronized void buildInstance(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestPasswordService contestPasswordService) {
+        if (INSTANCE != null) {
+            throw new UnsupportedOperationException("ContestControllerUtils instance has already been built");
+        }
+        INSTANCE = new ContestControllerUtils(contestService, contestContestantService, contestSupervisorService, contestManagerService, contestTeamService, contestPasswordService);
     }
 
     public static ContestControllerUtils getInstance() {
+        if (INSTANCE == null) {
+            throw new UnsupportedOperationException("ContestControllerUtils instance has not been built");
+        }
         return INSTANCE;
     }
 
@@ -60,19 +81,19 @@ public final class ContestControllerUtils {
     }
 
     boolean isManager(Contest contest) {
-        return contestService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestManagerService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     boolean isSupervisor(Contest contest) {
-        return contestService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestSupervisorService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     boolean isCoach(Contest contest) {
-        return contestService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestTeamService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     boolean isContestant(Contest contest) {
-        return contestService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     boolean isSupervisorOrAbove(Contest contest) {
@@ -95,7 +116,7 @@ public final class ContestControllerUtils {
         if (contest.isStandard()) {
             return hasContestBegun(contest);
         } else if (isContestant(contest)) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             return contestContestant.getContestStartTime() != 0;
         }
         return false;
@@ -103,7 +124,7 @@ public final class ContestControllerUtils {
 
     boolean hasContestFinished(Contest contest) {
         if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
 
@@ -131,7 +152,7 @@ public final class ContestControllerUtils {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
 
-            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && ((contestScopeConfigPublic.getMaxRegistrants() == 0) || (contestService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants()));
+            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && ((contestScopeConfigPublic.getMaxRegistrants() == 0) || (contestContestantService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants()));
         } else {
             result = false;
         }
@@ -159,7 +180,7 @@ public final class ContestControllerUtils {
             if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (hasContestStarted(contest)));
             } else {
-                return ((hasContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
+                return ((hasContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }
         }
     }
@@ -175,7 +196,7 @@ public final class ContestControllerUtils {
             return false;
         }
         if (contest.requiresPassword() && !UrielUtils.trullyHasRole("admin")) {
-            String password = contestService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+            String password = contestPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
             return ((password == null) && (hasEstablishedContestWithPasswordCookie(password)));
         }
         return true;
@@ -241,7 +262,7 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             return true;
         }
-        if (!contest.isVirtual() || !contestService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
+        if (!contest.isVirtual() || !contestTeamService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
             return false;
         }
 
@@ -280,7 +301,7 @@ public final class ContestControllerUtils {
     void appendTabsLayout(LazyHtml content, Contest contest) {
         final Date contestEndTime;
         if ((contest.isVirtual()) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
             contestEndTime = new Date(Math.min(contestContestant.getContestStartTime() + contestTypeConfigVirtual.getContestDuration(), contest.getEndTime().getTime()));

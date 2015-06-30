@@ -24,6 +24,9 @@ import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
 import org.iatoki.judgels.uriel.controllers.forms.ContestScopeConfigPrivateForm;
 import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
 import org.iatoki.judgels.uriel.controllers.forms.ContestScopeConfigPublicForm;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
@@ -70,10 +73,16 @@ public final class ContestController extends BaseController {
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
+    private final ContestContestantService contestContestantService;
+    private final ContestManagerService contestManagerService;
+    private final ContestPasswordService contestPasswordService;
 
     @Inject
-    public ContestController(ContestService contestService) {
+    public ContestController(ContestService contestService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestPasswordService contestPasswordService) {
         this.contestService = contestService;
+        this.contestContestantService = contestContestantService;
+        this.contestManagerService = contestManagerService;
+        this.contestPasswordService = contestPasswordService;
     }
 
     @Transactional(readOnly = true)
@@ -171,7 +180,7 @@ public final class ContestController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
-            Page<ContestContestant> contestContestants = contestService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             Form<ContestEnterWithPasswordForm> passwordForm;
             if (ContestControllerUtils.getInstance().requiresPasswordToEnterContest(contest)) {
@@ -202,7 +211,7 @@ public final class ContestController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest)) {
-            contestService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
+            contestContestantService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
 
             ControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
@@ -217,8 +226,8 @@ public final class ContestController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest)) {
-            ContestContestant contestContestant = contestService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            contestService.deleteContestContestant(contestContestant.getId());
+            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+            contestContestantService.deleteContestContestant(contestContestant.getId());
 
             ControllerUtils.getInstance().addActivityLog("Unregister from contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
@@ -248,7 +257,7 @@ public final class ContestController extends BaseController {
             Form<ContestEnterWithPasswordForm> form = Form.form(ContestEnterWithPasswordForm.class).bindFromRequest();
 
             String password = form.get().password;
-            String correctPassword = contestService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+            String correctPassword = contestPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
 
             if (correctPassword == null) {
                 flash("password", Messages.get("contestant.password.notAvailable"));
@@ -272,7 +281,7 @@ public final class ContestController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest)) {
-            contestService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+            contestContestantService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
             ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
             return redirect(routes.ContestController.jumpToAnnouncements(contestId));
         } else {

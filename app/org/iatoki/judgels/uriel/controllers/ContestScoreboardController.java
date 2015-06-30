@@ -19,11 +19,14 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.services.ContestProblemService;
+import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheService;
 import org.iatoki.judgels.uriel.ScoreAdapter;
 import org.iatoki.judgels.uriel.ScoreAdapters;
@@ -56,14 +59,18 @@ import java.util.stream.Collectors;
 @Named
 public class ContestScoreboardController extends BaseController {
 
-    private static final long PAGE_SIZE = 20;
-
     private final ContestService contestService;
+    private final ContestScoreboardService contestScoreboardService;
+    private final ContestProblemService contestProblemService;
+    private final ContestTeamService contestTeamService;
     private final SubmissionService submissionService;
 
     @Inject
-    public ContestScoreboardController(ContestService contestService, SubmissionService submissionService) {
+    public ContestScoreboardController(ContestService contestService, ContestScoreboardService contestScoreboardService, ContestProblemService contestProblemService, ContestTeamService contestTeamService, SubmissionService submissionService) {
         this.contestService = contestService;
+        this.contestScoreboardService = contestScoreboardService;
+        this.contestProblemService = contestProblemService;
+        this.contestTeamService = contestTeamService;
         this.submissionService = submissionService;
     }
 
@@ -74,13 +81,13 @@ public class ContestScoreboardController extends BaseController {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
-                if (contestService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) {
-                    contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
+                if (contestScoreboardService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) {
+                    contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
                 } else {
                     contestScoreboard = null;
                 }
             } else {
-                contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+                contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             }
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             LazyHtml content;
@@ -89,7 +96,7 @@ public class ContestScoreboardController extends BaseController {
             } else {
                 Scoreboard scoreboard = contestScoreboard.getScoreboard();
 
-                Set<String> openProblemJids = contestService.findOpenedContestProblemByContestJid(contest.getJid())
+                Set<String> openProblemJids = contestProblemService.findOpenedContestProblemByContestJid(contest.getJid())
                         .stream()
                         .map(c -> c.getProblemJid())
                         .collect(Collectors.toSet());
@@ -98,7 +105,7 @@ public class ContestScoreboardController extends BaseController {
 
                 if (contest.isIncognitoScoreboard()) {
                     if (ContestControllerUtils.getInstance().isCoach(contest)) {
-                        List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
+                        List<ContestTeamMember> contestTeamMembers = contestTeamService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
                         content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toSet())));
                     } else {
                         content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
@@ -131,7 +138,7 @@ public class ContestScoreboardController extends BaseController {
     public Result viewOfficialScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
-            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
@@ -164,9 +171,9 @@ public class ContestScoreboardController extends BaseController {
 
             List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
-            ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+            ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
             Scoreboard scoreboard = adapter.createScoreboard(state, content);
-            contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+            contestScoreboardService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
             if (contest.isStandard()) {
                 refreshFrozenScoreboard(contest, adapter, state);
@@ -185,7 +192,7 @@ public class ContestScoreboardController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestScoreboard contestScoreboard = contestService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+            ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ContestScoreState contestScoreState = contestScoreboard.getScoreboard().getState();
 
             Workbook workbook = new HSSFWorkbook();
@@ -209,7 +216,7 @@ public class ContestScoreboardController extends BaseController {
 
             sheet = workbook.createSheet(Messages.get("team.teams"));
 
-            List<ContestTeam> contestTeams = contestService.findAllContestTeams(contest.getJid());
+            List<ContestTeam> contestTeams = contestTeamService.findAllContestTeams(contest.getJid());
             rowNum = 0;
             cellNum = 0;
             row = sheet.createRow(rowNum++);
@@ -225,8 +232,8 @@ public class ContestScoreboardController extends BaseController {
                 cell = row.createCell(cellNum++);
                 cell.setCellValue(contestTeam.getName());
 
-                List<ContestTeamCoach> contestTeamCoaches = contestService.findContestTeamCoachesByTeamJid(contestTeam.getJid());
-                List<ContestTeamMember> contestTeamMembers = contestService.findContestTeamMembersByTeamJid(contestTeam.getJid());
+                List<ContestTeamCoach> contestTeamCoaches = contestTeamService.findContestTeamCoachesByTeamJid(contestTeam.getJid());
+                List<ContestTeamMember> contestTeamMembers = contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid());
                 if (contestTeamCoaches.size() > 0) {
                     cell = row.createCell(1);
                     cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamCoaches.get(0).getCoachJid()));
@@ -310,9 +317,9 @@ public class ContestScoreboardController extends BaseController {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         List<Submission> submissions = submissionService.findAllSubmissionsByContestJidBeforeTime(contest.getJid(), new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class).getScoreboardFreezeTime());
 
-        ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+        ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
-        contestService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
+        contestScoreboardService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
     }
 
     private void appendSubtabsLayout(LazyHtml content, Contest contest) {

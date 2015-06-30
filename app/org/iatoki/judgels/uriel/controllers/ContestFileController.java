@@ -7,6 +7,7 @@ import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.controllers.forms.ContestFileUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.services.ContestFileService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -38,10 +39,12 @@ import java.util.List;
 public final class ContestFileController extends BaseController {
 
     private final ContestService contestService;
+    private final ContestFileService contestFileService;
 
     @Inject
-    public ContestFileController(ContestService contestService) {
+    public ContestFileController(ContestService contestService, ContestFileService contestFileService) {
         this.contestService = contestService;
+        this.contestFileService = contestFileService;
     }
 
     @Transactional(readOnly = true)
@@ -56,7 +59,7 @@ public final class ContestFileController extends BaseController {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToManageFiles(contest)) {
             Form<ContestFileUploadForm> form = Form.form(ContestFileUploadForm.class);
-            List<FileInfo> fileInfos = contestService.getContestFiles(contest.getJid());
+            List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
             return showListFiles(form, contest, fileInfos);
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -70,7 +73,7 @@ public final class ContestFileController extends BaseController {
         if (isAllowedToManageFiles(contest)) {
             Form<ContestFileUploadForm> form = Form.form(ContestFileUploadForm.class).bindFromRequest();
             if (form.hasErrors() || form.hasGlobalErrors()) {
-                List<FileInfo> fileInfos = contestService.getContestFiles(contest.getJid());
+                List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
                 return showListFiles(form, contest, fileInfos);
             } else {
                 Http.MultipartFormData body = request().body().asMultipartFormData();
@@ -80,15 +83,15 @@ public final class ContestFileController extends BaseController {
                 if (file != null) {
                     File contestFile = file.getFile();
                     try {
-                        contestService.uploadContestFile(contest.getJid(), contestFile, file.getFilename());
+                        contestFileService.uploadContestFile(contest.getJid(), contestFile, file.getFilename());
                         return redirect(routes.ContestFileController.viewFiles(contest.getId()));
                     } catch (IOException e) {
                         form.reject("file.cannotUploadFile");
-                        List<FileInfo> fileInfos = contestService.getContestFiles(contest.getJid());
+                        List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
                         return showListFiles(form, contest, fileInfos);
                     }
                 }
-                List<FileInfo> fileInfos = contestService.getContestFiles(contest.getJid());
+                List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
                 return showListFiles(form, contest, fileInfos);
             }
         } else {
@@ -100,7 +103,7 @@ public final class ContestFileController extends BaseController {
     public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            String fileURL = contestService.getContestFileURL(contest.getJid(), filename);
+            String fileURL = contestFileService.getContestFileURL(contest.getJid(), filename);
             try {
                 new URL(fileURL);
                 return redirect(fileURL);
