@@ -7,12 +7,17 @@ import org.iatoki.judgels.uriel.models.entities.ContestTeamMemberModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamMemberModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
+@Singleton
+@Named("contestTeamMemberDao")
 public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Long, ContestTeamMemberModel> implements ContestTeamMemberDao {
+
     public ContestTeamMemberHibernateDao() {
         super(ContestTeamMemberModel.class);
     }

@@ -7,6 +7,8 @@ import org.iatoki.judgels.uriel.models.entities.ContestContestantPasswordModel;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantPasswordModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -15,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Singleton
+@Named("contestContestantPasswordDao")
 public final class ContestContestantPasswordHibernateDao extends AbstractHibernateDao<Long, ContestContestantPasswordModel> implements ContestContestantPasswordDao {
+
     public ContestContestantPasswordHibernateDao() {
         super(ContestContestantPasswordModel.class);
     }

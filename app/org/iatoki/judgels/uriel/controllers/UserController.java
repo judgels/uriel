@@ -31,10 +31,15 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = {"admin"})
+@Singleton
+@Named
 public final class UserController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
@@ -42,6 +47,7 @@ public final class UserController extends BaseController {
     private final Jophiel jophiel;
     private final UserService userService;
 
+    @Inject
     public UserController(Jophiel jophiel, UserService userService) {
         this.jophiel = jophiel;
         this.userService = userService;

@@ -7,11 +7,15 @@ import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
+@Singleton
+@Named("contestContestantDao")
 public final class ContestContestantHibernateDao extends AbstractHibernateDao<Long, ContestContestantModel> implements ContestContestantDao {
 
     public ContestContestantHibernateDao() {

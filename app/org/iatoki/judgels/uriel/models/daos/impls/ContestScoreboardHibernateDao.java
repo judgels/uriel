@@ -6,11 +6,16 @@ import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+@Singleton
+@Named("contestScoreboardDao")
 public final class ContestScoreboardHibernateDao extends AbstractHibernateDao<Long, ContestScoreboardModel> implements ContestScoreboardDao {
+
     public ContestScoreboardHibernateDao() {
         super(ContestScoreboardModel.class);
     }

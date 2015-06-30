@@ -17,13 +17,19 @@ import play.data.Form;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 
+@Singleton
+@Named
 public final class ApplicationController extends BaseController {
 
     private final Jophiel jophiel;
     private final UserService userService;
 
+    @Inject
     public ApplicationController(Jophiel jophiel, UserService userService) {
         this.jophiel = jophiel;
         this.userService = userService;

@@ -7,6 +7,8 @@ import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -14,6 +16,8 @@ import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
+@Singleton
+@Named("contestProblemDao")
 public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long, ContestProblemModel> implements ContestProblemDao {
 
     public ContestProblemHibernateDao() {

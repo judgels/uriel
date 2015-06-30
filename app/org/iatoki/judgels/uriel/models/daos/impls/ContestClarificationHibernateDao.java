@@ -8,13 +8,18 @@ import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.util.Collection;
 import java.util.List;
 
+@Singleton
+@Named("contestClarificationDao")
 public final class ContestClarificationHibernateDao extends AbstractHibernateDao<Long, ContestClarificationModel> implements ContestClarificationDao {
+
     public ContestClarificationHibernateDao() {
         super(ContestClarificationModel.class);
     }

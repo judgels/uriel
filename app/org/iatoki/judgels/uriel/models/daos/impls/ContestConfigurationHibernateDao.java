@@ -6,11 +6,16 @@ import org.iatoki.judgels.uriel.models.entities.ContestConfigurationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestConfigurationModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+@Singleton
+@Named("contestConfigurationDao")
 public final class ContestConfigurationHibernateDao extends AbstractHibernateDao<Long, ContestConfigurationModel> implements ContestConfigurationDao {
+
     public ContestConfigurationHibernateDao() {
         super(ContestConfigurationModel.class);
     }

@@ -5,6 +5,7 @@ import org.iatoki.judgels.commons.models.daos.interfaces.BaseJidCacheDao;
 import org.iatoki.judgels.uriel.models.entities.JidCacheModel;
 
 public final class JidCacheService extends AbstractJidCacheService<JidCacheModel> {
+
     private static JidCacheService INSTANCE;
 
     private JidCacheService(BaseJidCacheDao<JidCacheModel> jidCacheDao) {

@@ -97,6 +97,9 @@ import org.iatoki.judgels.uriel.services.AvatarCacheService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.i18n.Messages;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.NoResultException;
 import javax.persistence.metamodel.SingularAttribute;
 import java.io.File;
@@ -113,6 +116,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Singleton
+@Named("contestService")
 public final class ContestServiceImpl implements ContestService {
 
     private final ContestDao contestDao;
@@ -129,10 +134,11 @@ public final class ContestServiceImpl implements ContestService {
     private final ContestScoreboardDao contestScoreboardDao;
     private final ContestConfigurationDao contestConfigurationDao;
     private final ContestReadDao contestReadDao;
-    private final FileSystemProvider teamAvatarFileProvider;
-    private final FileSystemProvider contestFileProvider;
+    private final FileSystemProvider teamAvatarFileSystemProvider;
+    private final FileSystemProvider contestFileSystemProvider;
 
-    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileProvider, FileSystemProvider contestFileProvider) {
+    @Inject
+    public ContestServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileSystemProvider, FileSystemProvider contestFileSystemProvider) {
         this.contestDao = contestDao;
         this.contestAnnouncementDao = contestAnnouncementDao;
         this.contestProblemDao = contestProblemDao;
@@ -147,16 +153,16 @@ public final class ContestServiceImpl implements ContestService {
         this.contestScoreboardDao = contestScoreboardDao;
         this.contestConfigurationDao = contestConfigurationDao;
         this.contestReadDao = contestReadDao;
-        this.teamAvatarFileProvider = teamAvatarFileProvider;
-        if (!teamAvatarFileProvider.fileExists(ImmutableList.of("team-default.png"))) {
+        this.teamAvatarFileSystemProvider = teamAvatarFileSystemProvider;
+        if (!teamAvatarFileSystemProvider.fileExists(ImmutableList.of("team-default.png"))) {
             try {
-                teamAvatarFileProvider.uploadFileFromStream(ImmutableList.of(), getClass().getResourceAsStream("/public/images/team/team-default.png"), "team-default.png");
-                teamAvatarFileProvider.makeFilePublic(ImmutableList.of("team-default.png"));
+                teamAvatarFileSystemProvider.uploadFileFromStream(ImmutableList.of(), getClass().getResourceAsStream("/public/images/team/team-default.png"), "team-default.png");
+                teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of("team-default.png"));
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot create default avatar.");
             }
         }
-        this.contestFileProvider = contestFileProvider;
+        this.contestFileSystemProvider = contestFileSystemProvider;
     }
 
     @Override
@@ -816,8 +822,8 @@ public final class ContestServiceImpl implements ContestService {
         contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-        teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
-        teamAvatarFileProvider.makeFilePublic(ImmutableList.of(newImageName));
+        teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
+        teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of(newImageName));
 
         contestTeamModel.teamImageName = newImageName;
 
@@ -836,8 +842,8 @@ public final class ContestServiceImpl implements ContestService {
     public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
         String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
-        teamAvatarFileProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
-        teamAvatarFileProvider.makeFilePublic(ImmutableList.of(newImageName));
+        teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
+        teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of(newImageName));
 
         contestTeamModel.name = name;
         contestTeamModel.teamImageName = newImageName;
@@ -1197,22 +1203,22 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public String getTeamAvatarImageURL(String imageName) {
-        return teamAvatarFileProvider.getURL(ImmutableList.of(imageName));
+        return teamAvatarFileSystemProvider.getURL(ImmutableList.of(imageName));
     }
 
     @Override
     public List<FileInfo> getContestFiles(String contestJid) {
-        return contestFileProvider.listFilesInDirectory(getContestFileDirPath(contestJid));
+        return contestFileSystemProvider.listFilesInDirectory(getContestFileDirPath(contestJid));
     }
 
     @Override
     public void uploadContestFile(String contestJid, File file, String filename) throws IOException {
-        contestFileProvider.uploadFile(getContestFileDirPath(contestJid), file, filename);
+        contestFileSystemProvider.uploadFile(getContestFileDirPath(contestJid), file, filename);
     }
 
     @Override
     public String getContestFileURL(String contestJid, String filename) {
-        return contestFileProvider.getURL(getContestFilePath(contestJid, filename));
+        return contestFileSystemProvider.getURL(getContestFilePath(contestJid, filename));
     }
 
     private List<String> getContestFileDirPath(String contestJid) {

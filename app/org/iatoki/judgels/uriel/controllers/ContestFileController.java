@@ -22,6 +22,9 @@ import play.mvc.Http;
 import play.mvc.Result;
 import play.mvc.Results;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -30,9 +33,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
+@Singleton
+@Named
 public final class ContestFileController extends BaseController {
+
     private final ContestService contestService;
 
+    @Inject
     public ContestFileController(ContestService contestService) {
         this.contestService = contestService;
     }

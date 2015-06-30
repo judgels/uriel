@@ -8,12 +8,16 @@ import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel_;
 import play.db.jpa.JPA;
 
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Root;
 import java.util.List;
 
+@Singleton
+@Named("contestAnnouncementDao")
 public final class ContestAnnouncementHibernateDao extends AbstractHibernateDao<Long, ContestAnnouncementModel> implements ContestAnnouncementDao {
 
     public ContestAnnouncementHibernateDao() {

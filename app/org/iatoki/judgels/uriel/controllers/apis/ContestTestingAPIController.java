@@ -16,20 +16,26 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
+@Singleton
+@Named
 public final class ContestTestingAPIController extends Controller {
 
     private final ContestService contestService;
     private final SubmissionService submissionService;
-    private final FileSystemProvider submissionFileProvider;
+    private final FileSystemProvider submissionLocalFileSystemProvider;
 
-    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionFileProvider) {
+    @Inject
+    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
-        this.submissionFileProvider = submissionFileProvider;
+        this.submissionLocalFileSystemProvider = submissionLocalFileSystemProvider;
     }
 
     @Transactional
@@ -70,7 +76,7 @@ public final class ContestTestingAPIController extends Controller {
         try {
             BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
             submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
-            adapter.storeSubmissionFiles(submissionFileProvider, null, submissionJid, source);
+            adapter.storeSubmissionFiles(submissionLocalFileSystemProvider, null, submissionJid, source);
         } catch (SubmissionException e) {
             return badRequest();
         }

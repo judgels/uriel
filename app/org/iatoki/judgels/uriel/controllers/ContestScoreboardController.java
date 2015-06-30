@@ -41,6 +41,9 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -49,6 +52,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
+@Singleton
+@Named
 public class ContestScoreboardController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
@@ -56,6 +61,7 @@ public class ContestScoreboardController extends BaseController {
     private final ContestService contestService;
     private final SubmissionService submissionService;
 
+    @Inject
     public ContestScoreboardController(ContestService contestService, SubmissionService submissionService) {
         this.contestService = contestService;
         this.submissionService = submissionService;

@@ -31,16 +31,22 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
+@Singleton
+@Named
 public class ContestAnnouncementController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
 
+    @Inject
     public ContestAnnouncementController(ContestService contestService) {
         this.contestService = contestService;
     }

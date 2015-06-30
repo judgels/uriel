@@ -17,15 +17,21 @@ import org.iatoki.judgels.uriel.models.entities.UserModel;
 import org.iatoki.judgels.uriel.services.AvatarCacheService;
 import org.iatoki.judgels.uriel.services.UserService;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+@Singleton
+@Named("userService")
 public final class UserServiceImpl implements UserService {
 
     private final Jophiel jophiel;
     private final UserDao userDao;
 
+    @Inject
     public UserServiceImpl(Jophiel jophiel, UserDao userDao) {
         this.jophiel = jophiel;
         this.userDao = userDao;

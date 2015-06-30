@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 public final class ScoreUpdater implements Runnable {
+
     private final ContestService contestService;
     private final SubmissionService submissionService;
 

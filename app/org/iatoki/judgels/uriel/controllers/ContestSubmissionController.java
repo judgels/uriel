@@ -35,25 +35,31 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
+@Singleton
+@Named
 public final class ContestSubmissionController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
     private final SubmissionService submissionService;
-    private final FileSystemProvider submissionLocalFileProvider;
-    private final FileSystemProvider submissionRemoteFileProvider;
+    private final FileSystemProvider submissionLocalFileSystemProvider;
+    private final FileSystemProvider submissionRemoteFileSystemProvider;
 
-    public ContestSubmissionController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileProvider, FileSystemProvider submissionRemoteFileProvider) {
+    @Inject
+    public ContestSubmissionController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider, FileSystemProvider submissionRemoteFileSystemProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
-        this.submissionLocalFileProvider = submissionLocalFileProvider;
-        this.submissionRemoteFileProvider = submissionRemoteFileProvider;
+        this.submissionLocalFileSystemProvider = submissionLocalFileSystemProvider;
+        this.submissionRemoteFileSystemProvider = submissionRemoteFileSystemProvider;
     }
 
     @Transactional
@@ -74,7 +80,7 @@ public final class ContestSubmissionController extends BaseController {
                 try {
                     GradingSource source = SubmissionAdapters.fromGradingEngine(gradingEngine).createGradingSourceFromNewSubmission(body);
                     String submissionJid = submissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, null, source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(submissionLocalFileProvider, submissionRemoteFileProvider, submissionJid, source);
+                    SubmissionAdapters.fromGradingEngine(gradingEngine).storeSubmissionFiles(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submissionJid, source);
 
                     ControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
@@ -136,7 +142,7 @@ public final class ContestSubmissionController extends BaseController {
         Submission submission = submissionService.findSubmissionById(submissionId);
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
-            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
+            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submission.getJid());
             String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
             ContestProblem contestProblem = contestService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
             String contestProblemAlias = contestProblem.getAlias();
@@ -207,7 +213,7 @@ public final class ContestSubmissionController extends BaseController {
         if (isAllowedToSuperviseSubmissions(contest)) {
 
             Submission submission = submissionService.findSubmissionById(submissionId);
-            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
+            GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submission.getJid());
             submissionService.regrade(submission.getJid(), source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
             ControllerUtils.getInstance().addActivityLog("Regrade submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -235,7 +241,7 @@ public final class ContestSubmissionController extends BaseController {
             }
 
             for (Submission submission : submissions) {
-                GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileProvider, submissionRemoteFileProvider, submission.getJid());
+                GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submission.getJid());
                 submissionService.regrade(submission.getJid(), source, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
 

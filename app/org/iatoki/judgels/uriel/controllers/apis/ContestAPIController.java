@@ -26,6 +26,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import javax.imageio.ImageIO;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -38,12 +41,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Singleton
+@Named
 public final class ContestAPIController extends Controller {
-
-    private static final long PAGE_SIZE = 20;
 
     private final ContestService contestService;
 
+    @Inject
     public ContestAPIController(ContestService contestService) {
         this.contestService = contestService;
     }

@@ -27,10 +27,15 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Arrays;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
+@Singleton
+@Named
 public class ContestSupervisorController extends BaseController {
 
     private static final long PAGE_SIZE = 20;
@@ -39,6 +44,7 @@ public class ContestSupervisorController extends BaseController {
     private final ContestService contestService;
     private final UserService userRoleService;
 
+    @Inject
     public ContestSupervisorController(Jophiel jophiel, ContestService contestService, UserService userRoleService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
