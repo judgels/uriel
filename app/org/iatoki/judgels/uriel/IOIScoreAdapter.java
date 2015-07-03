@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import org.iatoki.judgels.commons.AbstractJidCacheService;
+import org.iatoki.judgels.commons.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
@@ -124,7 +124,7 @@ public final class IOIScoreAdapter implements ScoreAdapter {
     }
 
     @Override
-    public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
+    public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractBaseJidCacheServiceImpl<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
         if (scoreboard == null) {
             return new Html(Messages.get("scoreboard.not_available"));
         } else {

@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.commons.AbstractJidCacheService;
+import org.iatoki.judgels.commons.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
 import play.twirl.api.Html;
 
@@ -19,5 +19,5 @@ public interface ScoreAdapter {
 
     Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids);
 
-    Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractJidCacheService<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids);
+    Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractBaseJidCacheServiceImpl<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids);
 }
