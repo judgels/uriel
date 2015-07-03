@@ -1,6 +1,6 @@
 @(page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.User], orderBy: String, orderDir: String, filterString: String)
 
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersView
@@ -22,7 +22,7 @@
     @for(user <- page.getData) {
         <tr>
             <td>@user.getId</td>
-            <td>@JidCacheService.getInstance().getDisplayName(user.getUserJid)</td>
+            <td>@JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid)</td>
             <td>@user.getRoles</td>
             <td class="text-center">
                 <a href="@routes.UserController.viewUser(user.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>

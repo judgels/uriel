@@ -14,17 +14,9 @@ import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.models.daos.ContestAnnouncementDao;
-import org.iatoki.judgels.uriel.models.daos.ContestClarificationDao;
-import org.iatoki.judgels.uriel.models.daos.ContestConfigurationDao;
+import org.iatoki.judgels.uriel.config.TeamAvatarFile;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
-import org.iatoki.judgels.uriel.models.daos.ContestContestantPasswordDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
-import org.iatoki.judgels.uriel.models.daos.ContestManagerDao;
-import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;
-import org.iatoki.judgels.uriel.models.daos.ContestReadDao;
-import org.iatoki.judgels.uriel.models.daos.ContestScoreboardDao;
-import org.iatoki.judgels.uriel.models.daos.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamMemberDao;
@@ -63,7 +55,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     private final FileSystemProvider teamAvatarFileSystemProvider;
 
     @Inject
-    public ContestTeamServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, ContestSupervisorDao contestSupervisorDao, ContestManagerDao contestManagerDao, ContestScoreboardDao contestScoreboardDao, ContestConfigurationDao contestConfigurationDao, ContestReadDao contestReadDao, FileSystemProvider teamAvatarFileSystemProvider, FileSystemProvider contestFileSystemProvider) {
+    public ContestTeamServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, @TeamAvatarFile FileSystemProvider teamAvatarFileSystemProvider) {
         this.contestDao = contestDao;
         this.contestContestantDao = contestContestantDao;
         this.contestTeamDao = contestTeamDao;

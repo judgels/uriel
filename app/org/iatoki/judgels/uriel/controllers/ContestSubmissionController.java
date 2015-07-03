@@ -21,11 +21,13 @@ import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
+import org.iatoki.judgels.uriel.config.SubmissionLocalFile;
+import org.iatoki.judgels.uriel.config.SubmissionRemoteFile;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
@@ -61,7 +63,7 @@ public final class ContestSubmissionController extends BaseController {
     private final FileSystemProvider submissionRemoteFileSystemProvider;
 
     @Inject
-    public ContestSubmissionController(ContestService contestService, ContestProblemService contestProblemService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider, FileSystemProvider submissionRemoteFileSystemProvider) {
+    public ContestSubmissionController(ContestService contestService, ContestProblemService contestProblemService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService, @SubmissionLocalFile FileSystemProvider submissionLocalFileSystemProvider, @SubmissionRemoteFile FileSystemProvider submissionRemoteFileSystemProvider) {
         this.contestService = contestService;
         this.contestProblemService = contestProblemService;
         this.contestContestantService = contestContestantService;
@@ -152,10 +154,10 @@ public final class ContestSubmissionController extends BaseController {
 
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewSubmission(contest, submission)) {
             GradingSource source = SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).createGradingSourceFromPastSubmission(submissionLocalFileSystemProvider, submissionRemoteFileSystemProvider, submission.getJid());
-            String authorName = JidCacheService.getInstance().getDisplayName(submission.getAuthorJid());
+            String authorName = JidCacheServiceImpl.getInstance().getDisplayName(submission.getAuthorJid());
             ContestProblem contestProblem = contestProblemService.findContestProblemByContestJidAndContestProblemJid(contest.getJid(), submission.getProblemJid());
             String contestProblemAlias = contestProblem.getAlias();
-            String contestProblemName = JidCacheService.getInstance().getDisplayName(contestProblem.getProblemJid());
+            String contestProblemName = JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid());
             String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
 
             LazyHtml content = new LazyHtml(SubmissionAdapters.fromGradingEngine(submission.getGradingEngine()).renderViewSubmission(submission, source, authorName, contestProblemAlias, contestProblemName, gradingLanguageName, contest.getName()));

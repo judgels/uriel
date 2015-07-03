@@ -1,5 +1,5 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -29,7 +29,7 @@
     )
     <tbody>
 
-    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAskerJid).toSeq))) { displayNamesMap =>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAskerJid).toSeq))) { displayNamesMap =>
         @for(contestClarification <- page.getData) {
             <tr>
                 <td>@contestClarification.getId</td>

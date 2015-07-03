@@ -9,6 +9,7 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ScoreAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.UrielProperties;
+import org.iatoki.judgels.uriel.config.TeamAvatarFile;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestScoreboardDao;
@@ -20,7 +21,6 @@ import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamMemberModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamModel;
-import org.iatoki.judgels.uriel.services.AvatarCacheService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 
 import javax.inject.Inject;
@@ -46,7 +46,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     private final FileSystemProvider teamAvatarFileSystemProvider;
 
     @Inject
-    public ContestScoreboardServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamMemberDao contestTeamMemberDao, ContestScoreboardDao contestScoreboardDao, FileSystemProvider teamAvatarFileSystemProvider) {
+    public ContestScoreboardServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamMemberDao contestTeamMemberDao, ContestScoreboardDao contestScoreboardDao, @TeamAvatarFile FileSystemProvider teamAvatarFileSystemProvider) {
         this.contestDao = contestDao;
         this.contestContestantDao = contestContestantDao;
         this.contestTeamDao = contestTeamDao;
@@ -86,7 +86,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
                 ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findContestTeamMemberByMemberJidInAnyTeam(contestContestantModel.userJid, contestTeamJids);
                 resultBuilder.put(contestContestantModel.userJid, getTeamImageURLFromImageName(contestTeamModelMap.get(contestTeamMemberModel.teamJid).teamImageName));
             } else {
-                resultBuilder.put(contestContestantModel.userJid, AvatarCacheService.getInstance().getAvatarUrl(contestContestantModel.userJid));
+                resultBuilder.put(contestContestantModel.userJid, AvatarCacheServiceImpl.getInstance().getAvatarUrl(contestContestantModel.userJid));
             }
         }
 

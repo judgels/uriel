@@ -1,6 +1,6 @@
 @(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, coach: Boolean)
 
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.JudgelsUtils
 @import org.iatoki.judgels.uriel.ContestClarificationStatus
@@ -10,7 +10,7 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestClarification.getTitle | @contestClarification.getTopic</span>
-            <span class="panel-title pull-right"><small>@JidCacheService.getInstance().getDisplayName(contestClarification.getAskerJid) @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestClarification.getAskedTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestClarification.getAskedTime.getTime)</time></small></span>
+            <span class="panel-title pull-right"><small>@JidCacheServiceImpl.getInstance().getDisplayName(contestClarification.getAskerJid) @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestClarification.getAskedTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestClarification.getAskedTime.getTime)</time></small></span>
         </div>
         <div class="panel-body">
             @Html(JudgelsUtils.escapeHtmlString(contestClarification.getQuestion))

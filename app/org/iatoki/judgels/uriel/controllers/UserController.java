@@ -8,7 +8,7 @@ import org.iatoki.judgels.commons.controllers.BaseController;
 import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
 import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.jophiel.Jophiel;
-import org.iatoki.judgels.uriel.services.impls.JidCacheService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.controllers.forms.UserCreateForm;
@@ -123,7 +123,7 @@ public final class UserController extends BaseController {
     public Result viewUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
         LazyHtml content = new LazyHtml(viewUserView.render(user));
-        content.appendLayout(c -> headingWithActionLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheService.getInstance().getDisplayName(user.getUserJid()), new InternalLink(Messages.get("commons.update"), routes.UserController.updateUser(user.getId())), c));
+        content.appendLayout(c -> headingWithActionLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid()), new InternalLink(Messages.get("commons.update"), routes.UserController.updateUser(user.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("user.users"), routes.UserController.index()),
@@ -191,7 +191,7 @@ public final class UserController extends BaseController {
 
     private Result showUpdateUser(Form<UserUpdateForm> form, User user) {
         LazyHtml content = new LazyHtml(updateUserView.render(form, user.getId()));
-        content.appendLayout(c -> headingLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheService.getInstance().getDisplayName(user.getUserJid()), c));
+        content.appendLayout(c -> headingLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid()), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("user.users"), routes.UserController.index()),

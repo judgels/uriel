@@ -154,7 +154,7 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
             topic = "(" + Messages.get("clarification.general") + ")";
         } else {
             ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJidOrderedByAlias(contestModel.jid, contestClarificationModel.topicJid);
-            topic = contestProblemModel.alias + " - " + JidCacheService.getInstance().getDisplayName(contestProblemModel.problemJid);
+            topic = contestProblemModel.alias + " - " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid);
         }
         return new ContestClarification(contestClarificationModel.id, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
     }

@@ -24,7 +24,7 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
 import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -243,7 +243,7 @@ public class ContestProblemController extends BaseController {
 
                 if ((problemName != null) && (!contestProblemService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
                     contestProblemService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
-                    JidCacheService.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                    JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
                     ControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateForm.alias + " in contest " + contest.getName() + ".");
 

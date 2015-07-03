@@ -27,7 +27,7 @@ import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.ScoreAdapter;
 import org.iatoki.judgels.uriel.ScoreAdapters;
 import org.iatoki.judgels.uriel.ContestScoreState;
@@ -92,7 +92,7 @@ public class ContestScoreboardController extends BaseController {
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             LazyHtml content;
             if (contestScoreboard == null) {
-                content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
+                content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
             } else {
                 Scoreboard scoreboard = contestScoreboard.getScoreboard();
 
@@ -106,12 +106,12 @@ public class ContestScoreboardController extends BaseController {
                 if (contest.isIncognitoScoreboard()) {
                     if (ContestControllerUtils.getInstance().isCoach(contest)) {
                         List<ContestTeamMember> contestTeamMembers = contestTeamService.findContestTeamMembersByContestJidAndCoachJid(contest.getJid(), IdentityUtils.getUserJid());
-                        content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toSet())));
+                        content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), true, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toSet())));
                     } else {
-                        content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
+                        content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), true, ImmutableSet.of(IdentityUtils.getUserJid())));
                     }
                 } else {
-                    content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+                    content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
                 }
             }
 
@@ -141,7 +141,7 @@ public class ContestScoreboardController extends BaseController {
             ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
-            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheService.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+            LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
 
             content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[]{new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestScoreboardController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestScoreboardController.downloadContestDataAsXLS(contest.getId()))}, c));
 
@@ -211,7 +211,7 @@ public class ContestScoreboardController extends BaseController {
                 cell = row.createCell(cellNum++);
                 cell.setCellValue(contestScoreState.getProblemAliases().get(i));
                 cell = row.createCell(cellNum++);
-                cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestScoreState.getProblemJids().get(i)));
+                cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestScoreState.getProblemJids().get(i)));
             }
 
             sheet = workbook.createSheet(Messages.get("team.teams"));
@@ -236,22 +236,22 @@ public class ContestScoreboardController extends BaseController {
                 List<ContestTeamMember> contestTeamMembers = contestTeamService.findContestTeamMembersByTeamJid(contestTeam.getJid());
                 if (contestTeamCoaches.size() > 0) {
                     cell = row.createCell(1);
-                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamCoaches.get(0).getCoachJid()));
+                    cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestTeamCoaches.get(0).getCoachJid()));
                 }
                 if (contestTeamMembers.size() > 0) {
                     cell = row.createCell(2);
-                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamMembers.get(0).getMemberJid()));
+                    cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestTeamMembers.get(0).getMemberJid()));
                 }
                 int max = Math.max(contestTeamCoaches.size(), contestTeamMembers.size());
                 for (int i=1;i<max;++i) {
                     row = sheet.createRow(rowNum++);
                     if (contestTeamCoaches.size() > i) {
                         cell = row.createCell(1);
-                        cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamCoaches.get(i).getCoachJid()));
+                        cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestTeamCoaches.get(i).getCoachJid()));
                     }
                     if (contestTeamMembers.size() > i) {
                         cell = row.createCell(2);
-                        cell.setCellValue(JidCacheService.getInstance().getDisplayName(contestTeamMembers.get(i).getMemberJid()));
+                        cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestTeamMembers.get(i).getMemberJid()));
                     }
                 }
             }
@@ -281,7 +281,7 @@ public class ContestScoreboardController extends BaseController {
                     cell = row.createCell(cellNum++);
                     cell.setCellValue(entry.rank);
                     cell = row.createCell(cellNum++);
-                    cell.setCellValue(JidCacheService.getInstance().getDisplayName(entry.contestantJid));
+                    cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(entry.contestantJid));
                     cell = row.createCell(cellNum++);
                     cell.setCellValue(entry.totalScores);
                     for (Integer score : entry.scores) {

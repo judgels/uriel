@@ -1,6 +1,6 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long)
 
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.ContestProblemStatus
 @import org.iatoki.judgels.uriel.controllers.routes
@@ -10,7 +10,7 @@
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listUsedProblems(contestId, newPageIndex)}
 
-@defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
+@defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
     @for(contestProblem <- page.getData) {
         <div class="panel panel-default">
             <div class="panel-body">

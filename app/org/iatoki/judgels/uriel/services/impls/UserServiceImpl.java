@@ -14,7 +14,6 @@ import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.UserNotFoundException;
 import org.iatoki.judgels.uriel.models.daos.UserDao;
 import org.iatoki.judgels.uriel.models.entities.UserModel;
-import org.iatoki.judgels.uriel.services.AvatarCacheService;
 import org.iatoki.judgels.uriel.services.UserService;
 
 import javax.inject.Inject;
@@ -127,8 +126,8 @@ public final class UserServiceImpl implements UserService {
             if (!userDao.existsByUserJid(userJid))
                 createUser(user.getJid(), roles);
 
-            JidCacheService.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-            AvatarCacheService.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            JidCacheServiceImpl.getInstance().putDisplayName(user.getJid(), JudgelsUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            AvatarCacheServiceImpl.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         } catch (IOException e) {
             // do nothing
         }

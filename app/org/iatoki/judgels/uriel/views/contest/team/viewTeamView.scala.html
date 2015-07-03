@@ -1,6 +1,6 @@
 @import org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberUploadForm
 @(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberCreateForm], form4: Form[ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -54,7 +54,7 @@
         </tr>
     </thead>
     <tbody>
-        @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(coaches.map(s => s.getCoachJid).toSeq))) { displayNamesMap =>
+        @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(coaches.map(s => s.getCoachJid).toSeq))) { displayNamesMap =>
             @for(coach <- coaches) {
                 <tr>
                     <td>@coach.getId</td>
@@ -109,7 +109,7 @@
         </tr>
     </thead>
     <tbody>
-    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(members.map(s => s.getMemberJid).toSeq))) { displayNamesMap =>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(members.map(s => s.getMemberJid).toSeq))) { displayNamesMap =>
         @for(member <- members) {
             <tr>
                 <td>@member.getId</td>
@@ -128,6 +128,6 @@
 <script type="text/javascript">
     var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";
 </script>
-<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/jophielcommons/javascripts/userAutoComplete.js")"></script>
 
 @supervisorjs(contestId)

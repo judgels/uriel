@@ -1,5 +1,5 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -27,7 +27,7 @@
         "timeUpdate" -> Messages.get("announcement.lastUpdate")
     )
     <tbody>
-    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
         @for(contestAnnouncement <- page.getData) {
             <tr>
                 <td>@contestAnnouncement.getId</td>

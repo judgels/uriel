@@ -10,10 +10,11 @@ lazy val uriel = (project in file("."))
     .settings(
         name := "uriel",
         version := IO.read(file("version.properties")).trim,
-        scalaVersion := "2.11.1",
+        scalaVersion := "2.11.7",
         libraryDependencies ++= Seq(
             "org.apache.poi" % "poi" % "3.10-FINAL"
-        )
+        ),
+        routesGenerator := InjectedRoutesGenerator
     )
     .settings(TestNGPlugin.testNGSettings: _*)
     .settings(

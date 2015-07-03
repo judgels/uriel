@@ -1,6 +1,6 @@
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.sandalphon.Submission], contestantJids: List[String], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, contestantJid: String, problemJid: String)
 
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
 @import org.iatoki.judgels.commons.views.html.table.tableView
 @import org.iatoki.judgels.commons.views.html.table.tableHeadersWithSelectionFormView
@@ -19,7 +19,7 @@
         <select name="contestantJid" class="form-control selectpicker col-md-3">
             <option value="(none)" @if(contestantJid == null) {selected="selected"}>&#8211;</option>
 
-            @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(contestantJids.toSeq))) { displayNamesMap =>
+            @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(contestantJids.toSeq))) { displayNamesMap =>
                 @for(cJid <- contestantJids) {
                     <option value="@cJid" @if(cJid.equals(contestantJid)) {selected="selected"}>@displayNamesMap.get(cJid)</option>
                 }
@@ -73,7 +73,7 @@
 
     <tbody>
 
-    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
         @for(submission <- page.getData) {
             <tr>
                 <td><input type="checkbox" class="checkboxJid" name="selectJids[]" value="@submission.getJid"></td>

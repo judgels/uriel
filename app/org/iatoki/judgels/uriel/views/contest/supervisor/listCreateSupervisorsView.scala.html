@@ -1,7 +1,7 @@
 @import org.iatoki.judgels.uriel.controllers.forms.ContestSupervisorCreateForm
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheService
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
@@ -80,7 +80,7 @@
             var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";
         </script>
 
-        <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/userAutoComplete.js")"></script>
+        <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/jophielcommons/javascripts/userAutoComplete.js")"></script>
 
         @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.add") }
     }
@@ -101,7 +101,7 @@
         "contestant" -> Messages.get("permission.contestant")
     )
     <tbody>
-    @defining(JidCacheService.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
         @for(contestSupervisor <- page.getData) {
             <tr>
                 <td>@contestSupervisor.getId</td>

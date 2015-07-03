@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.services.impls;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.commons.FileInfo;
 import org.iatoki.judgels.commons.FileSystemProvider;
+import org.iatoki.judgels.uriel.config.ContestFile;
 import org.iatoki.judgels.uriel.services.ContestFileService;
 
 import javax.inject.Inject;
@@ -19,7 +20,7 @@ public final class ContestFileServiceImpl implements ContestFileService {
     private final FileSystemProvider contestFileSystemProvider;
 
     @Inject
-    public ContestFileServiceImpl(FileSystemProvider contestFileSystemProvider) {
+    public ContestFileServiceImpl(@ContestFile FileSystemProvider contestFileSystemProvider) {
         this.contestFileSystemProvider = contestFileSystemProvider;
     }
 
