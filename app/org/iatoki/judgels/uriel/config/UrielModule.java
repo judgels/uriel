@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.config;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.inject.util.Providers;
 import org.iatoki.judgels.commons.AWSFileSystemProvider;
 import org.iatoki.judgels.commons.FileSystemProvider;
 import org.iatoki.judgels.commons.LocalFileSystemProvider;
@@ -23,7 +24,14 @@ public final class UrielModule extends JudgelsAbstractModule {
         bind(FileSystemProvider.class).annotatedWith(ContestFile.class).toInstance(contestFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(TeamAvatarFile.class).toInstance(teamAvatarFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(SubmissionLocalFile.class).toInstance(submissionLocalFileSystemProvider());
-        bind(FileSystemProvider.class).annotatedWith(SubmissionRemoteFile.class).toInstance(submissionRemoteFileSystemProvider());
+
+        FileSystemProvider submissionRemoteFileSystemProvider = submissionRemoteFileSystemProvider();
+        if (submissionRemoteFileSystemProvider != null) {
+            bind(FileSystemProvider.class).annotatedWith(SubmissionRemoteFile.class).toInstance(submissionRemoteFileSystemProvider);
+        } else {
+            bind(FileSystemProvider.class).annotatedWith(SubmissionRemoteFile.class).toProvider(Providers.of(null));
+        }
+
         bindConstant().annotatedWith(GabrielClientJid.class).to(gabrielClientJid());
         bind(BaseUserService.class).to(UserServiceImpl.class);
     }

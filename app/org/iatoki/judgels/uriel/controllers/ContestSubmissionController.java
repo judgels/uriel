@@ -40,6 +40,7 @@ import play.i18n.Messages;
 import play.mvc.Http;
 import play.mvc.Result;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
@@ -63,7 +64,7 @@ public final class ContestSubmissionController extends BaseController {
     private final FileSystemProvider submissionRemoteFileSystemProvider;
 
     @Inject
-    public ContestSubmissionController(ContestService contestService, ContestProblemService contestProblemService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService, @SubmissionLocalFile FileSystemProvider submissionLocalFileSystemProvider, @SubmissionRemoteFile FileSystemProvider submissionRemoteFileSystemProvider) {
+    public ContestSubmissionController(ContestService contestService, ContestProblemService contestProblemService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService, @SubmissionLocalFile FileSystemProvider submissionLocalFileSystemProvider, @SubmissionRemoteFile @Nullable FileSystemProvider submissionRemoteFileSystemProvider) {
         this.contestService = contestService;
         this.contestProblemService = contestProblemService;
         this.contestContestantService = contestContestantService;

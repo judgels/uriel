@@ -10,6 +10,7 @@ import org.iatoki.judgels.sandalphon.SubmissionException;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.UrielProperties;
+import org.iatoki.judgels.uriel.config.SubmissionLocalFile;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.Transactional;
 import play.mvc.Controller;
@@ -32,7 +33,7 @@ public final class ContestTestingAPIController extends Controller {
     private final FileSystemProvider submissionLocalFileSystemProvider;
 
     @Inject
-    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, FileSystemProvider submissionLocalFileSystemProvider) {
+    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, @SubmissionLocalFile FileSystemProvider submissionLocalFileSystemProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
         this.submissionLocalFileSystemProvider = submissionLocalFileSystemProvider;
