@@ -54,13 +54,13 @@ public class ContestSupervisorController extends BaseController {
         this.userRoleService = userRoleService;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewSupervisors(long contestId) throws ContestNotFoundException {
         return listCreateSupervisors(contestId, 0, "id", "asc", "");
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);

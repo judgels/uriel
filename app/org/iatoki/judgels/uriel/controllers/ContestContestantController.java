@@ -75,13 +75,13 @@ public class ContestContestantController extends BaseController {
         this.userService = userService;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewContestants(long contestId) throws ContestNotFoundException {
         return listCreateContestants(contestId, 0, "id", "asc", "");
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @AddCSRFToken
     public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
