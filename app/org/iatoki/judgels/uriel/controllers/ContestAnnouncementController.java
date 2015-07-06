@@ -57,12 +57,12 @@ public class ContestAnnouncementController extends BaseController {
         this.contestSupervisorService = contestSupervisorService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Result viewPublishedAnnouncements(long contestId) throws ContestNotFoundException {
         return listPublishedAnnouncements(contestId, 0, "timeUpdate", "desc", "");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Result listPublishedAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {

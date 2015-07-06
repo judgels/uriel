@@ -71,12 +71,12 @@ public class ContestClarificationController extends BaseController {
         this.contestTeamService = contestTeamService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Result viewScreenedClarifications(long contestId) throws ContestNotFoundException {
         return listScreenedClarifications(contestId, 0, "id", "desc", "");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
