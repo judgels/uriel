@@ -14,7 +14,8 @@ lazy val uriel = (project in file("."))
         libraryDependencies ++= Seq(
             "org.apache.poi" % "poi" % "3.10-FINAL"
         ),
-        routesGenerator := InjectedRoutesGenerator
+        routesGenerator := InjectedRoutesGenerator,
+        PlayKeys.externalizeResources := false
     )
     .settings(TestNGPlugin.testNGSettings: _*)
     .settings(
