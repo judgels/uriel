@@ -12,6 +12,7 @@ import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
 import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.commons.views.html.layouts.profileView;
 import org.iatoki.judgels.commons.views.html.layouts.menusLayout;
+import org.iatoki.judgels.jophiel.views.html.client.linkedClientsLayout;
 import org.iatoki.judgels.jophiel.views.html.viewas.viewAsLayout;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.services.impls.UserActivityMessageServiceImpl;
@@ -52,6 +53,7 @@ public final class ControllerUtils extends AbstractControllerUtils {
             sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophiel.getAutoCompleteEndPoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
+        sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophiel.getLinkedClientsEndPoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));
 
         content.appendLayout(c -> sidebarLayout.render(sidebarContent.render(), c));
     }
