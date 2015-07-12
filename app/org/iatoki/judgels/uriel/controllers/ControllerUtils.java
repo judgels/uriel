@@ -7,7 +7,7 @@ import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.UserActivityMessage;
-import org.iatoki.judgels.jophiel.controllers.forms.ViewpointForm;
+import org.iatoki.judgels.jophiel.forms.ViewpointForm;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsControllerUtils;
 import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.play.views.html.layouts.profileView;
