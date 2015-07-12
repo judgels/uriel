@@ -28,8 +28,8 @@ import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
-import org.iatoki.judgels.uriel.adapters.ScoreAdapter;
-import org.iatoki.judgels.uriel.adapters.impls.ScoreAdapters;
+import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
+import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.ContestScoreState;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
@@ -89,7 +89,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             } else {
                 contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             }
-            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
             LazyHtml content;
             if (contestScoreboard == null) {
                 content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
@@ -139,7 +139,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
             Scoreboard scoreboard = contestScoreboard.getScoreboard();
             LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
 
@@ -166,7 +166,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
-            ScoreAdapter adapter = ScoreAdapters.fromContestStyle(contest.getStyle());
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
             ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
 
             List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
@@ -313,7 +313,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         }
     }
 
-    private void refreshFrozenScoreboard(Contest contest, ScoreAdapter adapter, ContestScoreState state) {
+    private void refreshFrozenScoreboard(Contest contest, ScoreboardAdapter adapter, ContestScoreState state) {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         List<Submission> submissions = submissionService.findAllSubmissionsByContestJidBeforeTime(contest.getJid(), new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class).getScoreboardFreezeTime());
 
