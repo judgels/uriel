@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.sandalphon.programming.LanguageRestriction;
+import org.iatoki.judgels.sandalphon.LanguageRestriction;
 
 public class ContestStyleConfigIOI implements ContestStyleConfig {
     private final LanguageRestriction languageRestriction;
