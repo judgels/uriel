@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers.forms;
+package org.iatoki.judgels.uriel.forms;
 
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.uriel.Contest;
