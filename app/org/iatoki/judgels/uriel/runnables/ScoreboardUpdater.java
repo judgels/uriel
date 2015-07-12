@@ -20,13 +20,13 @@ import play.db.jpa.JPA;
 import java.util.Date;
 import java.util.List;
 
-public final class ScoreUpdater implements Runnable {
+public final class ScoreboardUpdater implements Runnable {
 
     private final ContestService contestService;
     private final ContestScoreboardService contestScoreboardService;
     private final SubmissionService submissionService;
 
-    public ScoreUpdater(ContestService contestService, ContestScoreboardService contestScoreboardService, SubmissionService submissionService) {
+    public ScoreboardUpdater(ContestService contestService, ContestScoreboardService contestScoreboardService, SubmissionService submissionService) {
         this.contestService = contestService;
         this.contestScoreboardService = contestScoreboardService;
         this.submissionService = submissionService;
