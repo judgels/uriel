@@ -11,7 +11,7 @@ import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
-import org.iatoki.judgels.sandalphon.programming.LanguageRestrictionAdapter;
+import org.iatoki.judgels.sandalphon.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;
