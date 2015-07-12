@@ -6,7 +6,7 @@ import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
-import org.iatoki.judgels.uriel.ScoreAdapters;
+import org.iatoki.judgels.uriel.adapters.impls.ScoreAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.config.TeamAvatarFile;
