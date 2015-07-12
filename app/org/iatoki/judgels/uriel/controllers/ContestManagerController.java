@@ -8,7 +8,7 @@ import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestManager;
-import org.iatoki.judgels.uriel.controllers.forms.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestService;

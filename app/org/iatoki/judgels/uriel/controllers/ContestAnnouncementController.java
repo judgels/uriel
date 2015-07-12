@@ -12,7 +12,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementNotFoundException;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
-import org.iatoki.judgels.uriel.controllers.forms.ContestAnnouncementUpsertForm;
+import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 import org.iatoki.judgels.uriel.services.ContestService;

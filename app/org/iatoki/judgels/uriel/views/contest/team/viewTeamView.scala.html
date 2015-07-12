@@ -1,5 +1,5 @@
-@import org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberUploadForm
-@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.controllers.forms.ContestTeamMemberCreateForm], form4: Form[ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
+@import org.iatoki.judgels.uriel.forms.ContestTeamMemberUploadForm
+@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.forms.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.forms.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.forms.ContestTeamMemberCreateForm], form4: Form[ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes

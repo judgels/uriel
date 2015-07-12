@@ -24,8 +24,8 @@ import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestTypeConfig;
 import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
 import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ScoreAdapter;
-import org.iatoki.judgels.uriel.ScoreAdapters;
+import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
+import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.models.daos.ContestConfigurationDao;
@@ -193,7 +193,7 @@ public final class ContestServiceImpl implements ContestService {
         contestScoreboardModel.contestJid = contestModel.jid;
         contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
-        ScoreAdapter adapter = ScoreAdapters.fromContestStyle(style);
+        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
         ContestScoreState config = getContestStateByJid(contestModel.jid);
         ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
         Scoreboard scoreboard = adapter.createScoreboard(config, content);
@@ -295,7 +295,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel.contestJid = contestModel.jid;
                 contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
-                ScoreAdapter adapter = ScoreAdapters.fromContestStyle(style);
+                ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
                 ContestScoreState config = getContestStateByJid(contestModel.jid);
                 ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
                 Scoreboard scoreboard = adapter.createScoreboard(config, content);
