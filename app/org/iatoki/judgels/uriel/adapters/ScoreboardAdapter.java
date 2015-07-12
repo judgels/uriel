@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface ScoreAdapter {
+public interface ScoreboardAdapter {
     ScoreboardContent computeScoreboardContent(ContestScoreState state, List<Submission> submissions, Map<String, URL> userJidToImageMap);
 
     Scoreboard parseScoreboardFromJson(String json);
