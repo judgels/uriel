@@ -2,12 +2,12 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
-import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.InternalLink;
-import org.iatoki.judgels.commons.LazyHtml;
-import org.iatoki.judgels.commons.views.html.layouts.headingLayout;
-import org.iatoki.judgels.commons.views.html.layouts.headingWithActionLayout;
-import org.iatoki.judgels.commons.views.html.layouts.tabLayout;
+import org.iatoki.judgels.play.IdentityUtils;
+import org.iatoki.judgels.play.InternalLink;
+import org.iatoki.judgels.play.LazyHtml;
+import org.iatoki.judgels.play.views.html.layouts.headingLayout;
+import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
+import org.iatoki.judgels.play.views.html.layouts.tabLayout;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestContestant;

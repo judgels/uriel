@@ -1,14 +1,14 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.Lists;
-import org.iatoki.judgels.commons.FileSystemProvider;
-import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.InternalLink;
-import org.iatoki.judgels.commons.LazyHtml;
-import org.iatoki.judgels.commons.ListTableSelectionForm;
-import org.iatoki.judgels.commons.Page;
-import org.iatoki.judgels.commons.controllers.BaseController;
-import org.iatoki.judgels.commons.views.html.layouts.heading3Layout;
+import org.iatoki.judgels.FileSystemProvider;
+import org.iatoki.judgels.play.IdentityUtils;
+import org.iatoki.judgels.play.InternalLink;
+import org.iatoki.judgels.play.LazyHtml;
+import org.iatoki.judgels.play.ListTableSelectionForm;
+import org.iatoki.judgels.play.Page;
+import org.iatoki.judgels.play.controllers.BaseController;
+import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
 import org.iatoki.judgels.gabriel.GradingSource;
 import org.iatoki.judgels.sandalphon.Submission;

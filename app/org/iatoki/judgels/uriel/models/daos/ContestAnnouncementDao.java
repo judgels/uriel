@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos;
 
-import org.iatoki.judgels.commons.models.daos.interfaces.Dao;
+import org.iatoki.judgels.play.models.daos.interfaces.Dao;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel;
 
 import java.util.List;

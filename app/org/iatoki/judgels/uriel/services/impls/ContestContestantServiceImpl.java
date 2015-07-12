@@ -2,8 +2,8 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.play.IdentityUtils;
+import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;

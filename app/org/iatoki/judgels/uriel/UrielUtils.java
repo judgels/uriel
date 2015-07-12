@@ -2,8 +2,8 @@ package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
-import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.JudgelsUtils;
+import org.iatoki.judgels.play.IdentityUtils;
+import org.iatoki.judgels.play.JudgelsUtils;
 import org.iatoki.judgels.jophiel.UserInfo;
 import play.mvc.Http;
 

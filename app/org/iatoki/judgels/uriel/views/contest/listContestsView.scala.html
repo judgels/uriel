@@ -1,11 +1,11 @@
-@(page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
 
-@import org.iatoki.judgels.commons.views.html.table.searchView
-@import org.iatoki.judgels.commons.views.html.table.paginationView
-@import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.play.views.html.table.searchView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+@import org.iatoki.judgels.play.JudgelsUtils
 
 @searchView(page.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
 

@@ -1,8 +1,9 @@
-@(form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestFileUploadForm], contest: org.iatoki.judgels.uriel.Contest, fileInfos: List[org.iatoki.judgels.commons.FileInfo])
+@import org.iatoki.judgels.FileInfo
+@(form: Form[org.iatoki.judgels.uriel.controllers.forms.ContestFileUploadForm], contest: org.iatoki.judgels.uriel.Contest, fileInfos: List[FileInfo])
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsUtils
 
 @implicitFieldConstructor = @{b3.horizontal.fieldConstructor("col-md-2", "col-md-10")}
 

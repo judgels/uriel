@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.services;
 
-import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamCoachNotFoundException;

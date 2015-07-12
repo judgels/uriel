@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.apache.commons.io.FilenameUtils;
-import org.iatoki.judgels.commons.IdentityUtils;
+import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;

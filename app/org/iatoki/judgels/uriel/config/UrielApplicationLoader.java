@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.iatoki.judgels.commons.JudgelsProperties;
+import org.iatoki.judgels.play.JudgelsProperties;
 import org.iatoki.judgels.uriel.UrielProperties;
 import play.inject.guice.GuiceApplicationBuilder;
 import play.inject.guice.GuiceApplicationLoader;

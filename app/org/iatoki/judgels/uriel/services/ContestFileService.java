@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.services;
 
-import org.iatoki.judgels.commons.FileInfo;
+import org.iatoki.judgels.FileInfo;
 
 import java.io.File;
 import java.io.IOException;

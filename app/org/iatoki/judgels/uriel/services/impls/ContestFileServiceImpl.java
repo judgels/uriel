@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableList;
-import org.iatoki.judgels.commons.FileInfo;
-import org.iatoki.judgels.commons.FileSystemProvider;
+import org.iatoki.judgels.FileInfo;
+import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.uriel.config.ContestFile;
 import org.iatoki.judgels.uriel.services.ContestFileService;
 

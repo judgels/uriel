@@ -1,17 +1,17 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import org.iatoki.judgels.commons.IdentityUtils;
-import org.iatoki.judgels.commons.InternalLink;
-import org.iatoki.judgels.commons.JudgelsUtils;
-import org.iatoki.judgels.commons.LazyHtml;
+import org.iatoki.judgels.play.IdentityUtils;
+import org.iatoki.judgels.play.InternalLink;
+import org.iatoki.judgels.play.JudgelsUtils;
+import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.UserActivityMessage;
 import org.iatoki.judgels.jophiel.controllers.forms.ViewpointForm;
-import org.iatoki.judgels.commons.controllers.AbstractControllerUtils;
-import org.iatoki.judgels.commons.views.html.layouts.sidebarLayout;
-import org.iatoki.judgels.commons.views.html.layouts.profileView;
-import org.iatoki.judgels.commons.views.html.layouts.menusLayout;
+import org.iatoki.judgels.play.controllers.AbstractControllerUtils;
+import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
+import org.iatoki.judgels.play.views.html.layouts.profileView;
+import org.iatoki.judgels.play.views.html.layouts.menusLayout;
 import org.iatoki.judgels.jophiel.views.html.client.linkedClientsLayout;
 import org.iatoki.judgels.jophiel.views.html.viewas.viewAsLayout;
 import org.iatoki.judgels.uriel.UrielUtils;

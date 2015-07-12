@@ -30,7 +30,7 @@ import scala.concurrent.duration.Duration;
 
 import java.util.concurrent.TimeUnit;
 
-public final class Global extends org.iatoki.judgels.commons.Global {
+public final class Global extends org.iatoki.judgels.play.Global {
 
     @Override
     public void onStart(Application application) {

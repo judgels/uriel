@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import org.iatoki.judgels.commons.FileSystemProvider;
+import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;

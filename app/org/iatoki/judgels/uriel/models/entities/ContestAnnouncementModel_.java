@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.commons.models.domains.AbstractModel_;
+import org.iatoki.judgels.play.models.domains.AbstractModel_;
 
 import javax.annotation.Generated;
 import javax.persistence.metamodel.SingularAttribute;

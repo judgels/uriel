@@ -1,20 +1,20 @@
 @import org.iatoki.judgels.uriel.controllers.forms.ContestSupervisorCreateForm
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
+@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @import play.i18n.Messages
-@import org.iatoki.judgels.commons.views.html.table.tableView
-@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
-@import org.iatoki.judgels.commons.views.html.table.searchView
-@import org.iatoki.judgels.commons.views.html.table.paginationView
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.searchView
+@import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
-@import org.iatoki.judgels.commons.views.html.formErrorView
+@import org.iatoki.judgels.play.views.html.formErrorView
 @import scala.collection.JavaConversions
-@import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 

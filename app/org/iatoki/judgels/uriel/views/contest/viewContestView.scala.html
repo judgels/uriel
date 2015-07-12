@@ -1,16 +1,16 @@
 @import org.iatoki.judgels.uriel.controllers.forms.ContestEnterWithPasswordForm
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
+@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @import play.i18n.Messages
-@import org.iatoki.judgels.commons.views.html.table.tableView
-@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
-@import org.iatoki.judgels.commons.views.html.table.paginationView
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.paginationView
 
 
-@import org.iatoki.judgels.commons.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsUtils
 @import scala.collection.JavaConversions
 @import b3.inline.fieldConstructor
 

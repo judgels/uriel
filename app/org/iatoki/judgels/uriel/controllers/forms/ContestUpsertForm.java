@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.controllers.forms;
 
-import org.iatoki.judgels.commons.JudgelsUtils;
+import org.iatoki.judgels.play.JudgelsUtils;
 import org.iatoki.judgels.uriel.Contest;
 import play.data.validation.Constraints;
 

@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.services.impls;
 
 import org.apache.commons.lang3.RandomStringUtils;
-import org.iatoki.judgels.commons.IdentityUtils;
+import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantPasswordDao;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;

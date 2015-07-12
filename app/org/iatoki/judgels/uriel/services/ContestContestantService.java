@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.services;
 
-import org.iatoki.judgels.commons.Page;
+import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;

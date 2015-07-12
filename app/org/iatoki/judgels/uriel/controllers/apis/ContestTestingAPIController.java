@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.controllers.apis;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
-import org.iatoki.judgels.commons.FileSystemProvider;
+import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.gabriel.blackbox.BlackBoxGradingSource;
 import org.iatoki.judgels.sandalphon.BlackBoxSubmissionAdapter;
 import org.iatoki.judgels.sandalphon.SubmissionException;

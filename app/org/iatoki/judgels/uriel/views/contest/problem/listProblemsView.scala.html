@@ -1,14 +1,14 @@
-@(contestId: Long, page: org.iatoki.judgels.commons.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 
 @import org.iatoki.judgels.uriel.controllers.routes
 
 @import play.i18n.Messages
 @import scala.collection.JavaConversions
-@import org.iatoki.judgels.commons.views.html.table.tableView
-@import org.iatoki.judgels.commons.views.html.table.tableHeadersView
-@import org.iatoki.judgels.commons.views.html.table.paginationView
-@import org.iatoki.judgels.commons.views.html.table.searchView
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+@import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listProblems(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}

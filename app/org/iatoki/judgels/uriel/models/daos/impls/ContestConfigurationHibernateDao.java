@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.impls;
 
-import org.iatoki.judgels.commons.models.daos.hibernate.AbstractHibernateDao;
+import org.iatoki.judgels.play.models.daos.hibernate.AbstractHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.ContestConfigurationDao;
 import org.iatoki.judgels.uriel.models.entities.ContestConfigurationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestConfigurationModel_;
