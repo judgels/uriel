@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.commons.EntityNotFoundException;
+import org.iatoki.judgels.play.EntityNotFoundException;
 
 public final class ContestClarificationNotFoundException extends EntityNotFoundException {
 

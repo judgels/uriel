@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import org.iatoki.judgels.commons.services.impls.AbstractBaseJidCacheServiceImpl;
+import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;

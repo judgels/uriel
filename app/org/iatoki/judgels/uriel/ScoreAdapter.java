@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-import org.iatoki.judgels.commons.services.impls.AbstractBaseJidCacheServiceImpl;
+import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
 import play.twirl.api.Html;
 
