@@ -1,8 +1,18 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.runnables;
 
 import com.google.gson.Gson;
 import org.iatoki.judgels.sandalphon.Submission;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
+import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.ContestConfiguration;
+import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.ContestScoreboard;
+import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.ScoreAdapter;
+import org.iatoki.judgels.uriel.ScoreAdapters;
+import org.iatoki.judgels.uriel.Scoreboard;
+import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.JPA;

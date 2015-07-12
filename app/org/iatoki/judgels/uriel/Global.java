@@ -7,6 +7,7 @@ import org.iatoki.judgels.jophiel.services.impls.DefaultUserActivityMessageServi
 import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.sealtiel.Sealtiel;
+import org.iatoki.judgels.uriel.runnables.ScoreUpdater;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.ControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
