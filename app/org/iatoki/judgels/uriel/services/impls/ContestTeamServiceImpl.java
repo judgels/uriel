@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.play.IdentityUtils;
-import org.iatoki.judgels.play.JudgelsUtils;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
@@ -249,7 +249,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
         contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+        String newImageName = contestTeamModel.jid + "-" + JudgelsPlayUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
         teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of(newImageName));
 
@@ -269,7 +269,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     @Override
     public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
-        String newImageName = contestTeamModel.jid + "-" + JudgelsUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
+        String newImageName = contestTeamModel.jid + "-" + JudgelsPlayUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
         teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of(newImageName));
 

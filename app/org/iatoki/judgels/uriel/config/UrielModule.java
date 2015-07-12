@@ -6,7 +6,7 @@ import com.google.inject.util.Providers;
 import org.iatoki.judgels.AWSFileSystemProvider;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.LocalFileSystemProvider;
-import org.iatoki.judgels.play.config.JudgelsAbstractModule;
+import org.iatoki.judgels.play.config.AbstractJudgelsModule;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
 import org.iatoki.judgels.sandalphon.Sandalphon;
@@ -14,7 +14,7 @@ import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.services.impls.UserServiceImpl;
 
-public final class UrielModule extends JudgelsAbstractModule {
+public final class UrielModule extends AbstractJudgelsModule {
 
     @Override
     protected void manualBinding() {

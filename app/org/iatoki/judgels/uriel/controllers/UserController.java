@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
-import org.iatoki.judgels.play.controllers.BaseController;
+import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.jophiel.Jophiel;
@@ -40,7 +40,7 @@ import java.io.IOException;
 @Authorized(value = {"admin"})
 @Singleton
 @Named
-public final class UserController extends BaseController {
+public final class UserController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 

@@ -3,7 +3,7 @@
 
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 
 @implicitFieldConstructor = @{b3.horizontal.fieldConstructor("col-md-2", "col-md-10")}
 
@@ -40,8 +40,8 @@
     @for(file <- fileInfos) {
         <tr>
             <td>@file.getName</td>
-            <td><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(file.getLastModifiedTime.getTime)">@JudgelsUtils.formatDetailedDateTime(file.getLastModifiedTime.getTime)</time></td>
-            <td>@JudgelsUtils.formatBytesCount(file.getSize)</td>
+            <td><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(file.getLastModifiedTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(file.getLastModifiedTime.getTime)</time></td>
+            <td>@JudgelsPlayUtils.formatBytesCount(file.getSize)</td>
             <td class="text-center"><a href="@routes.ContestFileController.downloadFile(contest.getId, file.getName, null)"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a></td>
         </tr>
     }

@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.models.daos.impls;
 
 import com.google.common.collect.ImmutableList;
-import org.iatoki.judgels.play.models.daos.hibernate.AbstractJudgelsHibernateDao;
+import org.iatoki.judgels.play.models.daos.impls.AbstractJudgelsHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamDao;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamModel_;

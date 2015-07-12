@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.models.entities;
 
 import org.iatoki.judgels.play.models.JidPrefix;
-import org.iatoki.judgels.play.models.domains.AbstractJudgelsModel;
+import org.iatoki.judgels.play.models.entities.AbstractJudgelsModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

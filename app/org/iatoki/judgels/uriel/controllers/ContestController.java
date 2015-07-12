@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
-import org.iatoki.judgels.play.JudgelsUtils;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
-import org.iatoki.judgels.play.controllers.BaseController;
-import org.iatoki.judgels.play.views.html.layouts.accessTypesLayout;
+import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
+import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.sandalphon.programming.LanguageRestrictionAdapter;
@@ -68,7 +68,7 @@ import java.util.Date;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
 @Named
-public final class ContestController extends BaseController {
+public final class ContestController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 
@@ -311,9 +311,9 @@ public final class ContestController extends BaseController {
         } else {
             boolean check = true;
             ContestUpsertForm contestUpsertForm = form.get();
-            Date contestStartTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.startTime));
-            Date contestEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.endTime));
-            Date clarificationEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
+            Date contestStartTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.startTime));
+            Date contestEndTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.endTime));
+            Date clarificationEndTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
             if (contestStartTime.after(contestEndTime)) {
                 form.reject("error.contest.config.general.invalid_start_time");
                 check = false;
@@ -363,9 +363,9 @@ public final class ContestController extends BaseController {
             } else {
                 boolean check = true;
                 ContestUpsertForm contestUpsertForm = form.get();
-                Date contestStartTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.startTime));
-                Date contestEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.endTime));
-                Date clarificationEndTime = new Date(JudgelsUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
+                Date contestStartTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.startTime));
+                Date contestEndTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.endTime));
+                Date clarificationEndTime = new Date(JudgelsPlayUtils.parseDateTime(contestUpsertForm.clarificationEndTime));
                 if (contestStartTime.after(contestEndTime)) {
                     form.reject("error.contest.config.general.invalid_start_time");
                     check = false;
@@ -400,7 +400,7 @@ public final class ContestController extends BaseController {
             if (contest.isStandard()) {
                 ContestTypeConfigStandard contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class);
                 Form<ContestTypeConfigStandardForm> form = Form.form(ContestTypeConfigStandardForm.class);
-                form = form.fill(new ContestTypeConfigStandardForm(JudgelsUtils.formatDateTime(contestTypeConfigStandard.getScoreboardFreezeTime()), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
+                form = form.fill(new ContestTypeConfigStandardForm(JudgelsPlayUtils.formatDateTime(contestTypeConfigStandard.getScoreboardFreezeTime()), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
                 form1 = form;
 
             } else if (contest.isVirtual()) {
@@ -418,7 +418,7 @@ public final class ContestController extends BaseController {
             } else if (contest.isPublic()) {
                 ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
                 Form<ContestScopeConfigPublicForm> form = Form.form(ContestScopeConfigPublicForm.class);
-                form = form.fill(new ContestScopeConfigPublicForm(JudgelsUtils.formatDateTime(contestScopeConfigPublic.getRegisterStartTime()), JudgelsUtils.formatDateTime(contestScopeConfigPublic.getRegisterEndTime()), contestScopeConfigPublic.getMaxRegistrants()));
+                form = form.fill(new ContestScopeConfigPublicForm(JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterStartTime()), JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterEndTime()), contestScopeConfigPublic.getMaxRegistrants()));
                 form2 = form;
             }
             Form form3 = null;
@@ -473,7 +473,7 @@ public final class ContestController extends BaseController {
                 ContestTypeConfig contestTypeConfig = null;
                 if (contest.isStandard()) {
                     ContestTypeConfigStandardForm data = (ContestTypeConfigStandardForm) form1.get();
-                    Date scoreboardFreezeTime = new Date(JudgelsUtils.parseDateTime(data.scoreboardFreezeTime));
+                    Date scoreboardFreezeTime = new Date(JudgelsPlayUtils.parseDateTime(data.scoreboardFreezeTime));
                     if (scoreboardFreezeTime.before(contest.getStartTime()) || scoreboardFreezeTime.after(contest.getEndTime())) {
                         form1.reject("error.contest.config.specific.invalid_freeze_time");
                         check = false;
@@ -494,8 +494,8 @@ public final class ContestController extends BaseController {
                     contestScopeConfig = new ContestScopeConfigPrivate();
                 } else if (contest.isPublic()) {
                     ContestScopeConfigPublicForm data = (ContestScopeConfigPublicForm) form2.get();
-                    Date registerStartTime = new Date(JudgelsUtils.parseDateTime(data.registerStartTime));
-                    Date registerEndTime = new Date(JudgelsUtils.parseDateTime(data.registerEndTime));
+                    Date registerStartTime = new Date(JudgelsPlayUtils.parseDateTime(data.registerStartTime));
+                    Date registerEndTime = new Date(JudgelsPlayUtils.parseDateTime(data.registerEndTime));
                     if (registerStartTime.after(registerEndTime)) {
                         form2.reject("error.contest.config.specific.invalid_register_start_time");
                         check = false;
@@ -544,7 +544,7 @@ public final class ContestController extends BaseController {
 
     private Result showUpdateContestGeneralConfig(Form<ContestUpsertForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(updateContestView.render(form, contest));
-        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
+        content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
@@ -558,7 +558,7 @@ public final class ContestController extends BaseController {
 
     private Result showUpdateContestSpecificConfig(Form form1, Form form2, Form form3, Contest contest) {
         LazyHtml content = new LazyHtml(updateContestSpecificView.render(contest, form1, form2, form3));
-        content.appendLayout(c -> accessTypesLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
+        content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())), new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))), c));
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,

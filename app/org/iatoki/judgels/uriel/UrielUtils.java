@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.play.IdentityUtils;
-import org.iatoki.judgels.play.JudgelsUtils;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.jophiel.UserInfo;
 import play.mvc.Http;
 
@@ -70,7 +70,7 @@ public final class UrielUtils {
     }
 
     public static String getRealUserJid() {
-        if (JudgelsUtils.hasViewPoint()) {
+        if (JudgelsPlayUtils.hasViewPoint()) {
             return getFromSession("realUserJid");
         } else {
             return IdentityUtils.getUserJid();

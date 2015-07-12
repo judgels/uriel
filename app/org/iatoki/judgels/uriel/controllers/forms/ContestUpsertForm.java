@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.controllers.forms;
 
-import org.iatoki.judgels.play.JudgelsUtils;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.uriel.Contest;
 import play.data.validation.Constraints;
 
@@ -15,9 +15,9 @@ public final class ContestUpsertForm {
         this.type = contest.getType().name();
         this.scope = contest.getScope().name();
         this.style = contest.getStyle().name();
-        this.startTime = JudgelsUtils.formatDateTime(contest.getStartTime().getTime());
-        this.endTime = JudgelsUtils.formatDateTime(contest.getEndTime().getTime());
-        this.clarificationEndTime = JudgelsUtils.formatDateTime(contest.getClarificationEndTime().getTime());
+        this.startTime = JudgelsPlayUtils.formatDateTime(contest.getStartTime().getTime());
+        this.endTime = JudgelsPlayUtils.formatDateTime(contest.getEndTime().getTime());
+        this.clarificationEndTime = JudgelsPlayUtils.formatDateTime(contest.getClarificationEndTime().getTime());
         this.isExclusive = contest.isExclusive();
         this.isUsingScoreboard = contest.isUsingScoreboard();
         this.isIncognitoScoreboard = contest.isIncognitoScoreboard();

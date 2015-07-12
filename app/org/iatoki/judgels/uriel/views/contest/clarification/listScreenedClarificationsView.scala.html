@@ -2,7 +2,7 @@
 
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 @import org.iatoki.judgels.uriel.ContestClarificationStatus
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
@@ -10,10 +10,10 @@
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestClarification.getTitle | @contestClarification.getTopic</span>
-            <span class="panel-title pull-right"><small>@JidCacheServiceImpl.getInstance().getDisplayName(contestClarification.getAskerJid) @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestClarification.getAskedTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestClarification.getAskedTime.getTime)</time></small></span>
+            <span class="panel-title pull-right"><small>@JidCacheServiceImpl.getInstance().getDisplayName(contestClarification.getAskerJid) @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestClarification.getAskedTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestClarification.getAskedTime.getTime)</time></small></span>
         </div>
         <div class="panel-body">
-            @Html(JudgelsUtils.escapeHtmlString(contestClarification.getQuestion))
+            @Html(JudgelsPlayUtils.escapeHtmlString(contestClarification.getQuestion))
 
             <hr />
 
@@ -25,7 +25,7 @@
             }else{
                 @if(contestClarification.getStatus == ContestClarificationStatus.ANSWERED) {
                     <p><strong>@Messages.get("clarification.answer")</strong>:</p>
-                    @Html(JudgelsUtils.escapeHtmlString(contestClarification.getAnswer))
+                    @Html(JudgelsPlayUtils.escapeHtmlString(contestClarification.getAnswer))
                 }
             }
         </div>

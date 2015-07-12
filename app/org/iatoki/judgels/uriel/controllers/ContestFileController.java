@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.controllers;
 import org.iatoki.judgels.FileInfo;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
-import org.iatoki.judgels.play.controllers.BaseController;
+import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.controllers.forms.ContestFileUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
@@ -36,7 +36,7 @@ import java.util.List;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
 @Named
-public final class ContestFileController extends BaseController {
+public final class ContestFileController extends AbstractJudgelsController {
 
     private final ContestService contestService;
     private final ContestFileService contestFileService;

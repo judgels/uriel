@@ -12,7 +12,7 @@
 
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import scala.collection.JavaConversions
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -52,7 +52,7 @@
         @for(contestManager <- page.getData) {
             <tr>
                 <td>@contestManager.getId</td>
-                <td>@Html(JudgelsUtils.prettifyUserDisplayName(displayNamesMap.get(contestManager.getUserJid)))</td>
+                <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(contestManager.getUserJid)))</td>
                 <td class="text-center">
             </td>
             </tr>

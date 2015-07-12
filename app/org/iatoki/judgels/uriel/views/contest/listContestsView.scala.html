@@ -5,7 +5,7 @@
 
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 
 @searchView(page.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
 
@@ -16,7 +16,7 @@
         <div class="panel-body">
             <div class="pull-left">
             <p><a href="@routes.ContestController.viewContest(contest.getId)" class="panel-title">@contest.getName</a></p>
-            <small><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
+            <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
             </div>
             <div class="pull-right">
                 <a href="@routes.ContestController.viewContest(contest.getId)" class="btn btn-primary">@Messages.get("commons.view")</a>

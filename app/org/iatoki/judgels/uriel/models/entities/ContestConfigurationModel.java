@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.play.models.domains.AbstractModel;
+import org.iatoki.judgels.play.models.entities.AbstractModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

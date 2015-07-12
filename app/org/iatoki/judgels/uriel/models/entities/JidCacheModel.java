@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.play.models.domains.AbstractJidCacheModel;
+import org.iatoki.judgels.play.models.entities.AbstractJidCacheModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

@@ -5,7 +5,7 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
-import org.iatoki.judgels.play.controllers.BaseController;
+import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.alertLayout;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
 @Named
-public class ContestClarificationController extends BaseController {
+public class ContestClarificationController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 

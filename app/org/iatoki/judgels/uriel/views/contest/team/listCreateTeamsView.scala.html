@@ -13,7 +13,7 @@
 
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import scala.collection.JavaConversions
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -55,7 +55,7 @@
             <td>@contestTeam.getMembers.size()</td>
             <td>
                 @if(contestTeam.isStarted) {
-                    @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
+                    @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
                 }else {
                     @if(hasContestBegun) {
                         <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">

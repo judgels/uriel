@@ -10,7 +10,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
-import org.iatoki.judgels.play.controllers.BaseController;
+import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionsLayout;
 import org.iatoki.judgels.sandalphon.Submission;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
@@ -57,7 +57,7 @@ import java.util.stream.Collectors;
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
 @Named
-public class ContestScoreboardController extends BaseController {
+public class ContestScoreboardController extends AbstractJudgelsController {
 
     private final ContestService contestService;
     private final ContestScoreboardService contestScoreboardService;

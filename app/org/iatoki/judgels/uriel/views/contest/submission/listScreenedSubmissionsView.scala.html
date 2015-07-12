@@ -7,7 +7,7 @@
 @import org.iatoki.judgels.play.views.html.table.paginationView
 
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 
@@ -51,7 +51,7 @@
                 <td>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</td>
                 <td>@submission.getLatestVerdict.getName</td>
                 <td>@submission.getLatestScore</td>
-                <td><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(submission.getTime.getTime)">@JudgelsUtils.formatDetailedDateTime(submission.getTime.getTime)</time></td>
+                <td><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(submission.getTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(submission.getTime.getTime)</time></td>
                 <td class="text-center">
                     <a href="@routes.ContestSubmissionController.viewSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
                 </td>

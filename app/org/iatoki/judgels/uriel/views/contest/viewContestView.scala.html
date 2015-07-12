@@ -10,15 +10,15 @@
 @import org.iatoki.judgels.play.views.html.table.paginationView
 
 
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
 @import b3.inline.fieldConstructor
 
 <div class="well">
-    @Html(JudgelsUtils.escapeHtmlString(contest.getDescription))
+    @Html(JudgelsPlayUtils.escapeHtmlString(contest.getDescription))
     <hr />
     <p>
-    <small><time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
+    <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
     </p>
 
     @if(isRegistered) {

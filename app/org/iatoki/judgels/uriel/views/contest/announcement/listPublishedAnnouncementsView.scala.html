@@ -2,13 +2,13 @@
 
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
-@import org.iatoki.judgels.play.JudgelsUtils
+@import org.iatoki.judgels.play.JudgelsPlayUtils
 
 @for(contestAnnouncement <- page.getData) {
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestAnnouncement.getTitle</span>
-            <span class="panel-title pull-right"><small>@JidCacheServiceImpl.getInstance().getDisplayName(contestAnnouncement.getAuthorJid) @@ <time class="display-time" datetime="@JudgelsUtils.formatISOUTCDateTime(contestAnnouncement.getLastUpdated.getTime)">@JudgelsUtils.formatDetailedDateTime(contestAnnouncement.getLastUpdated.getTime)</time></small></span>
+            <span class="panel-title pull-right"><small>@JidCacheServiceImpl.getInstance().getDisplayName(contestAnnouncement.getAuthorJid) @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestAnnouncement.getLastUpdated.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestAnnouncement.getLastUpdated.getTime)</time></small></span>
         </div>
         <div class="panel-body content-text">
             @Html(contestAnnouncement.getContent)
