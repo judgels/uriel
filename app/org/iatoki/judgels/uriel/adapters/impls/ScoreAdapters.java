@@ -1,4 +1,7 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.adapters.impls;
+
+import org.iatoki.judgels.uriel.ContestStyle;
+import org.iatoki.judgels.uriel.adapters.ScoreAdapter;
 
 public final class ScoreAdapters {
     private ScoreAdapters() {

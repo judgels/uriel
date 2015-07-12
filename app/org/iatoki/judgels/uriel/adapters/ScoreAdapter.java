@@ -1,7 +1,10 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.adapters;
 
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.Scoreboard;
+import org.iatoki.judgels.uriel.ScoreboardContent;
 import play.twirl.api.Html;
 
 import java.net.URL;

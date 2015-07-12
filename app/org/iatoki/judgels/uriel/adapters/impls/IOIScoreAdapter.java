@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.adapters.impls;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -6,6 +6,13 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.IOIScoreboard;
+import org.iatoki.judgels.uriel.IOIScoreboardContent;
+import org.iatoki.judgels.uriel.IOIScoreboardEntry;
+import org.iatoki.judgels.uriel.Scoreboard;
+import org.iatoki.judgels.uriel.ScoreboardContent;
+import org.iatoki.judgels.uriel.adapters.ScoreAdapter;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
