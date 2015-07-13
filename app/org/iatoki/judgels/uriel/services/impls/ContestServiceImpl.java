@@ -289,7 +289,7 @@ public final class ContestServiceImpl implements ContestService {
             } catch (NoResultException e) {
                 throw new RuntimeException(e);
             } finally {
-                // TODO recompute everything in this fucking scoreboard include fronzen scoreboard
+                // TODO recompute everything in this scoreboard include fronzen scoreboard
 
                 ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
                 contestScoreboardModel.contestJid = contestModel.jid;
