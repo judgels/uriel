@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
-import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.IOIScoreboard;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
     @Override
-    public ScoreboardContent computeScoreboardContent(ContestScoreState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
@@ -85,13 +85,13 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
     }
 
     @Override
-    public Scoreboard createScoreboard(ContestScoreState state, ScoreboardContent content) {
+    public Scoreboard createScoreboard(ScoreboardState state, ScoreboardContent content) {
         return new IOIScoreboard(state, (IOIScoreboardContent) content);
     }
 
     @Override
     public Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids) {
-        ContestScoreState state = scoreboard.getState();
+        ScoreboardState state = scoreboard.getState();
         IOIScoreboardContent content = (IOIScoreboardContent) scoreboard.getContent();
 
         if (state.getProblemJids().size() == openProblemJids.size()) {
@@ -108,7 +108,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
         List<Integer> openProblemIndices = openProblemIndicesBuilder.build();
 
-        ContestScoreState newState = new ContestScoreState(
+        ScoreboardState newState = new ScoreboardState(
                 filterIndices(state.getProblemJids(), openProblemIndices),
                 filterIndices(state.getProblemAliases(), openProblemIndices),
                 state.getContestantJids()

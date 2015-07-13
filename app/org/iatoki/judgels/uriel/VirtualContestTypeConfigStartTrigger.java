@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-public enum ContestTypeConfigVirtualStartTrigger {
+public enum VirtualContestTypeConfigStartTrigger {
 
     CONTESTANT,
     COACH

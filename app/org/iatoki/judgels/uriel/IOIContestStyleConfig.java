@@ -2,14 +2,14 @@ package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.sandalphon.LanguageRestriction;
 
-public class ContestStyleConfigIOI implements ContestStyleConfig {
+public class IOIContestStyleConfig implements ContestStyleConfig {
     private final LanguageRestriction languageRestriction;
 
-    public static ContestStyleConfigIOI defaultConfig(Contest contest) {
-        return new ContestStyleConfigIOI(LanguageRestriction.defaultRestriction());
+    public static IOIContestStyleConfig defaultConfig(Contest contest) {
+        return new IOIContestStyleConfig(LanguageRestriction.defaultRestriction());
     }
 
-    public ContestStyleConfigIOI(LanguageRestriction languageRestriction) {
+    public IOIContestStyleConfig(LanguageRestriction languageRestriction) {
         this.languageRestriction = languageRestriction;
     }
 

@@ -1,17 +1,17 @@
 package org.iatoki.judgels.uriel;
 
 public class IOIScoreboard implements Scoreboard {
-    private final ContestScoreState config;
+    private final ScoreboardState state;
     private final IOIScoreboardContent content;
 
-    public IOIScoreboard(ContestScoreState config, IOIScoreboardContent content) {
-        this.config = config;
+    public IOIScoreboard(ScoreboardState state, IOIScoreboardContent content) {
+        this.state = state;
         this.content = content;
     }
 
     @Override
-    public ContestScoreState getState() {
-        return config;
+    public ScoreboardState getState() {
+        return state;
     }
 
     @Override

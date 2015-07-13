@@ -1,12 +1,12 @@
 package org.iatoki.judgels.uriel;
 
-public class ContestTypeConfigStandard implements ContestTypeConfig {
+public class StandardContestTypeConfig implements ContestTypeConfig {
 
-    public static ContestTypeConfigStandard defaultConfig(Contest contest) {
-        return new ContestTypeConfigStandard(contest.getEndTime().getTime(), true);
+    public static StandardContestTypeConfig defaultConfig(Contest contest) {
+        return new StandardContestTypeConfig(contest.getEndTime().getTime(), true);
     }
 
-    public ContestTypeConfigStandard(long scoreboardFreezeTime, boolean isOfficialScoreboardAllowed) {
+    public StandardContestTypeConfig(long scoreboardFreezeTime, boolean isOfficialScoreboardAllowed) {
         this.scoreboardFreezeTime = scoreboardFreezeTime;
         this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
     }

@@ -1,12 +1,12 @@
 package org.iatoki.judgels.uriel;
 
-public class ContestScopeConfigPublic implements ContestScopeConfig {
+public class PublicContestScopeConfig implements ContestScopeConfig {
 
-    public static ContestScopeConfigPublic defaultConfig(Contest contest) {
-        return new ContestScopeConfigPublic(contest.getStartTime().getTime(), contest.getEndTime().getTime(), 0);
+    public static PublicContestScopeConfig defaultConfig(Contest contest) {
+        return new PublicContestScopeConfig(contest.getStartTime().getTime(), contest.getEndTime().getTime(), 0);
     }
 
-    public ContestScopeConfigPublic(long registerStartTime, long registerEndTime, long maxRegistrants) {
+    public PublicContestScopeConfig(long registerStartTime, long registerEndTime, long maxRegistrants) {
         this.registerStartTime = registerStartTime;
         this.registerEndTime = registerEndTime;
         this.maxRegistrants = maxRegistrants;

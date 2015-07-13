@@ -4,16 +4,16 @@ import org.iatoki.judgels.sandalphon.LanguageRestriction;
 
 import java.util.concurrent.TimeUnit;
 
-public class ContestStyleConfigICPC implements ContestStyleConfig {
+public class ICPCContestStyleConfig implements ContestStyleConfig {
     private final long timePenalty;
 
     private final LanguageRestriction languageRestriction;
 
-    public static ContestStyleConfigICPC defaultConfig(Contest contest) {
-        return new ContestStyleConfigICPC(TimeUnit.MILLISECONDS.convert(20, TimeUnit.MINUTES), LanguageRestriction.defaultRestriction());
+    public static ICPCContestStyleConfig defaultConfig(Contest contest) {
+        return new ICPCContestStyleConfig(TimeUnit.MILLISECONDS.convert(20, TimeUnit.MINUTES), LanguageRestriction.defaultRestriction());
     }
 
-    public ContestStyleConfigICPC(long timePenalty, LanguageRestriction languageRestriction) {
+    public ICPCContestStyleConfig(long timePenalty, LanguageRestriction languageRestriction) {
         this.timePenalty = timePenalty;
         this.languageRestriction = languageRestriction;
     }
