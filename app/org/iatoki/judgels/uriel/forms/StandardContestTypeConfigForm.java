@@ -2,12 +2,12 @@ package org.iatoki.judgels.uriel.forms;
 
 import play.data.validation.Constraints;
 
-public class ContestTypeConfigStandardForm {
+public class StandardContestTypeConfigForm {
 
-    public ContestTypeConfigStandardForm() {
+    public StandardContestTypeConfigForm() {
     }
 
-    public ContestTypeConfigStandardForm(String scoreboardFreezeTime, boolean isOfficialScoreboardAllowed) {
+    public StandardContestTypeConfigForm(String scoreboardFreezeTime, boolean isOfficialScoreboardAllowed) {
         this.scoreboardFreezeTime = scoreboardFreezeTime;
         this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
     }

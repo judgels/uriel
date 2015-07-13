@@ -1,11 +1,11 @@
 package org.iatoki.judgels.uriel.forms;
 
-public class ContestScopeConfigPublicForm {
+public class PublicContestScopeConfigForm {
 
-    public ContestScopeConfigPublicForm() {
+    public PublicContestScopeConfigForm() {
     }
 
-    public ContestScopeConfigPublicForm(String registerStartTime, String registerEndTime, long maxRegistrants) {
+    public PublicContestScopeConfigForm(String registerStartTime, String registerEndTime, long maxRegistrants) {
         this.registerStartTime = registerStartTime;
         this.registerEndTime = registerEndTime;
         this.maxRegistrants = maxRegistrants;

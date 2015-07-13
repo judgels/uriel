@@ -2,12 +2,12 @@ package org.iatoki.judgels.uriel.forms;
 
 import java.util.Map;
 
-public class ContestStyleConfigICPCForm {
+public class ICPCContestStyleConfigForm {
 
-    public ContestStyleConfigICPCForm() {
+    public ICPCContestStyleConfigForm() {
     }
 
-    public ContestStyleConfigICPCForm(long timePenalty, boolean isAllowedAll, Map<String, String> allowedLanguageNames) {
+    public ICPCContestStyleConfigForm(long timePenalty, boolean isAllowedAll, Map<String, String> allowedLanguageNames) {
         this.timePenalty = timePenalty;
         this.isAllowedAll = isAllowedAll;
         this.allowedLanguageNames = allowedLanguageNames;

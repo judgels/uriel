@@ -2,12 +2,12 @@ package org.iatoki.judgels.uriel.forms;
 
 import java.util.Map;
 
-public class ContestStyleConfigIOIForm {
+public class IOIContestStyleConfigForm {
 
-    public ContestStyleConfigIOIForm() {
+    public IOIContestStyleConfigForm() {
     }
 
-    public ContestStyleConfigIOIForm(boolean isAllowedAll, Map<String, String> allowedLanguageNames) {
+    public IOIContestStyleConfigForm(boolean isAllowedAll, Map<String, String> allowedLanguageNames) {
         this.isAllowedAll = isAllowedAll;
         this.allowedLanguageNames = allowedLanguageNames;
     }
