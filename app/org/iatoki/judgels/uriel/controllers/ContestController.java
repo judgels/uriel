@@ -425,7 +425,7 @@ public final class ContestController extends AbstractJudgelsController {
             if (contest.isICPC()) {
                 ICPCContestStyleConfig icpcContestStyleConfig = new Gson().fromJson(contestConfiguration.getStyleConfig(), ICPCContestStyleConfig.class);
                 Form<ICPCContestStyleConfigForm> form = Form.form(ICPCContestStyleConfigForm.class);
-                form = form.fill(new ICPCContestStyleConfigForm(icpcContestStyleConfig.getTimePenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction())));
+                form = form.fill(new ICPCContestStyleConfigForm(icpcContestStyleConfig.getWrongSubmissionPenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction())));
                 form3 = form;
             } else if (contest.isIOI()) {
                 IOIContestStyleConfig ioiContestStyleConfig = new Gson().fromJson(contestConfiguration.getStyleConfig(), IOIContestStyleConfig.class);
@@ -509,7 +509,7 @@ public final class ContestController extends AbstractJudgelsController {
                 ContestStyleConfig contestStyleConfig = null;
                 if (contest.isICPC()) {
                     ICPCContestStyleConfigForm data = (ICPCContestStyleConfigForm) form3.get();
-                    contestStyleConfig = new ICPCContestStyleConfig(data.timePenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
+                    contestStyleConfig = new ICPCContestStyleConfig(data.wrongSubmissionPenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
                 } else if (contest.isIOI()) {
                     IOIContestStyleConfigForm data = (IOIContestStyleConfigForm) form3.get();
                     contestStyleConfig = new IOIContestStyleConfig(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));

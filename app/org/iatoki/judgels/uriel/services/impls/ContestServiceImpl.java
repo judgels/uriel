@@ -189,19 +189,6 @@ public final class ContestServiceImpl implements ContestService {
 
         contestDao.persist(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
-        contestScoreboardModel.contestJid = contestModel.jid;
-        contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
-
-        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-        ScoreboardState config = getContestStateByJid(contestModel.jid);
-        ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
-        Scoreboard scoreboard = adapter.createScoreboard(config, content);
-
-        contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
-
-        contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-
         Contest contest = createContestFromModel(contestModel);
 
         ContestConfigurationModel contestConfigurationModel = new ContestConfigurationModel();
@@ -226,6 +213,19 @@ public final class ContestServiceImpl implements ContestService {
         }
 
         contestConfigurationDao.persist(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
+        contestScoreboardModel.contestJid = contestModel.jid;
+        contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
+
+        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
+        ScoreboardState state = getContestStateByJid(contestModel.jid);
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, contestConfigurationModel.styleConfig, state, ImmutableList.of(), ImmutableMap.of());
+        Scoreboard scoreboard = adapter.createScoreboard(state, content);
+
+        contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+
+        contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         return contest;
     }
@@ -296,9 +296,9 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
                 ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-                ScoreboardState config = getContestStateByJid(contestModel.jid);
-                ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
-                Scoreboard scoreboard = adapter.createScoreboard(config, content);
+                ScoreboardState state = getContestStateByJid(contestModel.jid);
+                ScoreboardContent content = adapter.computeScoreboardContent(contest, contestConfigurationModel.styleConfig, state, ImmutableList.of(), ImmutableMap.of());
+                Scoreboard scoreboard = adapter.createScoreboard(state, content);
 
                 contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 

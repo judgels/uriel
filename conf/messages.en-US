@@ -169,7 +169,7 @@ contest.type.virtual.startTrigger=Who can start the contest?
 contest.scope.public.registerStartTime=Register Start Time
 contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
-contest.style.ICPC.timePenalty=Time Penalty
+contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
 
 clarification.time_ended=Clarification Time has ended.
 

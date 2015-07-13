@@ -5,10 +5,10 @@
 
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/sandalphoncommons/javascripts/languageRestriction.js")"></script>
 
-@b3.inputWrapped("timePenalty", formStyle("timePenalty"), '_label -> Messages.get("contest.style.ICPC.timePenalty")) { input =>
+@b3.inputWrapped("wrongSubmissionPenalty", formStyle("wrongSubmissionPenalty"), '_label -> Messages.get("contest.style.ICPC.wrongSubmissionPenalty")) { input =>
     <div class="input-group">
         @input
-        <div class="input-group-addon">milliseconds</div>
+        <div class="input-group-addon">minutes</div>
     </div>
 }
 

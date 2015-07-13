@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -19,6 +20,8 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.ICPCScoreboardContent;
+import org.iatoki.judgels.uriel.ICPCScoreboardEntry;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -166,12 +169,13 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
+            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
             ScoreboardState state = contestService.getContestStateByJid(contest.getJid());
 
             List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
-            ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+            ScoreboardContent content = adapter.computeScoreboardContent(contest, contestConfiguration.getStyleConfig(), state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
             Scoreboard scoreboard = adapter.createScoreboard(state, content);
             contestScoreboardService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
@@ -292,20 +296,62 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                     }
                 }
 
-                ControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-                try {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    workbook.write(baos);
-                    baos.close();
-                    response().setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                    response().setHeader("Content-Disposition", "attachment; filename=\"" + contest.getName()+ ".xls\"");
-                    return ok(baos.toByteArray());
-                } catch (IOException e) {
-                    return internalServerError();
-                }
             } else {
-                // TODO FOR ACM ICPC
+                ICPCScoreboardContent icpcScoreboardContent = (ICPCScoreboardContent) contestScoreboard.getScoreboard().getContent();
+
+                rowNum = 0;
+                row = sheet.createRow(rowNum++);
+
+                cellNum = 0;
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Rank");
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Contestant");
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Score");
+                cell = row.createCell(cellNum++);
+                cell.setCellValue("Penalty");
+                for (String s : scoreboardState.getProblemAliases()) {
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(s);
+                    cell = row.createCell(cellNum++);
+                    sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, cellNum-2, cellNum-1));
+                }
+
+                for (ICPCScoreboardEntry entry : icpcScoreboardContent.getEntries()) {
+                    row = sheet.createRow(rowNum++);
+                    cellNum = 0;
+
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(entry.rank);
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(entry.contestantJid));
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(entry.totalAccepted);
+                    cell = row.createCell(cellNum++);
+                    cell.setCellValue(entry.totalPenalties);
+                    for (int i = 0; i < entry.attemptsList.size(); i++) {
+                        cell = row.createCell(cellNum++);
+                        cell.setCellValue(entry.attemptsList.get(i));
+                        cell = row.createCell(cellNum++);
+
+                        if (entry.isAcceptedList.get(i)) {
+                            cell.setCellValue(entry.penaltyList.get(i));
+                        }
+                    }
+                }
+            }
+
+            ControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+            try {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                workbook.write(baos);
+                baos.close();
+                response().setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                response().setHeader("Content-Disposition", "attachment; filename=\"" + contest.getName()+ ".xls\"");
+                return ok(baos.toByteArray());
+            } catch (IOException e) {
                 return internalServerError();
             }
         } else {
@@ -317,7 +363,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
         List<Submission> submissions = submissionService.findAllSubmissionsByContestJidBeforeTime(contest.getJid(), new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class).getScoreboardFreezeTime());
 
-        ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, contestConfiguration.getStyleConfig(), state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         contestScoreboardService.updateContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
     }
