@@ -19,26 +19,26 @@
     @helper.CSRF.formField
 
     @if(contest.getType.equals(ContestType.STANDARD)) {
-        @contestTypeConfigStandardView(formType)
+        @standardContestTypeConfigView(formType)
     } else {
         @if(contest.getType.equals(ContestType.VIRTUAL)) {
-            @contestTypeConfigVirtualView(formType)
+            @virtualContestTypeConfigView(formType)
         }
     }
 
     @if(contest.getScope.equals(ContestScope.PRIVATE)) {
-        @contestScopeConfigPrivateView(formScope)
+        @privateContestScopeConfigView(formScope)
     } else {
         @if(contest.getScope.equals(ContestScope.PUBLIC)) {
-            @contestScopeConfigPublicView(formScope)
+            @publicContestScopeConfigView(formScope)
         }
     }
 
     @if(contest.getStyle.equals(ContestStyle.ICPC)) {
-        @contestStyleConfigICPCView(formStyle)
+        @icpcContestStyleConfigView(formStyle)
     } else {
         @if(contest.getStyle.equals(ContestStyle.IOI)) {
-            @contestStyleConfigIOIView(formStyle)
+            @ioiContestStyleConfigView(formStyle)
         }
     }
 

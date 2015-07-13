@@ -126,9 +126,9 @@ public final class ContestControllerUtils {
         if ((contest.isVirtual()) && (isContestant(contest))) {
             ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+            VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
 
-            return contestContestant.getContestStartTime() != 0 && (System.currentTimeMillis() > (contestContestant.getContestStartTime() + contestTypeConfigVirtual.getContestDuration()));
+            return contestContestant.getContestStartTime() != 0 && (System.currentTimeMillis() > (contestContestant.getContestStartTime() + virtualContestTypeConfig.getContestDuration()));
         } else {
             return hasContestEnded(contest);
         }
@@ -150,9 +150,9 @@ public final class ContestControllerUtils {
         boolean result = !isContestant(contest) && !hasContestEnded(contest);
         if (contest.isPublic()) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            PublicContestScopeConfig contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), PublicContestScopeConfig.class);
+            PublicContestScopeConfig publicContestScopeConfig = new Gson().fromJson(contestConfiguration.getScopeConfig(), PublicContestScopeConfig.class);
 
-            result = result && (contestScopeConfigPublic.getRegisterStartTime() < System.currentTimeMillis()) && (contestScopeConfigPublic.getRegisterEndTime() > System.currentTimeMillis()) && ((contestScopeConfigPublic.getMaxRegistrants() == 0) || (contestContestantService.getContestContestantCount(contest.getJid()) < contestScopeConfigPublic.getMaxRegistrants()));
+            result = result && (publicContestScopeConfig.getRegisterStartTime() < System.currentTimeMillis()) && (publicContestScopeConfig.getRegisterEndTime() > System.currentTimeMillis()) && ((publicContestScopeConfig.getMaxRegistrants() == 0) || (contestContestantService.getContestContestantCount(contest.getJid()) < publicContestScopeConfig.getMaxRegistrants()));
         } else {
             result = false;
         }
@@ -176,8 +176,8 @@ public final class ContestControllerUtils {
             return hasContestBegun(contest);
         } else {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
+            VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+            if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (hasContestStarted(contest)));
             } else {
                 return ((hasContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
@@ -225,8 +225,8 @@ public final class ContestControllerUtils {
         }
 
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-        VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-        if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
+        VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+        if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
             return !hasContestStarted(contest);
         } else {
             return false;
@@ -246,8 +246,8 @@ public final class ContestControllerUtils {
         }
 
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-        VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-        if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.COACH)) {
+        VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+        if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.COACH)) {
             return !hasContestStarted(contest);
         } else {
             return false;
@@ -267,8 +267,8 @@ public final class ContestControllerUtils {
         }
 
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-        VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-        if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.COACH)) {
+        VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+        if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.COACH)) {
             return !hasContestStarted(contest);
         } else {
             return false;
@@ -303,8 +303,8 @@ public final class ContestControllerUtils {
         if ((contest.isVirtual()) && (isContestant(contest))) {
             ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-            contestEndTime = new Date(Math.min(contestContestant.getContestStartTime() + contestTypeConfigVirtual.getContestDuration(), contest.getEndTime().getTime()));
+            VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+            contestEndTime = new Date(Math.min(contestContestant.getContestStartTime() + virtualContestTypeConfig.getContestDuration(), contest.getEndTime().getTime()));
         } else {
             contestEndTime = contest.getEndTime();
         }

@@ -398,39 +398,39 @@ public final class ContestController extends AbstractJudgelsController {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             Form<?> form1 = null;
             if (contest.isStandard()) {
-                StandardContestTypeConfig contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class);
+                StandardContestTypeConfig standardContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class);
                 Form<StandardContestTypeConfigForm> form = Form.form(StandardContestTypeConfigForm.class);
-                form = form.fill(new StandardContestTypeConfigForm(JudgelsPlayUtils.formatDateTime(contestTypeConfigStandard.getScoreboardFreezeTime()), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
+                form = form.fill(new StandardContestTypeConfigForm(JudgelsPlayUtils.formatDateTime(standardContestTypeConfig.getScoreboardFreezeTime()), standardContestTypeConfig.isOfficialScoreboardAllowed()));
                 form1 = form;
 
             } else if (contest.isVirtual()) {
-                VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+                VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
                 Form<VirtualContestTypeConfigForm> form = Form.form(VirtualContestTypeConfigForm.class);
-                form = form.fill(new VirtualContestTypeConfigForm(contestTypeConfigVirtual.getContestDuration(), contestTypeConfigVirtual.getStartTrigger().name()));
+                form = form.fill(new VirtualContestTypeConfigForm(virtualContestTypeConfig.getContestDuration(), virtualContestTypeConfig.getStartTrigger().name()));
                 form1 = form;
             }
             Form form2 = null;
             if (contest.isPrivate()) {
-                PrivateContestScopeConfig contestScopeConfigPrivate = new Gson().fromJson(contestConfiguration.getScopeConfig(), PrivateContestScopeConfig.class);
+                PrivateContestScopeConfig privateContestScopeConfig = new Gson().fromJson(contestConfiguration.getScopeConfig(), PrivateContestScopeConfig.class);
                 Form<PrivateContestScopeConfigForm> form = Form.form(PrivateContestScopeConfigForm.class);
                 form = form.fill(new PrivateContestScopeConfigForm());
                 form2 = form;
             } else if (contest.isPublic()) {
-                PublicContestScopeConfig contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), PublicContestScopeConfig.class);
+                PublicContestScopeConfig publicContestScopeConfig = new Gson().fromJson(contestConfiguration.getScopeConfig(), PublicContestScopeConfig.class);
                 Form<PublicContestScopeConfigForm> form = Form.form(PublicContestScopeConfigForm.class);
-                form = form.fill(new PublicContestScopeConfigForm(JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterStartTime()), JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterEndTime()), contestScopeConfigPublic.getMaxRegistrants()));
+                form = form.fill(new PublicContestScopeConfigForm(JudgelsPlayUtils.formatDateTime(publicContestScopeConfig.getRegisterStartTime()), JudgelsPlayUtils.formatDateTime(publicContestScopeConfig.getRegisterEndTime()), publicContestScopeConfig.getMaxRegistrants()));
                 form2 = form;
             }
             Form form3 = null;
             if (contest.isICPC()) {
-                ICPCContestStyleConfig contestStyleConfigICPC = new Gson().fromJson(contestConfiguration.getStyleConfig(), ICPCContestStyleConfig.class);
+                ICPCContestStyleConfig icpcContestStyleConfig = new Gson().fromJson(contestConfiguration.getStyleConfig(), ICPCContestStyleConfig.class);
                 Form<ICPCContestStyleConfigForm> form = Form.form(ICPCContestStyleConfigForm.class);
-                form = form.fill(new ICPCContestStyleConfigForm(contestStyleConfigICPC.getTimePenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction())));
+                form = form.fill(new ICPCContestStyleConfigForm(icpcContestStyleConfig.getTimePenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(icpcContestStyleConfig.getLanguageRestriction())));
                 form3 = form;
             } else if (contest.isIOI()) {
-                IOIContestStyleConfig contestStyleConfigIOI = new Gson().fromJson(contestConfiguration.getStyleConfig(), IOIContestStyleConfig.class);
+                IOIContestStyleConfig ioiContestStyleConfig = new Gson().fromJson(contestConfiguration.getStyleConfig(), IOIContestStyleConfig.class);
                 Form<IOIContestStyleConfigForm> form = Form.form(IOIContestStyleConfigForm.class);
-                form = form.fill(new IOIContestStyleConfigForm(LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction())));
+                form = form.fill(new IOIContestStyleConfigForm(LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(ioiContestStyleConfig.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(ioiContestStyleConfig.getLanguageRestriction())));
                 form3 = form;
             }
 

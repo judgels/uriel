@@ -248,8 +248,8 @@ public final class ContestAPIController extends Controller {
             return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
         } else {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
+            VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+            if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (isContestStarted(contest)));
             } else {
                 return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
