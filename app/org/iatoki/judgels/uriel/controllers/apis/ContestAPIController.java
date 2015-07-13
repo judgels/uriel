@@ -11,8 +11,8 @@ import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestTeamMember;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
+import org.iatoki.judgels.uriel.VirtualContestTypeConfig;
+import org.iatoki.judgels.uriel.VirtualContestTypeConfigStartTrigger;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -248,8 +248,8 @@ public final class ContestAPIController extends Controller {
             return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
         } else {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
-            if (contestTypeConfigVirtual.getStartTrigger().equals(ContestTypeConfigVirtualStartTrigger.CONTESTANT)) {
+            VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
+            if (contestTypeConfigVirtual.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
                 return (isContestant(contest) && (isContestStarted(contest)));
             } else {
                 return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));

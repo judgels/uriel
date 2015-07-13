@@ -6,7 +6,7 @@ import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
-import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ContestType;
@@ -21,7 +21,7 @@ public interface ContestService {
 
     Contest findContestByJid(String contestJid);
 
-    ContestScoreState getContestStateByJid(String contestJid);
+    ScoreboardState getContestStateByJid(String contestJid);
 
     ContestConfiguration findContestConfigurationByContestJid(String contestJid);
 

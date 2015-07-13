@@ -25,12 +25,12 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
-import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.StandardContestTypeConfig;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
-import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
@@ -80,7 +80,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         if ((contest.isUsingScoreboard()) && (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest))) {
             ContestScoreboard contestScoreboard;
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).isOfficialScoreboardAllowed())) {
+            if ((contest.isStandard()) && ((new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class)).getScoreboardFreezeTime() < System.currentTimeMillis()) && (!(new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class)).isOfficialScoreboardAllowed())) {
                 if (contestScoreboardService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) {
                     contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN);
                 } else {
@@ -167,7 +167,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-            ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
+            ScoreboardState state = contestService.getContestStateByJid(contest.getJid());
 
             List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
@@ -193,7 +193,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         if ((contest.isUsingScoreboard()) && (isAllowedToSuperviseScoreboard(contest))) {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-            ContestScoreState contestScoreState = contestScoreboard.getScoreboard().getState();
+            ScoreboardState scoreboardState = contestScoreboard.getScoreboard().getState();
 
             Workbook workbook = new HSSFWorkbook();
             Sheet sheet = workbook.createSheet(Messages.get("problem.problems"));
@@ -205,13 +205,13 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             cell.setCellValue(Messages.get("problem.alias"));
             cell = row.createCell(cellNum++);
             cell.setCellValue(Messages.get("problem.name"));
-            for (int i=0;i<contestScoreState.getProblemJids().size();++i) {
+            for (int i=0;i<scoreboardState.getProblemJids().size();++i) {
                 row = sheet.createRow(rowNum++);
                 cellNum = 0;
                 cell = row.createCell(cellNum++);
-                cell.setCellValue(contestScoreState.getProblemAliases().get(i));
+                cell.setCellValue(scoreboardState.getProblemAliases().get(i));
                 cell = row.createCell(cellNum++);
-                cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestScoreState.getProblemJids().get(i)));
+                cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(scoreboardState.getProblemJids().get(i)));
             }
 
             sheet = workbook.createSheet(Messages.get("team.teams"));
@@ -269,7 +269,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                 cell.setCellValue("Contestant");
                 cell = row.createCell(cellNum++);
                 cell.setCellValue("Total");
-                for (String s : contestScoreState.getProblemAliases()) {
+                for (String s : scoreboardState.getProblemAliases()) {
                     cell = row.createCell(cellNum++);
                     cell.setCellValue(s);
                 }
@@ -313,9 +313,9 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         }
     }
 
-    private void refreshFrozenScoreboard(Contest contest, ScoreboardAdapter adapter, ContestScoreState state) {
+    private void refreshFrozenScoreboard(Contest contest, ScoreboardAdapter adapter, ScoreboardState state) {
         ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-        List<Submission> submissions = submissionService.findAllSubmissionsByContestJidBeforeTime(contest.getJid(), new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class).getScoreboardFreezeTime());
+        List<Submission> submissions = submissionService.findAllSubmissionsByContestJidBeforeTime(contest.getJid(), new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class).getScoreboardFreezeTime());
 
         ScoreboardContent content = adapter.computeScoreboardContent(state, submissions, contestScoreboardService.getMapContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);

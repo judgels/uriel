@@ -20,9 +20,9 @@ import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
-import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
+import org.iatoki.judgels.uriel.PrivateContestScopeConfig;
 import org.iatoki.judgels.uriel.forms.ContestScopeConfigPrivateForm;
-import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
+import org.iatoki.judgels.uriel.PublicContestScopeConfig;
 import org.iatoki.judgels.uriel.forms.ContestScopeConfigPublicForm;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
@@ -30,17 +30,17 @@ import org.iatoki.judgels.uriel.services.ContestPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
-import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
+import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.forms.ContestStyleConfigICPCForm;
-import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
+import org.iatoki.judgels.uriel.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.forms.ContestStyleConfigIOIForm;
 import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestTypeConfig;
-import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.StandardContestTypeConfig;
 import org.iatoki.judgels.uriel.forms.ContestTypeConfigStandardForm;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
+import org.iatoki.judgels.uriel.VirtualContestTypeConfig;
 import org.iatoki.judgels.uriel.forms.ContestTypeConfigVirtualForm;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtualStartTrigger;
+import org.iatoki.judgels.uriel.VirtualContestTypeConfigStartTrigger;
 import org.iatoki.judgels.uriel.forms.ContestUpsertForm;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
@@ -398,37 +398,37 @@ public final class ContestController extends AbstractJudgelsController {
             ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
             Form<?> form1 = null;
             if (contest.isStandard()) {
-                ContestTypeConfigStandard contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class);
+                StandardContestTypeConfig contestTypeConfigStandard = new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class);
                 Form<ContestTypeConfigStandardForm> form = Form.form(ContestTypeConfigStandardForm.class);
                 form = form.fill(new ContestTypeConfigStandardForm(JudgelsPlayUtils.formatDateTime(contestTypeConfigStandard.getScoreboardFreezeTime()), contestTypeConfigStandard.isOfficialScoreboardAllowed()));
                 form1 = form;
 
             } else if (contest.isVirtual()) {
-                ContestTypeConfigVirtual contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigVirtual.class);
+                VirtualContestTypeConfig contestTypeConfigVirtual = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
                 Form<ContestTypeConfigVirtualForm> form = Form.form(ContestTypeConfigVirtualForm.class);
                 form = form.fill(new ContestTypeConfigVirtualForm(contestTypeConfigVirtual.getContestDuration(), contestTypeConfigVirtual.getStartTrigger().name()));
                 form1 = form;
             }
             Form form2 = null;
             if (contest.isPrivate()) {
-                ContestScopeConfigPrivate contestScopeConfigPrivate = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPrivate.class);
+                PrivateContestScopeConfig contestScopeConfigPrivate = new Gson().fromJson(contestConfiguration.getScopeConfig(), PrivateContestScopeConfig.class);
                 Form<ContestScopeConfigPrivateForm> form = Form.form(ContestScopeConfigPrivateForm.class);
                 form = form.fill(new ContestScopeConfigPrivateForm());
                 form2 = form;
             } else if (contest.isPublic()) {
-                ContestScopeConfigPublic contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), ContestScopeConfigPublic.class);
+                PublicContestScopeConfig contestScopeConfigPublic = new Gson().fromJson(contestConfiguration.getScopeConfig(), PublicContestScopeConfig.class);
                 Form<ContestScopeConfigPublicForm> form = Form.form(ContestScopeConfigPublicForm.class);
                 form = form.fill(new ContestScopeConfigPublicForm(JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterStartTime()), JudgelsPlayUtils.formatDateTime(contestScopeConfigPublic.getRegisterEndTime()), contestScopeConfigPublic.getMaxRegistrants()));
                 form2 = form;
             }
             Form form3 = null;
             if (contest.isICPC()) {
-                ContestStyleConfigICPC contestStyleConfigICPC = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigICPC.class);
+                ICPCContestStyleConfig contestStyleConfigICPC = new Gson().fromJson(contestConfiguration.getStyleConfig(), ICPCContestStyleConfig.class);
                 Form<ContestStyleConfigICPCForm> form = Form.form(ContestStyleConfigICPCForm.class);
                 form = form.fill(new ContestStyleConfigICPCForm(contestStyleConfigICPC.getTimePenalty(), LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigICPC.getLanguageRestriction())));
                 form3 = form;
             } else if (contest.isIOI()) {
-                ContestStyleConfigIOI contestStyleConfigIOI = new Gson().fromJson(contestConfiguration.getStyleConfig(), ContestStyleConfigIOI.class);
+                IOIContestStyleConfig contestStyleConfigIOI = new Gson().fromJson(contestConfiguration.getStyleConfig(), IOIContestStyleConfig.class);
                 Form<ContestStyleConfigIOIForm> form = Form.form(ContestStyleConfigIOIForm.class);
                 form = form.fill(new ContestStyleConfigIOIForm(LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction()), LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(contestStyleConfigIOI.getLanguageRestriction())));
                 form3 = form;
@@ -478,7 +478,7 @@ public final class ContestController extends AbstractJudgelsController {
                         form1.reject("error.contest.config.specific.invalid_freeze_time");
                         check = false;
                     }
-                    contestTypeConfig = new ContestTypeConfigStandard(scoreboardFreezeTime.getTime(), data.isOfficialScoreboardAllowed);
+                    contestTypeConfig = new StandardContestTypeConfig(scoreboardFreezeTime.getTime(), data.isOfficialScoreboardAllowed);
                 } else if (contest.isVirtual()) {
                     ContestTypeConfigVirtualForm data = (ContestTypeConfigVirtualForm) form1.get();
                     long contestTotalDuration = contest.getEndTime().getTime() - contest.getStartTime().getTime();
@@ -486,12 +486,12 @@ public final class ContestController extends AbstractJudgelsController {
                         form1.reject("error.contest.config.specific.invalid_contest_duration");
                         check = false;
                     }
-                    contestTypeConfig = new ContestTypeConfigVirtual(data.contestDuration, ContestTypeConfigVirtualStartTrigger.valueOf(data.startTrigger));
+                    contestTypeConfig = new VirtualContestTypeConfig(data.contestDuration, VirtualContestTypeConfigStartTrigger.valueOf(data.startTrigger));
                 }
                 ContestScopeConfig contestScopeConfig = null;
                 if (contest.isPrivate()) {
                     ContestScopeConfigPrivateForm data = (ContestScopeConfigPrivateForm) form2.get();
-                    contestScopeConfig = new ContestScopeConfigPrivate();
+                    contestScopeConfig = new PrivateContestScopeConfig();
                 } else if (contest.isPublic()) {
                     ContestScopeConfigPublicForm data = (ContestScopeConfigPublicForm) form2.get();
                     Date registerStartTime = new Date(JudgelsPlayUtils.parseDateTime(data.registerStartTime));
@@ -504,15 +504,15 @@ public final class ContestController extends AbstractJudgelsController {
                         form2.reject("error.contest.config.specific.invalid_register_end_time");
                         check = false;
                     }
-                    contestScopeConfig = new ContestScopeConfigPublic(registerStartTime.getTime(), registerEndTime.getTime(), data.maxRegistrants);
+                    contestScopeConfig = new PublicContestScopeConfig(registerStartTime.getTime(), registerEndTime.getTime(), data.maxRegistrants);
                 }
                 ContestStyleConfig contestStyleConfig = null;
                 if (contest.isICPC()) {
                     ContestStyleConfigICPCForm data = (ContestStyleConfigICPCForm) form3.get();
-                    contestStyleConfig = new ContestStyleConfigICPC(data.timePenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
+                    contestStyleConfig = new ICPCContestStyleConfig(data.timePenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
                 } else if (contest.isIOI()) {
                     ContestStyleConfigIOIForm data = (ContestStyleConfigIOIForm) form3.get();
-                    contestStyleConfig = new ContestStyleConfigIOI(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
+                    contestStyleConfig = new IOIContestStyleConfig(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(data.allowedLanguageNames, data.isAllowedAll));
                 }
                 if (check) {
                     contestService.updateContestConfigurationByContestJid(contest.getJid(), contestTypeConfig, contestScopeConfig, contestStyleConfig);

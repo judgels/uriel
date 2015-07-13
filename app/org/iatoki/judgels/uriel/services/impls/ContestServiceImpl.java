@@ -12,18 +12,18 @@ import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScope;
 import org.iatoki.judgels.uriel.ContestScopeConfig;
-import org.iatoki.judgels.uriel.ContestScopeConfigPrivate;
-import org.iatoki.judgels.uriel.ContestScopeConfigPublic;
-import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.PrivateContestScopeConfig;
+import org.iatoki.judgels.uriel.PublicContestScopeConfig;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
-import org.iatoki.judgels.uriel.ContestStyleConfigICPC;
-import org.iatoki.judgels.uriel.ContestStyleConfigIOI;
+import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
+import org.iatoki.judgels.uriel.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.ContestType;
 import org.iatoki.judgels.uriel.ContestTypeConfig;
-import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
-import org.iatoki.judgels.uriel.ContestTypeConfigVirtual;
+import org.iatoki.judgels.uriel.StandardContestTypeConfig;
+import org.iatoki.judgels.uriel.VirtualContestTypeConfig;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
@@ -100,7 +100,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public ContestScoreState getContestStateByJid(String contestJid) {
+    public ScoreboardState getContestStateByJid(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJidOrderedByAlias(contestJid);
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid, ContestContestantModel_.status, ContestContestantStatus.APPROVED.name()), ImmutableMap.of(), 0, -1);
 
@@ -108,7 +108,7 @@ public final class ContestServiceImpl implements ContestService {
         List<String> problemAliases = Lists.transform(contestProblemModels, m -> m.alias);
         List<String> contestantJids = Lists.transform(contestContestantModels, m -> m.userJid);
 
-        return new ContestScoreState(problemJids, problemAliases, contestantJids);
+        return new ScoreboardState(problemJids, problemAliases, contestantJids);
     }
 
     @Override
@@ -194,7 +194,7 @@ public final class ContestServiceImpl implements ContestService {
         contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
         ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-        ContestScoreState config = getContestStateByJid(contestModel.jid);
+        ScoreboardState config = getContestStateByJid(contestModel.jid);
         ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
         Scoreboard scoreboard = adapter.createScoreboard(config, content);
 
@@ -208,21 +208,21 @@ public final class ContestServiceImpl implements ContestService {
         contestConfigurationModel.contestJid = contest.getJid();
 
         if (contestModel.type.equals(ContestType.STANDARD.name())) {
-            contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
+            contestConfigurationModel.typeConfig = new Gson().toJson(StandardContestTypeConfig.defaultConfig(contest));
         } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
-            contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
+            contestConfigurationModel.typeConfig = new Gson().toJson(VirtualContestTypeConfig.defaultConfig(contest));
         }
 
         if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
-            contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
+            contestConfigurationModel.scopeConfig = new Gson().toJson(PrivateContestScopeConfig.defaultConfig(contest));
         } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
-            contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
+            contestConfigurationModel.scopeConfig = new Gson().toJson(PublicContestScopeConfig.defaultConfig(contest));
         }
 
         if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-            contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
+            contestConfigurationModel.styleConfig = new Gson().toJson(ICPCContestStyleConfig.defaultConfig(contest));
         } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-            contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
+            contestConfigurationModel.styleConfig = new Gson().toJson(IOIContestStyleConfig.defaultConfig(contest));
         }
 
         contestConfigurationDao.persist(contestConfigurationModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -261,23 +261,23 @@ public final class ContestServiceImpl implements ContestService {
 
         if (isTypeChanged) {
             if (contestModel.type.equals(ContestType.STANDARD.name())) {
-                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigStandard.defaultConfig(contest));
+                contestConfigurationModel.typeConfig = new Gson().toJson(StandardContestTypeConfig.defaultConfig(contest));
             } else if (contestModel.type.equals(ContestType.VIRTUAL.name())) {
-                contestConfigurationModel.typeConfig = new Gson().toJson(ContestTypeConfigVirtual.defaultConfig(contest));
+                contestConfigurationModel.typeConfig = new Gson().toJson(VirtualContestTypeConfig.defaultConfig(contest));
             }
         }
         if (isScopeChanged) {
             if (contestModel.scope.equals(ContestScope.PRIVATE.name())) {
-                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPrivate.defaultConfig(contest));
+                contestConfigurationModel.scopeConfig = new Gson().toJson(PrivateContestScopeConfig.defaultConfig(contest));
             } else if (contestModel.scope.equals(ContestScope.PUBLIC.name())) {
-                contestConfigurationModel.scopeConfig = new Gson().toJson(ContestScopeConfigPublic.defaultConfig(contest));
+                contestConfigurationModel.scopeConfig = new Gson().toJson(PublicContestScopeConfig.defaultConfig(contest));
             }
         }
         if (isStyleChanged) {
             if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigICPC.defaultConfig(contest));
+                contestConfigurationModel.styleConfig = new Gson().toJson(ICPCContestStyleConfig.defaultConfig(contest));
             } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-                contestConfigurationModel.styleConfig = new Gson().toJson(ContestStyleConfigIOI.defaultConfig(contest));
+                contestConfigurationModel.styleConfig = new Gson().toJson(IOIContestStyleConfig.defaultConfig(contest));
             }
 
             try {
@@ -296,7 +296,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
                 ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-                ContestScoreState config = getContestStateByJid(contestModel.jid);
+                ScoreboardState config = getContestStateByJid(contestModel.jid);
                 ScoreboardContent content = adapter.computeScoreboardContent(config, ImmutableList.of(), ImmutableMap.of());
                 Scoreboard scoreboard = adapter.createScoreboard(config, content);
 

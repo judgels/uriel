@@ -5,10 +5,10 @@ import org.iatoki.judgels.sandalphon.Submission;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
-import org.iatoki.judgels.uriel.ContestScoreState;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
-import org.iatoki.judgels.uriel.ContestTypeConfigStandard;
+import org.iatoki.judgels.uriel.StandardContestTypeConfig;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
@@ -41,10 +41,10 @@ public final class ScoreboardUpdater implements Runnable {
                     ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
                     ContestScoreboard contestScoreboard = contestScoreboardService.findContestScoreboardByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.OFFICIAL);
                     ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-                    if ((contest.isStandard()) && (!contestScoreboardService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((ContestTypeConfigStandard) new Gson().fromJson(contestConfiguration.getTypeConfig(), ContestTypeConfigStandard.class)).getScoreboardFreezeTime())) {
+                    if ((contest.isStandard()) && (!contestScoreboardService.isContestScoreboardExistByContestJidAndScoreboardType(contest.getJid(), ContestScoreboardType.FROZEN)) && (System.currentTimeMillis() > ((StandardContestTypeConfig) new Gson().fromJson(contestConfiguration.getTypeConfig(), StandardContestTypeConfig.class)).getScoreboardFreezeTime())) {
                         contestScoreboardService.upsertFrozenScoreboard(contestScoreboard.getId());
                     }
-                    ContestScoreState state = contestService.getContestStateByJid(contest.getJid());
+                    ScoreboardState state = contestService.getContestStateByJid(contest.getJid());
 
                     List<Submission> submissions = submissionService.findAllSubmissionsByContestJid(contest.getJid());
 
