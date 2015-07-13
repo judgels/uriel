@@ -12,6 +12,8 @@ public final class ScoreboardAdapters {
         switch (style) {
             case IOI:
                 return new IOIScoreboardAdapter();
+            case ICPC:
+                return new ICPCScoreboardAdapter();
             default:
                 throw new IllegalArgumentException();
         }

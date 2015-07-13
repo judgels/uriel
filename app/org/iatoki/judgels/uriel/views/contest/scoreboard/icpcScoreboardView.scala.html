@@ -1,0 +1,51 @@
+@(state: org.iatoki.judgels.uriel.ScoreboardState, entries: List[org.iatoki.judgels.uriel.ICPCScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl[_], currentContestantJid: String, hiddenRank: Boolean)
+
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import scala.collection.JavaConversions
+
+<p><small>Last updated: <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped table-condensed">
+        <thead>
+            <tr>
+                <th class="text-center table-col-id">Rank</th>
+                <th class="text-center table-col-logo">Logo</th>
+                <th>Contestant</th>
+                <th class="table-col-score">Score</th>
+                <th class="table-col-score">Penalty</th>
+                @for(problemAlias <- state.getProblemAliases) {
+                    <th class="table-col-score">@problemAlias</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+        @defining(jidCacheService.getDisplayNames(JavaConversions.seqAsJavaList(state.getContestantJids.toSeq))) { displayNamesMap =>
+            @for(entry <- entries) {
+                <tr @if(entry.contestantJid.equals(currentContestantJid)) { class="warning" }>
+                    @if(hiddenRank) {
+                        <td class="text-center">?</td>
+                    } else {
+                        <td class="text-center">@entry.rank</td>
+                    }
+                <td class="text-center"><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
+                <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
+                <td>@entry.totalAccepted</td>
+                <td>@entry.totalPenalties</td>
+                    @for(i <- 0 until entry.attemptsList.size) {
+                        @if(entry.isAcceptedList.get(i)) {
+                            <td class="scoreboard-icpc-submission-accepted">@entry.attemptsList.get(i)/@entry.penaltyList.get(i)</td>
+                        } else {
+                            @if(entry.attemptsList.get(i) > 0) {
+                                <td class="scoreboard-icpc-submission-not-accepted">@entry.attemptsList.get(i)/-</td>
+                            } else {
+                                <td>@entry.attemptsList.get(i)/-</td>
+                            }
+                        }
+                    }
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

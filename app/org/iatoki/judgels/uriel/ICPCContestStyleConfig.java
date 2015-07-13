@@ -2,24 +2,22 @@ package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.sandalphon.LanguageRestriction;
 
-import java.util.concurrent.TimeUnit;
-
 public class ICPCContestStyleConfig implements ContestStyleConfig {
-    private final long timePenalty;
+    private final long wrongSubmissionPenalty;
 
     private final LanguageRestriction languageRestriction;
 
     public static ICPCContestStyleConfig defaultConfig(Contest contest) {
-        return new ICPCContestStyleConfig(TimeUnit.MILLISECONDS.convert(20, TimeUnit.MINUTES), LanguageRestriction.defaultRestriction());
+        return new ICPCContestStyleConfig(20, LanguageRestriction.defaultRestriction());
     }
 
-    public ICPCContestStyleConfig(long timePenalty, LanguageRestriction languageRestriction) {
-        this.timePenalty = timePenalty;
+    public ICPCContestStyleConfig(long wrongSubmissionPenalty, LanguageRestriction languageRestriction) {
+        this.wrongSubmissionPenalty = wrongSubmissionPenalty;
         this.languageRestriction = languageRestriction;
     }
 
-    public long getTimePenalty() {
-        return timePenalty;
+    public long getWrongSubmissionPenalty() {
+        return wrongSubmissionPenalty;
     }
 
     public LanguageRestriction getLanguageRestriction() {

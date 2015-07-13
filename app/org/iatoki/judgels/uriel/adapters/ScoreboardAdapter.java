@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.adapters;
 
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
@@ -14,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 public interface ScoreboardAdapter {
-    ScoreboardContent computeScoreboardContent(ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap);
+    ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap);
 
     Scoreboard parseScoreboardFromJson(String json);
 

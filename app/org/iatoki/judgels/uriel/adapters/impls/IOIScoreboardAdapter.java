@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.IOIScoreboard;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
     @Override
-    public ScoreboardContent computeScoreboardContent(ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
