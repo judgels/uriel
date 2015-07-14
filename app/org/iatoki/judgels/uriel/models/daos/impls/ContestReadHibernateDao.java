@@ -22,27 +22,27 @@ public final class ContestReadHibernateDao extends AbstractHibernateDao<Long, Co
     }
 
     @Override
-    public boolean existByUserJidAndTypeAndId(String userJid, String type, long id) {
+    public boolean existByUserJidAndTypeAndJid(String userJid, String type, String jid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestReadModel> root = query.from(ContestReadModel.class);
 
         query
                 .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), cb.equal(root.get(ContestReadModel_.readId), id)));
+                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), cb.equal(root.get(ContestReadModel_.readJid), jid)));
 
         return (JPA.em().createQuery(query).getSingleResult() != 0);
     }
 
     @Override
-    public long countReadByUserJidAndTypeAndIdList(String userJid, String type, List<Long> IdList) {
+    public long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> JidList) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestReadModel> root = query.from(ContestReadModel.class);
 
         query
                 .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), root.get(ContestReadModel_.readId).in(IdList)));
+                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), root.get(ContestReadModel_.readJid).in(JidList)));
 
         return JPA.em().createQuery(query).getSingleResult();
     }

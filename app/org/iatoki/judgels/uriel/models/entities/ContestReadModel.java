@@ -19,6 +19,5 @@ public final class ContestReadModel extends AbstractModel {
 
     public String type;
 
-    public Long readId;
-
+    public String readJid;
 }

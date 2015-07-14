@@ -1,20 +1,16 @@
 package org.iatoki.judgels.uriel.models.entities;
 
-import org.iatoki.judgels.play.models.entities.AbstractModel;
+import org.iatoki.judgels.play.models.JidPrefix;
+import org.iatoki.judgels.play.models.entities.AbstractJudgelsModel;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "uriel_contest_clarification")
-public final class ContestClarificationModel extends AbstractModel {
-
-    @Id
-    @GeneratedValue
-    public long id;
+@JidPrefix("COCL")
+public final class ContestClarificationModel extends AbstractJudgelsModel {
 
     public String contestJid;
 
@@ -29,5 +25,4 @@ public final class ContestClarificationModel extends AbstractModel {
     public String answer;
 
     public String status;
-
 }

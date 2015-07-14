@@ -68,9 +68,9 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
 
     @Override
     public long getUnreadContestAnnouncementsCount(String userJid, String contestJid) {
-        List<Long> announcementIds = contestAnnouncementDao.findAllPublishedAnnouncementIdInContest(contestJid);
-        if (!announcementIds.isEmpty()) {
-            return (announcementIds.size() - contestReadDao.countReadByUserJidAndTypeAndIdList(userJid, ContestReadType.ANNOUNCEMENT.name(), announcementIds));
+        List<String> announcementJids = contestAnnouncementDao.findAllPublishedAnnouncementJidInContest(contestJid);
+        if (!announcementJids.isEmpty()) {
+            return (announcementJids.size() - contestReadDao.countReadByUserJidAndTypeAndJidList(userJid, ContestReadType.ANNOUNCEMENT.name(), announcementJids));
         } else {
             return 0;
         }
@@ -100,13 +100,13 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     @Override
-    public void readContestAnnouncements(String userJid, List<Long> contestAnnouncementIds) {
-        for (Long contestAnnouncementId : contestAnnouncementIds) {
-            if (!contestReadDao.existByUserJidAndTypeAndId(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementId)) {
+    public void readContestAnnouncements(String userJid, List<String> contestAnnouncementJids) {
+        for (String contestAnnouncementJid : contestAnnouncementJids) {
+            if (!contestReadDao.existByUserJidAndTypeAndJid(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementJid)) {
                 ContestReadModel contestReadModel = new ContestReadModel();
                 contestReadModel.userJid = userJid;
                 contestReadModel.type = ContestReadType.ANNOUNCEMENT.name();
-                contestReadModel.readId = contestAnnouncementId;
+                contestReadModel.readJid = contestAnnouncementJid;
 
                 contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
@@ -114,6 +114,6 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
-        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
+        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.jid, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
     }
 }

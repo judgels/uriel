@@ -94,7 +94,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
             } else {
                 contestClarifications = contestClarificationService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ImmutableList.of(IdentityUtils.getUserJid()));
             }
-            contestClarificationService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().filter(c -> c.isAnswered()).map(c -> c.getId()).collect(Collectors.toList()));
+            contestClarificationService.readContestClarifications(IdentityUtils.getUserJid(), contestClarifications.getData().stream().filter(c -> c.isAnswered()).map(c -> c.getJid()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, contestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
             if (coach) {

@@ -68,7 +68,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             Page<ContestAnnouncement> contestAnnouncements = contestAnnouncementService.pageContestAnnouncementsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
-            contestAnnouncementService.readContestAnnouncements(IdentityUtils.getUserJid(), contestAnnouncements.getData().stream().map(c -> c.getId()).collect(Collectors.toList()));
+            contestAnnouncementService.readContestAnnouncements(IdentityUtils.getUserJid(), contestAnnouncements.getData().stream().map(c -> c.getJid()).collect(Collectors.toList()));
 
             LazyHtml content = new LazyHtml(listPublishedAnnouncementsView.render(contest.getId(), contestAnnouncements, pageIndex, orderBy, orderDir, filterString));
             content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.list"), c));

@@ -23,5 +23,5 @@ public interface ContestClarificationService {
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 
-    void readContestClarifications(String userJid, List<Long> contestClarificationIds);
+    void readContestClarifications(String userJid, List<String> contestClarificationJids);
 }

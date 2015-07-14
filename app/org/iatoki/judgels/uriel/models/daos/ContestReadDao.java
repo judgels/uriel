@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface ContestReadDao extends Dao<Long, ContestReadModel> {
 
-    boolean existByUserJidAndTypeAndId(String userJid, String type, long id);
+    boolean existByUserJidAndTypeAndJid(String userJid, String type, String jid);
 
-    long countReadByUserJidAndTypeAndIdList(String userJid, String type, List<Long> IdList);
+    long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> JidList);
 
 }

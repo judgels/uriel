@@ -19,5 +19,5 @@ public interface ContestAnnouncementService {
 
     void updateContestAnnouncement(long contestAnnouncementId, String title, String content, ContestAnnouncementStatus status);
 
-    void readContestAnnouncements(String userJid, List<Long> contestAnnouncementIds);
+    void readContestAnnouncements(String userJid, List<String> contestAnnouncementJids);
 }

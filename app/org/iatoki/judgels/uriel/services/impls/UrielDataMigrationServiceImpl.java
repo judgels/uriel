@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import org.hibernate.Session;
 import org.hibernate.internal.SessionImpl;
+import org.iatoki.judgels.play.JidService;
 import org.iatoki.judgels.play.services.impls.AbstractBaseDataMigrationServiceImpl;
 import play.db.jpa.JPA;
 
@@ -18,14 +19,72 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 1;
+        return 2;
     }
 
     @Override
     protected void onUpgrade(long databaseVersion, long codeDatabaseVersion) throws SQLException {
-        if ((databaseVersion == 0) && (codeDatabaseVersion == 1)) {
+        if (databaseVersion == 0) {
             migrateV0toV1();
+            migrateV1toV2();
+        } else if (databaseVersion == 1) {
+            migrateV1toV2();
         }
+    }
+
+    private void migrateV1toV2() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String announcementTable = "uriel_contest_announcement";
+        String clarificationTable = "uriel_contest_clarification";
+        String readTable = "uriel_contest_read";
+
+        Statement statement = connection.createStatement();
+        String announcementQuery = "SELECT * FROM `" +announcementTable+ "`";
+        ResultSet resultSet = statement.executeQuery(announcementQuery);
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `" + announcementTable + "` SET `jid`= ? WHERE id=" + id + ";");
+            preparedStatement.setString(1, JidService.getInstance().generateNewJid("COAN").toString());
+            preparedStatement.executeUpdate();
+        }
+
+        String clarificationQuery = "SELECT * FROM `" + clarificationTable + "`";
+        resultSet = statement.executeQuery(clarificationQuery);
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `" + clarificationTable + "` SET `jid`= ? WHERE id=" + id + ";");
+            preparedStatement.setString(1, JidService.getInstance().generateNewJid("COCL").toString());
+            preparedStatement.executeUpdate();
+        }
+
+        String readQuery = "SELECT * FROM `" + readTable + "`";
+        resultSet = statement.executeQuery(readQuery);
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            long readId = resultSet.getLong("readId");
+            String type = resultSet.getString("type");
+            String readJid = "";
+            String tableName = "";
+            if (type.equals("ANNOUNCEMENT")) {
+                tableName = announcementTable;
+            } else if (type.equals("CLARIFICATION")) {
+                tableName = clarificationTable;
+            }
+            Statement statement1 = connection.createStatement();
+            ResultSet resultSet1 = statement1.executeQuery("SELECT `jid` FROM `" + tableName + "` WHERE id=" + readId + ";");
+            resultSet1.next();
+            readJid = resultSet1.getString("jid");
+            resultSet1.close();
+            statement1.close();
+
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `" + readTable + "` SET `readJid`= ? WHERE id=" + id + ";");
+            preparedStatement.setString(1, readJid);
+            preparedStatement.executeUpdate();
+        }
+        resultSet.close();
+        statement.close();
     }
 
     private void migrateV0toV1() throws SQLException {
