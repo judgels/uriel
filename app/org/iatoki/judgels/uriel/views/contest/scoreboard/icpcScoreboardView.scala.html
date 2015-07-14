@@ -6,16 +6,15 @@
 <p><small>Last updated: <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped table-condensed">
+    <table class="table table-bordered table-striped table-condensed scoreboard">
         <thead>
             <tr>
-                <th class="text-center table-col-id">Rank</th>
-                <th class="text-center table-col-logo">Logo</th>
+                <th class="scoreboard-rank">Rank</th>
+                <th class="scoreboard-logo">Logo</th>
                 <th>Contestant</th>
-                <th class="table-col-score">Score</th>
-                <th class="table-col-score">Penalty</th>
+                <th class="scoreboard-score">Total</th>
                 @for(problemAlias <- state.getProblemAliases) {
-                    <th class="table-col-score">@problemAlias</th>
+                    <th class="scoreboard-score">@problemAlias</th>
                 }
             </tr>
         </thead>
@@ -24,22 +23,33 @@
             @for(entry <- entries) {
                 <tr @if(entry.contestantJid.equals(currentContestantJid)) { class="warning" }>
                     @if(hiddenRank) {
-                        <td class="text-center">?</td>
+                        <td class="scoreboard-rank">?</td>
                     } else {
-                        <td class="text-center">@entry.rank</td>
+                        <td class="scoreboard-rank">@entry.rank</td>
                     }
-                <td class="text-center"><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
-                <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
-                <td>@entry.totalAccepted</td>
-                <td>@entry.totalPenalties</td>
+                    <td class="scoreboard-logo"><img src="@entry.imageURL.toString" class="scoreboard-logo-image" alt="logo" /></td>
+                    <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
+                    <td class="scoreboard-score">
+                        <div class="scoreboard-icpc-accepted-attempts">@entry.totalAccepted</div>
+                        <div class="scoreboard-icpc-accepted-penalty">@entry.totalPenalties mins</div>
+                    </td>
                     @for(i <- 0 until entry.attemptsList.size) {
                         @if(entry.isAcceptedList.get(i)) {
-                            <td class="scoreboard-icpc-submission-accepted">@entry.attemptsList.get(i)/@entry.penaltyList.get(i)</td>
+                            <td class="scoreboard-score scoreboard-icpc-accepted">
+                                <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
+                                <div class="scoreboard-icpc-accepted-penalty">@entry.penaltyList.get(i) mins</div>
+                            </td>
                         } else {
                             @if(entry.attemptsList.get(i) > 0) {
-                                <td class="scoreboard-icpc-submission-not-accepted">@entry.attemptsList.get(i)/-</td>
+                                <td class="scoreboard-score scoreboard-icpc-not-accepted">
+                                    <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
+                                    <div class="scoreboard-icpc-accepted-penalty">-</div>
+                                </td>
                             } else {
-                                <td>@entry.attemptsList.get(i)/-</td>
+                                <td class="scoreboard-score">
+                                    <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
+                                    <div class="scoreboard-icpc-accepted-penalty">-</div>
+                                </td>
                             }
                         }
                     }

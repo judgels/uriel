@@ -1,4 +1,4 @@
-@(config: org.iatoki.judgels.uriel.ScoreboardState, entries: List[org.iatoki.judgels.uriel.IOIScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl[_], currentContestantJid: String, hiddenRank: Boolean)
+@(state: org.iatoki.judgels.uriel.ScoreboardState, entries: List[org.iatoki.judgels.uriel.IOIScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl[_], currentContestantJid: String, hiddenRank: Boolean)
 
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
@@ -6,35 +6,35 @@
 <p><small>Last updated: <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
 
 <div class="table-responsive">
-    <table class="table table-bordered table-striped table-condensed">
+    <table class="table table-bordered table-striped table-condensed scoreboard">
         <thead>
             <tr>
-                <th class="text-center table-col-id">Rank</th>
-                <th class="text-center table-col-logo">Logo</th>
+                <th class="scoreboard-rank">Rank</th>
+                <th class="scoreboard-logo">Logo</th>
                 <th>Contestant</th>
-                <th class="table-col-score">Total</th>
-                @for(problemAlias <- config.getProblemAliases) {
-                    <th class="table-col-score">@problemAlias</th>
+                <th class="scoreboard-score">Total</th>
+                @for(problemAlias <- state.getProblemAliases) {
+                    <th class="scoreboard-score">@problemAlias</th>
                 }
             </tr>
         </thead>
         <tbody>
-        @defining(jidCacheService.getDisplayNames(JavaConversions.seqAsJavaList(config.getContestantJids.toSeq))) { displayNamesMap =>
+        @defining(jidCacheService.getDisplayNames(JavaConversions.seqAsJavaList(state.getContestantJids.toSeq))) { displayNamesMap =>
             @for(entry <- entries) {
                 <tr @if(entry.contestantJid.equals(currentContestantJid)) { class="warning" }>
                     @if(hiddenRank) {
-                        <td class="text-center">?</td>
+                        <td class="scoreboard-rank">?</td>
                     } else {
-                        <td class="text-center">@entry.rank</td>
+                        <td class="scoreboard-rank">@entry.rank</td>
                     }
-                    <td class="text-center"><img src="@entry.imageURL.toString" class="table-image" alt="logo" /></td>
+                    <td class="scoreboard-logo"><img src="@entry.imageURL.toString" class="scoreboard-logo-image" alt="logo" /></td>
                     <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
-                    <td>@entry.totalScores</td>
+                    <td class="scoreboard-score">@entry.totalScores</td>
                     @for(score <- entry.scores) {
                         @if(score == null) {
-                            <td>-</td>
+                            <td class="scoreboard-score">-</td>
                         }else {
-                            <td>@score</td>
+                            <td class="scoreboard-score">@score</td>
                         }
                     }
                 </tr>
