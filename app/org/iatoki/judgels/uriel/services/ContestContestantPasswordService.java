@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.services;
 import java.util.Collection;
 import java.util.Map;
 
-public interface ContestPasswordService {
+public interface ContestContestantPasswordService {
 
     Map<String, String> getContestantPasswordsMap(String contestJid, Collection<String> contestantJids);
 

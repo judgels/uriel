@@ -11,6 +11,7 @@ import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestClarification;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.forms.ContestClarificationChangeForm;
 import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm;
 import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
@@ -345,6 +346,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseClarifications(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CLARIFICATION));
     }
 }

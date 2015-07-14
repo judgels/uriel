@@ -2,19 +2,14 @@ package org.iatoki.judgels.uriel.forms;
 
 import play.data.validation.Constraints;
 
+import java.util.Map;
+
 public final class ContestSupervisorCreateForm {
 
     @Constraints.Required
     public String username;
 
-    public boolean announcement;
+    public boolean isAllowedAll;
 
-    public boolean problem;
-
-    public boolean submission;
-
-    public boolean clarification;
-
-    public boolean contestant;
-
+    public Map<String, String> allowedPermissions;
 }

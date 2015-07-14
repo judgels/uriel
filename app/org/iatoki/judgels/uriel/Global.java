@@ -7,21 +7,22 @@ import org.iatoki.judgels.jophiel.services.impls.DefaultUserActivityMessageServi
 import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.sealtiel.Sealtiel;
-import org.iatoki.judgels.uriel.runnables.ScoreboardUpdater;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.ControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
-import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
+import org.iatoki.judgels.uriel.runnables.ScoreboardUpdater;
+import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
-import org.iatoki.judgels.uriel.services.ContestPasswordService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
+import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.UserActivityMessageServiceImpl;
 import play.Application;
 import play.inject.Injector;
@@ -32,6 +33,10 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
 public final class Global extends org.iatoki.judgels.play.Global {
+
+    public Global() {
+        super(new UrielDataMigrationServiceImpl());
+    }
 
     @Override
     public void onStart(Application application) {
@@ -50,7 +55,7 @@ public final class Global extends org.iatoki.judgels.play.Global {
 
     private void buildUtils(Injector injector) {
         ControllerUtils.buildInstance(injector.instanceOf(Jophiel.class));
-        ContestControllerUtils.buildInstance(injector.instanceOf(ContestService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestPasswordService.class));
+        ContestControllerUtils.buildInstance(injector.instanceOf(ContestService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestContestantPasswordService.class));
     }
 
     private void scheduleThreads(Injector injector) {

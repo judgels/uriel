@@ -10,14 +10,9 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(ContestSupervisorModel.class)
 public abstract class ContestSupervisorModel_ extends AbstractModel_ {
 
-	public static volatile SingularAttribute<ContestSupervisorModel, String> userJid;
-	public static volatile SingularAttribute<ContestSupervisorModel, Boolean> problem;
-	public static volatile SingularAttribute<ContestSupervisorModel, Boolean> contestant;
-	public static volatile SingularAttribute<ContestSupervisorModel, Boolean> submission;
-	public static volatile SingularAttribute<ContestSupervisorModel, Boolean> clarification;
 	public static volatile SingularAttribute<ContestSupervisorModel, Long> id;
 	public static volatile SingularAttribute<ContestSupervisorModel, String> contestJid;
-	public static volatile SingularAttribute<ContestSupervisorModel, Boolean> announcement;
-
+	public static volatile SingularAttribute<ContestSupervisorModel, String> userJid;
+	public static volatile SingularAttribute<ContestSupervisorModel, String> permission;
 }
 

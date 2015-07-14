@@ -128,6 +128,8 @@ permission.problem=Supervise problems
 permission.submission=Supervise submissions
 permission.clarification=Supervise clarifications
 permission.contestant=Supervise contestants
+permission.scoreboard=Supervise scoreboard
+permission.team=Supervise teams
 
 user.users=Users
 user.user=User

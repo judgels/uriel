@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.Page;
+import org.iatoki.judgels.uriel.ContestPermission;
 import org.iatoki.judgels.uriel.ContestSupervisor;
 import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
@@ -62,34 +63,26 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
     }
 
     @Override
-    public void createContestSupervisor(long contestId, String userJid, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
+    public void createContestSupervisor(long contestId, String userJid, ContestPermission contestPermission) {
         ContestModel contestModel = contestDao.findById(contestId);
 
         ContestSupervisorModel contestSupervisorModel = new ContestSupervisorModel();
         contestSupervisorModel.contestJid = contestModel.jid;
         contestSupervisorModel.userJid = userJid;
-        contestSupervisorModel.announcement = announcement;
-        contestSupervisorModel.problem = problem;
-        contestSupervisorModel.submission = submission;
-        contestSupervisorModel.clarification = clarification;
-        contestSupervisorModel.contestant = contestant;
+        contestSupervisorModel.permission = contestPermission.toJSONString();
 
         contestSupervisorDao.persist(contestSupervisorModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     @Override
-    public void updateContestSupervisor(long contestSupervisorId, boolean announcement, boolean problem, boolean submission, boolean clarification, boolean contestant) {
+    public void updateContestSupervisor(long contestSupervisorId, ContestPermission contestPermission) {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
-        contestSupervisorModel.announcement = announcement;
-        contestSupervisorModel.problem = problem;
-        contestSupervisorModel.submission = submission;
-        contestSupervisorModel.clarification = clarification;
-        contestSupervisorModel.contestant = contestant;
+        contestSupervisorModel.permission = contestPermission.toJSONString();
 
         contestSupervisorDao.edit(contestSupervisorModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
     }
 
     private ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {
-        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, contestSupervisorModel.announcement, contestSupervisorModel.problem, contestSupervisorModel.submission, contestSupervisorModel.clarification, contestSupervisorModel.contestant);
+        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, ContestPermission.fromJSONString(contestSupervisorModel.permission));
     }
 }

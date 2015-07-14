@@ -15,6 +15,7 @@ import org.iatoki.judgels.play.views.html.layouts.messageView;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.forms.ContestContestantCreateForm;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
@@ -22,7 +23,7 @@ import org.iatoki.judgels.uriel.forms.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
-import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.UploadResult;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
@@ -62,16 +63,16 @@ public class ContestContestantController extends AbstractJudgelsController {
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
     private final ContestSupervisorService contestSupervisorService;
-    private final ContestPasswordService contestPasswordService;
+    private final ContestContestantPasswordService contestContestantPasswordService;
     private final UserService userService;
 
     @Inject
-    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestPasswordService contestPasswordService, UserService userService) {
+    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestContestantPasswordService contestContestantPasswordService, UserService userService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
         this.contestSupervisorService = contestSupervisorService;
-        this.contestPasswordService = contestPasswordService;
+        this.contestContestantPasswordService = contestContestantPasswordService;
         this.userService = userService;
     }
 
@@ -255,7 +256,7 @@ public class ContestContestantController extends AbstractJudgelsController {
 
             Map<String, String> passwordsMap;
             if (contest.requiresPassword()) {
-                passwordsMap = contestPasswordService.getContestantPasswordsMap(contest.getJid(), Lists.transform(contestContestants.getData(), c -> c.getUserJid()));
+                passwordsMap = contestContestantPasswordService.getContestantPasswordsMap(contest.getJid(), Lists.transform(contestContestants.getData(), c -> c.getUserJid()));
             } else {
                 passwordsMap = ImmutableMap.of();
             }
@@ -271,7 +272,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestPasswordService.generateContestantPasswordForAllContestants(contest.getJid());
+            contestContestantPasswordService.generateContestantPasswordForAllContestants(contest.getJid());
             return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -284,7 +285,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         ContestContestant contestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
 
         if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
+            contestContestantPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
             return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -383,6 +384,6 @@ public class ContestContestantController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isContestant());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
     }
 }

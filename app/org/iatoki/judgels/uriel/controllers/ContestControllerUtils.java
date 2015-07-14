@@ -18,7 +18,7 @@ import org.iatoki.judgels.uriel.VirtualContestTypeConfigStartTrigger;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
-import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
@@ -38,22 +38,20 @@ public final class ContestControllerUtils {
     private ContestSupervisorService contestSupervisorService;
     private ContestManagerService contestManagerService;
     private ContestTeamService contestTeamService;
-    private ContestPasswordService contestPasswordService;
-
-    private static final String CURRENT_CONTEST_WITH_PASSWORD_KEY = "currentContestWithPassword";
+    private ContestContestantPasswordService contestContestantPasswordService;
 
     static ContestControllerUtils INSTANCE;
 
-    private ContestControllerUtils(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestPasswordService contestPasswordService) {
+    private ContestControllerUtils(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestContestantPasswordService contestContestantPasswordService) {
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
         this.contestSupervisorService = contestSupervisorService;
         this.contestManagerService = contestManagerService;
         this.contestTeamService = contestTeamService;
-        this.contestPasswordService = contestPasswordService;
+        this.contestContestantPasswordService = contestContestantPasswordService;
     }
 
-    public static synchronized void buildInstance(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestPasswordService contestPasswordService) {
+    public static synchronized void buildInstance(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestContestantPasswordService contestPasswordService) {
         if (INSTANCE != null) {
             throw new UnsupportedOperationException("ContestControllerUtils instance has already been built");
         }
@@ -196,7 +194,7 @@ public final class ContestControllerUtils {
             return false;
         }
         if (contest.requiresPassword() && !UrielUtils.trullyHasRole("admin")) {
-            String password = contestPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+            String password = contestContestantPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
             return ((password == null) && (hasEstablishedContestWithPasswordCookie(password)));
         }
         return true;
@@ -348,9 +346,5 @@ public final class ContestControllerUtils {
                 .add(new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId())));
 
         return internalLinks;
-    }
-
-    private String constructContestPasswordSessionKey(Contest contest) {
-        return contest.getJid() + "-password";
     }
 }

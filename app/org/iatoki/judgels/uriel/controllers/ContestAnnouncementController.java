@@ -12,6 +12,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementNotFoundException;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
@@ -238,6 +239,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseAnnouncements(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isAnnouncement());
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.ANNOUNCEMENT));
     }
 }

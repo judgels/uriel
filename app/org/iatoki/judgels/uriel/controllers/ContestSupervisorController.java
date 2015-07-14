@@ -1,23 +1,27 @@
 package org.iatoki.judgels.uriel.controllers;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.ContestPermission;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestSupervisor;
-import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm;
 import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
-import org.iatoki.judgels.uriel.forms.ContestSupervisorUpdateForm;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestSupervisorUpdateForm;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.listCreateSupervisorsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.updateSupervisorView;
 import play.data.Form;
@@ -33,6 +37,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
@@ -69,7 +74,11 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
             boolean canUpdate = isAllowedToManageSupervisors(contest);
 
-            Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class);
+            ContestSupervisorCreateForm contestSupervisorCreateForm = new ContestSupervisorCreateForm();
+            contestSupervisorCreateForm.isAllowedAll = true;
+            contestSupervisorCreateForm.allowedPermissions = Lists.newArrayList(ContestPermissions.values()).stream().collect(Collectors.toMap(p -> p.name(), p -> p.name()));
+
+            Form<ContestSupervisorCreateForm> form = Form.form(ContestSupervisorCreateForm.class).fill(contestSupervisorCreateForm);
 
             return showListCreateSupervisor(contestSupervisorPage, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
         } else {
@@ -96,7 +105,14 @@ public class ContestSupervisorController extends AbstractJudgelsController {
                     String userJid = jophiel.verifyUsername(contestSupervisorCreateForm.username);
                     if ((userJid != null) && (!contestSupervisorService.isContestSupervisorInContestByUserJid(contest.getJid(), userJid))) {
                         userRoleService.upsertUserFromJophielUserJid(userJid);
-                        contestSupervisorService.createContestSupervisor(contest.getId(), userJid, contestSupervisorCreateForm.announcement, contestSupervisorCreateForm.problem, contestSupervisorCreateForm.submission, contestSupervisorCreateForm.clarification, contestSupervisorCreateForm.contestant);
+
+                        ContestPermission contestPermission;
+                        if (contestSupervisorCreateForm.allowedPermissions != null) {
+                            contestPermission = new ContestPermission(ImmutableSet.of(), contestSupervisorCreateForm.isAllowedAll);
+                        } else {
+                            contestPermission = new ContestPermission(contestSupervisorCreateForm.allowedPermissions.keySet(), contestSupervisorCreateForm.isAllowedAll);
+                        }
+                        contestSupervisorService.createContestSupervisor(contest.getId(), userJid, contestPermission);
 
                         ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateForm.username + " as supervisor in contest " + contest.getName() + ".");
 
@@ -129,7 +145,10 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorByContestSupervisorId(contestSupervisorId);
         if (isAllowedToManageSupervisors(contest) && contestSupervisor.getContestJid().equals(contest.getJid())) {
-            ContestSupervisorUpdateForm contestSupervisorUpdateForm = new ContestSupervisorUpdateForm(contestSupervisor);
+            ContestSupervisorUpdateForm contestSupervisorUpdateForm = new ContestSupervisorUpdateForm();
+            contestSupervisorUpdateForm.isAllowedAll = contestSupervisor.getContestPermission().isAllowedAll();
+            contestSupervisorUpdateForm.allowedPermissions = contestSupervisor.getContestPermission().getAllowedPermissions().stream().collect(Collectors.toMap(p -> p, p -> p));
+
             Form<ContestSupervisorUpdateForm> form = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -152,7 +171,13 @@ public class ContestSupervisorController extends AbstractJudgelsController {
                 return showUpdateSupervisor(form, contest, contestSupervisor);
             } else {
                 ContestSupervisorUpdateForm contestSupervisorUpdateForm = form.get();
-                contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestSupervisorUpdateForm.announcement, contestSupervisorUpdateForm.problem, contestSupervisorUpdateForm.submission, contestSupervisorUpdateForm.clarification, contestSupervisorUpdateForm.contestant);
+                ContestPermission contestPermission;
+                if (contestSupervisorUpdateForm.allowedPermissions == null) {
+                    contestPermission = new ContestPermission(ImmutableSet.of(), contestSupervisorUpdateForm.isAllowedAll);
+                } else {
+                    contestPermission = new ContestPermission(contestSupervisorUpdateForm.allowedPermissions.keySet(), contestSupervisorUpdateForm.isAllowedAll);
+                }
+                contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestPermission);
 
                 ControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
 

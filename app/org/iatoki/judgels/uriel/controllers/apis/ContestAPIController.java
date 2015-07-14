@@ -8,6 +8,7 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestTeamMember;
@@ -258,6 +259,6 @@ public final class ContestAPIController extends Controller {
     }
 
     private boolean isAllowedToSuperviseClarifications(Contest contest) {
-        return isAdmin() || isManager(contest) || (isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).isClarification());
+        return isAdmin() || isManager(contest) || (isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CLARIFICATION));
     }
 }

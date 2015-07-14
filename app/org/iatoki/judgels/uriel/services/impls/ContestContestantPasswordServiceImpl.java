@@ -6,7 +6,7 @@ import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantPasswordDao;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantPasswordModel;
-import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -16,14 +16,14 @@ import java.util.List;
 import java.util.Map;
 
 @Singleton
-@Named("contestPasswordService")
-public final class ContestPasswordServiceImpl implements ContestPasswordService {
+@Named("contestContestantPasswordService")
+public final class ContestContestantPasswordServiceImpl implements ContestContestantPasswordService {
 
     private final ContestContestantDao contestContestantDao;
     private final ContestContestantPasswordDao contestContestantPasswordDao;
 
     @Inject
-    public ContestPasswordServiceImpl(ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao) {
+    public ContestContestantPasswordServiceImpl(ContestContestantDao contestContestantDao, ContestContestantPasswordDao contestContestantPasswordDao) {
         this.contestContestantDao = contestContestantDao;
         this.contestContestantPasswordDao = contestContestantPasswordDao;
     }

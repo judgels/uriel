@@ -26,7 +26,7 @@ import org.iatoki.judgels.uriel.PublicContestScopeConfig;
 import org.iatoki.judgels.uriel.forms.PublicContestScopeConfigForm;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
-import org.iatoki.judgels.uriel.services.ContestPasswordService;
+import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
@@ -74,15 +74,13 @@ public final class ContestController extends AbstractJudgelsController {
 
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
-    private final ContestManagerService contestManagerService;
-    private final ContestPasswordService contestPasswordService;
+    private final ContestContestantPasswordService contestContestantPasswordService;
 
     @Inject
-    public ContestController(ContestService contestService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestPasswordService contestPasswordService) {
+    public ContestController(ContestService contestService, ContestContestantService contestContestantService, ContestContestantPasswordService contestContestantPasswordService) {
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
-        this.contestManagerService = contestManagerService;
-        this.contestPasswordService = contestPasswordService;
+        this.contestContestantPasswordService = contestContestantPasswordService;
     }
 
     @Transactional(readOnly = true)
@@ -257,7 +255,7 @@ public final class ContestController extends AbstractJudgelsController {
             Form<ContestEnterWithPasswordForm> form = Form.form(ContestEnterWithPasswordForm.class).bindFromRequest();
 
             String password = form.get().password;
-            String correctPassword = contestPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
+            String correctPassword = contestContestantPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
 
             if (correctPassword == null) {
                 flash("password", Messages.get("contestant.password.notAvailable"));
