@@ -84,16 +84,21 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             preparedStatement.executeUpdate();
         }
         resultSet.close();
+
+        statement.executeQuery("ALTER TABLE `" + readTable + "` DROP `readId`;");
+
         statement.close();
     }
 
     private void migrateV0toV1() throws SQLException {
-        String query = "SELECT * FROM `uriel_contest_supervisor`;";
         SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
+        String supervisorTable = "uriel_contest_supervisor";
+
         Statement statement = connection.createStatement();
-        ResultSet resultSet = statement.executeQuery(query);
+        String supervisorQuery = "SELECT * FROM `" + supervisorTable + "`;";
+        ResultSet resultSet = statement.executeQuery(supervisorQuery);
         while (resultSet.next()) {
             long id = resultSet.getLong("id");
             JsonObject permission = new JsonObject();
@@ -116,9 +121,15 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             }
             permission.add("allowedPermissions", allowedPermissions);
 
-            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `uriel_contest_supervisor` SET `permission`= ? WHERE id=" + id + ";");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE `" + supervisorTable + "` SET `permission`= ? WHERE id=" + id + ";");
             preparedStatement.setString(1, permission.toString());
             preparedStatement.executeUpdate();
         }
+
+        statement.executeQuery("ALTER TABLE `" + supervisorTable + "` DROP `announcement`;");
+        statement.executeQuery("ALTER TABLE `" + supervisorTable + "` DROP `clarification`;");
+        statement.executeQuery("ALTER TABLE `" + supervisorTable + "` DROP `contestant`;");
+        statement.executeQuery("ALTER TABLE `" + supervisorTable + "` DROP `problem`;");
+        statement.executeQuery("ALTER TABLE `" + supervisorTable + "` DROP `submission`;");
     }
 }
