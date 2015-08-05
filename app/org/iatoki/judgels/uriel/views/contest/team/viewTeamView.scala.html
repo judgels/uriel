@@ -1,0 +1,133 @@
+@import org.iatoki.judgels.uriel.forms.ContestTeamMemberUploadForm
+@(contestId: Long, contestTeam: org.iatoki.judgels.uriel.ContestTeam, form: Form[org.iatoki.judgels.uriel.forms.ContestTeamCoachCreateForm], form2: Form[org.iatoki.judgels.uriel.forms.ContestTeamCoachUploadForm], form3: Form[org.iatoki.judgels.uriel.forms.ContestTeamMemberCreateForm], form4: Form[ContestTeamMemberUploadForm], coaches: List[org.iatoki.judgels.uriel.ContestTeamCoach], members: List[org.iatoki.judgels.uriel.ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+
+@import org.iatoki.judgels.uriel.controllers.routes
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+@import scala.collection.JavaConversions
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h3>@contestTeam.getName</h3>
+
+<h4>Coaches</h4>
+@if(updateable) {
+    <h4>@Messages.get("contest.supervisor.team.coaches.importTXT")</h4>
+    @formErrorView(form2)
+    @b3.form(routes.ContestTeamController.postUploadTeamCoach(contestId, contestTeam.getId), 'enctype->"multipart/form-data") {
+
+        @helper.CSRF.formField
+
+        @b3.file(form2("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+
+    <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
+    @formErrorView(form)
+    @b3.form(routes.ContestTeamController.postCreateTeamCoach(contestId, contestTeam.getId)) {
+
+        @helper.CSRF.formField
+
+        @b3.text(form("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+}
+@tableView() {
+    <thead>
+        <tr>
+            <th>@Messages.get("commons.id")</th>
+            <th>@Messages.get("team.coach.name")</th>
+            @if(updateable) {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(coaches.map(s => s.getCoachJid).toSeq))) { displayNamesMap =>
+            @for(coach <- coaches) {
+                <tr>
+                    <td>@coach.getId</td>
+                    <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(coach.getCoachJid)))</td>
+                    @if(updateable) {
+                        <td class="text-center">
+                            <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.removeTeamCoach(contestId, contestTeam.getId, coach.getId)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+}
+
+<h4>Members</h4>
+@if(updateable) {
+    <h4>@Messages.get("contest.supervisor.team.coaches.importTXT")</h4>
+    @formErrorView(form4)
+    @b3.form(routes.ContestTeamController.postUploadTeamMember(contestId, contestTeam.getId), 'enctype->"multipart/form-data") {
+
+        @helper.CSRF.formField
+
+        @b3.file(form4("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+
+    <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
+    @formErrorView(form3)
+    @b3.form(routes.ContestTeamController.postCreateTeamMember(contestId, contestTeam.getId)) {
+
+        @helper.CSRF.formField
+
+        @b3.text(form3("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+
+        @b3.submit('class -> "btn btn-primary") {
+            @Messages.get("commons.add")
+        }
+    }
+}
+@tableView() {
+    <thead>
+        <tr>
+            <th>@Messages.get("commons.id")</th>
+            <th>@Messages.get("team.member.name")</th>
+            @if(updateable) {
+                <th></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(members.map(s => s.getMemberJid).toSeq))) { displayNamesMap =>
+        @for(member <- members) {
+            <tr>
+                <td>@member.getId</td>
+                <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(member.getMemberJid)))</td>
+                @if(updateable) {
+                    <td class="text-center">
+                        <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.removeTeamMember(contestId, contestTeam.getId, member.getId)"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                    </td>
+                }
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+<script type="text/javascript">
+    var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/jophielcommons/javascripts/userAutoComplete.js")"></script>
+
+@supervisorjs(contestId)

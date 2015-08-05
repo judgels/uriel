@@ -1,0 +1,66 @@
+@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.sandalphon.Submission], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, problemJid: String)
+
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import scala.collection.JavaConversions
+@import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+
+<form class="form-inline pull-right" method="GET" action="@routes.ContestSubmissionController.listScreenedSubmissions(contestId, pageIndex, orderBy, orderDir, null)">
+   <div class="form-group">
+        <label for="problemJid">@Messages.get("problem.problem")</label>
+        <select name="problemJid" class="form-control selectpicker col-md-3">
+            <option value="(none)" @if(problemJid == null) {selected="selected"}>&#8211;</option>
+            @for((pJid, pAlias) <- problemJidToAliasMap) {
+                <option value="@pJid" @if(pJid.equals(problemJid)){selected="selected"}>@pAlias</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSubmissionController.listScreenedSubmissions(contestId, newPageIndex, newOrderBy, newOrderDir, problemJid)}
+
+<div class="clearfix"></div>
+
+<br />
+
+@tableView() {
+    @tableHeadersView(page.getPageIndex, orderBy, orderDir, "", listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "problemJid" -> Messages.get("problem.problem"),
+        "gradingLanguage" -> Messages.get("submission.gradingLanguage"),
+        "" -> Messages.get("submission.verdict"),
+        "" -> Messages.get("submission.score"),
+        "timeCreate" -> Messages.get("submission.time")
+    )
+
+    <tbody>
+
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
+        @for(submission <- page.getData) {
+            <tr>
+                <td>@submission.getId</td>
+                <td>@problemJidToAliasMap.get(submission.getProblemJid)</td>
+                <td>@gradingLanguageToNameMap.get(submission.getGradingLanguage)</td>
+                <td>@submission.getLatestVerdict.getName</td>
+                <td>@submission.getLatestScore</td>
+                <td><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(submission.getTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(submission.getTime.getTime)</time></td>
+                <td class="text-center">
+                    <a href="@routes.ContestSubmissionController.viewSubmission(contestId, submission.getId)"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></a>
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+@paginationView(page, orderBy, orderDir, "", listFunc)
+
+@contestantjs(contestId)

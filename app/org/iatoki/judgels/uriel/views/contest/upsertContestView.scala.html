@@ -1,0 +1,36 @@
+@import org.iatoki.judgels.uriel.forms.ContestUpsertForm
+@(form: Form[ContestUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@helper.CSRF.formField
+
+@b3.text(form("name"), '_label -> Messages.get("contest.name"))
+@b3.textarea(form("description"), '_label -> Messages.get("contest.description"))
+@b3.select(form("type"), Seq("STANDARD" -> "Standard", "VIRTUAL" -> "Virtual"), '_label -> Messages.get("contest.type"), 'class -> "selectpicker")
+@b3.select(form("scope"), Seq("PRIVATE" -> "Private", "PUBLIC" -> "Public"), '_label -> Messages.get("contest.scope"), 'class -> "selectpicker")
+@b3.select(form("style"), Seq("IOI" -> "IOI", "ICPC" -> "ICPC"), '_label -> Messages.get("contest.style"), 'class -> "selectpicker")
+@b3.inputWrapped("text", form("startTime"), '_label -> Messages.get("contest.startTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+@b3.inputWrapped("text", form("endTime"), '_label -> Messages.get("contest.endTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+@b3.inputWrapped("text", form("clarificationEndTime"), '_label -> Messages.get("contest.clarificationEndTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+@b3.checkbox(form("isExclusive"), '_label -> Messages.get("contest.isExclusive"))
+@b3.checkbox(form("isUsingScoreboard"), '_label -> Messages.get("contest.isUsingScoreboard"))
+@b3.checkbox(form("isIncognitoScoreboard"), '_label -> Messages.get("contest.isIncognitoScoreboard"))
+@b3.checkbox(form("requiresPassword"), '_label -> Messages.get("contest.requiresPassword"))
+
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/playcommons/javascripts/datetimepicker.js")"></script>

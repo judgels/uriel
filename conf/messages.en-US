@@ -1,0 +1,255 @@
+status.contestant=Contestant
+status.supervisor=Supervisor
+
+contest.contests=Contests
+contest.contest=Contest
+contest.list=Contests
+contest.create=Create Contest
+contest.view=View Contest
+contest.update=Update Contest
+
+contest.name=Name
+contest.description=Description
+contest.type=Type
+contest.scope=Scope
+contest.style=Style
+contest.startTime=Start Time
+contest.endTime=End Time
+
+contest.registrants=Registrants
+contest.register=Register
+contest.unregister=Unregister
+contest.enter=Enter
+
+announcement.announcements=Announcements
+announcement.list=Announcements
+announcement.create=Create Announcement
+announcement.view=View Announcement
+announcement.update=Update Announcement
+
+announcement.title=Title
+announcement.authorJid=Author
+announcement.content=Content
+announcement.status=Status
+announcement.lastUpdate=Last Update
+
+problem.problems=Problems
+problem.problem=Problem
+problem.list=Problems
+problem.create=Create Problem
+problem.update=Update Problem
+
+problem.alias=Alias
+problem.name=Name
+problem.problemJid=Problem JID
+problem.status=Status
+problem.submissionsLimit=Submissions Limit
+problem.problemSecret=Problem Secret
+
+problem.allowAll=Allow All
+problem.allowedLanguages=Allowed Languages
+
+problem.critical.warning=(In case you cannot view problem statement, see announcement.)
+
+submission.submissions=Submissions
+submission.list=Submissions
+submission.view=View Submission
+
+submission.author=Author
+submission.time=Time
+submission.gradingLanguage=Language
+submission.verdict=Verdict
+submission.pts=Pts
+submission.prob=Prob
+submission.lang=Lang
+submission.score=Score
+
+clarification.clarifications=Clarifications
+clarification.list=Clarifications
+clarification.create=Create Clarification
+clarification.update=Update Clarification
+
+clarification.title=Title
+clarification.question=Question
+clarification.answer=Answer
+clarification.topic=Topic
+clarification.general=General
+
+clarification.asker=Asker
+clarification.askedTime=Asked Time
+clarification.status=Status
+
+clarification.unanswered=Unanswered
+
+scoreboard.scoreboard=Scoreboard
+scoreboard.refresh=Refresh Scoreboard
+
+contestant.contestants=Contestants
+contestant.contestant=Contestant
+contestant.list=Contestants
+contestant.create=Create Contestant
+
+contestant.name=Name
+contestant.realName=Real Name
+contestant.status=Status
+contestant.userJid=User JID
+contestant.password=Password
+contestant.password.notAvailable=You don''t have password; please contact contest organizers
+contestant.password.incorrect=Incorrect password
+contestant.passwords=Passwords
+contestant.generatePasswords=Generate all
+contestant.generatePassword=Generate
+contestant.generatePasswords.confirm=Are you sure you want to (re-)generate all passwords?
+contestant.generatePassword.confirm=Are you sure you want to (re-)generate the password?
+
+contestant.upload.success=Upload Success
+contestant.upload.result=Upload Result
+
+supervisor.supervisors=Supervisors
+supervisor.list=Supervisors
+supervisor.create=Create Supervisor
+supervisor.update=Update Supervisor
+
+supervisor.username=Username
+supervisor.name=Name
+supervisor.userJid=User JID
+supervisor.permissions=Permissions
+
+manager.managers=Managers
+manager.list=Manager
+manager.create=Create Manager
+
+manager.username=Username
+manager.userJid=User JID
+manager.name=Name
+
+permission.announcement=Supervise announcements
+permission.problem=Supervise problems
+permission.submission=Supervise submissions
+permission.clarification=Supervise clarifications
+permission.contestant=Supervise contestants
+permission.scoreboard=Supervise scoreboard
+permission.team=Supervise teams
+
+user.users=Users
+user.user=User
+
+user.list=Users
+user.create=Create User
+user.view=View User
+user.update=Update User
+
+user.create.error.usernameNotFound=Username not found
+user.create.error.userAlreadyExists=User already exists
+user.delete.confirmation=Are you sure you want to delete?
+
+user.username=Username
+user.name=Name
+user.roles=Roles
+
+contest.time_left=Time left
+contest.time.s=s
+contest.time.ended=Contest ended
+contest.time.not_started=Contest not started yet
+contest.day-left=day
+contest.hour-left=hour
+contest.minute-left=minute
+contest.second-left=second
+
+contest.clarificationEndTime=Clarification End Time
+contest.isExclusive=Exclusive Contest?
+contest.isOfficialScoreboardAllowed=Official Scoreboard Allowed?
+contest.isUsingScoreboard=Use Scoreboard?
+contest.isIncognitoScoreboard=Incognito Scoreboard?
+contest.requiresPassword=Requires Password?
+
+contest.config.general=General
+contest.config.specific=Specific
+contest.type.standard.scoreboardFreezeTime=Scoreboard Freeze Time
+contest.type.virtual.duration=Contest Duration
+contest.type.virtual.startTrigger=Who can start the contest?
+contest.scope.public.registerStartTime=Register Start Time
+contest.scope.public.registerEndTime=Register End Time
+contest.scope.public.maxRegistrants=Max Registrants
+contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
+
+clarification.time_ended=Clarification Time has ended.
+
+submission.left=Submissions left
+submission.closed=Submissions closed
+
+contest.supervisor.contestant.importTXT=Import via txt
+contest.supervisor.contestant.manualCreate=Manual Create
+
+contestant.username=Username
+contestant.usernames=Usernames
+contest.start.confirm=Do you really want to start the contest? If you do, there is no turning back.
+
+contest.start=Start
+contest.started=Started
+contest.notStarted=Not started yet
+contest.cantStart=Cannot start yet for now
+
+contest.team.coach.upload.result=Coach Upload Result
+contest.team.member.upload.result=Member Upload Result
+
+contest.team.coach.upload.success=Upload Success
+contest.team.member.upload.success=Upload Success
+
+contest.supervisor.team.coaches.importTXT=Import via txt
+contest.supervisor.team.coaches.manualCreate=Manual Create
+contest.supervisor.team.members.importTXT=Import via txt
+contest.supervisor.team.members.manualCreate=Manual Create
+
+team.teams=Teams
+team.image=Logo
+team.teamImage=Team Logo
+team.name=Team Name
+team.list=Teams
+team.view=View Team
+team.coach.name=Coach Name
+team.member.name=Member Name
+team.update=Update Team
+team.coaches.count=#Coaches
+team.members.count=#Members
+team.status=Status
+
+team.avatar.error.cantUpdate=Can't Upload Team Avatar into system
+
+file.files=Files
+file.list=Files
+file.file=File
+file.uploadNew=Upload New File
+file.filename=Filename
+file.lastModified=Last Modified
+file.size=Size
+file.howToUse=To insert a download link, use "download/<filename>" as the URL.
+file.cannotUploadFile=Cannot upload file
+
+data.download=Download Contest Data
+upload.value=Value
+upload.status=Status
+
+scoreboard.not_available=Scoreboard is not available at the moment.
+
+error.contestant.create.userIsAlreadyContestant=User is already contestant.
+error.contestant.create.userNotExist=User not exist..
+error.contestant.isAlreadyContestant=User is already contestant.
+error.contestant.userNotExist=User not exist.
+error.problem.create.problemJidOrAlias.invalid=Problem Jid or Alias is invalid.
+error.contestant.create.userJid.invalid=Username is invalid.
+error.supervisor.create.userJid.invalid=Username is invalid.
+error.manager.create.userJid.invalid=Username is invalid.
+error.team.userAlreadyHasTeam=User is already involved in a team.
+error.team.userNotFound=User not found.
+error.team.userAlreadyACoach=User is already a coach.
+error.team.userAlreadyAContestant=User is already a contestant.
+
+error.contest.config.general.invalid_start_time=Contest start time must be before or equal contest end time.
+error.contest.config.general.invalid_clarification_end_time=Clarification end time must be within contest time window.
+error.contest.config.specific.invalid_freeze_time=Freeze time must be within contest time window.
+error.contest.config.specific.invalid_contest_duration=Contest duration must be within contest time window.
+error.contest.config.specific.invalid_register_start_time=Register start time must be before or equal register end time.
+error.contest.config.specific.invalid_register_end_time=Register end time must be before or equal contest end time.
+
+error.system.sandalphon.connection=Sandalphon Connection has problem.

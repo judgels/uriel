@@ -1,0 +1,26 @@
+@(contestId: Long, contestProblem: org.iatoki.judgels.uriel.ContestProblem, form: Form[org.iatoki.judgels.uriel.forms.ContestProblemUpdateForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
+
+@b3.form(routes.ContestProblemController.postUpdateProblem(contestId, contestProblem.getId)) {
+
+    @helper.CSRF.formField
+
+    @b3.static('_label -> Messages.get("problem.problemJid")) { @contestProblem.getProblemJid }
+    @b3.static('_label -> Messages.get("problem.problemSecret")) { @contestProblem.getProblemSecret }
+
+    @b3.text(form("alias"), '_label -> Messages.get("problem.alias"))
+    @b3.text(form("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
+    @b3.select(form("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "UNUSED" -> "Unused"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}
+
+@supervisorjs(contestId)

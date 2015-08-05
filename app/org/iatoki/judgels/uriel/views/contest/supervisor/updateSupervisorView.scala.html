@@ -1,0 +1,68 @@
+@import org.iatoki.judgels.uriel.forms.ContestSupervisorUpdateForm
+@import org.iatoki.judgels.uriel.ContestPermissions
+@(contestId: Long, contestSupervisorId: Long, form: Form[ContestSupervisorUpdateForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(form)
+
+@b3.form(routes.ContestSupervisorController.postUpdateSupervisor(contestId, contestSupervisorId)) {
+
+    @helper.CSRF.formField
+
+    <script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            function checkState() {
+                if ($('#isAllowedAll').prop('checked')) {
+                    $('.allowedPermissions').each(function () {
+                        $(this).prop('disabled', true);
+                        $(this).prop('checked', true);
+                    });
+                } else {
+                    $('.allowedPermissions').each(function () {
+                        $(this).prop('disabled', false);
+                    });
+                }
+            }
+
+            checkState();
+
+            $('#isAllowedAll').on('click', function () {
+                checkState();
+            });
+        });
+    </script>
+
+    <div class="form-group">
+
+        <label class="control-label col-md-3">@Messages.get("contest.allowedPermissions")</label>
+
+        <div class="col-md-9">
+
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" id="isAllowedAll" name="isAllowedAll" value="true" @if(form("isAllowedAll").value && form("isAllowedAll").value.equals("true")){ checked="checked" }> @Messages.get("problem.allowAll")
+                </label>
+            </div>
+
+            @for(cp <- ContestPermissions.values()) {
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" class="allowedPermissions" name="allowedPermissions[@cp.name()]" value="@cp.name()" @if(form("allowedLanguageNames[" + cp.name() + "]").value && form("allowedLanguageNames[" + cp.name() + "]").value.equals(cp.name())){ checked="checked" }> @cp.name()
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}
+
+@supervisorjs(contestId)

@@ -1,0 +1,11 @@
+@(formType: Form[_])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+@import play.i18n.Messages
+
+@b3.inputWrapped("contestDuration", formType("contestDuration"), '_label -> Messages.get("contest.type.virtual.duration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}
+@b3.select(formType("startTrigger"), Seq("CONTESTANT" -> "CONTESTANT", "COACH" -> "COACH"), '_label -> Messages.get("contest.type.virtual.startTrigger"), 'class -> "selectpicker")

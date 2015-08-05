@@ -1,0 +1,8 @@
+@(contestantCall: play.api.mvc.Call, supervisorCall: play.api.mvc.Call)(content: Html)
+
+@import org.iatoki.judgels.play.views.html.layouts.subtabLayout
+@import org.iatoki.judgels.play.InternalLink
+@import play.i18n.Messages
+@import com.google.common.collect.ImmutableList
+
+@subtabLayout(ImmutableList.of(new InternalLink(Messages.get("status.contestant"), contestantCall), new InternalLink(Messages.get("status.supervisor"), supervisorCall)))(content)

@@ -1,0 +1,16 @@
+language: java
+
+jdk:
+  - oraclejdk8
+
+install:
+  - git clone https://github.com/ia-toki/judgels-commons.git ../judgels-commons
+  - git clone https://github.com/ia-toki/judgels-play-commons.git ../judgels-play-commons
+  - git clone https://github.com/ia-toki/judgels-uriel-commons.git ../judgels-uriel-commons
+  - git clone https://github.com/ia-toki/judgels-sandalphon-commons.git ../judgels-sandalphon-commons
+  - git clone https://github.com/ia-toki/judgels-gabriel-commons.git ../judgels-gabriel-commons
+  - git clone https://github.com/ia-toki/judgels-sealtiel-commons.git ../judgels-sealtiel-commons
+  - git clone https://github.com/ia-toki/judgels-jophiel-commons.git ../judgels-jophiel-commons
+
+script:
+  - ./activator test

@@ -1,0 +1,23 @@
+@(requestURL: String, requestBody: String, submissionsLeft: Long, isClosed: Boolean)
+
+@import play.i18n.Messages
+
+@if(play.mvc.Controller.flash("submissionError") != null) {
+    <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>
+}
+
+@if(isClosed) {
+    <div class="alert alert-info" role="alert">@Messages.get("submission.closed")</div>
+}else{
+@if(submissionsLeft != -1) {
+    <div class="alert alert-info" role="alert">@Messages.get("submission.left") : @submissionsLeft</div>
+}}
+
+<div class="problem_statement">
+
+</div>
+<script type="text/javascript">
+    var sandalphonTOTPURL = "@requestURL";
+    var body = '@Html(requestBody)';
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/problemTOTPStatement.js")"></script>

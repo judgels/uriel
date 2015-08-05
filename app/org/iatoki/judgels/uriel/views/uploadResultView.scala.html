@@ -1,0 +1,21 @@
+@(failedUploadResults: List[org.iatoki.judgels.uriel.UploadResult])
+
+@import play.i18n.Messages
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Messages.get("upload.value")</th>
+            <th>@Messages.get("upload.status")</th>
+        </tr>
+    </thead>
+        @for(failedUploadResult <- failedUploadResults) {
+            <tr>
+                <td>@failedUploadResult.getValue</td>
+                <td>@failedUploadResult.getStatus</td>
+            </tr>
+        }
+    <tbody>
+
+    </tbody>
+</table>
