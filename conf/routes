@@ -30,12 +30,17 @@ GET         /contest/$cId<[0-9]{1,18}>/submissions                              
 GET         /contest/$cId<[0-9]{1,18}>/scoreboard                                                        @org.iatoki.judgels.uriel.controllers.ContestController.jumpToScoreboard(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/clarifications                                                    @org.iatoki.judgels.uriel.controllers.ContestController.jumpToClarifications(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/contestants                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToContestants(cId: Long)
+GET         /contest/$cId<[0-9]{1,18}>/teams                                                             @org.iatoki.judgels.uriel.controllers.ContestController.jumpToTeams(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/supervisors                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToSupervisors(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/managers                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToManagers(cId: Long)
 GET         /contest/$cId<[0-9]{1,18}>/files                                                             @org.iatoki.judgels.uriel.controllers.ContestController.jumpToFiles(cId: Long)
 
 GET         /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.updateContestGeneralConfig(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestGeneralConfig(cId: Long)
+
+GET         /contests/$cId<[0-9]{1,18}>/update/module                                                    @org.iatoki.judgels.uriel.controllers.ContestController.updateContestModuleConfig(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/update/module/:moduleName/enable                                 @org.iatoki.judgels.uriel.controllers.ContestController.enableModule(cId: Long, moduleName: String)
+GET         /contests/$cId<[0-9]{1,18}>/update/module/:moduleName/disable                                @org.iatoki.judgels.uriel.controllers.ContestController.disableModule(cId: Long, moduleName: String)
 
 GET         /contests/$cId<[0-9]{1,18}>/update/specific                                                  @org.iatoki.judgels.uriel.controllers.ContestController.updateContestSpecificConfig(cId: Long)
 POST        /contests/$cId<[0-9]{1,18}>/update/specific                                                  @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestSpecificConfig(cId: Long)
@@ -95,12 +100,13 @@ GET         /contests/$cId<[0-9]{1,18}>/contestants/view                        
 GET         /contests/$cId<[0-9]{1,18}>/contestants/view/                                                @org.iatoki.judgels.uriel.controllers.ContestContestantController.listCreateContestants(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 POST        /contests/$cId<[0-9]{1,18}>/contestants/create                                               @org.iatoki.judgels.uriel.controllers.ContestContestantController.postCreateContestant(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
 POST        /contests/$cId<[0-9]{1,18}>/contestants/upload                                               @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUploadContestant(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/contestants/passwords/view                                       @org.iatoki.judgels.uriel.controllers.ContestContestantController.viewContestantPasswords(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/contestants/passwords/view/                                      @org.iatoki.judgels.uriel.controllers.ContestContestantController.listContestantPasswords(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
-POST        /contests/$cId<[0-9]{1,18}>/contestants/passwords/generateAll                                @org.iatoki.judgels.uriel.controllers.ContestContestantController.generateContestantPasswords(cId: Long)
-GET         /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/passwords/generate                @org.iatoki.judgels.uriel.controllers.ContestContestantController.generateContestantPassword(cId: Long, c2Id: Long)
 GET         /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/update                            @org.iatoki.judgels.uriel.controllers.ContestContestantController.updateContestant(cId: Long, c2Id: Long)
 POST        /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/update                            @org.iatoki.judgels.uriel.controllers.ContestContestantController.postUpdateContestant(cId: Long, c2Id: Long)
+
+GET         /contests/$cId<[0-9]{1,18}>/contestants/passwords/view                                       @org.iatoki.judgels.uriel.controllers.ContestPasswordController.viewContestantPasswords(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/contestants/passwords/view/                                      @org.iatoki.judgels.uriel.controllers.ContestPasswordController.listContestantPasswords(cId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+POST        /contests/$cId<[0-9]{1,18}>/contestants/passwords/generateAll                                @org.iatoki.judgels.uriel.controllers.ContestPasswordController.generateContestantPasswords(cId: Long)
+GET         /contests/$cId<[0-9]{1,18}>/contestants/$c2Id<[0-9]{1,18}>/passwords/generate                @org.iatoki.judgels.uriel.controllers.ContestPasswordController.generateContestantPassword(cId: Long, c2Id: Long)
 
 GET         /contests/$cId<[0-9]{1,18}>/teams/$tId<[0-9]{1,18}>/start                                    @org.iatoki.judgels.uriel.controllers.ContestTeamController.startTeam(cId: Long, tId: Long)
 GET         /contests/$cId<[0-9]{1,18}>/teams/view/all                                                   @org.iatoki.judgels.uriel.controllers.ContestTeamController.viewTeams(cId: Long)

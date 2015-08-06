@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.Gson;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -12,30 +11,29 @@ import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.sandalphon.Sandalphon;
 import org.iatoki.judgels.sandalphon.services.SubmissionService;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestProblem;
-import org.iatoki.judgels.uriel.forms.ContestProblemCreateForm;
 import org.iatoki.judgels.uriel.ContestProblemNotFoundException;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
-import org.iatoki.judgels.uriel.forms.ContestProblemUpdateForm;
-import org.iatoki.judgels.uriel.services.ContestProblemService;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.forms.ContestProblemCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestProblemUpdateForm;
+import org.iatoki.judgels.uriel.services.ContestProblemService;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.problem.createProblemView;
-import org.iatoki.judgels.uriel.views.html.contest.problem.listUsedProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.listUsedProblemsView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.updateProblemView;
-import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemCriticalView;
+import org.iatoki.judgels.uriel.views.html.contest.problem.viewProblemView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.DynamicForm;
 import play.data.Form;
@@ -126,13 +124,10 @@ public class ContestProblemController extends AbstractJudgelsController {
             String requestUrl = sandalphon.getProblemStatementRenderUri().toString();
             String requestBody = "";
 
-            ContestConfiguration config = contestService.findContestConfigurationByContestJid(contest.getJid());
-            String styleConfig = config.getStyleConfig();
-
             if (contest.isICPC()) {
-                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((ICPCContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
             } else if (contest.isIOI()) {
-                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, new Gson().fromJson(styleConfig, IOIContestStyleConfig.class).getLanguageRestriction());
+                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((IOIContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
             }
 
             LazyHtml content;

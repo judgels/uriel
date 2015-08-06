@@ -1,14 +1,14 @@
+@(contest: org.iatoki.judgels.uriel.Contest, contestModules: Map[org.iatoki.judgels.uriel.modules.ContestModules, org.iatoki.judgels.uriel.modules.ContestModule], page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
+
 @import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-
+@import org.iatoki.judgels.uriel.modules.ContestModules
+@import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule
 @import org.iatoki.judgels.uriel.controllers.routes
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.paginationView
-
 
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
@@ -17,9 +17,12 @@
 <div class="well">
     @Html(JudgelsPlayUtils.escapeHtmlString(contest.getDescription))
     <hr />
-    <p>
-    <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getStartTime.getTime)</time> - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
-    </p>
+    @if(contestModules.contains(ContestModules.DURATION)) {
+        <p>
+            <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)</time>
+                - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)</time></small>
+        </p>
+    }
 
     @if(isRegistered) {
         <p>You have been successfully registered. You can enter after contest starts.</p>
@@ -59,7 +62,7 @@
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.viewContestAndListRegistrants(contest.getId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
-@if(contest.isPublic) {
+@if(contestModules.contains(ContestModules.REGISTRATION)) {
     <h3>@Messages.get("contest.registrants") (@page.getTotalRowsCount)</h3>
 
     @tableView() {
@@ -84,7 +87,7 @@
     @paginationView(page, orderBy, orderDir, filterString, listFunc)
 }
 
-@if(contest.isVirtual) {
+@if(contestModules.contains(ContestModules.VIRTUAL)) {
     <script type="text/javascript">
         var confirmMessage = "@Messages.get("contest.start.confirm")";
     </script>

@@ -164,7 +164,9 @@ contest.isIncognitoScoreboard=Incognito Scoreboard?
 contest.requiresPassword=Requires Password?
 
 contest.config.general=General
+contest.config.module=Module
 contest.config.specific=Specific
+contest.style.config=Style Config
 contest.type.standard.scoreboardFreezeTime=Scoreboard Freeze Time
 contest.type.virtual.duration=Contest Duration
 contest.type.virtual.startTrigger=Who can start the contest?
@@ -172,6 +174,24 @@ contest.scope.public.registerStartTime=Register Start Time
 contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
 contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
+
+contest.module.clarificationConfig=Clarification Module Config
+contest.module.durationConfig=Duration Module Config
+contest.module.limitedConfig=Limited Module Config
+contest.module.pauseConfig=Pause Module Config
+contest.module.scoreboardConfig=Scoreboard Module Config
+contest.module.triggerConfig=Trigger Module Config
+contest.module.virtualConfig=Virtual Module Config
+
+contest.beginTime=Begin Time
+contest.contestDuration=Contest Duration
+contest.contestTrigger=Contest Trigger
+contest.virtualDuration=Virtual Duration
+contest.scoreboardFreezeTime=Scoreboard Freeze Time
+contest.clarificationDuration=Clarification Duration
+contest.registerStartTime=Registration Start Time
+contest.registerDuration=Registration Duration
+contest.maxRegistrants=Max Registrants
 
 clarification.time_ended=Clarification Time has ended.
 

@@ -1,0 +1,14 @@
+@(form: Form[org.iatoki.judgels.uriel.modules.scoreboard.ContestScoreboardConfigForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.scoreboardConfig")</h4>
+
+@formErrorView(form)
+
+@b3.checkbox(form("isIncognitoScoreboard"), '_label -> Messages.get("contest.isIncognitoScoreboard"))
+@b3.checkbox(form("isOfficialScoreboardAllowed"), '_label -> Messages.get("contest.isOfficialScoreboardAllowed"))
+@b3.text(form("scoreboardFreezeTime"), '_label -> Messages.get("contest.scoreboardFreezeTime"), 'class -> "form-control form_time")

@@ -1,8 +1,7 @@
-@(contest: org.iatoki.judgels.uriel.Contest, formType: Form[_], formScope: Form[_], formStyle: Form[_])
+@(contest: org.iatoki.judgels.uriel.Contest, formStyle: Form[_], modulesForm: java.util.Map[org.iatoki.judgels.uriel.modules.ContestModule, Form[_]])
 
 @import play.i18n.Messages
-@import org.iatoki.judgels.uriel.ContestType
-@import org.iatoki.judgels.uriel.ContestScope
+@import org.iatoki.judgels.uriel.modules.ContestModule
 @import org.iatoki.judgels.uriel.ContestStyle
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.play.views.html.formErrorView
@@ -10,29 +9,13 @@
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(formType)
-@formErrorView(formScope)
 @formErrorView(formStyle)
 
 @b3.form(routes.ContestController.postUpdateContestSpecificConfig(contest.getId)) {
 
     @helper.CSRF.formField
 
-    @if(contest.getType.equals(ContestType.STANDARD)) {
-        @standardContestTypeConfigView(formType)
-    } else {
-        @if(contest.getType.equals(ContestType.VIRTUAL)) {
-            @virtualContestTypeConfigView(formType)
-        }
-    }
-
-    @if(contest.getScope.equals(ContestScope.PRIVATE)) {
-        @privateContestScopeConfigView(formScope)
-    } else {
-        @if(contest.getScope.equals(ContestScope.PUBLIC)) {
-            @publicContestScopeConfigView(formScope)
-        }
-    }
+    <h4>@Messages.get("contest.style.config")</h4>
 
     @if(contest.getStyle.equals(ContestStyle.ICPC)) {
         @icpcContestStyleConfigView(formStyle)
@@ -42,9 +25,13 @@
         }
     }
 
+    @for(contestModule <- modulesForm.keySet()) {
+        @contestModule.generateConfigFormInput(modulesForm.get(contestModule))
+    }
+
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 
-    <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/playcommons/javascripts/datetimepicker.js")"></script>
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/datetimepicker.js")"></script>
 }
 
 @supervisorjs(contest.getId)

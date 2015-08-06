@@ -1,0 +1,21 @@
+@(form: Form[org.iatoki.judgels.uriel.modules.duration.ContestDurationConfigForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.durationConfig")</h4>
+
+@formErrorView(form)
+
+@b3.inputWrapped("text", form("beginTime"), '_label -> Messages.get("contest.beginTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+
+@b3.text(form("contestDuration"), '_label -> Messages.get("contest.contestDuration"), 'class -> "form-control form_time")
+
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/playcommons/javascripts/datetimepicker.js")"></script>

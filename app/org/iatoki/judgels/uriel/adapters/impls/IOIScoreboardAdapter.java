@@ -14,6 +14,7 @@ import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
+import org.iatoki.judgels.uriel.modules.ContestModule;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
@@ -27,8 +28,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
+
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 

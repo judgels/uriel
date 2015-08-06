@@ -6,23 +6,25 @@ import com.google.gson.Gson;
 import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestConfiguration;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestTeamMember;
-import org.iatoki.judgels.uriel.VirtualContestTypeConfig;
-import org.iatoki.judgels.uriel.VirtualContestTypeConfigStartTrigger;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.modules.trigger.ContestTrigger;
+import org.iatoki.judgels.uriel.modules.trigger.ContestTriggerModule;
 import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
@@ -54,6 +56,7 @@ import java.util.stream.Collectors;
 public final class ContestAPIController extends Controller {
 
     private final ContestService contestService;
+    private final ContestModuleService contestModuleService;
     private final ContestTeamService contestTeamService;
     private final ContestAnnouncementService contestAnnouncementService;
     private final ContestClarificationService contestClarificationService;
@@ -63,8 +66,9 @@ public final class ContestAPIController extends Controller {
     private final ContestSupervisorService contestSupervisorService;
 
     @Inject
-    public ContestAPIController(ContestService contestService, ContestTeamService contestTeamService, ContestAnnouncementService contestAnnouncementService, ContestClarificationService contestClarificationService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestSupervisorService contestSupervisorService) {
+    public ContestAPIController(ContestService contestService, ContestModuleService contestModuleService, ContestTeamService contestTeamService, ContestAnnouncementService contestAnnouncementService, ContestClarificationService contestClarificationService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestSupervisorService contestSupervisorService) {
         this.contestService = contestService;
+        this.contestModuleService = contestModuleService;
         this.contestTeamService = contestTeamService;
         this.contestAnnouncementService = contestAnnouncementService;
         this.contestClarificationService = contestClarificationService;
@@ -238,20 +242,29 @@ public final class ContestAPIController extends Controller {
     }
 
     private boolean isContestStarted(Contest contest) {
-        return (!new Date().before(contest.getStartTime()));
+        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+            return (!new Date().before(contestDurationModule.getBeginTime()));
+        } else {
+            return true;
+        }
     }
 
     private boolean isAllowedToEnterContest(Contest contest) {
         if (isAdmin() || isManager(contest) || isSupervisor(contest)) {
             return true;
         }
-        if (contest.isStandard()) {
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL)) {
             return ((isContestant(contest) && isContestStarted(contest)) || (isCoach(contest)));
         } else {
-            ContestConfiguration contestConfiguration = contestService.findContestConfigurationByContestJid(contest.getJid());
-            VirtualContestTypeConfig virtualContestTypeConfig = new Gson().fromJson(contestConfiguration.getTypeConfig(), VirtualContestTypeConfig.class);
-            if (virtualContestTypeConfig.getStartTrigger().equals(VirtualContestTypeConfigStartTrigger.CONTESTANT)) {
-                return (isContestant(contest) && (isContestStarted(contest)));
+            if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
+                ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.getModule(contest.getJid(), ContestModules.TRIGGER);
+
+                if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.TEAM_MEMBER)) {
+                    return (isContestant(contest) && (isContestStarted(contest)));
+                } else {
+                    return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
+                }
             } else {
                 return ((isContestStarted(contest)) && (isCoach(contest) || (isContestant(contest) && (contestContestantService.isContestStarted(contest.getJid(), IdentityUtils.getUserJid())))));
             }

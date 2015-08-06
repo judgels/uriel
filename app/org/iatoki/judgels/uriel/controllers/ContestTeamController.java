@@ -509,7 +509,6 @@ public class ContestTeamController extends AbstractJudgelsController {
     private Result showListCreateTeam(Page<ContestTeam> contestTeams, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestTeamUpsertForm> form, Contest contest){
         LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, form, ContestControllerUtils.getInstance().hasContestBegun(contest)));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
-        appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
@@ -613,18 +612,6 @@ public class ContestTeamController extends AbstractJudgelsController {
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams - Upload Member Result");
 
         return ControllerUtils.getInstance().lazyOk(content);
-    }
-
-    private void appendSubtabsLayout(LazyHtml content, Contest contest) {
-        ImmutableList.Builder<InternalLink> internalLinks = ImmutableList.builder();
-        internalLinks.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())));
-        internalLinks.add(new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())));
-
-        if (contest.requiresPassword()) {
-            internalLinks.add(new InternalLink(Messages.get("contestant.passwords"), routes.ContestContestantController.viewContestantPasswords(contest.getId())));
-        }
-
-        content.appendLayout(c -> subtabLayout.render(internalLinks.build(), c));
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {

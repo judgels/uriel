@@ -1,38 +1,33 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import org.apache.commons.io.FileUtils;
+import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
-import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.messageView;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
-import org.iatoki.judgels.uriel.ContestPermissions;
-import org.iatoki.judgels.uriel.forms.ContestContestantCreateForm;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
-import org.iatoki.judgels.uriel.forms.ContestContestantUpdateForm;
-import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.services.ContestContestantService;
-import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
-import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.UploadResult;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.forms.ContestContestantCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestContestantUpdateForm;
+import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.listCreateContestantsView;
-import org.iatoki.judgels.uriel.views.html.contest.contestant.listContestantPasswordsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.updateContestantView;
 import org.iatoki.judgels.uriel.views.html.uploadResultView;
 import play.data.Form;
@@ -50,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
@@ -63,16 +57,14 @@ public class ContestContestantController extends AbstractJudgelsController {
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
     private final ContestSupervisorService contestSupervisorService;
-    private final ContestContestantPasswordService contestContestantPasswordService;
     private final UserService userService;
 
     @Inject
-    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestContestantPasswordService contestContestantPasswordService, UserService userService) {
+    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, UserService userService) {
         this.jophiel = jophiel;
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
         this.contestSupervisorService = contestSupervisorService;
-        this.contestContestantPasswordService = contestContestantPasswordService;
         this.userService = userService;
     }
 
@@ -242,61 +234,10 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
     }
 
-    @Transactional(readOnly = true)
-    public Result viewContestantPasswords(long contestId) throws ContestNotFoundException {
-        return listContestantPasswords(contestId, 0, "id", "asc", "");
-    }
-
-    @Transactional(readOnly = true)
-    public Result listContestantPasswords(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-
-        if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
-            Map<String, String> passwordsMap;
-            if (contest.requiresPassword()) {
-                passwordsMap = contestContestantPasswordService.getContestantPasswordsMap(contest.getJid(), Lists.transform(contestContestants.getData(), c -> c.getUserJid()));
-            } else {
-                passwordsMap = ImmutableMap.of();
-            }
-
-            return showListContestantPasswords(contestContestants, pageIndex, orderBy, orderDir, filterString, passwordsMap, contest);
-        } else {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
-        }
-    }
-
-    @Transactional
-    public Result generateContestantPasswords(long contestId) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-
-        if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestContestantPasswordService.generateContestantPasswordForAllContestants(contest.getJid());
-            return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
-        } else {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
-        }
-    }
-
-    @Transactional
-    public Result generateContestantPassword(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
-
-        if (contest.requiresPassword() && isAllowedToSuperviseContestants(contest)) {
-            contestContestantPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
-            return redirect(routes.ContestContestantController.viewContestantPasswords(contest.getId()));
-        } else {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
-        }
-    }
-
     private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
         LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 
-        appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
@@ -312,7 +253,6 @@ public class ContestContestantController extends AbstractJudgelsController {
     private Result showUpdateContestant(Form<ContestContestantUpdateForm> form, Contest contest, ContestContestant contestContestant){
         LazyHtml content = new LazyHtml(updateContestantView.render(contest.getId(), contestContestant.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.update"), c));
-        appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
 
@@ -326,23 +266,6 @@ public class ContestContestantController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showListContestantPasswords(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, Map<String, String> passwordsMap, Contest contest){
-        LazyHtml content = new LazyHtml(listContestantPasswordsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, passwordsMap));
-        content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.passwords"), c));
-
-        appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
-        appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("contestant.passwords"), routes.ContestContestantController.viewContestantPasswords(contest.getId()))
-        );
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
-
-        ControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-        return ControllerUtils.getInstance().lazyOk(content);
-    }
-
     private Result showUploadContestantResult(List<UploadResult> failedUploads, Contest contest) {
         LazyHtml content;
         if (failedUploads.size() > 0) {
@@ -352,7 +275,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.upload.result"), c));
 
-        appendSubtabsLayout(content, contest);ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contestant.list"), routes.ContestContestantController.viewContestants(contest.getId()))
@@ -360,18 +283,6 @@ public class ContestContestantController extends AbstractJudgelsController {
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants - Upload Result");
 
         return ControllerUtils.getInstance().lazyOk(content);
-    }
-
-    private void appendSubtabsLayout(LazyHtml content, Contest contest) {
-        ImmutableList.Builder<InternalLink> internalLinks = ImmutableList.builder();
-        internalLinks.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())));
-        internalLinks.add(new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())));
-
-        if (contest.requiresPassword()) {
-            internalLinks.add(new InternalLink(Messages.get("contestant.passwords"), routes.ContestContestantController.viewContestantPasswords(contest.getId())));
-        }
-
-        content.appendLayout(c -> subtabLayout.render(internalLinks.build(), c));
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {

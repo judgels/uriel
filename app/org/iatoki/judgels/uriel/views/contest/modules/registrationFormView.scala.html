@@ -1,0 +1,14 @@
+@(form: Form[org.iatoki.judgels.uriel.modules.registration.ContestRegistrationConfigForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.limitedConfig")</h4>
+
+@formErrorView(form)
+
+@b3.text(form("registerStartTime"), '_label -> Messages.get("contest.registerStartTime"), 'class -> "form-control form_date_time")
+@b3.text(form("registerDuration"), '_label -> Messages.get("contest.registerDuration"), 'class -> "form-control form_time")
+@b3.number(form("maxRegistrants"), '_label -> Messages.get("contest.maxRegistrants"), 'class -> "form-control")

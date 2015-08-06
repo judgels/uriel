@@ -17,36 +17,14 @@ public final class ContestModel extends AbstractJudgelsModel {
     @Column(columnDefinition = "TEXT")
     public String description;
 
-    public String type;
-
-    public String scope;
-
     public String style;
-
-    public long startTime;
-
-    public long endTime;
-
-    public long clarificationEndTime;
-
-    public boolean isExclusive;
-
-    public boolean isUsingScoreboard;
-
-    public boolean isIncognitoScoreboard;
-
-    public boolean requiresPassword;
 
     public ContestModel() {
     }
 
-    public ContestModel(long id, String name, String type, String scope, String style, long startTime, long endTime) {
-        this.id = id;
+    public ContestModel(String name, String description, String style) {
         this.name = name;
-        this.type = type;
-        this.scope = scope;
+        this.description = description;
         this.style = style;
-        this.startTime = startTime;
-        this.endTime = endTime;
     }
 }

@@ -11,22 +11,26 @@ import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestClarification;
-import org.iatoki.judgels.uriel.ContestPermissions;
-import org.iatoki.judgels.uriel.forms.ContestClarificationChangeForm;
-import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm;
 import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
-import org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestProblem;
-import org.iatoki.judgels.uriel.services.ContestClarificationService;
-import org.iatoki.judgels.uriel.services.ContestProblemService;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.forms.ContestClarificationChangeForm;
+import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm;
+import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.clarification.ContestClarificationModule;
+import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.services.ContestClarificationService;
+import org.iatoki.judgels.uriel.services.ContestModuleService;
+import org.iatoki.judgels.uriel.services.ContestProblemService;
+import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.createClarificationView;
@@ -47,6 +51,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,14 +64,16 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
     private final ContestService contestService;
     private final ContestClarificationService contestClarificationService;
+    private final ContestModuleService contestModuleService;
     private final ContestProblemService contestProblemService;
     private final ContestSupervisorService contestSupervisorService;
     private final ContestTeamService contestTeamService;
 
     @Inject
-    public ContestClarificationController(ContestService contestService, ContestClarificationService contestClarificationService, ContestProblemService contestProblemService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService) {
+    public ContestClarificationController(ContestService contestService, ContestClarificationService contestClarificationService, ContestModuleService contestModuleService, ContestProblemService contestProblemService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService) {
         this.contestService = contestService;
         this.contestClarificationService = contestClarificationService;
+        this.contestModuleService = contestModuleService;
         this.contestProblemService = contestProblemService;
         this.contestSupervisorService = contestSupervisorService;
         this.contestTeamService = contestTeamService;
@@ -80,7 +87,13 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @Transactional
     public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
         if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+            if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+                return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            }
+            ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contestModuleService.getModule(contest.getJid(), ContestModules.CLARIFICATION);
+
             Page<ContestClarification> contestClarifications;
             boolean coach = ContestControllerUtils.getInstance().isCoach(contest);
             if (coach) {
@@ -99,11 +112,17 @@ public class ContestClarificationController extends AbstractJudgelsController {
             LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, contestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
             if (coach) {
                 content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
-            } else if (contest.isClarificationTimeValid()) {
-                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
+            } else if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+                ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+                if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+                    content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
+                } else {
+                    content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
+                    content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
+                }
             } else {
-                content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
-                content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
+                content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
+
             }
             if (isAllowedToSuperviseClarifications(contest)) {
                 content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
@@ -130,14 +149,25 @@ public class ContestClarificationController extends AbstractJudgelsController {
     public Result createClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
-            if (contest.isClarificationTimeValid()) {
-                Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class);
+            if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+                return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            }
+            ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contestModuleService.getModule(contest.getJid(), ContestModules.CLARIFICATION);
 
+            Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class);
+            if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+                ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+                if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+                    ControllerUtils.getInstance().addActivityLog("Try to create clarification in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+                    return showCreateClarification(form, contest);
+                } else {
+                    return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
+                }
+            } else {
                 ControllerUtils.getInstance().addActivityLog("Try to create clarification in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
                 return showCreateClarification(form, contest);
-            } else {
-                return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
             }
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -149,7 +179,30 @@ public class ContestClarificationController extends AbstractJudgelsController {
     public Result postCreateClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
-            if (contest.isClarificationTimeValid()) {
+            if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+                return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            }
+            ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contestModuleService.getModule(contest.getJid(), ContestModules.CLARIFICATION);
+
+            if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+                ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+                if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+                    Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class).bindFromRequest();
+
+                    if (form.hasErrors() || form.hasGlobalErrors()) {
+                        return showCreateClarification(form, contest);
+                    } else {
+                        ContestClarificationCreateForm contestClarificationCreateForm = form.get();
+                        contestClarificationService.createContestClarification(contest.getId(), contestClarificationCreateForm.title, contestClarificationCreateForm.question, contestClarificationCreateForm.topicJid);
+
+                        ControllerUtils.getInstance().addActivityLog("Create clarification " + contestClarificationCreateForm.title + " in contest " + contest.getName() + ".");
+
+                        return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
+                    }
+                } else {
+                    return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
+                }
+            } else {
                 Form<ContestClarificationCreateForm> form = Form.form(ContestClarificationCreateForm.class).bindFromRequest();
 
                 if (form.hasErrors() || form.hasGlobalErrors()) {
@@ -162,8 +215,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
                     return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
                 }
-            } else {
-                return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
             }
         } else {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
@@ -174,6 +225,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result updateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+        }
+
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
             ContestClarificationChangeForm contestClarificationChangeForm = new ContestClarificationChangeForm(contestClarification);
@@ -192,6 +248,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postUpdateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+        }
+
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
             Form<ContestClarificationChangeForm> form = Form.form(ContestClarificationChangeForm.class).bindFromRequest();
@@ -219,6 +280,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result listClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+        }
+
         if (isAllowedToSuperviseClarifications(contest)) {
             Page<ContestClarification> contestClarifications = contestClarificationService.pageContestClarificationsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
 
@@ -245,6 +311,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result updateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+        }
+
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (isAllowedToSuperviseClarifications(contest) && contestClarification.getContestJid().equals(contest.getJid())) {
             ContestClarificationUpdateForm contestClarificationUpsertForm = new ContestClarificationUpdateForm(contestClarification);
@@ -262,6 +333,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postUpdateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.CLARIFICATION)) {
+            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+        }
+
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (isAllowedToSuperviseClarifications(contest) && contestClarification.getContestJid().equals(contest.getJid())) {
             Form<ContestClarificationUpdateForm> form = Form.form(ContestClarificationUpdateForm.class).bindFromRequest();

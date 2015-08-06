@@ -1,0 +1,12 @@
+@(form: Form[org.iatoki.judgels.uriel.modules.trigger.ContestTriggerConfigForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.triggerConfig")</h4>
+
+@formErrorView(form)
+
+@b3.select(form("contestTrigger"), Seq("COACH" -> "Coach", "TEAM_LEADER" -> "Team Leader", "TEAM_MEMBER" -> "Team Member"), '_label -> Messages.get("contest.contestTrigger"), 'class -> "form-control selectpicker")

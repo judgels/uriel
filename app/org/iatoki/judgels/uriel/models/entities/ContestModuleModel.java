@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.models.entities;
 
+import org.iatoki.judgels.play.models.JidPrefix;
 import org.iatoki.judgels.play.models.entities.AbstractModel;
 
 import javax.persistence.Column;
@@ -9,8 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "uriel_contest_configuration")
-public final class ContestConfigurationModel extends AbstractModel {
+@Table(name = "uriel_contest_module")
+public final class ContestModuleModel extends AbstractModel {
 
     @Id
     @GeneratedValue
@@ -18,13 +19,10 @@ public final class ContestConfigurationModel extends AbstractModel {
 
     public String contestJid;
 
-    @Column(columnDefinition = "TEXT")
-    public String typeConfig;
+    public String name;
 
     @Column(columnDefinition = "TEXT")
-    public String scopeConfig;
+    public String config;
 
-    @Column(columnDefinition = "TEXT")
-    public String styleConfig;
-
+    public boolean enabled;
 }

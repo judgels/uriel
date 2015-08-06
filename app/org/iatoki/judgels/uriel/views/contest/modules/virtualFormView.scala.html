@@ -1,0 +1,12 @@
+@(form: Form[org.iatoki.judgels.uriel.modules.virtual.ContestVirtualConfigForm])
+
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.virtualConfig")</h4>
+
+@formErrorView(form)
+
+@b3.text(form("virtualDuration"), '_label -> Messages.get("contest.virtualDuration"), 'class -> "form-control form_time")
