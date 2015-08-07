@@ -211,7 +211,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             cell.setCellValue(Messages.get("problem.alias"));
             cell = row.createCell(cellNum++);
             cell.setCellValue(Messages.get("problem.name"));
-            for (int i=0;i<scoreboardState.getProblemJids().size();++i) {
+            for (int i = 0; i < scoreboardState.getProblemJids().size(); ++i) {
                 row = sheet.createRow(rowNum++);
                 cellNum = 0;
                 cell = row.createCell(cellNum++);
@@ -249,7 +249,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                     cell.setCellValue(JidCacheServiceImpl.getInstance().getDisplayName(contestTeamMembers.get(0).getMemberJid()));
                 }
                 int max = Math.max(contestTeamCoaches.size(), contestTeamMembers.size());
-                for (int i=1;i<max;++i) {
+                for (int i = 1; i < max; ++i) {
                     row = sheet.createRow(rowNum++);
                     if (contestTeamCoaches.size() > i) {
                         cell = row.createCell(1);
@@ -317,7 +317,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                     cell = row.createCell(cellNum++);
                     cell.setCellValue(s);
                     cell = row.createCell(cellNum++);
-                    sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, cellNum-2, cellNum-1));
+                    sheet.addMergedRegion(new CellRangeAddress(rowNum - 1, rowNum - 1, cellNum - 2, cellNum - 1));
                 }
 
                 for (ICPCScoreboardEntry entry : icpcScoreboardContent.getEntries()) {
@@ -351,7 +351,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                 workbook.write(baos);
                 baos.close();
                 response().setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-                response().setHeader("Content-Disposition", "attachment; filename=\"" + contest.getName()+ ".xls\"");
+                response().setHeader("Content-Disposition", "attachment; filename=\"" + contest.getName() + ".xls\"");
                 return ok(baos.toByteArray());
             } catch (IOException e) {
                 return internalServerError();

@@ -64,7 +64,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
             int totalScores = 0;
             for (String problemJid : state.getProblemJids()) {
-                Integer score = scores.get(contestantJid).get(problemJid) ;
+                Integer score = scores.get(contestantJid).get(problemJid);
                 entry.scores.add(score);
 
                 if (score != null) {
@@ -156,7 +156,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             if (i == 0 || entries.get(i).totalScores != entries.get(i - 1).totalScores) {
                 entries.get(i).rank = currentRank;
             } else {
-                entries.get(i).rank = entries.get(i -1).rank;
+                entries.get(i).rank = entries.get(i - 1).rank;
             }
         }
     }

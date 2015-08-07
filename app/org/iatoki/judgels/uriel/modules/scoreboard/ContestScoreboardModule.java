@@ -6,7 +6,6 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.modules.ContestModules;
 import org.iatoki.judgels.uriel.modules.TabbedContestModule;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.modules.scoreboardFormView;
 import play.data.Form;
 import play.i18n.Messages;
@@ -20,6 +19,12 @@ public final class ContestScoreboardModule implements TabbedContestModule {
     private boolean isIncognitoScoreboard;
     private long scoreboardFreezeTime;
 
+    public ContestScoreboardModule(boolean isOfficialScoreboardAllowed, boolean isIncognitoScoreboard, long scoreboardFreezeTime) {
+        this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
+        this.isIncognitoScoreboard = isIncognitoScoreboard;
+        this.scoreboardFreezeTime = scoreboardFreezeTime;
+    }
+
     public boolean isOfficialScoreboardAllowed() {
         return isOfficialScoreboardAllowed;
     }
@@ -30,12 +35,6 @@ public final class ContestScoreboardModule implements TabbedContestModule {
 
     public long getScoreboardFreezeTime() {
         return scoreboardFreezeTime;
-    }
-
-    public ContestScoreboardModule(boolean isOfficialScoreboardAllowed, boolean isIncognitoScoreboard, long scoreboardFreezeTime) {
-        this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
-        this.isIncognitoScoreboard = isIncognitoScoreboard;
-        this.scoreboardFreezeTime = scoreboardFreezeTime;
     }
 
     @Override

@@ -102,6 +102,7 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
             return 0;
         }
     }
+
     @Override
     public void createContestClarification(long contestId, String title, String question, String topicJid) {
         ContestModel contestModel = contestDao.findById(contestId);

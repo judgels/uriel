@@ -4,13 +4,6 @@ import play.data.validation.Constraints;
 
 public final class ContestProblemCreateForm {
 
-    public ContestProblemCreateForm() {
-    }
-
-    public ContestProblemCreateForm(long submissionsLimit) {
-        this.submissionsLimit = submissionsLimit;
-    }
-
     @Constraints.Required
     public String problemJid;
 

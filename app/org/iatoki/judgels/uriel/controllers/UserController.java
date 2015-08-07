@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
@@ -37,7 +38,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
-@Authorized(value = {"admin"})
+@Authorized(value = "admin")
 @Singleton
 @Named
 public final class UserController extends AbstractJudgelsController {
@@ -78,7 +79,8 @@ public final class UserController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createUser() {
-        UserCreateForm userCreateForm = new UserCreateForm(UrielUtils.getDefaultRoles());
+        UserCreateForm userCreateForm = new UserCreateForm();
+        userCreateForm.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
         Form<UserCreateForm> form = Form.form(UserCreateForm.class).fill(userCreateForm);
 
         ControllerUtils.getInstance().addActivityLog("Try to create user <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -140,7 +142,8 @@ public final class UserController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result updateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
-        UserUpdateForm userUpdateForm = new UserUpdateForm(user.getRoles());
+        UserUpdateForm userUpdateForm = new UserUpdateForm();
+        userUpdateForm.roles = StringUtils.join(user.getRoles(), ",");
         Form<UserUpdateForm> form = Form.form(UserUpdateForm.class).fill(userUpdateForm);
 
         ControllerUtils.getInstance().addActivityLog("Try to update user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");

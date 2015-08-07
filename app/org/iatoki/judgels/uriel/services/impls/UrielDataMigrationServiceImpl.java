@@ -50,7 +50,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         String contestModuleTable = "uriel_contest_module";
 
         Statement statement = connection.createStatement();
-        String contestQuery = "SELECT * FROM " +contestTable+ ";";
+        String contestQuery = "SELECT * FROM " + contestTable + ";";
         ResultSet resultSet = statement.executeQuery(contestQuery);
         while (resultSet.next()) {
             String jid = resultSet.getString("jid");
@@ -92,7 +92,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             preparedStatement.executeUpdate();
 
             if (scope.equals("PUBLIC")) {
-                Map<String, Long> scopeConfigMap = new Gson().fromJson(scopeConfig, new TypeToken<HashMap<String, Long>>() {}.getType());
+                Map<String, Long> scopeConfigMap = new Gson().fromJson(scopeConfig, new TypeToken<HashMap<String, Long>>() { }.getType());
                 Map<String, Long> newConfigMap = Maps.newHashMap(scopeConfigMap);
                 long registerEndTime = newConfigMap.get("registerEndTime");
                 newConfigMap.remove("registerEndTime");
@@ -106,11 +106,11 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             long scoreboardFreezeTime = 0;
             boolean isOfficialScoreboardAllowed = false;
             if (type.equals("STANDARD")) {
-                Map<String, Object> typeConfigMap = new Gson().fromJson(typeConfig, new TypeToken<HashMap<String, Object>>() {}.getType());
+                Map<String, Object> typeConfigMap = new Gson().fromJson(typeConfig, new TypeToken<HashMap<String, Object>>() { }.getType());
                 scoreboardFreezeTime = (endTime - (long) (double) typeConfigMap.get("scoreboardFreezeTime"));
                 isOfficialScoreboardAllowed = (boolean) typeConfigMap.get("isOfficialScoreboardAllowed");
             } else if (type.equals("VIRTUAL")) {
-                Map<String, Object> typeConfigMap = new Gson().fromJson(typeConfig, new TypeToken<HashMap<String, Object>>() {}.getType());
+                Map<String, Object> typeConfigMap = new Gson().fromJson(typeConfig, new TypeToken<HashMap<String, Object>>() { }.getType());
                 long contestDuration = (long) (double) typeConfigMap.get("contestDuration");
                 String startTrigger = (String) typeConfigMap.get("startTrigger");
 
@@ -198,7 +198,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         String readTable = "uriel_contest_read";
 
         Statement statement = connection.createStatement();
-        String announcementQuery = "SELECT * FROM " +announcementTable+ "";
+        String announcementQuery = "SELECT * FROM " + announcementTable + "";
         ResultSet resultSet = statement.executeQuery(announcementQuery);
         while (resultSet.next()) {
             long id = resultSet.getLong("id");

@@ -123,8 +123,9 @@ public final class UserServiceImpl implements UserService {
         try {
             UserInfo user = jophiel.getUserByUserJid(userJid);
 
-            if (!userDao.existsByUserJid(userJid))
+            if (!userDao.existsByUserJid(userJid)) {
                 createUser(user.getJid(), roles);
+            }
 
             JidCacheServiceImpl.getInstance().putDisplayName(user.getJid(), JudgelsPlayUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             AvatarCacheServiceImpl.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

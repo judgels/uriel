@@ -17,6 +17,11 @@ public final class ContestDurationModule implements ContestModule {
     private long beginTime;
     private long contestDuration;
 
+    public ContestDurationModule(Date beginTime, long contestDuration) {
+        this.beginTime = beginTime.getTime();
+        this.contestDuration = contestDuration;
+    }
+
     public Date getBeginTime() {
         return new Date(beginTime);
     }
@@ -26,12 +31,7 @@ public final class ContestDurationModule implements ContestModule {
     }
 
     public Date getEndTime() {
-        return new Date(beginTime +contestDuration);
-    }
-
-    public ContestDurationModule(Date beginTime, long contestDuration) {
-        this.beginTime = beginTime.getTime();
-        this.contestDuration = contestDuration;
+        return new Date(beginTime + contestDuration);
     }
 
     @Override

@@ -68,7 +68,7 @@ public final class ContestFileController extends AbstractJudgelsController {
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUploadFile(long contestId) throws ContestNotFoundException{
+    public Result postUploadFile(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToManageFiles(contest)) {
             Form<ContestFileUploadForm> form = Form.form(ContestFileUploadForm.class).bindFromRequest();

@@ -153,7 +153,8 @@ public class ContestContestantController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestContestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
-            ContestContestantUpdateForm contestContestantUpsertForm = new ContestContestantUpdateForm(contestContestant);
+            ContestContestantUpdateForm contestContestantUpsertForm = new ContestContestantUpdateForm();
+            contestContestantUpsertForm.status = contestContestant.getStatus().name();
             Form<ContestContestantUpdateForm> form = Form.form(ContestContestantUpdateForm.class).fill(contestContestantUpsertForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -234,7 +235,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
     }
 
-    private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest){
+    private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest) {
         LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 
@@ -250,7 +251,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateContestant(Form<ContestContestantUpdateForm> form, Contest contest, ContestContestant contestContestant){
+    private Result showUpdateContestant(Form<ContestContestantUpdateForm> form, Contest contest, ContestContestant contestContestant) {
         LazyHtml content = new LazyHtml(updateContestantView.render(contest.getId(), contestContestant.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.update"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);

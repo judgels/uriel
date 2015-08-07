@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit;
 
 public final class ContestControllerUtils {
 
+    private static ContestControllerUtils instance;
+
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
     private final ContestSupervisorService contestSupervisorService;
@@ -48,8 +50,6 @@ public final class ContestControllerUtils {
     private final ContestModuleService contestModuleService;
     private final ContestTeamService contestTeamService;
     private final ContestContestantPasswordService contestContestantPasswordService;
-
-    static ContestControllerUtils INSTANCE;
 
     private ContestControllerUtils(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestModuleService contestModuleService, ContestTeamService contestTeamService, ContestContestantPasswordService contestContestantPasswordService) {
         this.contestService = contestService;
@@ -62,17 +62,17 @@ public final class ContestControllerUtils {
     }
 
     public static synchronized void buildInstance(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestModuleService contestModuleService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestContestantPasswordService contestPasswordService) {
-        if (INSTANCE != null) {
+        if (instance != null) {
             throw new UnsupportedOperationException("ContestControllerUtils instance has already been built");
         }
-        INSTANCE = new ContestControllerUtils(contestService, contestContestantService, contestSupervisorService, contestManagerService, contestModuleService, contestTeamService, contestPasswordService);
+        instance = new ContestControllerUtils(contestService, contestContestantService, contestSupervisorService, contestManagerService, contestModuleService, contestTeamService, contestPasswordService);
     }
 
     static ContestControllerUtils getInstance() {
-        if (INSTANCE == null) {
+        if (instance == null) {
             throw new UnsupportedOperationException("ContestControllerUtils instance has not been built");
         }
-        return INSTANCE;
+        return instance;
     }
 
     public void setCurrentStatementLanguage(String languageCode) {
@@ -305,7 +305,7 @@ public final class ContestControllerUtils {
     }
 
     public void establishContestWithPasswordCookie(String contestPassword) {
-        Controller.response().setCookie(contestPassword, "true", (int)TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
+        Controller.response().setCookie(contestPassword, "true", (int) TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
     }
 
     public boolean hasEstablishedContestWithPasswordCookie(String contestPassword) {

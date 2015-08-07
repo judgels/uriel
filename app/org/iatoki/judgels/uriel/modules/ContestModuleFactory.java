@@ -23,95 +23,67 @@ public final class ContestModuleFactory {
 
     public ContestModule createDefaultContestModule(ContestModules contestModules) {
         switch (contestModules) {
-            case CLARIFICATION: {
+            case CLARIFICATION:
                 return new ContestClarificationModule(0);
-            }
-            case LIMITED: {
+            case LIMITED:
                 return new ContestLimitedModule();
-            }
-            case DURATION: {
+            case DURATION:
                 return new ContestDurationModule(new Date(System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS)), TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
-            }
-            case EXCLUSIVE: {
+            case EXCLUSIVE:
                 return new ContestExclusiveModule();
-            }
-            case REGISTRATION: {
+            case REGISTRATION:
                 return new ContestRegistrationModule(new Date(), TimeUnit.SECONDS.convert(5, TimeUnit.DAYS), 0);
-            }
-            case PAUSE: {
+            case PAUSE:
                 return new ContestPauseModule();
-            }
-            case SCOREBOARD: {
+            case SCOREBOARD:
                 return new ContestScoreboardModule(true, false, 0);
-            }
-            case SUPERVISOR: {
+            case SUPERVISOR:
                 return new ContestSupervisorModule();
-            }
-            case TEAM: {
+            case TEAM:
                 return new ContestTeamModule();
-            }
-            case TRIGGER: {
+            case TRIGGER:
                 return new ContestTriggerModule(ContestTrigger.TEAM_MEMBER);
-            }
-            case VIRTUAL: {
+            case VIRTUAL:
                 return new ContestVirtualModule(TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
-            }
-            case FILE: {
+            case FILE:
                 return new ContestFileModule();
-            }
-            case PASSWORD: {
+            case PASSWORD:
                 return new ContestPasswordModule();
-            }
-            default: {
+            default:
                 throw new RuntimeException();
-            }
         }
     }
 
     public ContestModule parseFromConfig(ContestModules contestModules, String config) {
         switch (contestModules) {
-            case CLARIFICATION: {
+            case CLARIFICATION:
                 return new Gson().fromJson(config, ContestClarificationModule.class);
-            }
-            case LIMITED: {
+            case LIMITED:
                 return new Gson().fromJson(config, ContestLimitedModule.class);
-            }
-            case DURATION: {
+            case DURATION:
                 return new Gson().fromJson(config, ContestDurationModule.class);
-            }
-            case EXCLUSIVE: {
+            case EXCLUSIVE:
                 return new Gson().fromJson(config, ContestExclusiveModule.class);
-            }
-            case REGISTRATION: {
+            case REGISTRATION:
                 return new Gson().fromJson(config, ContestRegistrationModule.class);
-            }
-            case PAUSE: {
+            case PAUSE:
                 return new Gson().fromJson(config, ContestPauseModule.class);
-            }
-            case SCOREBOARD: {
+            case SCOREBOARD:
                 return new Gson().fromJson(config, ContestScoreboardModule.class);
-            }
-            case SUPERVISOR: {
+            case SUPERVISOR:
                 return new Gson().fromJson(config, ContestSupervisorModule.class);
-            }
-            case TRIGGER: {
+            case TRIGGER:
                 return new Gson().fromJson(config, ContestTriggerModule.class);
-            }
-            case TEAM: {
+            case TEAM:
                 return new Gson().fromJson(config, ContestTeamModule.class);
-            }
-            case VIRTUAL: {
+            case VIRTUAL:
                 return new Gson().fromJson(config, ContestVirtualModule.class);
-            }
-            case FILE: {
+            case FILE:
                 return new Gson().fromJson(config, ContestFileModule.class);
-            }
-            case PASSWORD: {
+            case PASSWORD:
                 return new Gson().fromJson(config, ContestPasswordModule.class);
-            }
-            default: {
+            default:
                 throw new RuntimeException();
-            }
         }
     }
 }

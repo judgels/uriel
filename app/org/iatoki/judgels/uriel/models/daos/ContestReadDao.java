@@ -9,6 +9,6 @@ public interface ContestReadDao extends Dao<Long, ContestReadModel> {
 
     boolean existByUserJidAndTypeAndJid(String userJid, String type, String jid);
 
-    long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> JidList);
+    long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> jidList);
 
 }

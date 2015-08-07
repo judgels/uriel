@@ -35,14 +35,14 @@ public final class ContestReadHibernateDao extends AbstractHibernateDao<Long, Co
     }
 
     @Override
-    public long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> JidList) {
+    public long countReadByUserJidAndTypeAndJidList(String userJid, String type, List<String> jidList) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestReadModel> root = query.from(ContestReadModel.class);
 
         query
                 .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), root.get(ContestReadModel_.readJid).in(JidList)));
+                .where(cb.and(cb.equal(root.get(ContestReadModel_.userJid), userJid), cb.equal(root.get(ContestReadModel_.type), type), root.get(ContestReadModel_.readJid).in(jidList)));
 
         return JPA.em().createQuery(query).getSingleResult();
     }

@@ -13,12 +13,12 @@ public final class ContestVirtualModule implements ContestModule {
 
     private long virtualDuration;
 
-    public long getVirtualDuration() {
-        return virtualDuration;
-    }
-
     public ContestVirtualModule(long virtualDuration) {
         this.virtualDuration = virtualDuration;
+    }
+
+    public long getVirtualDuration() {
+        return virtualDuration;
     }
 
     @Override

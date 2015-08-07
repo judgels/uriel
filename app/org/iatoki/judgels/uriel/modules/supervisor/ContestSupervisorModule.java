@@ -6,7 +6,6 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.modules.ContestModules;
 import org.iatoki.judgels.uriel.modules.TabbedContestModule;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.modules.emptyFormView;
 import play.data.Form;
 import play.i18n.Messages;

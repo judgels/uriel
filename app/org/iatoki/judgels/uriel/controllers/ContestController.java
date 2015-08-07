@@ -299,7 +299,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
     }
 
-    @Authorized(value = {"admin"})
+    @Authorized(value = "admin")
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createContest() {
@@ -310,7 +310,7 @@ public final class ContestController extends AbstractJudgelsController {
         return showCreateContest(form);
     }
 
-    @Authorized(value = {"admin"})
+    @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
     public Result postCreateContest() {
@@ -339,7 +339,10 @@ public final class ContestController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            ContestUpsertForm contestUpsertForm = new ContestUpsertForm(contest);
+            ContestUpsertForm contestUpsertForm = new ContestUpsertForm();
+            contestUpsertForm.name = contest.getName();
+            contestUpsertForm.description = contest.getDescription();
+            contestUpsertForm.style = contest.getStyle().name();
             Form<ContestUpsertForm> form = Form.form(ContestUpsertForm.class).fill(contestUpsertForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -428,7 +431,7 @@ public final class ContestController extends AbstractJudgelsController {
             Form form1 = null;
 
             if (contest.isICPC()) {
-                ICPCContestStyleConfig icpcContestStyleConfig = (ICPCContestStyleConfig)contest.getStyleConfig();
+                ICPCContestStyleConfig icpcContestStyleConfig = (ICPCContestStyleConfig) contest.getStyleConfig();
                 Form<ICPCContestStyleConfigForm> form = Form.form(ICPCContestStyleConfigForm.class);
 
                 ICPCContestStyleConfigForm formData = new ICPCContestStyleConfigForm();
@@ -438,7 +441,7 @@ public final class ContestController extends AbstractJudgelsController {
                 form = form.fill(formData);
                 form1 = form;
             } else if (contest.isIOI()) {
-                IOIContestStyleConfig ioiContestStyleConfig = (IOIContestStyleConfig)contest.getStyleConfig();
+                IOIContestStyleConfig ioiContestStyleConfig = (IOIContestStyleConfig) contest.getStyleConfig();
                 Form<IOIContestStyleConfigForm> form = Form.form(IOIContestStyleConfigForm.class);
 
                 IOIContestStyleConfigForm formData = new IOIContestStyleConfigForm();

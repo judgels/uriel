@@ -232,7 +232,9 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (ContestControllerUtils.getInstance().isCoach(contest) && !contestClarification.isAnswered() && contestClarification.getContestJid().equals(contest.getJid())) {
-            ContestClarificationChangeForm contestClarificationChangeForm = new ContestClarificationChangeForm(contestClarification);
+            ContestClarificationChangeForm contestClarificationChangeForm = new ContestClarificationChangeForm();
+            contestClarificationChangeForm.title = contestClarification.getTitle();
+            contestClarificationChangeForm.question = contestClarification.getQuestion();
             Form<ContestClarificationChangeForm> form = Form.form(ContestClarificationChangeForm.class).fill(contestClarificationChangeForm);
             form = form.fill(contestClarificationChangeForm);
 
@@ -318,7 +320,9 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationByContestClarificationId(contestClarificationId);
         if (isAllowedToSuperviseClarifications(contest) && contestClarification.getContestJid().equals(contest.getJid())) {
-            ContestClarificationUpdateForm contestClarificationUpsertForm = new ContestClarificationUpdateForm(contestClarification);
+            ContestClarificationUpdateForm contestClarificationUpsertForm = new ContestClarificationUpdateForm();
+            contestClarificationUpsertForm.answer = contestClarification.getAnswer();
+            contestClarificationUpsertForm.status = contestClarification.getStatus().name();
             Form<ContestClarificationUpdateForm> form = Form.form(ContestClarificationUpdateForm.class).fill(contestClarificationUpsertForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -357,7 +361,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
     }
 
-    private Result showCreateClarification(Form<ContestClarificationCreateForm> form, Contest contest){
+    private Result showCreateClarification(Form<ContestClarificationCreateForm> form, Contest contest) {
         List<ContestProblem> contestProblemList = contestProblemService.findOpenedContestProblemByContestJid(contest.getJid());
 
         LazyHtml content = new LazyHtml(createClarificationView.render(contest, form, contestProblemList));
@@ -376,10 +380,10 @@ public class ContestClarificationController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> form, Contest contest, ContestClarification contestClarification){
+    private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> form, Contest contest, ContestClarification contestClarification) {
         LazyHtml content = new LazyHtml(updateClarificationContentView.render(contest, contestClarification, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
-        if(ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
             appendSubtabsLayout(content, contest);
         }
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
@@ -393,7 +397,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateClarificationAnswer(Form<ContestClarificationUpdateForm> form, Contest contest, ContestClarification contestClarification){
+    private Result showUpdateClarificationAnswer(Form<ContestClarificationUpdateForm> form, Contest contest, ContestClarification contestClarification) {
         LazyHtml content = new LazyHtml(updateClarificationAnswerView.render(contest.getId(), contestClarification, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
         appendSubtabsLayout(content, contest);

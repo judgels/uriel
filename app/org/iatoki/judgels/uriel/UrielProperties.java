@@ -369,7 +369,7 @@ public final class UrielProperties {
     public boolean isContestCritial(String contestJid) {
         return criticalContestJids.contains(contestJid);
     }
-    
+
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
         urielBaseDataDir = requireDirectoryValue("uriel.baseDataDir");

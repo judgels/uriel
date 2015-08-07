@@ -162,7 +162,10 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementByContestAnnouncementId(contestAnnouncementId);
         if (isAllowedToSuperviseAnnouncements(contest) && contestAnnouncement.getContestJid().equals(contest.getJid())) {
-            ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = new ContestAnnouncementUpsertForm(contestAnnouncement);
+            ContestAnnouncementUpsertForm contestAnnouncementUpsertForm = new ContestAnnouncementUpsertForm();
+            contestAnnouncementUpsertForm.title = contestAnnouncement.getTitle();
+            contestAnnouncementUpsertForm.content = contestAnnouncement.getContent();
+            contestAnnouncementUpsertForm.status = contestAnnouncement.getStatus().name();
             Form<ContestAnnouncementUpsertForm> form = Form.form(ContestAnnouncementUpsertForm.class).fill(contestAnnouncementUpsertForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -196,10 +199,11 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
     }
 
-    private Result showCreateAnnouncement(Form<ContestAnnouncementUpsertForm> form, Contest contest){
+    private Result showCreateAnnouncement(Form<ContestAnnouncementUpsertForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(createAnnouncementView.render(contest.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.create"), c));
-        appendSubtabsLayout(content, contest);ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        appendSubtabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId())),
@@ -210,7 +214,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateAnnouncement(Form<ContestAnnouncementUpsertForm> form, Contest contest, ContestAnnouncement contestAnnouncement){
+    private Result showUpdateAnnouncement(Form<ContestAnnouncementUpsertForm> form, Contest contest, ContestAnnouncement contestAnnouncement) {
         LazyHtml content = new LazyHtml(updateAnnouncementView.render(contest.getId(), contestAnnouncement.getId(), form));
         content.appendLayout(c -> headingLayout.render(Messages.get("announcement.update"), c));
         appendSubtabsLayout(content, contest);

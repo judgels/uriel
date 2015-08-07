@@ -76,7 +76,7 @@ public class ContestManagerController extends AbstractJudgelsController {
         }
     }
 
-    @Authorized(value = {"admin"})
+    @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
     public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
@@ -119,7 +119,7 @@ public class ContestManagerController extends AbstractJudgelsController {
         }
     }
 
-    private Result showListCreateManager(Page<ContestManager> contestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> form, Contest contest){
+    private Result showListCreateManager(Page<ContestManager> contestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);

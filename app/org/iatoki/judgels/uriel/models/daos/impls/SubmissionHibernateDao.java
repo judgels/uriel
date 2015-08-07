@@ -19,5 +19,4 @@ public final class SubmissionHibernateDao extends AbstractSubmissionHibernateDao
     public SubmissionModel createSubmissionModel() {
         return new SubmissionModel();
     }
-
 }

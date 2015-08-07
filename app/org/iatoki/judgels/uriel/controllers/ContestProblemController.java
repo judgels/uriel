@@ -207,8 +207,10 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (isAllowedToSuperviseProblems(contest)) {
+            ContestProblemCreateForm formData = new ContestProblemCreateForm();
+            formData.submissionsLimit = 0;
             Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
-            form = form.fill(new ContestProblemCreateForm(0));
+            form = form.fill(formData);
 
             ControllerUtils.getInstance().addActivityLog("Try to add problem in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
@@ -260,7 +262,10 @@ public class ContestProblemController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
         if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
-            ContestProblemUpdateForm contestProblemUpdateForm = new ContestProblemUpdateForm(contestProblem);
+            ContestProblemUpdateForm contestProblemUpdateForm = new ContestProblemUpdateForm();
+            contestProblemUpdateForm.alias = contestProblem.getAlias();
+            contestProblemUpdateForm.submissionsLimit = contestProblem.getSubmissionsLimit();
+            contestProblemUpdateForm.status = contestProblem.getStatus().name();
             Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).fill(contestProblemUpdateForm);
 
             ControllerUtils.getInstance().addActivityLog("Try to update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -294,7 +299,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
     }
 
-    private Result showCreateProblem(Form<ContestProblemCreateForm> form, Contest contest){
+    private Result showCreateProblem(Form<ContestProblemCreateForm> form, Contest contest) {
         LazyHtml content = new LazyHtml(createProblemView.render(contest.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.create"), c));
         appendSubtabsLayout(content, contest);
@@ -309,7 +314,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateProblem(Form<ContestProblemUpdateForm> form, Contest contest, ContestProblem contestProblem){
+    private Result showUpdateProblem(Form<ContestProblemUpdateForm> form, Contest contest, ContestProblem contestProblem) {
         LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem, form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.update") + " " + contestProblem.getAlias(), c));
         appendSubtabsLayout(content, contest);

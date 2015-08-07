@@ -100,7 +100,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         }
     }
 
-    private Result showListContestantPasswords(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, Map<String, String> passwordsMap, Contest contest){
+    private Result showListContestantPasswords(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, Map<String, String> passwordsMap, Contest contest) {
         LazyHtml content = new LazyHtml(listContestantPasswordsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, passwordsMap));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.passwords"), c));
 
