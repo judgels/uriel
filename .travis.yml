@@ -6,11 +6,11 @@ jdk:
 install:
   - git clone https://github.com/judgels/judgels.git ../judgels
   - git clone https://github.com/judgels/commons.git ../commons
-  - git clone https://github.com/judgels/playcommons.git ../playcommons
-  - git clone https://github.com/judgels/sandalphoncommons.git ../sandalphoncommons
-  - git clone https://github.com/judgels/gabrielcommons.git ../gabrielcommons
-  - git clone https://github.com/judgels/sealtielcommons.git ../sealtielcommons
-  - git clone https://github.com/judgels/jophielcommons.git ../jophielcommons
+  - git clone https://github.com/judgels/play-commons.git ../play-commons
+  - git clone https://github.com/judgels/sandalphon-commons.git ../sandalphon-commons
+  - git clone https://github.com/judgels/gabriel-commons.git ../gabriel-commons
+  - git clone https://github.com/judgels/sealtiel-commons.git ../sealtiel-commons
+  - git clone https://github.com/judgels/jophiel-commons.git ../jophiel-commons
 
 script:
   - ../judgels/scripts/download-activator.sh
