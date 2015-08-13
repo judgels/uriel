@@ -5,8 +5,8 @@ import sbtbuildinfo.Plugin._
 lazy val uriel = (project in file("."))
     .enablePlugins(PlayJava, SbtWeb)
     .disablePlugins(sbt.plugins.JUnitXmlReportPlugin)
-    .dependsOn(playcommons, sandalphoncommons, jophielcommons)
-    .aggregate(playcommons, sandalphoncommons, jophielcommons)
+    .dependsOn(playcommons, sandalphoncommons, jophielcommons, sandalphonblackboxadapters)
+    .aggregate(playcommons, sandalphoncommons, jophielcommons, sandalphonblackboxadapters)
     .settings(
         name := "uriel",
         version := IO.read(file("version.properties")).trim,
@@ -48,3 +48,4 @@ lazy val uriel = (project in file("."))
 lazy val playcommons = RootProject(file("../play-commons"))
 lazy val sandalphoncommons = RootProject(file("../sandalphon-commons"))
 lazy val jophielcommons = RootProject(file("../jophiel-commons"))
+lazy val sandalphonblackboxadapters = RootProject(file("../sandalphon-blackbox-adapters"))

@@ -11,6 +11,8 @@ install:
   - git clone https://github.com/judgels/gabriel-commons.git ../gabriel-commons
   - git clone https://github.com/judgels/sealtiel-commons.git ../sealtiel-commons
   - git clone https://github.com/judgels/jophiel-commons.git ../jophiel-commons
+  - git clone https://github.com/judgels/sandalphon-blackbox-adapters.git ../sandalphon-blackbox-adapters
+  - git clone https://github.com/judgels/gabriel-blackbox.git ../gabriel-blackbox
 
 script:
   - ../judgels/scripts/download-activator.sh
