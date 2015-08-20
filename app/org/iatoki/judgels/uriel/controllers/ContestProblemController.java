@@ -9,7 +9,7 @@ import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
 import org.iatoki.judgels.sandalphon.Sandalphon;
-import org.iatoki.judgels.sandalphon.services.SubmissionService;
+import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
@@ -58,19 +58,19 @@ public class ContestProblemController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 50;
 
-    private final Sandalphon sandalphon;
-    private final ContestService contestService;
     private final ContestProblemService contestProblemService;
+    private final ContestService contestService;
     private final ContestSupervisorService contestSupervisorService;
-    private final SubmissionService submissionService;
+    private final ProgrammingSubmissionService programmingSubmissionService;
+    private final Sandalphon sandalphon;
 
     @Inject
-    public ContestProblemController(Sandalphon sandalphon, ContestService contestService, ContestProblemService contestProblemService, ContestSupervisorService contestSupervisorService, SubmissionService submissionService) {
-        this.sandalphon = sandalphon;
-        this.contestService = contestService;
+    public ContestProblemController(ContestProblemService contestProblemService, ContestService contestService, ContestSupervisorService contestSupervisorService, ProgrammingSubmissionService programmingSubmissionService, Sandalphon sandalphon) {
         this.contestProblemService = contestProblemService;
+        this.contestService = contestService;
         this.contestSupervisorService = contestSupervisorService;
-        this.submissionService = submissionService;
+        this.programmingSubmissionService = programmingSubmissionService;
+        this.sandalphon = sandalphon;
     }
 
     @Transactional(readOnly = true)
@@ -81,89 +81,89 @@ public class ContestProblemController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result listUsedProblems(long contestId, long pageIndex) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            Page<ContestProblem> contestProblems = contestProblemService.pageUsedContestProblemsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE);
-            ImmutableList.Builder<ContestProblem> replacementBuilder = ImmutableList.builder();
-            for (ContestProblem contestProblem : contestProblems.getData()) {
-                contestProblem.setTotalSubmissions(submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
-                replacementBuilder.add(contestProblem);
-            }
-            contestProblems = new Page<>(replacementBuilder.build(), contestProblems.getTotalRowsCount(), contestProblems.getPageIndex(), contestProblems.getPageSize());
-
-            LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), contestProblems, pageIndex));
-            content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
-            if (isAllowedToSuperviseProblems(contest)) {
-                appendSubtabsLayout(content, contest);
-            }
-            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            appendBreadcrumbsLayout(content, contest,
-                    new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewUsedProblems(contest.getId()))
-            );
-
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
-
-            ControllerUtils.getInstance().addActivityLog("Open list of valid problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfUsedProblemsInContest(contest.getJid(), pageIndex, PAGE_SIZE);
+        ImmutableList.Builder<ContestProblem> replacementBuilder = ImmutableList.builder();
+        for (ContestProblem contestProblem : pageOfContestProblems.getData()) {
+            contestProblem.setTotalSubmissions(programmingSubmissionService.countProgrammingSubmissionsByUserJid(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid()));
+            replacementBuilder.add(contestProblem);
+        }
+        pageOfContestProblems = new Page<>(replacementBuilder.build(), pageOfContestProblems.getTotalRowsCount(), pageOfContestProblems.getPageIndex(), pageOfContestProblems.getPageSize());
+
+        LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), pageOfContestProblems, pageIndex));
+        content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
+        if (isAllowedToSuperviseProblems(contest)) {
+            appendSubtabsLayout(content, contest);
+        }
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewUsedProblems(contest.getId()))
+        );
+
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
+
+        ControllerUtils.getInstance().addActivityLog("Open list of valid problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return ControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional(readOnly = true)
     public Result viewProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
-        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) && isAllowedToViewProblem(contest, contestProblem)) {
-            long submissionsLeft = -1;
-            if (contestProblem.getSubmissionsLimit() != 0) {
-                submissionsLeft = contestProblem.getSubmissionsLimit() - submissionService.countSubmissionsByContestJidByUser(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
-            }
-
-            String requestUrl = sandalphon.getProblemStatementRenderUri().toString();
-            String requestBody = "";
-
-            if (contest.isICPC()) {
-                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((ICPCContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
-            } else if (contest.isIOI()) {
-                requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((IOIContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
-            }
-
-            LazyHtml content;
-            if (UrielProperties.getInstance().isContestCritial(contest.getJid())) {
-                content = new LazyHtml(viewProblemCriticalView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED, contest, contestProblem));
-            } else {
-                content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
-            }
-            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            appendBreadcrumbsLayout(content, contest,
-                    new InternalLink(Messages.get("status.contestant"), routes.ContestProblemController.viewUsedProblems(contest.getId())),
-                    new InternalLink(contestProblem.getAlias(), routes.ContestProblemController.viewProblem(contest.getId(), contestProblem.getId()))
-            );
-
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problem - View");
-
-            ControllerUtils.getInstance().addActivityLog("View problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
+        ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) || !isAllowedToViewProblem(contest, contestProblem)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        long submissionsLeft = -1;
+        if (contestProblem.getSubmissionsLimit() != 0) {
+            submissionsLeft = contestProblem.getSubmissionsLimit() - programmingSubmissionService.countProgrammingSubmissionsByUserJid(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
+        }
+
+        String requestUrl = sandalphon.getProblemStatementRenderUri().toString();
+        String requestBody = "";
+
+        if (contest.isICPC()) {
+            requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((ICPCContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
+        } else if (contest.isIOI()) {
+            requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((IOIContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
+        }
+
+        LazyHtml content;
+        if (UrielProperties.getInstance().isContestCritial(contest.getJid())) {
+            content = new LazyHtml(viewProblemCriticalView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED, contest, contestProblem));
+        } else {
+            content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
+        }
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("status.contestant"), routes.ContestProblemController.viewUsedProblems(contest.getId())),
+                new InternalLink(contestProblem.getAlias(), routes.ContestProblemController.viewProblem(contest.getId(), contestProblem.getId()))
+        );
+
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problem - View");
+
+        ControllerUtils.getInstance().addActivityLog("View problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return ControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional(readOnly = true)
     public Result renderImage(long contestId, long contestProblemId, String imageFilename) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
-        if (contest.getJid().equals(contestProblem.getContestJid())) {
-            URI imageUri = sandalphon.getProblemMediaRenderUri(contestProblem.getProblemJid(), imageFilename);
-
-            return redirect(imageUri.toString());
-        } else {
+        ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
+        if (!contest.getJid().equals(contestProblem.getContestJid())) {
             return notFound();
         }
+
+        URI imageUri = sandalphon.getProblemMediaRenderUri(contestProblem.getProblemJid(), imageFilename);
+
+        return redirect(imageUri.toString());
     }
 
     public Result switchLanguage(long contestId, long contestProblemId) {
@@ -181,126 +181,126 @@ public class ContestProblemController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseProblems(contest)) {
-            Page<ContestProblem> contestProblemPage = contestProblemService.pageContestProblemsByContestJid(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
-
-            LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), contestProblemPage, page, sortBy, orderBy, filterString));
-            content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
-            appendSubtabsLayout(content, contest);
-            ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-            ControllerUtils.getInstance().appendSidebarLayout(content);
-            appendBreadcrumbsLayout(content, contest,
-                    new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewProblems(contest.getId()))
-            );
-            ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
-
-            ControllerUtils.getInstance().addActivityLog("Open all problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return ControllerUtils.getInstance().lazyOk(content);
-        } else {
+        if (!isAllowedToSuperviseProblems(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfProblemsInContest(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
+
+        LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString));
+        content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
+        appendSubtabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ControllerUtils.getInstance().appendSidebarLayout(content);
+        appendBreadcrumbsLayout(content, contest,
+                new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewProblems(contest.getId()))
+        );
+        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
+
+        ControllerUtils.getInstance().addActivityLog("Open all problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return ControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseProblems(contest)) {
-            ContestProblemCreateForm formData = new ContestProblemCreateForm();
-            formData.submissionsLimit = 0;
-            Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class);
-            form = form.fill(formData);
-
-            ControllerUtils.getInstance().addActivityLog("Try to add problem in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return showCreateProblem(form, contest);
-        } else {
+        if (!isAllowedToSuperviseProblems(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        ContestProblemCreateForm contestProblemCreateData = new ContestProblemCreateForm();
+        contestProblemCreateData.submissionsLimit = 0;
+        Form<ContestProblemCreateForm> contestProblemCreateForm = Form.form(ContestProblemCreateForm.class);
+        contestProblemCreateForm = contestProblemCreateForm.fill(contestProblemCreateData);
+
+        ControllerUtils.getInstance().addActivityLog("Try to add problem in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return showCreateProblem(contestProblemCreateForm, contest);
     }
 
     @Transactional
     @RequireCSRFCheck
     public Result postCreateProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToSuperviseProblems(contest)) {
-            Form<ContestProblemCreateForm> form = Form.form(ContestProblemCreateForm.class).bindFromRequest();
-
-            if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showCreateProblem(form, contest);
-            } else {
-                ContestProblemCreateForm contestProblemCreateForm = form.get();
-                String problemName = null;
-                try {
-                    problemName = sandalphon.verifyProblemJid(contestProblemCreateForm.problemJid);
-                } catch (IOException e) {
-                    form.reject("error.system.sandalphon.connection");
-                    return showCreateProblem(form, contest);
-                }
-
-                if ((problemName != null) && (!contestProblemService.isContestProblemInContestByProblemJidOrAlias(contest.getJid(), contestProblemCreateForm.problemJid, contestProblemCreateForm.alias))) {
-                    contestProblemService.createContestProblem(contest.getId(), contestProblemCreateForm.problemJid, contestProblemCreateForm.problemSecret, contestProblemCreateForm.alias, contestProblemCreateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateForm.status));
-                    JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateForm.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-
-                    ControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateForm.alias + " in contest " + contest.getName() + ".");
-
-                    return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
-                } else {
-                    form.reject("error.problem.create.problemJidOrAlias.invalid");
-                    return showCreateProblem(form, contest);
-                }
-            }
-        } else {
+        if (!isAllowedToSuperviseProblems(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Form<ContestProblemCreateForm> contestProblemCreateForm = Form.form(ContestProblemCreateForm.class).bindFromRequest();
+
+        if (formHasErrors(contestProblemCreateForm)) {
+            return showCreateProblem(contestProblemCreateForm, contest);
+        }
+
+        ContestProblemCreateForm contestProblemCreateData = contestProblemCreateForm.get();
+        String problemName = null;
+        try {
+            problemName = sandalphon.verifyProblemJid(contestProblemCreateData.problemJid);
+        } catch (IOException e) {
+            contestProblemCreateForm.reject("error.system.sandalphon.connection");
+            return showCreateProblem(contestProblemCreateForm, contest);
+        }
+
+        if ((problemName == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.alias)) {
+            contestProblemCreateForm.reject("error.problem.create.problemJidOrAlias.invalid");
+            return showCreateProblem(contestProblemCreateForm, contest);
+        }
+
+        contestProblemService.createContestProblem(contest.getId(), contestProblemCreateData.problemJid, contestProblemCreateData.problemSecret, contestProblemCreateData.alias, contestProblemCreateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateData.status));
+        JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        ControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateData.alias + " in contest " + contest.getName() + ".");
+
+        return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
 
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
-        if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
-            ContestProblemUpdateForm contestProblemUpdateForm = new ContestProblemUpdateForm();
-            contestProblemUpdateForm.alias = contestProblem.getAlias();
-            contestProblemUpdateForm.submissionsLimit = contestProblem.getSubmissionsLimit();
-            contestProblemUpdateForm.status = contestProblem.getStatus().name();
-            Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).fill(contestProblemUpdateForm);
-
-            ControllerUtils.getInstance().addActivityLog("Try to update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
-            return showUpdateProblem(form, contest, contestProblem);
-        } else {
+        ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
+        if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        ContestProblemUpdateForm contestProblemUpdateData = new ContestProblemUpdateForm();
+        contestProblemUpdateData.alias = contestProblem.getAlias();
+        contestProblemUpdateData.submissionsLimit = contestProblem.getSubmissionsLimit();
+        contestProblemUpdateData.status = contestProblem.getStatus().name();
+        Form<ContestProblemUpdateForm> contestProblemUpdateForm = Form.form(ContestProblemUpdateForm.class).fill(contestProblemUpdateData);
+
+        ControllerUtils.getInstance().addActivityLog("Try to update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return showUpdateProblem(contestProblemUpdateForm, contest, contestProblem);
     }
 
     @Transactional
     @RequireCSRFCheck
     public Result postUpdateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestProblemService.findContestProblemByContestProblemId(contestProblemId);
-        if (isAllowedToSuperviseProblems(contest) && contestProblem.getContestJid().equals(contest.getJid())) {
-            Form<ContestProblemUpdateForm> form = Form.form(ContestProblemUpdateForm.class).bindFromRequest();
-
-            if (form.hasErrors() || form.hasGlobalErrors()) {
-                return showUpdateProblem(form, contest, contestProblem);
-            } else {
-                ContestProblemUpdateForm contestProblemUpdateForm = form.get();
-                contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemUpdateForm.alias, contestProblemUpdateForm.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateForm.status));
-
-                ControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
-
-                return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
-            }
-        } else {
+        ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
+        if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Form<ContestProblemUpdateForm> contestProblemUpdateForm = Form.form(ContestProblemUpdateForm.class).bindFromRequest();
+
+        if (formHasErrors(contestProblemUpdateForm)) {
+            return showUpdateProblem(contestProblemUpdateForm, contest, contestProblem);
+        }
+
+        ContestProblemUpdateForm contestProblemUpdateData = contestProblemUpdateForm.get();
+        contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemUpdateData.alias, contestProblemUpdateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateData.status));
+
+        ControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
+
+        return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
 
-    private Result showCreateProblem(Form<ContestProblemCreateForm> form, Contest contest) {
-        LazyHtml content = new LazyHtml(createProblemView.render(contest.getId(), form));
+    private Result showCreateProblem(Form<ContestProblemCreateForm> contestProblemCreateForm, Contest contest) {
+        LazyHtml content = new LazyHtml(createProblemView.render(contest.getId(), contestProblemCreateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.create"), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
@@ -314,8 +314,8 @@ public class ContestProblemController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateProblem(Form<ContestProblemUpdateForm> form, Contest contest, ContestProblem contestProblem) {
-        LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem, form));
+    private Result showUpdateProblem(Form<ContestProblemUpdateForm> contestProblemUpdateForm, Contest contest, ContestProblem contestProblem) {
+        LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem, contestProblemUpdateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.update") + " " + contestProblem.getAlias(), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
@@ -344,7 +344,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseProblems(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.PROBLEM));
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.PROBLEM));
     }
 
     private boolean isAllowedToViewProblem(Contest contest, ContestProblem contestProblem) {

@@ -1,18 +1,17 @@
-@import org.iatoki.judgels.uriel.forms.ContestUpsertForm
-@(form: Form[ContestUpsertForm])
-
 @import play.i18n.Messages
-
-@import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.forms.ContestUpsertForm
+
+@(contestUpsertForm: Form[ContestUpsertForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(form)
+@formErrorView(contestUpsertForm)
 
 @b3.form(routes.ContestController.postCreateContest()) {
 
-    @upsertContestView(form)
+    @upsertContestView(contestUpsertForm)
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }

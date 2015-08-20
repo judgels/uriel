@@ -26,5 +26,4 @@ public final class ContestProblemModel extends AbstractModel {
     public String status;
 
     public long submissionsLimit;
-
 }

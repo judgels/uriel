@@ -1,25 +1,26 @@
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-
-@import org.iatoki.judgels.uriel.controllers.routes
-
+@import scala.collection.JavaConversions
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
-@import scala.collection.JavaConversions
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
 @import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.ContestAnnouncement
+
+@(contestId: Long, pageOfContestAnnouncements: Page[ContestAnnouncement], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestAnnouncementController.listAnnouncements(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
-@searchView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)
+@searchView(pageOfContestAnnouncements.getPageIndex, orderBy, orderDir, filterString, listFunc)
 
 <div class="clearfix"></div>
 
 @tableView() {
-    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+    @tableHeadersView(pageOfContestAnnouncements.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
         "title" -> Messages.get("announcement.title"),
         "userCreate" -> Messages.get("announcement.authorJid"),
@@ -27,8 +28,8 @@
         "timeUpdate" -> Messages.get("announcement.lastUpdate")
     )
     <tbody>
-    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
-        @for(contestAnnouncement <- page.getData) {
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestAnnouncements.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
+        @for(contestAnnouncement <- pageOfContestAnnouncements.getData) {
             <tr>
                 <td>@contestAnnouncement.getId</td>
                 <td>@contestAnnouncement.getTitle</td>
@@ -44,6 +45,6 @@
     </tbody>
 }
 
-@paginationView(page, orderBy, orderDir, filterString, listFunc)
+@paginationView(pageOfContestAnnouncements, orderBy, orderDir, filterString, listFunc)
 
 @supervisorjs(contestId)

@@ -4,5 +4,4 @@ public enum ContestAnnouncementStatus {
 
     DRAFT,
     PUBLISHED
-
 }

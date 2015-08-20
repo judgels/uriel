@@ -3,9 +3,7 @@ package org.iatoki.judgels.uriel;
 public final class ContestTeamCoach {
 
     private final long id;
-
     private final String teamJid;
-
     private final String coachJid;
 
     public ContestTeamCoach(long id, String teamJid, String coachJid) {

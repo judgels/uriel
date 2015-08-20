@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 public final class ICPCScoreboard implements Scoreboard {
+
     private ScoreboardState state;
     private ICPCScoreboardContent content;
 

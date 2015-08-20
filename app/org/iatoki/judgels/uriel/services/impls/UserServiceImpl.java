@@ -38,8 +38,8 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public void upsertUser(String userJid, String accessToken, String idToken, String refreshToken, long expireTime) {
-        if (userDao.existsByUserJid(userJid)) {
-            UserModel userModel = userDao.findByUserJid(userJid);
+        if (userDao.existsByJid(userJid)) {
+            UserModel userModel = userDao.findByJid(userJid);
 
             userModel.accessToken = accessToken;
             userModel.refreshToken = refreshToken;
@@ -63,22 +63,22 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public boolean existsByUserJid(String userJid) {
-        return userDao.existsByUserJid(userJid);
+        return userDao.existsByJid(userJid);
     }
 
     @Override
     public User findUserById(long userId) throws UserNotFoundException {
         UserModel userModel = userDao.findById(userId);
-        if (userModel != null) {
-            return createUserFromUserModel(userModel);
-        } else {
+        if (userModel == null) {
             throw new UserNotFoundException("User not found.");
         }
+
+        return createUserFromUserModel(userModel);
     }
 
     @Override
-    public User findUserByUserJid(String userJid) {
-        UserModel userModel = userDao.findByUserJid(userJid);
+    public User findUserByJid(String userJid) {
+        UserModel userModel = userDao.findByJid(userJid);
         return createUserFromUserModel(userModel);
     }
 
@@ -106,7 +106,7 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> pageUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
         List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
@@ -123,7 +123,7 @@ public final class UserServiceImpl implements UserService {
         try {
             UserInfo user = jophiel.getUserByUserJid(userJid);
 
-            if (!userDao.existsByUserJid(userJid)) {
+            if (!userDao.existsByJid(userJid)) {
                 createUser(user.getJid(), roles);
             }
 
@@ -136,7 +136,7 @@ public final class UserServiceImpl implements UserService {
 
     @Override
     public UserTokens getUserTokensByUserJid(String userJid) {
-        UserModel userModel = userDao.findByUserJid(userJid);
+        UserModel userModel = userDao.findByJid(userJid);
 
         return createUserTokensFromUserModel(userModel);
     }

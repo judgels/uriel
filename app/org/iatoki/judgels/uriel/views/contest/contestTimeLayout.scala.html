@@ -1,7 +1,7 @@
-@(startTime: java.util.Date, endTime: java.util.Date)(content: Html)
-
 @import java.util.Date
 @import play.i18n.Messages
+
+@(startTime: Date, endTime: Date)(content: Html)
 
 @if(endTime == null) {
     <div class="clearfix">

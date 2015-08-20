@@ -24,7 +24,7 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
-    public List<ContestTeamModel> findContestTeamModelsByContestJid(String contestJid) {
+    public List<ContestTeamModel> getAllInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamModel> query = cb.createQuery(getModelClass());
         Root<ContestTeamModel> root = query.from(getModelClass());
@@ -35,7 +35,7 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
-    public List<String> findTeamJidsByContestJid(String contestJid) {
+    public List<String> getJidsInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);
         Root<ContestTeamModel> root = query.from(getModelClass());
@@ -46,17 +46,17 @@ public final class ContestTeamHibernateDao extends AbstractJudgelsHibernateDao<C
     }
 
     @Override
-    public List<String> findContestJidsByTeamJids(Collection<String> teamJids) {
+    public List<String> getContestJidsByJids(Collection<String> teamJids) {
         if (teamJids.isEmpty()) {
             return ImmutableList.of();
-        } else {
-            CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
-            CriteriaQuery<String> query = cb.createQuery(String.class);
-            Root<ContestTeamModel> root = query.from(getModelClass());
-
-            query.select(root.get(ContestTeamModel_.contestJid)).where(root.get(ContestTeamModel_.jid).in(teamJids));
-
-            return JPA.em().createQuery(query).getResultList();
         }
+
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<String> query = cb.createQuery(String.class);
+        Root<ContestTeamModel> root = query.from(getModelClass());
+
+        query.select(root.get(ContestTeamModel_.contestJid)).where(root.get(ContestTeamModel_.jid).in(teamJids));
+
+        return JPA.em().createQuery(query).getResultList();
     }
 }

@@ -4,5 +4,4 @@ public enum ContestType {
 
     STANDARD,
     VIRTUAL
-
 }

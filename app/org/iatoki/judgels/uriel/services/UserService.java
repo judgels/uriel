@@ -11,9 +11,9 @@ public interface UserService extends BaseUserService {
 
     User findUserById(long userId) throws UserNotFoundException;
 
-    User findUserByUserJid(String userJid);
+    User findUserByJid(String userJid);
 
-    Page<User> pageUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+    Page<User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     void createUser(String userJid, List<String> roles);
 

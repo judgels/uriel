@@ -79,7 +79,7 @@ public class ContestContestantController extends AbstractJudgelsController {
     public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
             boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
@@ -102,7 +102,7 @@ public class ContestContestantController extends AbstractJudgelsController {
             if (form.hasErrors() || form.hasGlobalErrors()) {
                 Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
 
-                Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                 boolean canUpdate = isAllowedToSuperviseContestants(contest);
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
             } else {
@@ -110,7 +110,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                 try {
                     String userJid = jophiel.verifyUsername(contestContestantCreateForm.username);
                     if (userJid != null) {
-                        if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                        if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
                             userService.upsertUserFromJophielUserJid(userJid);
                             contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateForm.status));
 
@@ -121,7 +121,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                             Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                             form.reject("error.contestant.create.userIsAlreadyContestant");
 
-                            Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                            Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                             boolean canUpdate = isAllowedToSuperviseContestants(contest);
                             return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                         }
@@ -129,7 +129,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                         Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                         form.reject("error.contestant.create.userNotExist");
 
-                        Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                        Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                         boolean canUpdate = isAllowedToSuperviseContestants(contest);
                         return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                     }
@@ -137,7 +137,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                     Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                     form.reject("error.contestant.create.userNotExist");
 
-                    Page<ContestContestant> contestContestants = contestContestantService.pageContestContestantsByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+                    Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                     boolean canUpdate = isAllowedToSuperviseContestants(contest);
                     return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
                 }
@@ -151,7 +151,7 @@ public class ContestContestantController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result updateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestContestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
+        ContestContestant contestContestant = contestContestantService.findContestantInContestById(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
             ContestContestantUpdateForm contestContestantUpsertForm = new ContestContestantUpdateForm();
             contestContestantUpsertForm.status = contestContestant.getStatus().name();
@@ -169,7 +169,7 @@ public class ContestContestantController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postUpdateContestant(long contestId, long contestContestantId) throws ContestNotFoundException, ContestContestantNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestContestant contestContestant = contestContestantService.findContestContestantByContestContestantId(contestContestantId);
+        ContestContestant contestContestant = contestContestantService.findContestantInContestById(contestContestantId);
         if (isAllowedToSuperviseContestants(contest) && contestContestant.getContestJid().equals(contest.getJid())) {
             Form<ContestContestantUpdateForm> form = Form.form(ContestContestantUpdateForm.class).bindFromRequest();
 
@@ -207,7 +207,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                         try {
                             String userJid = jophiel.verifyUsername(username);
                             if (userJid != null) {
-                                if (!contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), userJid)) {
+                                if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
                                     userService.upsertUserFromJophielUserJid(userJid);
                                     contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
                                 } else {
@@ -296,6 +296,6 @@ public class ContestContestantController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorByContestJidAndUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
+        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
     }
 }

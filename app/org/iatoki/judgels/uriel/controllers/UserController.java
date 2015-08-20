@@ -61,9 +61,9 @@ public final class UserController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     public Result listUsers(long pageIndex, String sortBy, String orderBy, String filterString) {
-        Page<User> currentPage = userService.pageUsers(pageIndex, PAGE_SIZE, sortBy, orderBy, filterString);
+        Page<User> pageOfUsers = userService.getPageOfUsers(pageIndex, PAGE_SIZE, sortBy, orderBy, filterString);
 
-        LazyHtml content = new LazyHtml(listUsersView.render(currentPage, sortBy, orderBy, filterString));
+        LazyHtml content = new LazyHtml(listUsersView.render(pageOfUsers, sortBy, orderBy, filterString));
         content.appendLayout(c -> headingWithActionLayout.render(Messages.get("user.list"), new InternalLink(Messages.get("commons.create"), routes.UserController.createUser()), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -79,51 +79,53 @@ public final class UserController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result createUser() {
-        UserCreateForm userCreateForm = new UserCreateForm();
-        userCreateForm.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
-        Form<UserCreateForm> form = Form.form(UserCreateForm.class).fill(userCreateForm);
+        UserCreateForm userCreateData = new UserCreateForm();
+        userCreateData.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
+        Form<UserCreateForm> userCreateForm = Form.form(UserCreateForm.class).fill(userCreateData);
 
         ControllerUtils.getInstance().addActivityLog("Try to create user <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showCreateUser(form);
+        return showCreateUser(userCreateForm);
     }
 
     @Transactional
     @RequireCSRFCheck
     public Result postCreateUser() {
-        Form<UserCreateForm> form = Form.form(UserCreateForm.class).bindFromRequest();
+        Form<UserCreateForm> userCreateForm = Form.form(UserCreateForm.class).bindFromRequest();
 
-        if (form.hasErrors() || form.hasGlobalErrors()) {
-            return showCreateUser(form);
-        } else {
-            UserCreateForm userCreateForm = form.get();
-            try {
-                String userJid = jophiel.verifyUsername(userCreateForm.username);
-                if (userJid == null) {
-                    form.reject(Messages.get("user.create.error.usernameNotFound"));
-                    return showCreateUser(form);
-                } else {
-                    if (userService.existsByUserJid(userJid)) {
-                        form.reject(Messages.get("user.create.error.userAlreadyExists"));
-                        return showCreateUser(form);
-                    } else {
-                        userService.upsertUserFromJophielUserJid(userJid, userCreateForm.getRolesAsList());
-
-                        ControllerUtils.getInstance().addActivityLog("Create user " + userJid + ".");
-
-                        return redirect(routes.UserController.index());
-                    }
-                }
-            } catch (IOException e) {
-                form.reject(Messages.get("user.create.error.usernameNotFound"));
-                return showCreateUser(form);
-            }
+        if (formHasErrors(userCreateForm)) {
+            return showCreateUser(userCreateForm);
         }
+
+        UserCreateForm userCreateData = userCreateForm.get();
+        String userJid;
+        try {
+            userJid = jophiel.verifyUsername(userCreateData.username);
+        } catch (IOException e) {
+            userJid = null;
+        }
+
+        if (userJid == null) {
+            userCreateForm.reject(Messages.get("user.create.error.usernameNotFound"));
+            return showCreateUser(userCreateForm);
+        }
+
+        if (userService.existsByUserJid(userJid)) {
+            userCreateForm.reject(Messages.get("user.create.error.userAlreadyExists"));
+            return showCreateUser(userCreateForm);
+        }
+
+        userService.upsertUserFromJophielUserJid(userJid, userCreateData.getRolesAsList());
+
+        ControllerUtils.getInstance().addActivityLog("Create user " + userJid + ".");
+
+        return redirect(routes.UserController.index());
     }
 
     @Transactional(readOnly = true)
     public Result viewUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
+
         LazyHtml content = new LazyHtml(viewUserView.render(user));
         content.appendLayout(c -> headingWithActionLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid()), new InternalLink(Messages.get("commons.update"), routes.UserController.updateUser(user.getId())), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
@@ -142,31 +144,31 @@ public final class UserController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result updateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
-        UserUpdateForm userUpdateForm = new UserUpdateForm();
-        userUpdateForm.roles = StringUtils.join(user.getRoles(), ",");
-        Form<UserUpdateForm> form = Form.form(UserUpdateForm.class).fill(userUpdateForm);
+        UserUpdateForm userUpdateData = new UserUpdateForm();
+        userUpdateData.roles = StringUtils.join(user.getRoles(), ",");
+        Form<UserUpdateForm> userUpdateForm = Form.form(UserUpdateForm.class).fill(userUpdateData);
 
         ControllerUtils.getInstance().addActivityLog("Try to update user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateUser(form, user);
+        return showUpdateUser(userUpdateForm, user);
     }
 
     @Transactional
     @RequireCSRFCheck
     public Result postUpdateUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
-        Form<UserUpdateForm> form = Form.form(UserUpdateForm.class).bindFromRequest();
+        Form<UserUpdateForm> userUpdateForm = Form.form(UserUpdateForm.class).bindFromRequest();
 
-        if (form.hasErrors() || form.hasGlobalErrors()) {
-            return showUpdateUser(form, user);
-        } else {
-            UserUpdateForm userUpdateForm = form.get();
-            userService.updateUser(user.getId(), userUpdateForm.getRolesAsList());
-
-            ControllerUtils.getInstance().addActivityLog("Update user " + user.getUserJid() + ".");
-
-            return redirect(routes.UserController.index());
+        if (formHasErrors(userUpdateForm)) {
+            return showUpdateUser(userUpdateForm, user);
         }
+
+        UserUpdateForm userUpdateData = userUpdateForm.get();
+        userService.updateUser(user.getId(), userUpdateData.getRolesAsList());
+
+        ControllerUtils.getInstance().addActivityLog("Update user " + user.getUserJid() + ".");
+
+        return redirect(routes.UserController.index());
     }
 
     @Transactional
@@ -179,8 +181,8 @@ public final class UserController extends AbstractJudgelsController {
         return redirect(routes.UserController.index());
     }
 
-    private Result showCreateUser(Form<UserCreateForm> form) {
-        LazyHtml content = new LazyHtml(createUserView.render(form, jophiel.getAutoCompleteEndPoint()));
+    private Result showCreateUser(Form<UserCreateForm> userCreateForm) {
+        LazyHtml content = new LazyHtml(createUserView.render(userCreateForm, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> headingLayout.render(Messages.get("user.create"), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -192,8 +194,8 @@ public final class UserController extends AbstractJudgelsController {
         return ControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateUser(Form<UserUpdateForm> form, User user) {
-        LazyHtml content = new LazyHtml(updateUserView.render(form, user.getId()));
+    private Result showUpdateUser(Form<UserUpdateForm> userUpdateForm, User user) {
+        LazyHtml content = new LazyHtml(updateUserView.render(userUpdateForm, user.getId()));
         content.appendLayout(c -> headingLayout.render(Messages.get("user.user") + " #" + user.getId() + ": " + JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid()), c));
         ControllerUtils.getInstance().appendSidebarLayout(content);
         ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(

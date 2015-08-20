@@ -9,12 +9,11 @@ public interface ContestTeamCoachDao extends Dao<Long, ContestTeamCoachModel> {
 
     boolean isUserRegisteredAsCoachInTeams(String userJid, List<String> teamJids);
 
-    List<ContestTeamCoachModel> findContestTeamCoachesByTeamJid(String teamJid);
+    List<ContestTeamCoachModel> getAllByTeamJid(String teamJid);
 
-    List<ContestTeamCoachModel> findContestTeamCoachesByCoachJidInTeams(String coachJid, List<String> teamJids);
+    List<ContestTeamCoachModel> getAllInTeamsByJid(String coachJid, List<String> teamJids);
 
-    List<String> findContestTeamJidsByCoachJid(String coachJid);
+    List<String> getTeamJidsByJid(String coachJid);
 
     boolean isUserCoachByUserJidAndTeamJid(String userJid, String teamJid);
-
 }

@@ -18,5 +18,4 @@ public final class ContestManagerModel extends AbstractModel {
     public String contestJid;
 
     public String userJid;
-
 }

@@ -5,17 +5,18 @@ import org.iatoki.judgels.uriel.ContestClarification;
 import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ContestClarificationService {
 
-    ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId) throws ContestClarificationNotFoundException;
+    ContestClarification findContestClarificationById(long contestClarificationId) throws ContestClarificationNotFoundException;
 
-    Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, List<String> askerJids);
+    Page<ContestClarification> getPageOfClarificationsInContest(String contestJid, long pageIndex, long pageSize, String sortBy, String order, String filterString, List<String> askerJids);
 
-    long getUnansweredContestClarificationsCount(String contestJid);
+    long countUnansweredClarificationsInContest(String contestJid);
 
-    long getUnreadContestClarificationsCount(List<String> askerJids, String userJid, String contestJid, boolean answered);
+    long countUnreadClarificationsInContest(Collection<String> askerJids, String userJid, String contestJid, boolean answered);
 
     void createContestClarification(long contestId, String title, String question, String topicJid);
 
@@ -23,5 +24,5 @@ public interface ContestClarificationService {
 
     void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
 
-    void readContestClarifications(String userJid, List<String> contestClarificationJids);
+    void readContestClarifications(String userJid, Collection<String> contestClarificationJids);
 }

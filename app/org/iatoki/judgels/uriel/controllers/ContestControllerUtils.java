@@ -25,7 +25,6 @@ import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestModuleService;
-import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.views.html.contest.contestTimeLayout;
@@ -43,7 +42,6 @@ public final class ContestControllerUtils {
 
     private static ContestControllerUtils instance;
 
-    private final ContestService contestService;
     private final ContestContestantService contestContestantService;
     private final ContestSupervisorService contestSupervisorService;
     private final ContestManagerService contestManagerService;
@@ -51,8 +49,7 @@ public final class ContestControllerUtils {
     private final ContestTeamService contestTeamService;
     private final ContestContestantPasswordService contestContestantPasswordService;
 
-    private ContestControllerUtils(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestModuleService contestModuleService, ContestTeamService contestTeamService, ContestContestantPasswordService contestContestantPasswordService) {
-        this.contestService = contestService;
+    public ContestControllerUtils(ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestManagerService contestManagerService, ContestModuleService contestModuleService, ContestTeamService contestTeamService, ContestContestantPasswordService contestContestantPasswordService) {
         this.contestContestantService = contestContestantService;
         this.contestSupervisorService = contestSupervisorService;
         this.contestManagerService = contestManagerService;
@@ -61,11 +58,11 @@ public final class ContestControllerUtils {
         this.contestContestantPasswordService = contestContestantPasswordService;
     }
 
-    public static synchronized void buildInstance(ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestModuleService contestModuleService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestContestantPasswordService contestPasswordService) {
+    public static synchronized void buildInstance(ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, ContestModuleService contestModuleService, ContestManagerService contestManagerService, ContestTeamService contestTeamService, ContestContestantPasswordService contestPasswordService) {
         if (instance != null) {
             throw new UnsupportedOperationException("ContestControllerUtils instance has already been built");
         }
-        instance = new ContestControllerUtils(contestService, contestContestantService, contestSupervisorService, contestManagerService, contestModuleService, contestTeamService, contestPasswordService);
+        instance = new ContestControllerUtils(contestContestantService, contestSupervisorService, contestManagerService, contestModuleService, contestTeamService, contestPasswordService);
     }
 
     static ContestControllerUtils getInstance() {
@@ -83,25 +80,25 @@ public final class ContestControllerUtils {
         String lang = Controller.session("currentStatementLanguage");
         if (lang == null) {
             return "en-US";
-        } else {
-            return lang;
         }
+
+        return lang;
     }
 
     public boolean isManager(Contest contest) {
-        return contestManagerService.isContestManagerInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestManagerService.isManagerInContest(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     public boolean isSupervisor(Contest contest) {
-        return contestModuleService.containEnabledModule(contest.getJid(), ContestModules.SUPERVISOR) && contestSupervisorService.isContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SUPERVISOR) && contestSupervisorService.isContestSupervisorInContest(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     public boolean isCoach(Contest contest) {
-        return contestModuleService.containEnabledModule(contest.getJid(), ContestModules.TEAM) && contestTeamService.isUserCoachInAnyTeamByContestJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.TEAM) && contestTeamService.isUserACoachOfAnyTeamInContest(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     public boolean isContestant(Contest contest) {
-        return contestContestantService.isContestContestantInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid());
+        return contestContestantService.isContestantInContest(contest.getJid(), IdentityUtils.getUserJid());
     }
 
     public boolean isSupervisorOrAbove(Contest contest) {
@@ -113,45 +110,45 @@ public final class ContestControllerUtils {
     }
 
     public boolean hasContestBegun(Contest contest) {
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.DURATION);
             return new Date().after(contestDurationModule.getBeginTime());
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     public boolean hasContestEnded(Contest contest) {
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.DURATION);
             return !new Date().before(contestDurationModule.getEndTime());
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public boolean hasContestStarted(Contest contest) {
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL)) {
-            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL)) {
+            ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
             return contestContestant.getContestStartTime() != 0;
-        } else {
-            return hasContestBegun(contest);
         }
+
+        return hasContestBegun(contest);
     }
 
     public boolean hasContestFinished(Contest contest) {
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL) && isContestant(contest)) {
-            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contestModuleService.getModule(contest.getJid(), ContestModules.VIRTUAL);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) && isContestant(contest)) {
+            ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.VIRTUAL);
 
             return contestContestant.getContestStartTime() != 0 && (System.currentTimeMillis() > (contestContestant.getContestStartTime() + contestVirtualModule.getVirtualDuration()));
-        } else {
-            return hasContestEnded(contest);
         }
+
+        return hasContestEnded(contest);
     }
 
     public boolean isAllowedToViewContest(Contest contest) {
-        return (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.LIMITED)) || isCoachOrAbove(contest) || isContestant(contest);
+        return !contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.LIMITED) || isCoachOrAbove(contest) || isContestant(contest);
     }
 
     public boolean isAllowedToManageContest(Contest contest) {
@@ -164,10 +161,10 @@ public final class ContestControllerUtils {
         }
 
         boolean result = !isContestant(contest) && !hasContestEnded(contest);
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.REGISTRATION)) {
-            ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contestModuleService.getModule(contest.getJid(), ContestModules.REGISTRATION);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.REGISTRATION)) {
+            ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.REGISTRATION);
 
-            result = result && (contestRegistrationModule.getRegisterStartTime() < System.currentTimeMillis()) && (contestRegistrationModule.getRegisterStartTime() + contestRegistrationModule.getRegisterDuration() > System.currentTimeMillis()) && ((contestRegistrationModule.getMaxRegistrants() == 0) || (contestContestantService.getContestContestantCount(contest.getJid()) < contestRegistrationModule.getMaxRegistrants()));
+            result = result && (contestRegistrationModule.getRegisterStartTime() < System.currentTimeMillis()) && (contestRegistrationModule.getRegisterStartTime() + contestRegistrationModule.getRegisterDuration() > System.currentTimeMillis()) && ((contestRegistrationModule.getMaxRegistrants() == 0) || (contestContestantService.countContestantsInContest(contest.getJid()) < contestRegistrationModule.getMaxRegistrants()));
         } else {
             result = false;
         }
@@ -176,7 +173,7 @@ public final class ContestControllerUtils {
     }
 
     public boolean isAllowedToUnregisterContest(Contest contest) {
-        return isContestant(contest) && !contestModuleService.containEnabledModule(contest.getJid(), ContestModules.LIMITED) && !hasContestStarted(contest);
+        return isContestant(contest) && !contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.LIMITED) && !hasContestStarted(contest);
     }
 
     public boolean isAllowedToViewEnterContestButton(Contest contest) {
@@ -199,7 +196,7 @@ public final class ContestControllerUtils {
         }
         if (!isContestant(contest)) {
             return false;
-        } else if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.PASSWORD)) {
+        } else if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.PASSWORD)) {
             String password = contestContestantPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
             return ((password == null) && (hasEstablishedContestWithPasswordCookie(password)));
         } else {
@@ -214,7 +211,7 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             return false;
         }
-        return contestModuleService.containEnabledModule(contest.getJid(), ContestModules.PASSWORD);
+        return contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.PASSWORD);
     }
 
     public boolean isAllowedToStartContestAsContestant(Contest contest) {
@@ -225,12 +222,12 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             return false;
         }
-        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !isContestant(contest)) {
+        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !isContestant(contest)) {
             return false;
         }
 
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
-            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.getModule(contest.getJid(), ContestModules.TRIGGER);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
+            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.TRIGGER);
             if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.TEAM_MEMBER)) {
                 return !hasContestStarted(contest);
             } else {
@@ -249,12 +246,12 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             return true;
         }
-        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !isCoach(contest)) {
+        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !isCoach(contest)) {
             return false;
         }
 
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
-            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.getModule(contest.getJid(), ContestModules.TRIGGER);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
+            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.TRIGGER);
             if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.COACH)) {
                 return !hasContestStarted(contest);
             } else {
@@ -273,12 +270,12 @@ public final class ContestControllerUtils {
         if (isSupervisorOrAbove(contest)) {
             return true;
         }
-        if (!contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !contestTeamService.isUserCoachByUserJidAndTeamJid(IdentityUtils.getUserJid(), contestTeam.getJid())) {
+        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) || !contestTeamService.isUserACoachInTeam(IdentityUtils.getUserJid(), contestTeam.getJid())) {
             return false;
         }
 
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
-            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.getModule(contest.getJid(), ContestModules.TRIGGER);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
+            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.TRIGGER);
             if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.COACH)) {
                 return !hasContestStarted(contest);
             } else {
@@ -297,11 +294,11 @@ public final class ContestControllerUtils {
     }
 
     public Result tryEnteringContest(Contest contest) {
-        if (isAllowedToEnterContest(contest)) {
-            return Results.redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
-        } else {
+        if (!isAllowedToEnterContest(contest)) {
             return Results.redirect(routes.ContestController.viewContest(contest.getId()));
         }
+
+        return Results.redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()));
     }
 
     public void establishContestWithPasswordCookie(String contestPassword) {
@@ -315,21 +312,21 @@ public final class ContestControllerUtils {
     public void appendTabsLayout(LazyHtml content, Contest contest) {
         final Date contestBeginTime;
         final Date contestEndTime;
-        if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.VIRTUAL) && (isContestant(contest))) {
-            ContestContestant contestContestant = contestContestantService.findContestContestantByContestJidAndContestContestantJid(contest.getJid(), IdentityUtils.getUserJid());
-            ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contestModuleService.getModule(contest.getJid(), ContestModules.VIRTUAL);
+        if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) && (isContestant(contest))) {
+            ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
+            ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.VIRTUAL);
 
             long endTime = contestContestant.getContestStartTime() + contestVirtualModule.getVirtualDuration();
-            if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
-                ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+            if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+                ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.DURATION);
                 contestBeginTime = contestDurationModule.getBeginTime();
                 endTime = Math.min(endTime, contestDurationModule.getBeginTime().getTime() + contestDurationModule.getContestDuration());
             } else {
                 contestBeginTime = new Date(contestContestant.getContestStartTime());
             }
             contestEndTime = new Date(endTime);
-        } else if (contestModuleService.containEnabledModule(contest.getJid(), ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.getModule(contest.getJid(), ContestModules.DURATION);
+        } else if (contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+            ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.DURATION);
             contestBeginTime = contestDurationModule.getBeginTime();
             contestEndTime = new Date(contestDurationModule.getBeginTime().getTime() + contestDurationModule.getContestDuration());
         } else {
@@ -344,7 +341,7 @@ public final class ContestControllerUtils {
         internalLinkBuilder.add(new InternalLink(Messages.get("submission.submissions"), routes.ContestController.jumpToSubmissions(contest.getId())));
 
         List<TabbedContestModule> moduleWithTabs = Lists.newArrayList();
-        for (ContestModule contestModule : contestModuleService.findContestModulesByContestJid(contest.getJid())) {
+        for (ContestModule contestModule : contestModuleService.getModulesInContest(contest.getJid())) {
             if ((contestModule instanceof TabbedContestModule) && (((TabbedContestModule) contestModule).isAllowedToViewTab(ContestControllerUtils.getInstance(), contest, IdentityUtils.getUserJid()))) {
                 moduleWithTabs.add((TabbedContestModule) contestModule);
             }
@@ -354,7 +351,7 @@ public final class ContestControllerUtils {
             internalLinkBuilder.add(new InternalLink(contestModule.getTabName(), contestModule.getDefaultJumpTo(contest.getId())));
         }
 
-        if (((contestModuleService.containEnabledModule(contest.getJid(), ContestModules.SUPERVISOR)) && (isSupervisorOrAbove(contest))) || ((ControllerUtils.getInstance().isAdmin()) || (isManager(contest)))) {
+        if (((contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SUPERVISOR)) && (isSupervisorOrAbove(contest))) || ((ControllerUtils.getInstance().isAdmin()) || (isManager(contest)))) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.jumpToContestants(contest.getId())));
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.jumpToManagers(contest.getId())));
         }

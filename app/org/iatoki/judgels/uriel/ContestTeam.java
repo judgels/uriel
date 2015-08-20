@@ -7,19 +7,12 @@ import java.util.Date;
 public final class ContestTeam {
 
     private final long id;
-
     private final String jid;
-
     private final String contestJid;
-
     private final String name;
-
     private final URL teamImage;
-
     private final Date contestStartTime;
-
     private final List<ContestTeamCoach> coaches;
-
     private final List<ContestTeamMember> members;
 
     public ContestTeam(long id, String jid, String contestJid, String name, URL teamImage, Date contestStartTime, List<ContestTeamCoach> coaches, List<ContestTeamMember> members) {

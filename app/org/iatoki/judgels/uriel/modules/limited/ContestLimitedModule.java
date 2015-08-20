@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.modules.ContestModule;
 import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.views.html.contest.modules.emptyFormView;
 import play.data.Form;
 import play.mvc.Http;
 import play.twirl.api.Html;
@@ -26,14 +27,8 @@ public final class ContestLimitedModule implements ContestModule {
     }
 
     @Override
-    @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-//        if (ContestPauseConfigForm.class.equals(form.get().getClass())) {
-//            return org.iatoki.judgels.uriel.views.html.contest.modules.pauseFormView.render((Form<ContestPauseConfigForm>)form);
-//        } else {
-//            throw new RuntimeException();
-//        }
-        return null;
+        return emptyFormView.render();
     }
 
     @Override

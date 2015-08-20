@@ -3,13 +3,9 @@ package org.iatoki.judgels.uriel;
 public final class ContestContestant {
 
     private final long id;
-
     private final String contestJid;
-
     private final String userJid;
-
     private final ContestContestantStatus status;
-
     private final long contestStartTime;
 
     public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status, long contestStartTime) {

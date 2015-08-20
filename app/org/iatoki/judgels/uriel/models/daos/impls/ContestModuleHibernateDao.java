@@ -22,7 +22,7 @@ public final class ContestModuleHibernateDao extends AbstractHibernateDao<Long, 
     }
 
     @Override
-    public boolean existByContestJidAndContestModuleName(String contestJid, String contestModuleName) {
+    public boolean existsInContestByName(String contestJid, String contestModuleName) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestModuleModel> root = query.from(ContestModuleModel.class);
@@ -33,7 +33,7 @@ public final class ContestModuleHibernateDao extends AbstractHibernateDao<Long, 
     }
 
     @Override
-    public ContestModuleModel findByContestJidAndContestModuleName(String contestJid, String contestModuleName) {
+    public ContestModuleModel findInContestByName(String contestJid, String contestModuleName) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestModuleModel> query = cb.createQuery(ContestModuleModel.class);
         Root<ContestModuleModel> root = query.from(ContestModuleModel.class);
@@ -44,7 +44,7 @@ public final class ContestModuleHibernateDao extends AbstractHibernateDao<Long, 
     }
 
     @Override
-    public List<ContestModuleModel> findEnabledModulesInContestByContestJid(String contestJid) {
+    public List<ContestModuleModel> getEnabledInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestModuleModel> query = cb.createQuery(ContestModuleModel.class);
         Root<ContestModuleModel> root = query.from(ContestModuleModel.class);
@@ -55,7 +55,7 @@ public final class ContestModuleHibernateDao extends AbstractHibernateDao<Long, 
     }
 
     @Override
-    public List<ContestModuleModel> findEnabledModulesInContestByModuleName(String contestModuleName) {
+    public List<ContestModuleModel> getEnabledByName(String contestModuleName) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestModuleModel> query = cb.createQuery(ContestModuleModel.class);
         Root<ContestModuleModel> root = query.from(ContestModuleModel.class);

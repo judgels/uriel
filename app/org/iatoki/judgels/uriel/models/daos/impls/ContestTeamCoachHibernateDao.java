@@ -37,7 +37,7 @@ public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Lon
     }
 
     @Override
-    public List<ContestTeamCoachModel> findContestTeamCoachesByTeamJid(String teamJid) {
+    public List<ContestTeamCoachModel> getAllByTeamJid(String teamJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamCoachModel> query = cb.createQuery(getModelClass());
         Root<ContestTeamCoachModel> root = query.from(getModelClass());
@@ -48,7 +48,7 @@ public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Lon
     }
 
     @Override
-    public List<ContestTeamCoachModel> findContestTeamCoachesByCoachJidInTeams(String coachJid, List<String> teamJids) {
+    public List<ContestTeamCoachModel> getAllInTeamsByJid(String coachJid, List<String> teamJids) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamCoachModel> query = cb.createQuery(getModelClass());
         Root<ContestTeamCoachModel> root = query.from(getModelClass());
@@ -59,7 +59,7 @@ public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Lon
     }
 
     @Override
-    public List<String> findContestTeamJidsByCoachJid(String coachJid) {
+    public List<String> getTeamJidsByJid(String coachJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);
         Root<ContestTeamCoachModel> root = query.from(getModelClass());

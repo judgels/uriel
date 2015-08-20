@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface ContestModuleService {
 
-    List<ContestModule> findContestModulesByContestJid(String contestJid);
+    List<ContestModule> getModulesInContest(String contestJid);
 
-    boolean containEnabledModule(String contestJid, ContestModules contestModule);
+    boolean contestContainsEnabledModule(String contestJid, ContestModules contestModule);
 
-    ContestModule getModule(String contestJid, ContestModules contestModule);
+    ContestModule findModuleInContestByType(String contestJid, ContestModules contestModule);
 
     void enableModule(String contestJid, ContestModules contestModule);
 

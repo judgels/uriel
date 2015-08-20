@@ -30,7 +30,7 @@ public final class ContestContestantPasswordServiceImpl implements ContestContes
 
     @Override
     public void generateContestantPasswordForAllContestants(String contestJid) {
-        List<ContestContestantModel> contestantModels = contestContestantDao.findAllByContestJid(contestJid);
+        List<ContestContestantModel> contestantModels = contestContestantDao.getAllInContest(contestJid);
 
         for (ContestContestantModel contestantModel : contestantModels) {
             generateNewPassword(contestJid, contestantModel);
@@ -39,28 +39,28 @@ public final class ContestContestantPasswordServiceImpl implements ContestContes
 
     @Override
     public void generateContestantPassword(String contestJid, String contestantJid) {
-        ContestContestantModel contestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestantJid);
+        ContestContestantModel contestantModel = contestContestantDao.findInContestByJid(contestJid, contestantJid);
         generateNewPassword(contestJid, contestantModel);
     }
 
     @Override
     public String getContestantPassword(String contestJid, String contestantJid) {
-        if (contestContestantPasswordDao.existsByContestJidAndContestantJid(contestJid, contestantJid)) {
-            return contestContestantPasswordDao.findByContestJidAndContestantJid(contestJid, contestantJid).password;
-        } else {
+        if (!contestContestantPasswordDao.existsInContestByContestantJid(contestJid, contestantJid)) {
             return null;
         }
+
+        return contestContestantPasswordDao.findInContestByContestantJid(contestJid, contestantJid).password;
     }
 
     @Override
     public Map<String, String> getContestantPasswordsMap(String contestJid, Collection<String> contestantJids) {
-        return contestContestantPasswordDao.getContestantPasswordsByContestJidAndContestantJids(contestJid, contestantJids);
+        return contestContestantPasswordDao.getAllMappedInContestByContestantJids(contestJid, contestantJids);
     }
 
     private void generateNewPassword(String contestJid, ContestContestantModel contestantModel) {
         String newPassword = RandomStringUtils.random(6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        if (contestContestantPasswordDao.existsByContestJidAndContestantJid(contestJid, contestantModel.userJid)) {
-            ContestContestantPasswordModel existingModel = contestContestantPasswordDao.findByContestJidAndContestantJid(contestJid, contestantModel.userJid);
+        if (contestContestantPasswordDao.existsInContestByContestantJid(contestJid, contestantModel.userJid)) {
+            ContestContestantPasswordModel existingModel = contestContestantPasswordDao.findInContestByContestantJid(contestJid, contestantModel.userJid);
             existingModel.password = newPassword;
             contestContestantPasswordDao.edit(existingModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         } else {

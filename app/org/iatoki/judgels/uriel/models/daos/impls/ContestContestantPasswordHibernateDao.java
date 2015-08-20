@@ -26,7 +26,7 @@ public final class ContestContestantPasswordHibernateDao extends AbstractHiberna
     }
 
     @Override
-    public boolean existsByContestJidAndContestantJid(String contestJid, String contestantJid) {
+    public boolean existsInContestByContestantJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestContestantPasswordModel> root = query.from(getModelClass());
@@ -40,7 +40,7 @@ public final class ContestContestantPasswordHibernateDao extends AbstractHiberna
 
 
     @Override
-    public ContestContestantPasswordModel findByContestJidAndContestantJid(String contestJid, String contestantJid) {
+    public ContestContestantPasswordModel findInContestByContestantJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestContestantPasswordModel> query = cb.createQuery(getModelClass());
         Root<ContestContestantPasswordModel> root = query.from(getModelClass());
@@ -52,7 +52,7 @@ public final class ContestContestantPasswordHibernateDao extends AbstractHiberna
     }
 
     @Override
-    public Map<String, String> getContestantPasswordsByContestJidAndContestantJids(String contestJid, Collection<String> contestantJids) {
+    public Map<String, String> getAllMappedInContestByContestantJids(String contestJid, Collection<String> contestantJids) {
         if (contestantJids.isEmpty()) {
             return ImmutableMap.of();
         } else {

@@ -14,7 +14,7 @@ import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.config.TeamAvatarFile;
+import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamCoachDao;
@@ -47,19 +47,19 @@ import java.util.stream.Collectors;
 @Named("contestTeamService")
 public final class ContestTeamServiceImpl implements ContestTeamService {
 
-    private final ContestDao contestDao;
     private final ContestContestantDao contestContestantDao;
-    private final ContestTeamDao contestTeamDao;
+    private final ContestDao contestDao;
     private final ContestTeamCoachDao contestTeamCoachDao;
+    private final ContestTeamDao contestTeamDao;
     private final ContestTeamMemberDao contestTeamMemberDao;
     private final FileSystemProvider teamAvatarFileSystemProvider;
 
     @Inject
-    public ContestTeamServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamMemberDao contestTeamMemberDao, @TeamAvatarFile FileSystemProvider teamAvatarFileSystemProvider) {
-        this.contestDao = contestDao;
+    public ContestTeamServiceImpl(ContestContestantDao contestContestantDao, ContestDao contestDao, ContestTeamCoachDao contestTeamCoachDao, ContestTeamDao contestTeamDao, ContestTeamMemberDao contestTeamMemberDao, @TeamAvatarFileSystemProvider FileSystemProvider teamAvatarFileSystemProvider) {
         this.contestContestantDao = contestContestantDao;
-        this.contestTeamDao = contestTeamDao;
+        this.contestDao = contestDao;
         this.contestTeamCoachDao = contestTeamCoachDao;
+        this.contestTeamDao = contestTeamDao;
         this.contestTeamMemberDao = contestTeamMemberDao;
         this.teamAvatarFileSystemProvider = teamAvatarFileSystemProvider;
         if (!teamAvatarFileSystemProvider.fileExists(ImmutableList.of("team-default.png"))) {
@@ -73,66 +73,66 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public boolean isUserInAnyTeamByContestJid(String contestJid, String userJid) {
-        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
+    public boolean isUserPartOfAnyTeamInContest(String contestJid, String userJid) {
+        List<String> teamJids = contestTeamDao.getJidsInContest(contestJid);
 
-        return ((contestTeamCoachDao.isUserRegisteredAsCoachInTeams(userJid, teamJids)) || (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(userJid, teamJids)));
+        return contestTeamCoachDao.isUserRegisteredAsCoachInTeams(userJid, teamJids) || contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(userJid, teamJids);
     }
 
     @Override
-    public boolean isUserCoachInAnyTeamByContestJid(String contestJid, String coachJid) {
-        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
+    public boolean isUserACoachOfAnyTeamInContest(String contestJid, String coachJid) {
+        List<String> teamJids = contestTeamDao.getJidsInContest(contestJid);
 
-        return (contestTeamCoachDao.isUserRegisteredAsCoachInTeams(coachJid, teamJids));
+        return contestTeamCoachDao.isUserRegisteredAsCoachInTeams(coachJid, teamJids);
     }
 
     @Override
-    public boolean isUserCoachByUserJidAndTeamJid(String userJid, String teamJid) {
+    public boolean isUserACoachInTeam(String userJid, String teamJid) {
         return contestTeamCoachDao.isUserCoachByUserJidAndTeamJid(userJid, teamJid);
     }
 
     @Override
-    public ContestTeam findContestTeamByContestTeamId(long contestTeamId) throws ContestTeamNotFoundException {
+    public ContestTeam findContestTeamById(long contestTeamId) throws ContestTeamNotFoundException {
         ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
-        if (contestTeamModel != null) {
-            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
-            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
-
-            return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
-        } else {
+        if (contestTeamModel == null) {
             throw new ContestTeamNotFoundException("Contest Team not found");
         }
+
+        List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
+
+        return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
     }
 
     @Override
-    public ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) throws ContestTeamCoachNotFoundException {
+    public ContestTeamCoach findContestTeamCoachById(long contestTeamCoachId) throws ContestTeamCoachNotFoundException {
         ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findById(contestTeamCoachId);
-        if (contestTeamCoachModel != null) {
-            return createContestTeamCoachFromModel(contestTeamCoachModel);
-        } else {
+        if (contestTeamCoachModel == null) {
             throw new ContestTeamCoachNotFoundException("Contest Team Coach not found.");
         }
+
+        return createContestTeamCoachFromModel(contestTeamCoachModel);
     }
 
     @Override
-    public ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) throws ContestTeamMemberNotFoundException {
+    public ContestTeamMember findContestTeamMemberById(long contestTeamMemberId) throws ContestTeamMemberNotFoundException {
         ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findById(contestTeamMemberId);
-        if (contestTeamMemberModel != null) {
-            return createContestTeamMemberFromModel(contestTeamMemberModel);
-        } else {
+        if (contestTeamMemberModel == null) {
             throw new ContestTeamMemberNotFoundException("Contest Team Member not found.");
         }
+
+        return createContestTeamMemberFromModel(contestTeamMemberModel);
     }
 
     @Override
-    public Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<ContestTeam> getPageOfTeamsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestTeamDao.countByFilters(filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
         ImmutableList.Builder<ContestTeam> contestTeamBuilder = ImmutableList.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
-            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
-            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
+            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
+            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
             contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
@@ -140,8 +140,8 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public Page<ContestTeam> pageContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir) {
-        List<String> teamJidsInContest = contestTeamDao.findTeamJidsByContestJid(contestJid);
+    public Page<ContestTeam> getPageOfTeamsInContestByCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir) {
+        List<String> teamJidsInContest = contestTeamDao.getJidsInContest(contestJid);
 
         Map<SingularAttribute<? super ContestTeamCoachModel, String>, String> filterColumns = ImmutableMap.of(ContestTeamCoachModel_.coachJid, coachJid);
         Map<SingularAttribute<? super ContestTeamCoachModel, String>, List<String>> filterColumnsIn = ImmutableMap.of(ContestTeamCoachModel_.teamJid, teamJidsInContest);
@@ -150,12 +150,12 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findSortedByFilters(orderBy, orderDir, "", filterColumns, filterColumnsIn, pageIndex * pageSize, pageSize);
 
         List<String> teamJids = Lists.transform(contestTeamCoachModels, m -> m.teamJid);
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findByJids(teamJids);
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.getByJids(teamJids);
 
         ImmutableList.Builder<ContestTeam> contestTeamBuilder = ImmutableList.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
-            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
-            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
+            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
+            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
             contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
@@ -163,13 +163,13 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public List<ContestTeam> findAllContestTeams(String contestJid) {
+    public List<ContestTeam> getTeamsInContest(String contestJid) {
         List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
 
         ImmutableList.Builder<ContestTeam> contestTeamBuilder = ImmutableList.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
-            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamModel.jid);
-            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamModel.jid);
+            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
+            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
             contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
@@ -178,16 +178,16 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public List<ContestTeam> findContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid) {
-        List<String> teamJidsInContest = contestTeamDao.findTeamJidsByContestJid(contestJid);
-        List<ContestTeamCoachModel> coaches = contestTeamCoachDao.findContestTeamCoachesByCoachJidInTeams(coachJid, teamJidsInContest);
+    public List<ContestTeam> getTeamsInContestByCoachJid(String contestJid, String coachJid) {
+        List<String> teamJidsInContest = contestTeamDao.getJidsInContest(contestJid);
+        List<ContestTeamCoachModel> coaches = contestTeamCoachDao.getAllInTeamsByJid(coachJid, teamJidsInContest);
 
-        List<ContestTeamModel> teamModels = contestTeamDao.findByJids(Lists.transform(coaches, m -> m.teamJid));
+        List<ContestTeamModel> teamModels = contestTeamDao.getByJids(Lists.transform(coaches, m -> m.teamJid));
 
         ImmutableList.Builder<ContestTeam> teams = ImmutableList.builder();
         for (ContestTeamModel teamModel : teamModels) {
-            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.findContestTeamCoachesByTeamJid(teamModel.jid);
-            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(teamModel.jid);
+            List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(teamModel.jid);
+            List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamModel.jid);
 
             teams.add(createContestTeamFromModel(teamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
@@ -196,27 +196,27 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid) {
-        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findContestTeamCoachesByTeamJid(contestTeamJid);
+    public List<ContestTeamCoach> getCoachesOfTeam(String contestTeamJid) {
+        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.getAllByTeamJid(contestTeamJid);
 
         return Lists.transform(contestTeamCoachModels, m -> createContestTeamCoachFromModel(m));
     }
 
     @Override
-    public List<ContestTeamMember> findContestTeamMembersByContestJidAndCoachJid(String contestJid, String coachJid) {
-        List<String> teamJids = contestTeamDao.findTeamJidsByContestJid(contestJid);
-        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.findContestTeamCoachesByCoachJidInTeams(coachJid, teamJids);
+    public List<ContestTeamMember> getCoachedMembersInContest(String contestJid, String coachJid) {
+        List<String> teamJids = contestTeamDao.getJidsInContest(contestJid);
+        List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.getAllInTeamsByJid(coachJid, teamJids);
 
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findByJids(Lists.transform(contestTeamCoachModels, m -> m.teamJid));
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.getByJids(Lists.transform(contestTeamCoachModels, m -> m.teamJid));
 
-        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeams(Lists.transform(contestTeamModels, m -> m.jid));
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeams(Lists.transform(contestTeamModels, m -> m.jid));
 
         return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
     }
 
     @Override
-    public List<ContestTeamMember> findContestTeamMembersByTeamJid(String contestTeamJid) {
-        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(contestTeamJid);
+    public List<ContestTeamMember> getMembersOfTeam(String contestTeamJid) {
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamJid);
 
         return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
     }
@@ -289,7 +289,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) {
+    public void removeContestTeamCoachById(long contestTeamCoachId) {
         ContestTeamCoachModel contestTeamCoachModel = contestTeamCoachDao.findById(contestTeamCoachId);
         contestTeamCoachDao.remove(contestTeamCoachModel);
     }
@@ -304,7 +304,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void removeContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) {
+    public void removeContestTeamMemberById(long contestTeamMemberId) {
         ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findById(contestTeamMemberId);
         contestTeamMemberDao.remove(contestTeamMemberModel);
     }
@@ -316,10 +316,10 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         contestTeamModel.contestStartTime = now;
         contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.findContestTeamMembersInTeam(teamJid);
+        List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamJid);
 
         for (ContestTeamMemberModel contestTeamMemberModel : contestTeamMemberModels) {
-            ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestTeamMemberModel.memberJid);
+            ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestTeamMemberModel.memberJid);
             contestContestantModel.contestStartTime = now;
 
             contestContestantDao.edit(contestContestantModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

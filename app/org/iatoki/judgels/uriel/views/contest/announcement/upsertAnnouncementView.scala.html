@@ -1,11 +1,12 @@
-@(form: Form[org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
-
 @import play.i18n.Messages
+@import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm
+
+@(contestAnnouncementUpsertForm: Form[ContestAnnouncementUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
 
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/ckeditor.js")"></script>
 
 @helper.CSRF.formField
 
-@b3.text(form("title"), '_label -> Messages.get("announcement.title"))
-@b3.textarea(form("content"), '_label -> Messages.get("announcement.content"), 'class -> "ckeditor")
-@b3.select(form("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("announcement.status"), 'class -> "selectpicker")
+@b3.text(contestAnnouncementUpsertForm("title"), '_label -> Messages.get("announcement.title"))
+@b3.textarea(contestAnnouncementUpsertForm("content"), '_label -> Messages.get("announcement.content"), 'class -> "ckeditor")
+@b3.select(contestAnnouncementUpsertForm("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("announcement.status"), 'class -> "selectpicker")

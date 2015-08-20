@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel;
 import java.util.List;
 
 public class ScoreboardState {
+
     private final List<String> problemJids;
     private final List<String> problemAliases;
     private final List<String> contestantJids;

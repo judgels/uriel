@@ -28,29 +28,29 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
     }
 
     @Override
-    public List<ContestModule> findContestModulesByContestJid(String contestJid) {
-        List<ContestModuleModel> contestModuleModels = contestModuleDao.findEnabledModulesInContestByContestJid(contestJid);
+    public List<ContestModule> getModulesInContest(String contestJid) {
+        List<ContestModuleModel> contestModuleModels = contestModuleDao.getEnabledInContest(contestJid);
 
         return contestModuleModels.stream().map(m -> contestModuleFactory.parseFromConfig(ContestModules.valueOf(m.name), m.config)).collect(Collectors.toList());
     }
 
     @Override
-    public boolean containEnabledModule(String contestJid, ContestModules contestModule) {
-        return contestModuleDao.existByContestJidAndContestModuleName(contestJid, contestModule.name());
+    public boolean contestContainsEnabledModule(String contestJid, ContestModules contestModule) {
+        return contestModuleDao.existsInContestByName(contestJid, contestModule.name());
     }
 
     @Override
-    public ContestModule getModule(String contestJid, ContestModules contestModule) {
-        ContestModuleModel contestModuleModel = contestModuleDao.findByContestJidAndContestModuleName(contestJid, contestModule.name());
+    public ContestModule findModuleInContestByType(String contestJid, ContestModules contestModule) {
+        ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.name());
 
         return contestModuleFactory.parseFromConfig(contestModule, contestModuleModel.config);
     }
 
     @Override
     public void enableModule(String contestJid, ContestModules contestModule) {
-        if (contestModuleDao.existByContestJidAndContestModuleName(contestJid, contestModule.name())) {
+        if (contestModuleDao.existsInContestByName(contestJid, contestModule.name())) {
             // TODO check by contest style
-            ContestModuleModel contestModuleModel = contestModuleDao.findByContestJidAndContestModuleName(contestJid, contestModule.name());
+            ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.name());
             contestModuleModel.enabled = true;
 
             contestModuleDao.edit(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -67,8 +67,8 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
 
     @Override
     public void disableModule(String contestJid, ContestModules contestModule) {
-        if (contestModuleDao.existByContestJidAndContestModuleName(contestJid, contestModule.name())) {
-            ContestModuleModel contestModuleModel = contestModuleDao.findByContestJidAndContestModuleName(contestJid, contestModule.name());
+        if (contestModuleDao.existsInContestByName(contestJid, contestModule.name())) {
+            ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.name());
             contestModuleModel.enabled = false;
 
             contestModuleDao.edit(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

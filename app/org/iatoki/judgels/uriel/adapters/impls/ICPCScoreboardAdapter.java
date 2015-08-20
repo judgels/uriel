@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.gabriel.Verdict;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
-import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCScoreboard;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
 
         ICPCContestStyleConfig icpcStyleConfig = new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class);
 
@@ -54,7 +54,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             }
         }
 
-        for (Submission submission : submissions) {
+        for (ProgrammingSubmission submission : submissions) {
             String contestantJid = submission.getAuthorJid();
             String problemJid = submission.getProblemJid();
 
@@ -131,10 +131,10 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
     public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractBaseJidCacheServiceImpl<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
         if (scoreboard == null) {
             return new Html(Messages.get("scoreboard.not_available"));
-        } else {
-            ICPCScoreboard castScoreboard = (ICPCScoreboard) scoreboard;
-            return icpcScoreboardView.render(castScoreboard.getState(), ((ICPCScoreboardContent) (castScoreboard.getContent())).getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
         }
+
+        ICPCScoreboard castScoreboard = (ICPCScoreboard) scoreboard;
+        return icpcScoreboardView.render(castScoreboard.getState(), ((ICPCScoreboardContent) (castScoreboard.getContent())).getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
     }
 
     private void sortEntriesAndAssignRanks(List<ICPCScoreboardEntry> entries) {

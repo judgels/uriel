@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface ContestManagerDao extends Dao<Long, ContestManagerModel> {
 
-    boolean existsByContestJidAndManagerJid(String contestJid, String managerJid);
+    boolean existsInContestByJid(String contestJid, String managerJid);
 
-    ContestManagerModel findByContestJidAndManagerJid(String contestId, String managerJid);
-
-    List<String> findContestJidsByManagerJid(String managerJid);
+    List<String> getContestJidsByJid(String managerJid);
 }

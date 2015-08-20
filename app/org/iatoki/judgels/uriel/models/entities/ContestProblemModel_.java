@@ -15,6 +15,5 @@ public abstract class ContestProblemModel_ extends org.iatoki.judgels.play.model
 	public static volatile SingularAttribute<ContestProblemModel, String> problemSecret;
 	public static volatile SingularAttribute<ContestProblemModel, String> alias;
 	public static volatile SingularAttribute<ContestProblemModel, String> status;
-
 }
 

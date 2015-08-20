@@ -1,18 +1,21 @@
-@(contest: org.iatoki.judgels.uriel.Contest, contestModules: Map[org.iatoki.judgels.uriel.modules.ContestModules, org.iatoki.judgels.uriel.modules.ContestModule], page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
-
-@import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-@import org.iatoki.judgels.uriel.modules.ContestModules
-@import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule
-@import org.iatoki.judgels.uriel.controllers.routes
+@import b3.inline.fieldConstructor
+@import scala.collection.JavaConversions
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.paginationView
-
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
 @import org.iatoki.judgels.play.JudgelsPlayUtils
-@import scala.collection.JavaConversions
-@import b3.inline.fieldConstructor
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.Contest
+@import org.iatoki.judgels.uriel.modules.ContestModules
+@import org.iatoki.judgels.uriel.modules.ContestModule
+@import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule
+@import org.iatoki.judgels.uriel.ContestContestant
+@import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm
+
+@(contest: Contest, contestModules: Map[ContestModules, ContestModule], pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 
 <div class="well">
     @Html(JudgelsPlayUtils.escapeHtmlString(contest.getDescription))
@@ -63,16 +66,16 @@
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.viewContestAndListRegistrants(contest.getId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
 @if(contestModules.contains(ContestModules.REGISTRATION)) {
-    <h3>@Messages.get("contest.registrants") (@page.getTotalRowsCount)</h3>
+    <h3>@Messages.get("contest.registrants") (@pageOfContestContestants.getTotalRowsCount)</h3>
 
     @tableView() {
-        @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        @tableHeadersView(pageOfContestContestants.getPageIndex, orderBy, orderDir, filterString, listFunc)(
             "id" -> Messages.get("commons.id"),
             "userJid" -> Messages.get("contestant.name")
         )
         <tbody>
-        @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
-            @for(contestContestant <- page.getData) {
+        @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestContestants.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+            @for(contestContestant <- pageOfContestContestants.getData) {
                 <tr>
                     <td>@contestContestant.getId</td>
                     <td>@displayNamesMap.get(contestContestant.getUserJid)</td>
@@ -84,7 +87,7 @@
         </tbody>
     }
 
-    @paginationView(page, orderBy, orderDir, filterString, listFunc)
+    @paginationView(pageOfContestContestants, orderBy, orderDir, filterString, listFunc)
 }
 
 @if(contestModules.contains(ContestModules.VIRTUAL)) {

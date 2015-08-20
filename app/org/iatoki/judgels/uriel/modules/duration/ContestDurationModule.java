@@ -52,11 +52,11 @@ public final class ContestDurationModule implements ContestModule {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-        if (ContestDurationConfigForm.class.equals(form.get().getClass())) {
+        if (!ContestDurationConfigForm.class.equals(form.get().getClass())) {
             return durationFormView.render((Form<ContestDurationConfigForm>) form);
-        } else {
-            throw new RuntimeException();
         }
+
+        throw new RuntimeException();
     }
 
     @Override

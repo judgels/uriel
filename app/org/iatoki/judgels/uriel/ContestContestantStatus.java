@@ -5,5 +5,4 @@ public enum ContestContestantStatus {
     APPROVED,
     IN_CONFIRMATION,
     DISABLED
-
 }

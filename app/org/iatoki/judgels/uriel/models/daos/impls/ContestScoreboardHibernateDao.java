@@ -21,7 +21,7 @@ public final class ContestScoreboardHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public ContestScoreboardModel findContestScoreboardByContestJidAndScoreboardType(String contestJid, String type) {
+    public ContestScoreboardModel findInContestByScoreboardType(String contestJid, String type) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestScoreboardModel> query = cb.createQuery(getModelClass());
 

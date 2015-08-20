@@ -7,7 +7,7 @@ import org.iatoki.judgels.jophiel.services.impls.DefaultUserActivityMessageServi
 import org.iatoki.judgels.play.AbstractGlobal;
 import org.iatoki.judgels.play.services.BaseDataMigrationService;
 import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
-import org.iatoki.judgels.sandalphon.services.SubmissionService;
+import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.ControllerUtils;
@@ -59,15 +59,15 @@ public final class Global extends AbstractGlobal {
 
     private void buildUtils(Injector injector) {
         ControllerUtils.buildInstance(injector.instanceOf(Jophiel.class));
-        ContestControllerUtils.buildInstance(injector.instanceOf(ContestService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestContestantPasswordService.class));
+        ContestControllerUtils.buildInstance(injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestContestantPasswordService.class));
     }
 
     private void scheduleThreads(Injector injector) {
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
 
-        GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, injector.instanceOf(SubmissionService.class), injector.instanceOf(Sealtiel.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-        ScoreboardUpdater updater = new ScoreboardUpdater(injector.instanceOf(ContestService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(SubmissionService.class));
+        GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, injector.instanceOf(ProgrammingSubmissionService.class), injector.instanceOf(Sealtiel.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
+        ScoreboardUpdater updater = new ScoreboardUpdater(injector.instanceOf(ContestService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(ProgrammingSubmissionService.class));
         UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(injector.instanceOf(Jophiel.class), injector.instanceOf(UserService.class), UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);

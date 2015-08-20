@@ -1,15 +1,16 @@
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.sandalphon.Submission], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, problemJid: String)
-
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import scala.collection.JavaConversions
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.paginationView
-
-@import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.play.JudgelsPlayUtils
-@import scala.collection.JavaConversions
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.sandalphon.ProgrammingSubmission
+
+@(contestId: Long, pageOfProgrammingSubmissions: Page[ProgrammingSubmission], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, problemJid: String)
 
 <form class="form-inline pull-right" method="GET" action="@routes.ContestSubmissionController.listScreenedSubmissions(contestId, pageIndex, orderBy, orderDir, null)">
    <div class="form-group">
@@ -32,7 +33,7 @@
 <br />
 
 @tableView() {
-    @tableHeadersView(page.getPageIndex, orderBy, orderDir, "", listFunc)(
+    @tableHeadersView(pageOfProgrammingSubmissions.getPageIndex, orderBy, orderDir, "", listFunc)(
         "id" -> Messages.get("commons.id"),
         "problemJid" -> Messages.get("problem.problem"),
         "gradingLanguage" -> Messages.get("submission.gradingLanguage"),
@@ -43,8 +44,8 @@
 
     <tbody>
 
-    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
-        @for(submission <- page.getData) {
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfProgrammingSubmissions.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>
+        @for(submission <- pageOfProgrammingSubmissions.getData) {
             <tr>
                 <td>@submission.getId</td>
                 <td>@problemJidToAliasMap.get(submission.getProblemJid)</td>
@@ -61,6 +62,6 @@
     </tbody>
 }
 
-@paginationView(page, orderBy, orderDir, "", listFunc)
+@paginationView(pageOfProgrammingSubmissions, orderBy, orderDir, "", listFunc)
 
 @contestantjs(contestId)

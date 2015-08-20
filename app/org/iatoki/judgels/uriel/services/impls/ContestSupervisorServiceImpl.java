@@ -33,14 +33,14 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
     }
 
     @Override
-    public ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid) {
-        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findByContestJidAndSupervisorJid(contestJid, userJid);
+    public ContestSupervisor findContestSupervisorInContestByUserJid(String contestJid, String userJid) {
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findInContestByJid(contestJid, userJid);
 
         return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
-    public Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<ContestSupervisor> getPageOfSupervisorsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> createContestSupervisorFromModel(m));
@@ -48,18 +48,18 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
     }
 
     @Override
-    public ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) throws ContestSupervisorNotFoundException {
+    public ContestSupervisor findContestSupervisorById(long contestSupervisorId) throws ContestSupervisorNotFoundException {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
-        if (contestSupervisorModel != null) {
-            return createContestSupervisorFromModel(contestSupervisorModel);
-        } else {
+        if (contestSupervisorModel == null) {
             throw new ContestSupervisorNotFoundException("Contest Supervisor not found.");
         }
+
+        return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
-    public boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid) {
-        return contestSupervisorDao.existsByContestJidAndSupervisorJid(contestJid, contestSupervisorJid);
+    public boolean isContestSupervisorInContest(String contestJid, String contestSupervisorJid) {
+        return contestSupervisorDao.existsInContestByJid(contestJid, contestSupervisorJid);
     }
 
     @Override

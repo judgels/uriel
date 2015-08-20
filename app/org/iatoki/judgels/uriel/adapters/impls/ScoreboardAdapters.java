@@ -4,6 +4,7 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 
 public final class ScoreboardAdapters {
+
     private ScoreboardAdapters() {
         // prevent instantiation
     }

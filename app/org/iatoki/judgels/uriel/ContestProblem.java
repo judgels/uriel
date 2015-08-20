@@ -3,19 +3,12 @@ package org.iatoki.judgels.uriel;
 public final class ContestProblem {
 
     private final long id;
-
     private final String contestJid;
-
     private final String problemJid;
-
     private final String problemSecret;
-
     private final String alias;
-
     private final long submissionsLimit;
-
     private final ContestProblemStatus status;
-
     private long totalSubmissions;
 
     public ContestProblem(long id, String contestJid, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status) {

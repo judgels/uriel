@@ -7,21 +7,19 @@ import java.util.List;
 
 public interface ContestProblemDao extends Dao<Long, ContestProblemModel> {
 
-    List<ContestProblemModel> findByContestJid(String contestJid);
+    List<ContestProblemModel> getAllInContest(String contestJid);
 
-    ContestProblemModel findByProblemJidOrderedByAlias(String contestJid, String problemJid);
+    ContestProblemModel findInContestByJid(String contestJid, String problemJid);
 
-    boolean existsByProblemJid(String contestJid, String problemJid);
+    boolean existsInContestByJid(String contestJid, String problemJid);
 
-    boolean existsByProblemAlias(String contestJid, String problemAlias);
+    boolean existsInContestByAlias(String contestJid, String problemAlias);
 
-    List<ContestProblemModel> findOpenedByContestJidOrderedByAlias(String contestJid);
+    List<ContestProblemModel> getOpenedInContest(String contestJid);
 
-    List<ContestProblemModel> findUsedByContestJidOrderedByAlias(String contestJid);
+    List<ContestProblemModel> getUsedInContest(String contestJid);
 
-    long countValidByContestJid(String contestJid);
+    long countValidInContest(String contestJid);
 
-    List<ContestProblemModel> findUsedByContestJidOrderedByStatusAndThenAlias(String contestJid, long offset, long limit);
-
-    boolean isThereNewProblem(String contestJid, long lastTime);
+    List<ContestProblemModel> getUsedInContestWithLimit(String contestJid, long offset, long limit);
 }

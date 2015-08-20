@@ -1,7 +1,9 @@
-@(contest: org.iatoki.judgels.uriel.Contest, contestModules: Map[org.iatoki.judgels.uriel.modules.ContestModules, org.iatoki.judgels.uriel.modules.ContestModule])
-
-@import org.iatoki.judgels.uriel.modules.ContestModules
 @import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.Contest
+@import org.iatoki.judgels.uriel.modules.ContestModules
+@import org.iatoki.judgels.uriel.modules.ContestModule
+
+@(contest: Contest, contestModules: Map[ContestModules, ContestModule])
 
 <h2>Enabled Modules</h2>
 

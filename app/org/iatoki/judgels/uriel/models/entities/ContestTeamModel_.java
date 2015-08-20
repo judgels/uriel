@@ -9,6 +9,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @Generated(value = "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor")
 @StaticMetamodel(ContestTeamModel.class)
 public abstract class ContestTeamModel_ extends AbstractJudgelsModel_ {
+
     public static volatile SingularAttribute<ContestTeamModel, Long> id;
     public static volatile SingularAttribute<ContestTeamModel, String> contestJid;
     public static volatile SingularAttribute<ContestTeamModel, String> name;

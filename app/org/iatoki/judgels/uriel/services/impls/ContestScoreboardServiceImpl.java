@@ -2,14 +2,12 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
-import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.config.TeamAvatarFile;
+import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestScoreboardDao;
@@ -38,40 +36,38 @@ import java.util.stream.Collectors;
 @Named("contestScoreboardService")
 public final class ContestScoreboardServiceImpl implements ContestScoreboardService {
 
-    private final ContestDao contestDao;
     private final ContestContestantDao contestContestantDao;
+    private final ContestDao contestDao;
+    private final ContestScoreboardDao contestScoreboardDao;
     private final ContestTeamDao contestTeamDao;
     private final ContestTeamMemberDao contestTeamMemberDao;
-    private final ContestScoreboardDao contestScoreboardDao;
-    private final FileSystemProvider teamAvatarFileSystemProvider;
 
     @Inject
-    public ContestScoreboardServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestTeamDao contestTeamDao, ContestTeamMemberDao contestTeamMemberDao, ContestScoreboardDao contestScoreboardDao, @TeamAvatarFile FileSystemProvider teamAvatarFileSystemProvider) {
-        this.contestDao = contestDao;
+    public ContestScoreboardServiceImpl(ContestContestantDao contestContestantDao, ContestDao contestDao, ContestScoreboardDao contestScoreboardDao, ContestTeamDao contestTeamDao, ContestTeamMemberDao contestTeamMemberDao) {
         this.contestContestantDao = contestContestantDao;
+        this.contestDao = contestDao;
+        this.contestScoreboardDao = contestScoreboardDao;
         this.contestTeamDao = contestTeamDao;
         this.contestTeamMemberDao = contestTeamMemberDao;
-        this.contestScoreboardDao = contestScoreboardDao;
-        this.teamAvatarFileSystemProvider = teamAvatarFileSystemProvider;
     }
 
     @Override
-    public boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
-        return contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, type.name());
+    public boolean scoreboardExistsInContestByType(String contestJid, ContestScoreboardType scoreboardType) {
+        return contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, scoreboardType.name());
     }
 
     @Override
-    public ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type) {
+    public ContestScoreboard findScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
-        ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
+        ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestJid, scoreboardType.name());
         return createContestScoreboardFromModel(contestScoreboardModel, ContestStyle.valueOf(contestModel.style));
     }
 
     @Override
-    public Map<String, URL> getMapContestantJidToImageUrlInContest(String contestJid) {
+    public Map<String, URL> getMappedContestantJidToImageUrlInContest(String contestJid) {
         ImmutableMap.Builder<String, URL> resultBuilder = ImmutableMap.builder();
 
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findContestTeamModelsByContestJid(contestJid);
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.getAllInContest(contestJid);
         ImmutableMap.Builder<String, ContestTeamModel> contestTeamModelBuilder = ImmutableMap.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
             contestTeamModelBuilder.put(contestTeamModel.jid, contestTeamModel);
@@ -83,7 +79,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
 
         for (ContestContestantModel contestContestantModel : contestContestantModels) {
             if (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(contestContestantModel.userJid, contestTeamJids)) {
-                ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findContestTeamMemberByMemberJidInAnyTeam(contestContestantModel.userJid, contestTeamJids);
+                ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findByJidInAnyTeam(contestContestantModel.userJid, contestTeamJids);
                 resultBuilder.put(contestContestantModel.userJid, getTeamImageURLFromImageName(contestTeamModelMap.get(contestTeamMemberModel.teamJid).teamImageName));
             } else {
                 resultBuilder.put(contestContestantModel.userJid, AvatarCacheServiceImpl.getInstance().getAvatarUrl(contestContestantModel.userJid));
@@ -98,7 +94,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
         ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findById(contestScoreboardId);
         ContestScoreboardModel frozenContestScoreboardModel;
         if (contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name())) {
-            frozenContestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name());
+            frozenContestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name());
         } else {
             frozenContestScoreboardModel = new ContestScoreboardModel();
         }
@@ -110,9 +106,9 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     }
 
     @Override
-    public void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard) {
+    public void updateContestScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard) {
         try {
-            ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findContestScoreboardByContestJidAndScoreboardType(contestJid, type.name());
+            ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestJid, scoreboardType.name());
             contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
             contestScoreboardDao.edit(contestScoreboardModel, "scoreboardUpdater", "localhost");

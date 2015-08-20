@@ -1,19 +1,19 @@
-@import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm
-@import org.iatoki.judgels.uriel.ContestPermissions
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
-
-@import org.iatoki.judgels.uriel.controllers.routes
-
+@import scala.collection.JavaConversions
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
-
 @import org.iatoki.judgels.play.views.html.formErrorView
-@import scala.collection.JavaConversions
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm
+@import org.iatoki.judgels.uriel.ContestPermissions
+@import org.iatoki.judgels.uriel.ContestSupervisor
+
+@(contestId: Long, pageOfContestSupervisors: Page[ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -91,12 +91,12 @@
     }
 }
 
-@searchView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)
+@searchView(pageOfContestSupervisors.getPageIndex, orderBy, orderDir, filterString, listFunc)
 
 <div class="clearfix"></div>
 
 @tableView() {
-    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+    @tableHeadersView(pageOfContestSupervisors.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
         "userJid" -> Messages.get("supervisor.name"),
         "announcement" -> Messages.get("permission.announcement"),
@@ -109,8 +109,8 @@
     )
     <tbody>
 
-    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
-        @for(contestSupervisor <- page.getData) {
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestSupervisors.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestSupervisor <- pageOfContestSupervisors.getData) {
             <tr>
                 <td>@contestSupervisor.getId</td>
                 <td>@displayNamesMap.get(contestSupervisor.getUserJid)</td>
@@ -132,6 +132,6 @@
     </tbody>
 }
 
-@paginationView(page, orderBy, orderDir, filterString, listFunc)
+@paginationView(pageOfContestSupervisors, orderBy, orderDir, filterString, listFunc)
 
 @supervisorjs(contestId)

@@ -27,7 +27,6 @@ public final class ContestPauseModule implements ContestModule {
     }
 
     @Override
-    @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
         return emptyFormView.render();
     }

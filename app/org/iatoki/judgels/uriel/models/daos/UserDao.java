@@ -5,7 +5,7 @@ import org.iatoki.judgels.uriel.models.entities.UserModel;
 
 public interface UserDao extends Dao<Long, UserModel> {
 
-    boolean existsByUserJid(String userJid);
+    boolean existsByJid(String userJid);
 
-    UserModel findByUserJid(String userJid);
+    UserModel findByJid(String userJid);
 }

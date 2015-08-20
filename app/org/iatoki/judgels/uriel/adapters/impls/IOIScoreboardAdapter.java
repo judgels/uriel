@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
-import org.iatoki.judgels.sandalphon.Submission;
+import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.IOIScoreboard;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<Submission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
@@ -38,7 +38,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             scores.put(contestantJid, Maps.newHashMap());
         }
 
-        for (Submission submission : submissions) {
+        for (ProgrammingSubmission submission : submissions) {
             String contestantJid = submission.getAuthorJid();
 
             if (!scores.containsKey(contestantJid)) {
@@ -137,10 +137,10 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
     public Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractBaseJidCacheServiceImpl<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids) {
         if (scoreboard == null) {
             return new Html(Messages.get("scoreboard.not_available"));
-        } else {
-            IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
-            return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
         }
+
+        IOIScoreboard castScoreboard = (IOIScoreboard) scoreboard;
+        return ioiScoreboardView.render(castScoreboard.getState(), castScoreboard.getContent().getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
     }
 
     private <T> List<T> filterIndices(List<T> list, List<Integer> indices) {

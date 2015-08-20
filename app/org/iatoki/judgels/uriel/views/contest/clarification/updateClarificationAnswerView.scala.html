@@ -1,14 +1,16 @@
-@(contestId: Long, clarification: org.iatoki.judgels.uriel.ContestClarification, form: Form[org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm])
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.play.JudgelsPlayUtils
-@import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+@import org.iatoki.judgels.uriel.ContestClarification
+@import org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm
+
+@(contestId: Long, clarification: ContestClarification, contestClarificationUpdateForm: Form[ContestClarificationUpdateForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(form)
+@formErrorView(contestClarificationUpdateForm)
 
 @b3.form(routes.ContestClarificationController.postUpdateClarificationAnswer(contestId, clarification.getId)) {
 
@@ -25,8 +27,8 @@
         </div>
     </div>
 
-    @b3.textarea(form("answer"), '_label -> Messages.get("clarification.answer"), 'class -> "form-control")
-    @b3.select(form("status"), Seq("ANSWERED" -> "Answered"), '_label -> Messages.get("clarification.status"), 'class -> "selectpicker")
+    @b3.textarea(contestClarificationUpdateForm("answer"), '_label -> Messages.get("clarification.answer"), 'class -> "form-control")
+    @b3.select(contestClarificationUpdateForm("status"), Seq("ANSWERED" -> "Answered"), '_label -> Messages.get("clarification.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

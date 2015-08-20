@@ -8,10 +8,9 @@ import java.util.List;
 
 public interface ContestTeamDao extends JudgelsDao<ContestTeamModel> {
 
-    List<ContestTeamModel> findContestTeamModelsByContestJid(String contestJid);
+    List<ContestTeamModel> getAllInContest(String contestJid);
 
-    List<String> findTeamJidsByContestJid(String contestJid);
+    List<String> getJidsInContest(String contestJid);
 
-    List<String> findContestJidsByTeamJids(Collection<String> teamJids);
-
+    List<String> getContestJidsByJids(Collection<String> teamJids);
 }

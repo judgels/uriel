@@ -10,19 +10,19 @@ import java.util.Map;
 
 public interface ContestProblemService {
 
-    boolean isContestProblemInContestByProblemJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias);
+    boolean isProblemInContestByJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias);
 
-    ContestProblem findContestProblemByContestProblemId(long contestProblemId) throws ContestProblemNotFoundException;
+    ContestProblem findContestProblemById(long contestProblemId) throws ContestProblemNotFoundException;
 
-    ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid);
+    ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid);
 
-    List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid);
+    List<ContestProblem> getOpenedProblemsInContest(String contestJid);
 
-    Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
+    Page<ContestProblem> getPageOfProblemsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);
 
-    Page<ContestProblem> pageUsedContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize);
+    Page<ContestProblem> getPageOfUsedProblemsInContest(String contestJid, long pageIndex, long pageSize);
 
-    Map<String, String> findProblemJidToAliasMapByContestJid(String contestJid);
+    Map<String, String> getMappedJidToAliasInContest(String contestJid);
 
     void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
 

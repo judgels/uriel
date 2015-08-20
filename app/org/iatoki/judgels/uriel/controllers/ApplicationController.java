@@ -36,7 +36,7 @@ public final class ApplicationController extends AbstractJudgelsController {
     }
 
     public Result index() {
-        if ((session().containsKey("username")) && (session().containsKey("role"))) {
+        if (session().containsKey("username") && session().containsKey("role")) {
             return redirect(routes.ContestController.index());
         } else if (session().containsKey("username")) {
             String returnUri = routes.ContestController.index().absoluteURL(request(), request().secure());
@@ -48,7 +48,7 @@ public final class ApplicationController extends AbstractJudgelsController {
     }
 
     public Result auth(String returnUri) {
-        if ((session().containsKey("username")) && (session().containsKey("role"))) {
+        if (session().containsKey("username") && session().containsKey("role")) {
             return redirect(returnUri);
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
@@ -60,42 +60,42 @@ public final class ApplicationController extends AbstractJudgelsController {
 
     @Transactional
     public Result authRole(String returnUri) {
-        if ((session().containsKey("username")) && (session().containsKey("role"))) {
+        if (session().containsKey("username") && session().containsKey("role")) {
             return redirect(returnUri);
-        } else {
-            String userRoleJid = IdentityUtils.getUserJid();
-            if (userService.existsByUserJid(userRoleJid)) {
-                User userRole = userService.findUserByUserJid(userRoleJid);
-                UrielUtils.saveRolesInSession(userRole.getRoles());
-                return redirect(returnUri);
-            } else {
-                userService.createUser(userRoleJid, UrielUtils.getDefaultRoles());
-                UrielUtils.saveRolesInSession(UrielUtils.getDefaultRoles());
-                return redirect(returnUri);
-            }
         }
+
+        String userRoleJid = IdentityUtils.getUserJid();
+        if (!userService.existsByUserJid(userRoleJid)) {
+            userService.createUser(userRoleJid, UrielUtils.getDefaultRoles());
+            UrielUtils.saveRolesInSession(UrielUtils.getDefaultRoles());
+            return redirect(returnUri);
+        }
+
+        User userRole = userService.findUserByJid(userRoleJid);
+        UrielUtils.saveRolesInSession(userRole.getRoles());
+        return redirect(returnUri);
     }
 
     @Transactional
     public Result afterLogin(String returnUri) {
-        if (session().containsKey("role")) {
-            JudgelsPlayUtils.updateUserJidCache(JidCacheServiceImpl.getInstance());
-            Jophiel.updateUserAvatarCache(AvatarCacheServiceImpl.getInstance());
-
-            if (JudgelsPlayUtils.hasViewPoint()) {
-                try {
-                    UrielUtils.backupSession();
-                    UrielUtils.setUserSession(jophiel.getUserByUserJid(JudgelsPlayUtils.getViewPoint()), userService.findUserByUserJid(JudgelsPlayUtils.getViewPoint()));
-                } catch (IOException e) {
-                    JudgelsPlayUtils.removeViewPoint();
-                    UrielUtils.restoreSession();
-                }
-            }
-            return redirect(returnUri);
-        } else {
+        if (!session().containsKey("role")) {
             String newReturnUri = org.iatoki.judgels.uriel.controllers.routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
             return redirect(routes.ApplicationController.authRole(newReturnUri));
         }
+
+        JudgelsPlayUtils.updateUserJidCache(JidCacheServiceImpl.getInstance());
+        Jophiel.updateUserAvatarCache(AvatarCacheServiceImpl.getInstance());
+
+        if (JudgelsPlayUtils.hasViewPoint()) {
+            try {
+                UrielUtils.backupSession();
+                UrielUtils.setUserSession(jophiel.getUserByUserJid(JudgelsPlayUtils.getViewPoint()), userService.findUserByJid(JudgelsPlayUtils.getViewPoint()));
+            } catch (IOException e) {
+                JudgelsPlayUtils.removeViewPoint();
+                UrielUtils.restoreSession();
+            }
+        }
+        return redirect(returnUri);
     }
 
     @Transactional
@@ -109,12 +109,12 @@ public final class ApplicationController extends AbstractJudgelsController {
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result postViewAs() {
-        Form<ViewpointForm> form = Form.form(ViewpointForm.class).bindFromRequest();
+        Form<ViewpointForm> viewpointForm = Form.form(ViewpointForm.class).bindFromRequest();
 
-        if ((!(form.hasErrors() || form.hasGlobalErrors())) && (UrielUtils.trullyHasRole("admin"))) {
-            ViewpointForm viewpointForm = form.get();
+        if (!formHasErrors(viewpointForm) && UrielUtils.trullyHasRole("admin")) {
+            ViewpointForm viewpointData = viewpointForm.get();
             try {
-                String userJid = jophiel.verifyUsername(viewpointForm.username);
+                String userJid = jophiel.verifyUsername(viewpointData.username);
                 if (userJid != null) {
                     try {
                         userService.upsertUserFromJophielUserJid(userJid);
@@ -122,9 +122,9 @@ public final class ApplicationController extends AbstractJudgelsController {
                             UrielUtils.backupSession();
                         }
                         JudgelsPlayUtils.setViewPointInSession(userJid);
-                        UrielUtils.setUserSession(jophiel.getUserByUserJid(userJid), userService.findUserByUserJid(userJid));
+                        UrielUtils.setUserSession(jophiel.getUserByUserJid(userJid), userService.findUserByJid(userJid));
 
-                        ControllerUtils.getInstance().addActivityLog("View as user " + viewpointForm.username + ".");
+                        ControllerUtils.getInstance().addActivityLog("View as user " + viewpointData.username + ".");
 
                     } catch (IOException e) {
                         JudgelsPlayUtils.removeViewPoint();
@@ -136,7 +136,7 @@ public final class ApplicationController extends AbstractJudgelsController {
                 e.printStackTrace();
             }
         }
-        return redirect(request().getHeader("Referer"));
+        return redirectToReferer();
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -144,6 +144,6 @@ public final class ApplicationController extends AbstractJudgelsController {
         JudgelsPlayUtils.removeViewPoint();
         UrielUtils.restoreSession();
 
-        return redirect(request().getHeader("Referer"));
+        return redirectToReferer();
     }
 }

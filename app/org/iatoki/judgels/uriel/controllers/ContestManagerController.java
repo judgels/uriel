@@ -39,16 +39,16 @@ public class ContestManagerController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 
-    private final Jophiel jophiel;
-    private final ContestService contestService;
     private final ContestManagerService contestManagerService;
+    private final ContestService contestService;
+    private final Jophiel jophiel;
     private final UserService userService;
 
     @Inject
-    public ContestManagerController(Jophiel jophiel, ContestService contestService, ContestManagerService contestManagerService, UserService userService) {
-        this.jophiel = jophiel;
-        this.contestService = contestService;
+    public ContestManagerController(ContestManagerService contestManagerService, ContestService contestService, Jophiel jophiel, UserService userService) {
         this.contestManagerService = contestManagerService;
+        this.contestService = contestService;
+        this.jophiel = jophiel;
         this.userService = userService;
     }
 
@@ -63,17 +63,15 @@ public class ContestManagerController extends AbstractJudgelsController {
     public Result listCreateManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
-            boolean canUpdate = ControllerUtils.getInstance().isAdmin();
-
-            Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class);
-
-            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
-        } else {
+        if (!ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+        boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+        Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class);
+
+        return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
     }
 
     @Authorized(value = "admin")
@@ -81,46 +79,42 @@ public class ContestManagerController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        Form<ContestManagerCreateForm> form = Form.form(ContestManagerCreateForm.class).bindFromRequest();
+        Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class).bindFromRequest();
 
-        if (form.hasErrors() || form.hasGlobalErrors()) {
-            Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-
+        if (formHasErrors(contestManagerCreateForm)) {
+            Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
             boolean canUpdate = ControllerUtils.getInstance().isAdmin();
 
-            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
-        } else {
-            ContestManagerCreateForm contestManagerCreateForm = form.get();
-            try {
-                String userJid = jophiel.verifyUsername(contestManagerCreateForm.username);
-                if ((userJid != null) && (!contestManagerService.isContestManagerInContestByUserJid(contest.getJid(), userJid))) {
-                    userService.upsertUserFromJophielUserJid(userJid);
-                    contestManagerService.createContestManager(contest.getId(), userJid);
-
-                    ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateForm.username + " in contest " + contest.getName() + ".");
-
-                    return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
-                } else {
-                    form.reject("error.manager.create.userJid.invalid");
-
-                    Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-                    boolean canUpdate = ControllerUtils.getInstance().isAdmin();
-
-                    return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
-                }
-            } catch (IOException e) {
-                form.reject("error.manager.create.userJid.invalid");
-
-                Page<ContestManager> contestManagers = contestManagerService.pageContestManagersByContestJid(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-                boolean canUpdate = ControllerUtils.getInstance().isAdmin();
-
-                return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, contest);
-            }
+            return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
+
+        ContestManagerCreateForm contestManagerCreateData = contestManagerCreateForm.get();
+        String userJid;
+        try {
+            userJid = jophiel.verifyUsername(contestManagerCreateData.username);
+        } catch (IOException e) {
+            userJid = null;
+        }
+
+        if ((userJid == null) || !contestManagerService.isManagerInContest(contest.getJid(), userJid)) {
+            contestManagerCreateForm.reject("error.manager.create.userJid.invalid");
+
+            Page<ContestManager> contestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+            boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+
+            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
+        }
+
+        userService.upsertUserFromJophielUserJid(userJid);
+        contestManagerService.createContestManager(contest.getId(), userJid);
+
+        ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateData.username + " in contest " + contest.getName() + ".");
+
+        return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
     }
 
-    private Result showListCreateManager(Page<ContestManager> contestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> form, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, form, jophiel.getAutoCompleteEndPoint()));
+    private Result showListCreateManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);

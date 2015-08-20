@@ -1,16 +1,17 @@
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-
-@import org.iatoki.judgels.uriel.controllers.routes
-
-@import play.i18n.Messages
-@import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
+@import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.ContestClarification
+
+@(contestId: Long, page: Page[ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestClarificationController.listClarifications(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 

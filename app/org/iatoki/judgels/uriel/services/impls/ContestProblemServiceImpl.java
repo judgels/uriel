@@ -36,34 +36,34 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
     }
 
     @Override
-    public boolean isContestProblemInContestByProblemJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias) {
-        return ((contestProblemDao.existsByProblemJid(contestJid, contestProblemJid)) || (contestProblemDao.existsByProblemAlias(contestJid, contestProblemAlias)));
+    public boolean isProblemInContestByJidOrAlias(String contestJid, String contestProblemJid, String contestProblemAlias) {
+        return ((contestProblemDao.existsInContestByJid(contestJid, contestProblemJid)) || (contestProblemDao.existsInContestByAlias(contestJid, contestProblemAlias)));
     }
 
     @Override
-    public ContestProblem findContestProblemByContestProblemId(long contestProblemId) throws ContestProblemNotFoundException {
+    public ContestProblem findContestProblemById(long contestProblemId) throws ContestProblemNotFoundException {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
-        if (contestProblemModel != null) {
-            return createContestProblemFromModel(contestProblemModel);
-        } else {
+        if (contestProblemModel == null) {
             throw new ContestProblemNotFoundException("Contest Problem not found.");
         }
-    }
 
-    @Override
-    public ContestProblem findContestProblemByContestJidAndContestProblemJid(String contestJid, String contestProblemJid) {
-        ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJidOrderedByAlias(contestJid, contestProblemJid);
         return createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
-    public List<ContestProblem> findOpenedContestProblemByContestJid(String contestJid) {
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findOpenedByContestJidOrderedByAlias(contestJid);
+    public ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid) {
+        ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestJid, contestProblemJid);
+        return createContestProblemFromModel(contestProblemModel);
+    }
+
+    @Override
+    public List<ContestProblem> getOpenedProblemsInContest(String contestJid) {
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.getOpenedInContest(contestJid);
         return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
     }
 
     @Override
-    public Page<ContestProblem> pageContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
+    public Page<ContestProblem> getPageOfProblemsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
         ImmutableMap.Builder<SingularAttribute<? super ContestProblemModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
         filterColumnsBuilder.put(ContestProblemModel_.contestJid, contestJid);
         if (status != null) {
@@ -79,18 +79,18 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
     }
 
     @Override
-    public Page<ContestProblem> pageUsedContestProblemsByContestJid(String contestJid, long pageIndex, long pageSize) {
-        long totalRows = contestProblemDao.countValidByContestJid(contestJid);
+    public Page<ContestProblem> getPageOfUsedProblemsInContest(String contestJid, long pageIndex, long pageSize) {
+        long totalRows = contestProblemDao.countValidInContest(contestJid);
 
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findUsedByContestJidOrderedByStatusAndThenAlias(contestJid, pageIndex * pageSize, pageSize);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.getUsedInContestWithLimit(contestJid, pageIndex * pageSize, pageSize);
         List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalRows, pageIndex, pageSize);
     }
 
     @Override
-    public Map<String, String> findProblemJidToAliasMapByContestJid(String contestJid) {
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findByContestJid(contestJid);
+    public Map<String, String> getMappedJidToAliasInContest(String contestJid) {
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.getAllInContest(contestJid);
 
         Map<String, String> map = Maps.newLinkedHashMap();
 

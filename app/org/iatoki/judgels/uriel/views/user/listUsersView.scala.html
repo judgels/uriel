@@ -1,25 +1,27 @@
-@(page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.User], orderBy: String, orderDir: String, filterString: String)
-
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.tableView
 @import org.iatoki.judgels.play.views.html.table.tableHeadersView
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.User
 
-@searchView(page.getPageIndex, orderBy, orderDir, filterString, routes.UserController.listUsers)
+@(pageOfUsers: Page[User], orderBy: String, orderDir: String, filterString: String)
+
+@searchView(pageOfUsers.getPageIndex, orderBy, orderDir, filterString, routes.UserController.listUsers)
 
 <div class="clearfix"></div>
 
 @tableView() {
-    @tableHeadersView(page.getPageIndex, orderBy, orderDir, filterString, routes.UserController.listUsers)(
+    @tableHeadersView(pageOfUsers.getPageIndex, orderBy, orderDir, filterString, routes.UserController.listUsers)(
         "id" -> Messages.get("commons.id"),
         "userJid" -> Messages.get("user.name"),
         "roles" -> Messages.get("user.roles")
     )
     <tbody>
-    @for(user <- page.getData) {
+    @for(user <- pageOfUsers.getData) {
         <tr>
             <td>@user.getId</td>
             <td>@JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid)</td>
@@ -34,4 +36,4 @@
     </tbody>
 }
 
-@paginationView(page, orderBy, orderDir, filterString, routes.UserController.listUsers)
+@paginationView(pageOfUsers, orderBy, orderDir, filterString, routes.UserController.listUsers)

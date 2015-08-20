@@ -12,12 +12,12 @@ import org.iatoki.judgels.uriel.ContestReadType;
 import org.iatoki.judgels.uriel.models.daos.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;
-import org.iatoki.judgels.uriel.models.daos.ContestReadDao;
+import org.iatoki.judgels.uriel.models.daos.UserReadDao;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
-import org.iatoki.judgels.uriel.models.entities.ContestReadModel;
+import org.iatoki.judgels.uriel.models.entities.UserReadModel;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import play.i18n.Messages;
 
@@ -25,6 +25,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -33,33 +34,33 @@ import java.util.Map;
 @Named("contestClarificationService")
 public final class ContestClarificationServiceImpl implements ContestClarificationService {
 
+    private final ContestClarificationDao contestClarificationDao;
     private final ContestDao contestDao;
     private final ContestProblemDao contestProblemDao;
-    private final ContestClarificationDao contestClarificationDao;
-    private final ContestReadDao contestReadDao;
+    private final UserReadDao userReadDao;
 
     @Inject
-    public ContestClarificationServiceImpl(ContestDao contestDao, ContestProblemDao contestProblemDao, ContestClarificationDao contestClarificationDao, ContestReadDao contestReadDao) {
+    public ContestClarificationServiceImpl(ContestClarificationDao contestClarificationDao, ContestDao contestDao, ContestProblemDao contestProblemDao, UserReadDao userReadDao) {
+        this.contestClarificationDao = contestClarificationDao;
         this.contestDao = contestDao;
         this.contestProblemDao = contestProblemDao;
-        this.contestClarificationDao = contestClarificationDao;
-        this.contestReadDao = contestReadDao;
+        this.userReadDao = userReadDao;
     }
 
     @Override
-    public ContestClarification findContestClarificationByContestClarificationId(long contestClarificationId) throws ContestClarificationNotFoundException {
+    public ContestClarification findContestClarificationById(long contestClarificationId) throws ContestClarificationNotFoundException {
         ContestClarificationModel contestClarificationModel = contestClarificationDao.findById(contestClarificationId);
-        if (contestClarificationModel != null) {
-            ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
-
-            return createContestClarificationFromModel(contestClarificationModel, contestModel);
-        } else {
+        if (contestClarificationModel == null) {
             throw new ContestClarificationNotFoundException("Contest Clarification not found.");
         }
+
+        ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
+
+        return createContestClarificationFromModel(contestClarificationModel, contestModel);
     }
 
     @Override
-    public Page<ContestClarification> pageContestClarificationsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, List<String> askerJids) {
+    public Page<ContestClarification> getPageOfClarificationsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, List<String> askerJids) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         if (askerJids == null) {
@@ -72,35 +73,35 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
             List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
 
             return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
-        } else {
-            long totalPages = contestClarificationDao.countClarificationsByContestJidAskedByUserJids(contestModel.jid, askerJids);
-            List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findClarificationsByContestJidAskedByUserJids(contestModel.jid, askerJids);
-            List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
-
-            return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
         }
+
+        long totalPages = contestClarificationDao.countInContestAskedByUsers(contestModel.jid, askerJids);
+        List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.getAllInContestAskedByUsers(contestModel.jid, askerJids);
+        List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(m, contestModel));
+
+        return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
     }
 
     @Override
-    public long getUnansweredContestClarificationsCount(String contestJid) {
-        return contestClarificationDao.countUnansweredClarificationByContestJid(contestJid);
+    public long countUnansweredClarificationsInContest(String contestJid) {
+        return contestClarificationDao.countUnansweredInContest(contestJid);
     }
 
     @Override
-    public long getUnreadContestClarificationsCount(List<String> askerJids, String userJid, String contestJid, boolean answered) {
+    public long countUnreadClarificationsInContest(Collection<String> askerJids, String userJid, String contestJid, boolean answered) {
         List<String> clarificationJids;
 
         if (answered) {
-            clarificationJids = contestClarificationDao.findAllAnsweredClarificationJidsInContestByUserJids(contestJid, askerJids);
+            clarificationJids = contestClarificationDao.getAnsweredJidsInContestAskedByUsers(contestJid, askerJids);
         } else {
-            clarificationJids = contestClarificationDao.findClarificationJidsByContestJidAskedByUserJids(contestJid, askerJids);
+            clarificationJids = contestClarificationDao.getJidsInContestAskedByUsers(contestJid, askerJids);
         }
 
-        if (!clarificationJids.isEmpty()) {
-            return (clarificationJids.size() - contestReadDao.countReadByUserJidAndTypeAndJidList(userJid, ContestReadType.CLARIFICATION.name(), clarificationJids));
-        } else {
+        if (clarificationJids.isEmpty()) {
             return 0;
         }
+
+        return (clarificationJids.size() - userReadDao.countReadByUserJidAndTypeAndJids(userJid, ContestReadType.CLARIFICATION.name(), clarificationJids));
     }
 
     @Override
@@ -136,15 +137,15 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
     }
 
     @Override
-    public void readContestClarifications(String userJid, List<String> contestClarificationJids) {
+    public void readContestClarifications(String userJid, Collection<String> contestClarificationJids) {
         for (String contestClarificationJid : contestClarificationJids) {
-            if (!contestReadDao.existByUserJidAndTypeAndJid(userJid, ContestReadType.CLARIFICATION.name(), contestClarificationJid)) {
-                ContestReadModel contestReadModel = new ContestReadModel();
+            if (!userReadDao.existsByUserJidAndTypeAndJid(userJid, ContestReadType.CLARIFICATION.name(), contestClarificationJid)) {
+                UserReadModel contestReadModel = new UserReadModel();
                 contestReadModel.userJid = userJid;
                 contestReadModel.type = ContestReadType.CLARIFICATION.name();
                 contestReadModel.readJid = contestClarificationJid;
 
-                contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                userReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
         }
     }
@@ -154,7 +155,7 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
         if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
             topic = "(" + Messages.get("clarification.general") + ")";
         } else {
-            ContestProblemModel contestProblemModel = contestProblemDao.findByProblemJidOrderedByAlias(contestModel.jid, contestClarificationModel.topicJid);
+            ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestModel.jid, contestClarificationModel.topicJid);
             topic = contestProblemModel.alias + " - " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid);
         }
         return new ContestClarification(contestClarificationModel.id, contestClarificationModel.jid, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));

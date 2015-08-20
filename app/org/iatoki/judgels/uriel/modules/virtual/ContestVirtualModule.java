@@ -39,11 +39,11 @@ public final class ContestVirtualModule implements ContestModule {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-        if (ContestVirtualConfigForm.class.equals(form.get().getClass())) {
-            return virtualFormView.render((Form<ContestVirtualConfigForm>) form);
-        } else {
+        if (!ContestVirtualConfigForm.class.equals(form.get().getClass())) {
             throw new RuntimeException();
         }
+
+        return virtualFormView.render((Form<ContestVirtualConfigForm>) form);
     }
 
     @Override

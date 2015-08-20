@@ -1,17 +1,17 @@
-@(page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
-
 @import play.i18n.Messages
-@import org.iatoki.judgels.uriel.controllers.routes
-
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
-@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.uriel.Contest
 
-@searchView(page.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
+@(pageOfContests: Page[Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
+
+@searchView(pageOfContests.getPageIndex, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
 
 <div class="clearfix"></div>
 
-@for(contest <- page.getData) {
+@for(contest <- pageOfContests.getData) {
     <div class="panel panel-default">
         <div class="panel-body">
             <div class="pull-left">
@@ -24,4 +24,4 @@
         </div>
     </div>
 }
-@paginationView(page, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)
+@paginationView(pageOfContests, orderBy, orderDir, filterString, routes.ContestController.listAllowedContests)

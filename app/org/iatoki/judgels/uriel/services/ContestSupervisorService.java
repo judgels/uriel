@@ -7,13 +7,13 @@ import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 
 public interface ContestSupervisorService {
 
-    boolean isContestSupervisorInContestByUserJid(String contestJid, String contestSupervisorJid);
+    boolean isContestSupervisorInContest(String contestJid, String contestSupervisorJid);
 
-    ContestSupervisor findContestSupervisorByContestJidAndUserJid(String contestJid, String userJid);
+    ContestSupervisor findContestSupervisorInContestByUserJid(String contestJid, String userJid);
 
-    ContestSupervisor findContestSupervisorByContestSupervisorId(long contestSupervisorId) throws ContestSupervisorNotFoundException;
+    ContestSupervisor findContestSupervisorById(long contestSupervisorId) throws ContestSupervisorNotFoundException;
 
-    Page<ContestSupervisor> pageContestSupervisorsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+    Page<ContestSupervisor> getPageOfSupervisorsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
     void createContestSupervisor(long contestId, String userJid, ContestPermission contestPermission);
 

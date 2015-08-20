@@ -5,7 +5,5 @@ import org.iatoki.judgels.uriel.models.entities.ContestStyleModel;
 
 public interface ContestStyleDao extends Dao<Long, ContestStyleModel> {
 
-    boolean isExistByContestJid(String contestJid);
-
-    ContestStyleModel findByContestJid(String contestJid);
+    ContestStyleModel findInContest(String contestJid);
 }

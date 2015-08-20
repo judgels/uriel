@@ -22,7 +22,7 @@ public final class ContestSupervisorHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public boolean existsByContestJidAndSupervisorJid(String contestJid, String supervisorJid) {
+    public boolean existsInContestByJid(String contestJid, String supervisorJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestSupervisorModel> root = query.from(getModelClass());
@@ -35,7 +35,7 @@ public final class ContestSupervisorHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public ContestSupervisorModel findByContestJidAndSupervisorJid(String contestJid, String supervisorJid) {
+    public ContestSupervisorModel findInContestByJid(String contestJid, String supervisorJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestSupervisorModel> query = cb.createQuery(getModelClass());
         Root<ContestSupervisorModel> root = query.from(getModelClass());
@@ -47,7 +47,7 @@ public final class ContestSupervisorHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public List<String> findContestJidsBySupervisorJid(String supervisorJid) {
+    public List<String> getContestJidsByJid(String supervisorJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);
         Root<ContestSupervisorModel> root = query.from(getModelClass());

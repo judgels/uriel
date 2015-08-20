@@ -4,5 +4,4 @@ public enum ContestStyle {
 
     IOI,
     ICPC
-
 }

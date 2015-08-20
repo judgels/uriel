@@ -38,13 +38,13 @@ import java.util.List;
 @Named
 public final class ContestFileController extends AbstractJudgelsController {
 
-    private final ContestService contestService;
     private final ContestFileService contestFileService;
+    private final ContestService contestService;
 
     @Inject
-    public ContestFileController(ContestService contestService, ContestFileService contestFileService) {
-        this.contestService = contestService;
+    public ContestFileController(ContestFileService contestFileService, ContestService contestService) {
         this.contestFileService = contestFileService;
+        this.contestService = contestService;
     }
 
     @Transactional(readOnly = true)
@@ -57,72 +57,73 @@ public final class ContestFileController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result listFiles(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToManageFiles(contest)) {
-            Form<ContestFileUploadForm> form = Form.form(ContestFileUploadForm.class);
-            List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
-            return showListFiles(form, contest, fileInfos);
-        } else {
+        if (!isAllowedToManageFiles(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Form<ContestFileUploadForm> contestFileUploadForm = Form.form(ContestFileUploadForm.class);
+        List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
+        return showListFiles(contestFileUploadForm, contest, fileInfos);
     }
 
     @Transactional
     @RequireCSRFCheck
     public Result postUploadFile(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (isAllowedToManageFiles(contest)) {
-            Form<ContestFileUploadForm> form = Form.form(ContestFileUploadForm.class).bindFromRequest();
-            if (form.hasErrors() || form.hasGlobalErrors()) {
-                List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
-                return showListFiles(form, contest, fileInfos);
-            } else {
-                Http.MultipartFormData body = request().body().asMultipartFormData();
-                Http.MultipartFormData.FilePart file;
-
-                file = body.getFile("file");
-                if (file != null) {
-                    File contestFile = file.getFile();
-                    try {
-                        contestFileService.uploadContestFile(contest.getJid(), contestFile, file.getFilename());
-                        return redirect(routes.ContestFileController.viewFiles(contest.getId()));
-                    } catch (IOException e) {
-                        form.reject("file.cannotUploadFile");
-                        List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
-                        return showListFiles(form, contest, fileInfos);
-                    }
-                }
-                List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
-                return showListFiles(form, contest, fileInfos);
-            }
-        } else {
+        if (!isAllowedToManageFiles(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
+
+        Form<ContestFileUploadForm> contestFileUploadForm = Form.form(ContestFileUploadForm.class).bindFromRequest();
+        if (formHasErrors(contestFileUploadForm)) {
+            List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
+            return showListFiles(contestFileUploadForm, contest, fileInfos);
+        }
+
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart file;
+
+        file = body.getFile("file");
+        if (file != null) {
+            File contestFile = file.getFile();
+            try {
+                contestFileService.uploadContestFile(contest.getJid(), contestFile, file.getFilename());
+                return redirect(routes.ContestFileController.viewFiles(contest.getId()));
+            } catch (IOException e) {
+                contestFileUploadForm.reject("file.cannotUploadFile");
+                List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
+                return showListFiles(contestFileUploadForm, contest, fileInfos);
+            }
+        }
+
+        List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
+        return showListFiles(contestFileUploadForm, contest, fileInfos);
     }
 
     @Transactional(readOnly = true)
     public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            String fileURL = contestFileService.getContestFileURL(contest.getJid(), filename);
-            try {
-                new URL(fileURL);
-                return redirect(fileURL);
-            } catch (MalformedURLException e) {
-                File file = new File(fileURL);
-                if (!file.exists()) {
-                    return Results.notFound();
-                }
-                Controller.response().setContentType("application/x-download");
-                Controller.response().setHeader("Content-disposition", "attachment; filename=" + file.getName());
-                return ok(file);
-            }
-        } else {
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             return notFound();
+        }
+
+        String fileURL = contestFileService.getContestFileURL(contest.getJid(), filename);
+        try {
+            new URL(fileURL);
+            return redirect(fileURL);
+        } catch (MalformedURLException e) {
+            File file = new File(fileURL);
+            if (!file.exists()) {
+                return Results.notFound();
+            }
+            Controller.response().setContentType("application/x-download");
+            Controller.response().setHeader("Content-disposition", "attachment; filename=" + file.getName());
+            return ok(file);
         }
     }
 
-    private Result showListFiles(Form<ContestFileUploadForm> form, Contest contest, List<FileInfo> fileInfos) {
-        LazyHtml content = new LazyHtml(listFilesView.render(form, contest, fileInfos));
+    private Result showListFiles(Form<ContestFileUploadForm> contestFileUploadForm, Contest contest, List<FileInfo> fileInfos) {
+        LazyHtml content = new LazyHtml(listFilesView.render(contestFileUploadForm, contest, fileInfos));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,

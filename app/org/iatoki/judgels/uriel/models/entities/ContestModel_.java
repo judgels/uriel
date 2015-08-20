@@ -11,6 +11,5 @@ public abstract class ContestModel_ extends org.iatoki.judgels.play.models.entit
 	public static volatile SingularAttribute<ContestModel, String> name;
 	public static volatile SingularAttribute<ContestModel, String> description;
 	public static volatile SingularAttribute<ContestModel, String> style;
-
 }
 

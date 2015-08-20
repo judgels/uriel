@@ -10,6 +10,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "uriel_contest_team_coach")
 public final class ContestTeamCoachModel extends AbstractModel {
+
     @Id
     @GeneratedValue
     public long id;

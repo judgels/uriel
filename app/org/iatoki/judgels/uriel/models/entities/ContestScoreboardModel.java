@@ -11,6 +11,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "uriel_contest_scoreboard")
 public final class ContestScoreboardModel extends AbstractModel {
+
     @Id
     @GeneratedValue
     public long id;

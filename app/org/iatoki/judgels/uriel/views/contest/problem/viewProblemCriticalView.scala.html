@@ -1,8 +1,10 @@
-@(requestURL: String, requestBody: String, submissionsLeft: Long, isClosed: Boolean, contest: org.iatoki.judgels.uriel.Contest, contestProblem: org.iatoki.judgels.uriel.ContestProblem)
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.gabriel.GradingLanguageRegistry
+@import org.iatoki.judgels.uriel.Contest
+@import org.iatoki.judgels.uriel.ContestProblem
+
+@(requestURL: String, requestBody: String, submissionsLeft: Long, isClosed: Boolean, contest: Contest, contestProblem: ContestProblem)
 
 @if(play.mvc.Controller.flash("submissionError") != null) {
     <div class="alert alert-danger" role="alert">@{play.mvc.Controller.flash("submissionError")}</div>

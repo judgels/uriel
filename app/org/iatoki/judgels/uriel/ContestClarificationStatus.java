@@ -4,5 +4,4 @@ public enum ContestClarificationStatus {
 
     ASKED,
     ANSWERED
-
 }

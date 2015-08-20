@@ -1,7 +1,11 @@
-@(state: org.iatoki.judgels.uriel.ScoreboardState, entries: List[org.iatoki.judgels.uriel.IOIScoreboardEntry], lastUpdateTime: java.util.Date, jidCacheService: org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl[_], currentContestantJid: String, hiddenRank: Boolean)
-
-@import org.iatoki.judgels.play.JudgelsPlayUtils
 @import scala.collection.JavaConversions
+@import java.util.Date
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl
+@import org.iatoki.judgels.uriel.ScoreboardState
+@import org.iatoki.judgels.uriel.IOIScoreboardEntry
+
+@(state: ScoreboardState, entries: List[IOIScoreboardEntry], lastUpdateTime: Date, jidCacheService: AbstractBaseJidCacheServiceImpl[_], currentContestantJid: String, hiddenRank: Boolean)
 
 <p><small>Last updated: <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(lastUpdateTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(lastUpdateTime.getTime)</time></small></p>
 

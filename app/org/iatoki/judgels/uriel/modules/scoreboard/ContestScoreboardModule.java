@@ -70,11 +70,11 @@ public final class ContestScoreboardModule implements TabbedContestModule {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-        if (ContestScoreboardConfigForm.class.equals(form.get().getClass())) {
-            return scoreboardFormView.render((Form<ContestScoreboardConfigForm>) form);
-        } else {
+        if (!ContestScoreboardConfigForm.class.equals(form.get().getClass())) {
             throw new RuntimeException();
         }
+
+        return scoreboardFormView.render((Form<ContestScoreboardConfigForm>) form);
     }
 
     @Override

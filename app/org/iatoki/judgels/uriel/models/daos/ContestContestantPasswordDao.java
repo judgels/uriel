@@ -7,9 +7,10 @@ import java.util.Collection;
 import java.util.Map;
 
 public interface ContestContestantPasswordDao extends Dao<Long, ContestContestantPasswordModel> {
-    boolean existsByContestJidAndContestantJid(String contestJid, String contestantJid);
 
-    ContestContestantPasswordModel findByContestJidAndContestantJid(String contestJid, String contestantJid);
+    boolean existsInContestByContestantJid(String contestJid, String contestantJid);
 
-    Map<String, String> getContestantPasswordsByContestJidAndContestantJids(String contestJid, Collection<String> contestantJids);
+    ContestContestantPasswordModel findInContestByContestantJid(String contestJid, String contestantJid);
+
+    Map<String, String> getAllMappedInContestByContestantJids(String contestJid, Collection<String> contestantJids);
 }

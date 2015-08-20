@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.Set;
 
 public final class UrielProperties {
+
     private static UrielProperties INSTANCE;
 
     private final Config config;

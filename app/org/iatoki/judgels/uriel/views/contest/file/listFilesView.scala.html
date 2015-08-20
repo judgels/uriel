@@ -1,9 +1,11 @@
-@import org.iatoki.judgels.FileInfo
-@(form: Form[org.iatoki.judgels.uriel.forms.ContestFileUploadForm], contest: org.iatoki.judgels.uriel.Contest, fileInfos: List[FileInfo])
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.FileInfo
 @import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.forms.ContestFileUploadForm
+@import org.iatoki.judgels.uriel.Contest
+
+@(contestFileUploadForm: Form[ContestFileUploadForm], contest: Contest, fileInfos: List[FileInfo])
 
 @implicitFieldConstructor = @{b3.horizontal.fieldConstructor("col-md-2", "col-md-10")}
 
@@ -12,7 +14,7 @@
 @b3.form(routes.ContestFileController.postUploadFile(contest.getId), 'enctype -> "multipart/form-data") {
     @helper.CSRF.formField
 
-    @b3.file(form("file"), '_label -> Messages.get("file.file"))
+    @b3.file(contestFileUploadForm("file"), '_label -> Messages.get("file.file"))
 
     @b3.submit('class -> "btn btn-primary") {
         @Messages.get("commons.upload")

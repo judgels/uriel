@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface ContestModuleDao extends Dao<Long, ContestModuleModel> {
 
-    boolean existByContestJidAndContestModuleName(String contestJid, String contestModuleName);
+    boolean existsInContestByName(String contestJid, String contestModuleName);
 
-    ContestModuleModel findByContestJidAndContestModuleName(String contestJid, String contestModuleName);
+    ContestModuleModel findInContestByName(String contestJid, String contestModuleName);
 
-    List<ContestModuleModel> findEnabledModulesInContestByContestJid(String contestJid);
+    List<ContestModuleModel> getEnabledInContest(String contestJid);
 
-    List<ContestModuleModel> findEnabledModulesInContestByModuleName(String contestModuleName);
+    List<ContestModuleModel> getEnabledByName(String contestModuleName);
 }

@@ -1,12 +1,16 @@
-@(contest: org.iatoki.judgels.uriel.Contest, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, canUpdate: Boolean)
-
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import play.i18n.Messages
-@import org.iatoki.judgels.play.JudgelsPlayUtils
-@import org.iatoki.judgels.uriel.ContestClarificationStatus
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.Contest
+@import org.iatoki.judgels.uriel.ContestClarificationStatus
+@import org.iatoki.judgels.uriel.ContestClarification
 
-@for(contestClarification <- page.getData) {
+@(contest: Contest, pageOfContestClarifications: Page[ContestClarification], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, canUpdate: Boolean)
+
+@for(contestClarification <- pageOfContestClarifications.getData) {
     <div class="panel panel-default">
         <div class="panel-heading">
             <span class="panel-title">@contestClarification.getTitle | @contestClarification.getTopic</span>
@@ -21,7 +25,7 @@
             @if(contestClarification.getStatus == ContestClarificationStatus.ASKED) {
                 (@{Messages.get("clarification.unanswered")})
                 @if(canUpdate) {
-                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestClarificationController.updateClarificationContent(contest.getId, contestClarification.getId)" class="btn btn-primary">@Messages.get("commons.update")</a>
+                    <a href="@routes.ContestClarificationController.updateClarificationContent(contest.getId, contestClarification.getId)" class="btn btn-primary">@Messages.get("commons.update")</a>
                 }
             }else{
                 @if(contestClarification.getStatus == ContestClarificationStatus.ANSWERED) {

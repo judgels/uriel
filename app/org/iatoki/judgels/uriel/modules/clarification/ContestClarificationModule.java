@@ -58,11 +58,11 @@ public final class ContestClarificationModule implements TabbedContestModule {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-        if (ContestClarificationConfigForm.class.equals(form.get().getClass())) {
-            return clarificationFormView.render((Form<ContestClarificationConfigForm>) form);
-        } else {
+        if (!ContestClarificationConfigForm.class.equals(form.get().getClass())) {
             throw new RuntimeException();
         }
+
+        return clarificationFormView.render((Form<ContestClarificationConfigForm>) form);
     }
 
     @Override

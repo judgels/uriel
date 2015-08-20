@@ -7,17 +7,15 @@ import java.util.List;
 
 public interface ContestContestantDao extends Dao<Long, ContestContestantModel> {
 
-    boolean existsByContestJidAndContestantJid(String contestJid, String contestantJid);
+    boolean existsInContestByContestantJid(String contestJid, String contestantJid);
 
-    ContestContestantModel findByContestJidAndContestantJid(String contestJid, String contestantJid);
+    ContestContestantModel findInContestByJid(String contestJid, String contestantJid);
 
-    long countContestContestantByContestJid(String contestJid);
+    long countInContest(String contestJid);
 
-    boolean isContestStarted(String contestJid, String contestantJid);
+    boolean hasContestantStarted(String contestJid, String contestantJid);
 
-    boolean isThereNewContestant(String contestJid, long lastTime);
+    List<String> getContestJidsByJid(String contestantJid);
 
-    List<String> findContestJidsByContestantJid(String contestantJid);
-
-    List<ContestContestantModel> findAllByContestJid(String contestJid);
+    List<ContestContestantModel> getAllInContest(String contestJid);
 }

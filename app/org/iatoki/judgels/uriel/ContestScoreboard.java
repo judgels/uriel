@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel;
 import java.util.Date;
 
 public final class ContestScoreboard {
+
     private final long id;
     private final String contestJid;
     private final ContestScoreboardType type;

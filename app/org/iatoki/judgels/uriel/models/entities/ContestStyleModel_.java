@@ -11,7 +11,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 public abstract class ContestStyleModel_ extends AbstractModel_ {
 
     public static volatile SingularAttribute<ContestStyleModel, Long> id;
-        public static volatile SingularAttribute<ContestStyleModel, String> contestJid;
-        public static volatile SingularAttribute<ContestStyleModel, String> style;
-        public static volatile SingularAttribute<ContestStyleModel, String> config;
+    public static volatile SingularAttribute<ContestStyleModel, String> contestJid;
+    public static volatile SingularAttribute<ContestStyleModel, String> style;
+    public static volatile SingularAttribute<ContestStyleModel, String> config;
 }

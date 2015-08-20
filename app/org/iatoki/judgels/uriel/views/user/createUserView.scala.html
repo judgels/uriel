@@ -1,18 +1,19 @@
-@(form: Form[org.iatoki.judgels.uriel.forms.UserCreateForm], userAutoCompleteUrl: String)
-
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.forms.UserCreateForm
+
+@(userCreateForm: Form[UserCreateForm], userAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(form)
+@formErrorView(userCreateForm)
 
 @b3.form(routes.UserController.postCreateUser()) {
     @helper.CSRF.formField
 
-    @b3.text(form("username"), '_label -> Messages.get("user.username"), 'class -> "form-control user_autocomplete")
-    @b3.text(form("roles"), '_label -> Messages.get("user.roles"), 'class -> "form-control")
+    @b3.text(userCreateForm("username"), '_label -> Messages.get("user.username"), 'class -> "form-control user_autocomplete")
+    @b3.text(userCreateForm("roles"), '_label -> Messages.get("user.roles"), 'class -> "form-control")
 
     <script type="text/javascript">
         var jophielAutoCompleteUrl = "@userAutoCompleteUrl";

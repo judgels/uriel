@@ -8,8 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "uriel_contest_read")
-public final class ContestReadModel extends AbstractModel {
+@Table(name = "uriel_user_read")
+public final class UserReadModel extends AbstractModel {
 
     @Id
     @GeneratedValue

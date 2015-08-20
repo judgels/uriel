@@ -1,10 +1,10 @@
-@import org.iatoki.judgels.uriel.forms.ContestUpsertForm
-@(form: Form[ContestUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
-
 @import play.i18n.Messages
+@import org.iatoki.judgels.uriel.forms.ContestUpsertForm
+
+@(contestUpsertForm: Form[ContestUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
 
 @helper.CSRF.formField
 
-@b3.text(form("name"), '_label -> Messages.get("contest.name"))
-@b3.textarea(form("description"), '_label -> Messages.get("contest.description"))
-@b3.select(form("style"), Seq("IOI" -> "IOI", "ICPC" -> "ICPC"), '_label -> Messages.get("contest.style"), 'class -> "selectpicker")
+@b3.text(contestUpsertForm("name"), '_label -> Messages.get("contest.name"))
+@b3.textarea(contestUpsertForm("description"), '_label -> Messages.get("contest.description"))
+@b3.select(contestUpsertForm("style"), Seq("IOI" -> "IOI", "ICPC" -> "ICPC"), '_label -> Messages.get("contest.style"), 'class -> "selectpicker")

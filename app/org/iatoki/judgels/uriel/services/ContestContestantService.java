@@ -9,19 +9,19 @@ import java.util.List;
 
 public interface ContestContestantService {
 
-    boolean isContestContestantInContestByUserJid(String contestJid, String contestContestantJid);
+    boolean isContestantInContest(String contestJid, String contestContestantJid);
 
-    boolean isContestStarted(String contestJid, String contestContestantJid);
+    boolean hasContestantStartContest(String contestJid, String contestContestantJid);
 
-    ContestContestant findContestContestantByContestContestantId(long contestContestantId) throws ContestContestantNotFoundException;
+    ContestContestant findContestantInContestById(long contestContestantId) throws ContestContestantNotFoundException;
 
-    ContestContestant findContestContestantByContestJidAndContestContestantJid(String contestJid, String contestContestantJid);
+    ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid);
 
-    List<ContestContestant> findAllContestContestantsByContestJid(String contestJid);
+    List<ContestContestant> getContestantsInContest(String contestJid);
 
-    Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+    Page<ContestContestant> getPageOfContestantsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    long getContestContestantCount(String contestJid);
+    long countContestantsInContest(String contestJid);
 
     void createContestContestant(long contestId, String userJid, ContestContestantStatus status);
 

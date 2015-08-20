@@ -21,18 +21,7 @@ public final class ContestStyleHibernateDao extends AbstractHibernateDao<Long, C
     }
 
     @Override
-    public boolean isExistByContestJid(String contestJid) {
-        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
-        CriteriaQuery<Long> query = cb.createQuery(Long.class);
-        Root<ContestStyleModel> root = query.from(ContestStyleModel.class);
-
-        query.select(cb.count(root)).where(cb.equal(root.get(ContestStyleModel_.contestJid), contestJid));
-
-        return (JPA.em().createQuery(query).getSingleResult() != 0);
-    }
-
-    @Override
-    public ContestStyleModel findByContestJid(String contestJid) {
+    public ContestStyleModel findInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestStyleModel> query = cb.createQuery(ContestStyleModel.class);
         Root<ContestStyleModel> root = query.from(ContestStyleModel.class);

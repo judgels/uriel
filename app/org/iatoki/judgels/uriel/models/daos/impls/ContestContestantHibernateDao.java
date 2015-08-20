@@ -23,7 +23,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public boolean existsByContestJidAndContestantJid(String contestJid, String contestantJid) {
+    public boolean existsInContestByContestantJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestContestantModel> root = query.from(getModelClass());
@@ -36,7 +36,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public ContestContestantModel findByContestJidAndContestantJid(String contestJid, String contestantJid) {
+    public ContestContestantModel findInContestByJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestContestantModel> query = cb.createQuery(getModelClass());
         Root<ContestContestantModel> root = query.from(getModelClass());
@@ -48,7 +48,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public long countContestContestantByContestJid(String contestJid) {
+    public long countInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestContestantModel> root = query.from(getModelClass());
@@ -61,7 +61,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public boolean isContestStarted(String contestJid, String contestantJid) {
+    public boolean hasContestantStarted(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestContestantModel> root = query.from(getModelClass());
@@ -74,20 +74,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public boolean isThereNewContestant(String contestJid, long lastTime) {
-        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
-        CriteriaQuery<Long> query = cb.createQuery(Long.class);
-        Root<ContestContestantModel> root = query.from(getModelClass());
-
-        query
-                .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.gt(root.get(ContestContestantModel_.timeUpdate), lastTime)));
-
-        return (JPA.em().createQuery(query).getSingleResult() != 0);
-    }
-
-    @Override
-    public List<String> findContestJidsByContestantJid(String contestantJid) {
+    public List<String> getContestJidsByJid(String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<String> query = cb.createQuery(String.class);
         Root<ContestContestantModel> root = query.from(getModelClass());
@@ -100,7 +87,7 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public List<ContestContestantModel> findAllByContestJid(String contestJid) {
+    public List<ContestContestantModel> getAllInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestContestantModel> query = cb.createQuery(getModelClass());
         Root<ContestContestantModel> root = query.from(getModelClass());

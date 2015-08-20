@@ -10,17 +10,18 @@ import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
 import org.iatoki.judgels.uriel.ContestReadType;
 import org.iatoki.judgels.uriel.models.daos.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
-import org.iatoki.judgels.uriel.models.daos.ContestReadDao;
+import org.iatoki.judgels.uriel.models.daos.UserReadDao;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
-import org.iatoki.judgels.uriel.models.entities.ContestReadModel;
+import org.iatoki.judgels.uriel.models.entities.UserReadModel;
 import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -29,29 +30,29 @@ import java.util.Map;
 @Named("contestAnnouncementService")
 public final class ContestAnnouncementServiceImpl implements ContestAnnouncementService {
 
-    private final ContestDao contestDao;
     private final ContestAnnouncementDao contestAnnouncementDao;
-    private final ContestReadDao contestReadDao;
+    private final ContestDao contestDao;
+    private final UserReadDao userReadDao;
 
     @Inject
-    public ContestAnnouncementServiceImpl(ContestDao contestDao, ContestAnnouncementDao contestAnnouncementDao, ContestReadDao contestReadDao) {
-        this.contestDao = contestDao;
+    public ContestAnnouncementServiceImpl(ContestAnnouncementDao contestAnnouncementDao, ContestDao contestDao, UserReadDao userReadDao) {
         this.contestAnnouncementDao = contestAnnouncementDao;
-        this.contestReadDao = contestReadDao;
+        this.contestDao = contestDao;
+        this.userReadDao = userReadDao;
     }
 
     @Override
-    public ContestAnnouncement findContestAnnouncementByContestAnnouncementId(long contestAnnouncementId) throws ContestAnnouncementNotFoundException {
+    public ContestAnnouncement findContestAnnouncementById(long contestAnnouncementId) throws ContestAnnouncementNotFoundException {
         ContestAnnouncementModel contestAnnouncementModel = contestAnnouncementDao.findById(contestAnnouncementId);
-        if (contestAnnouncementModel != null) {
-            return createContestAnnouncementFromModel(contestAnnouncementModel);
-        } else {
+        if (contestAnnouncementModel == null) {
             throw new ContestAnnouncementNotFoundException("Contest Announcement not found.");
         }
+
+        return createContestAnnouncementFromModel(contestAnnouncementModel);
     }
 
     @Override
-    public Page<ContestAnnouncement> pageContestAnnouncementsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
+    public Page<ContestAnnouncement> getPageOfAnnouncementsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
         ImmutableMap.Builder<SingularAttribute<? super ContestAnnouncementModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
         filterColumnsBuilder.put(ContestAnnouncementModel_.contestJid, contestJid);
         if (status != null) {
@@ -67,13 +68,13 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     @Override
-    public long getUnreadContestAnnouncementsCount(String userJid, String contestJid) {
-        List<String> announcementJids = contestAnnouncementDao.findAllPublishedAnnouncementJidInContest(contestJid);
-        if (!announcementJids.isEmpty()) {
-            return (announcementJids.size() - contestReadDao.countReadByUserJidAndTypeAndJidList(userJid, ContestReadType.ANNOUNCEMENT.name(), announcementJids));
-        } else {
+    public long countUnreadAnnouncementsInContest(String userJid, String contestJid) {
+        List<String> announcementJids = contestAnnouncementDao.getPublishedJidsInContest(contestJid);
+        if (announcementJids.isEmpty()) {
             return 0;
         }
+
+        return (announcementJids.size() - userReadDao.countReadByUserJidAndTypeAndJids(userJid, ContestReadType.ANNOUNCEMENT.name(), announcementJids));
     }
 
     @Override
@@ -100,15 +101,15 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     @Override
-    public void readContestAnnouncements(String userJid, List<String> contestAnnouncementJids) {
+    public void readContestAnnouncements(String userJid, Collection<String> contestAnnouncementJids) {
         for (String contestAnnouncementJid : contestAnnouncementJids) {
-            if (!contestReadDao.existByUserJidAndTypeAndJid(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementJid)) {
-                ContestReadModel contestReadModel = new ContestReadModel();
+            if (!userReadDao.existsByUserJidAndTypeAndJid(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementJid)) {
+                UserReadModel contestReadModel = new UserReadModel();
                 contestReadModel.userJid = userJid;
                 contestReadModel.type = ContestReadType.ANNOUNCEMENT.name();
                 contestReadModel.readJid = contestAnnouncementJid;
 
-                contestReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                userReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
         }
     }

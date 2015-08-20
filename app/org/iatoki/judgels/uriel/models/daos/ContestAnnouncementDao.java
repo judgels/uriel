@@ -7,7 +7,5 @@ import java.util.List;
 
 public interface ContestAnnouncementDao extends JudgelsDao<ContestAnnouncementModel> {
 
-    List<ContestAnnouncementModel> findPublishedByContestJidOrderedByUpdateTime(String contestJid);
-
-    List<String> findAllPublishedAnnouncementJidInContest(String contestJid);
+    List<String> getPublishedJidsInContest(String contestJid);
 }

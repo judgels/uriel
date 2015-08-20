@@ -3,15 +3,10 @@ package org.iatoki.judgels.uriel;
 public final class Contest {
 
     private final long id;
-
     private final String jid;
-
     private final String name;
-
     private final String description;
-
     private final ContestStyle style;
-
     private final ContestStyleConfig styleConfig;
 
     public Contest(long id, String jid, String name, String description, ContestStyle style, ContestStyleConfig styleConfig) {

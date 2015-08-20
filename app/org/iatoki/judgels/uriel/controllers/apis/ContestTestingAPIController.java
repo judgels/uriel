@@ -5,15 +5,15 @@ import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.gabriel.blackbox.BlackBoxGradingSource;
-import org.iatoki.judgels.sandalphon.SubmissionException;
 import org.iatoki.judgels.sandalphon.blackbox.adapters.impls.BlackBoxSubmissionAdapter;
-import org.iatoki.judgels.sandalphon.services.SubmissionService;
+import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
+import org.iatoki.judgels.sandalphon.ProgrammingSubmissionException;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.config.SubmissionLocalFile;
+import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.Transactional;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -26,14 +26,14 @@ import java.util.Map;
 
 @Singleton
 @Named
-public final class ContestTestingAPIController extends Controller {
+public final class ContestTestingAPIController extends AbstractJudgelsAPIController {
 
     private final ContestService contestService;
-    private final SubmissionService submissionService;
+    private final ProgrammingSubmissionService submissionService;
     private final FileSystemProvider submissionLocalFileSystemProvider;
 
     @Inject
-    public ContestTestingAPIController(ContestService contestService, SubmissionService submissionService, @SubmissionLocalFile FileSystemProvider submissionLocalFileSystemProvider) {
+    public ContestTestingAPIController(ContestService contestService, ProgrammingSubmissionService submissionService, @ProgrammingSubmissionLocalFileSystemProvider FileSystemProvider submissionLocalFileSystemProvider) {
         this.contestService = contestService;
         this.submissionService = submissionService;
         this.submissionLocalFileSystemProvider = submissionLocalFileSystemProvider;
@@ -51,7 +51,7 @@ public final class ContestTestingAPIController extends Controller {
             return notFound();
         }
 
-        String contestJid = form.get("contestJid")[0];
+        String contestJid = form.get("containerJid")[0];
         Contest contest = contestService.findContestByJid(contestJid);
 
         String userJid = form.get("userJid")[0];
@@ -78,7 +78,7 @@ public final class ContestTestingAPIController extends Controller {
             BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
             submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
             adapter.storeSubmissionFiles(submissionLocalFileSystemProvider, null, submissionJid, source);
-        } catch (SubmissionException e) {
+        } catch (ProgrammingSubmissionException e) {
             return badRequest();
         }
 

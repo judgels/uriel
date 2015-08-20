@@ -21,15 +21,15 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
         bind(Jophiel.class).toInstance(jophiel());
         bind(Sandalphon.class).toInstance(sandalphon());
         bind(Sealtiel.class).toInstance(sealtiel());
-        bind(FileSystemProvider.class).annotatedWith(ContestFile.class).toInstance(contestFileSystemProvider());
-        bind(FileSystemProvider.class).annotatedWith(TeamAvatarFile.class).toInstance(teamAvatarFileSystemProvider());
-        bind(FileSystemProvider.class).annotatedWith(SubmissionLocalFile.class).toInstance(submissionLocalFileSystemProvider());
+        bind(FileSystemProvider.class).annotatedWith(ContestFileSystemProvider.class).toInstance(contestFileSystemProvider());
+        bind(FileSystemProvider.class).annotatedWith(TeamAvatarFileSystemProvider.class).toInstance(teamAvatarFileSystemProvider());
+        bind(FileSystemProvider.class).annotatedWith(ProgrammingSubmissionLocalFileSystemProvider.class).toInstance(submissionLocalFileSystemProvider());
 
         FileSystemProvider submissionRemoteFileSystemProvider = submissionRemoteFileSystemProvider();
         if (submissionRemoteFileSystemProvider != null) {
-            bind(FileSystemProvider.class).annotatedWith(SubmissionRemoteFile.class).toInstance(submissionRemoteFileSystemProvider);
+            bind(FileSystemProvider.class).annotatedWith(ProgrammingSubmissionRemoteFileSystemProvider.class).toInstance(submissionRemoteFileSystemProvider);
         } else {
-            bind(FileSystemProvider.class).annotatedWith(SubmissionRemoteFile.class).toProvider(Providers.of(null));
+            bind(FileSystemProvider.class).annotatedWith(ProgrammingSubmissionRemoteFileSystemProvider.class).toProvider(Providers.of(null));
         }
 
         bindConstant().annotatedWith(GabrielClientJid.class).to(gabrielClientJid());

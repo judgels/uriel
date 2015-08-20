@@ -33,39 +33,39 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     }
 
     @Override
-    public boolean isContestContestantInContestByUserJid(String contestJid, String contestContestantJid) {
-        return contestContestantDao.existsByContestJidAndContestantJid(contestJid, contestContestantJid);
+    public boolean isContestantInContest(String contestJid, String contestContestantJid) {
+        return contestContestantDao.existsInContestByContestantJid(contestJid, contestContestantJid);
     }
 
     @Override
-    public boolean isContestStarted(String contestJid, String contestContestantJid) {
-        return contestContestantDao.isContestStarted(contestJid, contestContestantJid);
+    public boolean hasContestantStartContest(String contestJid, String contestContestantJid) {
+        return contestContestantDao.hasContestantStarted(contestJid, contestContestantJid);
     }
 
     @Override
-    public ContestContestant findContestContestantByContestContestantId(long contestContestantId) throws ContestContestantNotFoundException {
+    public ContestContestant findContestantInContestById(long contestContestantId) throws ContestContestantNotFoundException {
         ContestContestantModel contestContestantModel = contestContestantDao.findById(contestContestantId);
-        if (contestContestantModel != null) {
-            return createContestContestantFromModel(contestContestantModel);
-        } else {
+        if (contestContestantModel == null) {
             throw new ContestContestantNotFoundException("Contest Contestant not found.");
         }
-    }
 
-    @Override
-    public ContestContestant findContestContestantByContestJidAndContestContestantJid(String contestJid, String contestContestantJid) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, contestContestantJid);
         return createContestContestantFromModel(contestContestantModel);
     }
 
     @Override
-    public List<ContestContestant> findAllContestContestantsByContestJid(String contestJid) {
+    public ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid) {
+        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestContestantJid);
+        return createContestContestantFromModel(contestContestantModel);
+    }
+
+    @Override
+    public List<ContestContestant> getContestantsInContest(String contestJid) {
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
         return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
     }
 
     @Override
-    public Page<ContestContestant> pageContestContestantsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<ContestContestant> getPageOfContestantsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
@@ -75,8 +75,8 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     }
 
     @Override
-    public long getContestContestantCount(String contestJid) {
-        return contestContestantDao.countContestContestantByContestJid(contestJid);
+    public long countContestantsInContest(String contestJid) {
+        return contestContestantDao.countInContest(contestJid);
     }
 
     @Override
@@ -107,7 +107,7 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     @Override
     public void startContestAsContestant(String contestJid, String userJid) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findByContestJidAndContestantJid(contestJid, userJid);
+        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, userJid);
         if (contestContestantModel.contestStartTime == 0) {
             contestContestantModel.contestStartTime = System.currentTimeMillis();
 

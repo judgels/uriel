@@ -9,13 +9,13 @@ import java.util.Map;
 
 public interface ContestScoreboardService {
 
-    boolean isContestScoreboardExistByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
+    boolean scoreboardExistsInContestByType(String contestJid, ContestScoreboardType scoreboardType);
 
-    ContestScoreboard findContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type);
+    ContestScoreboard findScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType);
 
-    Map<String, URL> getMapContestantJidToImageUrlInContest(String contestJid);
+    Map<String, URL> getMappedContestantJidToImageUrlInContest(String contestJid);
 
     void upsertFrozenScoreboard(long contestScoreboardId);
 
-    void updateContestScoreboardByContestJidAndScoreboardType(String contestJid, ContestScoreboardType type, Scoreboard scoreboard);
+    void updateContestScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard);
 }

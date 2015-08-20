@@ -14,31 +14,31 @@ import java.util.List;
 
 public interface ContestTeamService {
 
-    boolean isUserInAnyTeamByContestJid(String contestJid, String userJid);
+    boolean isUserPartOfAnyTeamInContest(String contestJid, String userJid);
 
-    boolean isUserCoachInAnyTeamByContestJid(String contestJid, String coachJid);
+    boolean isUserACoachOfAnyTeamInContest(String contestJid, String coachJid);
 
-    boolean isUserCoachByUserJidAndTeamJid(String coachJid, String teamJid);
+    boolean isUserACoachInTeam(String coachJid, String teamJid);
 
-    ContestTeam findContestTeamByContestTeamId(long contestTeamId) throws ContestTeamNotFoundException;
+    ContestTeam findContestTeamById(long contestTeamId) throws ContestTeamNotFoundException;
 
-    ContestTeamCoach findContestTeamCoachByContestTeamCoachId(long contestTeamCoachId) throws ContestTeamCoachNotFoundException;
+    ContestTeamCoach findContestTeamCoachById(long contestTeamCoachId) throws ContestTeamCoachNotFoundException;
 
-    ContestTeamMember findContestTeamMemberByContestTeamMemberId(long contestTeamMemberId) throws ContestTeamMemberNotFoundException;
+    ContestTeamMember findContestTeamMemberById(long contestTeamMemberId) throws ContestTeamMemberNotFoundException;
 
-    Page<ContestTeam> pageContestTeamsByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+    Page<ContestTeam> getPageOfTeamsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    Page<ContestTeam> pageContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir);
+    Page<ContestTeam> getPageOfTeamsInContestByCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir);
 
-    List<ContestTeam> findAllContestTeams(String contestJid);
+    List<ContestTeam> getTeamsInContest(String contestJid);
 
-    List<ContestTeam> findContestTeamsByContestJidAndCoachJid(String contestJid, String coachJid);
+    List<ContestTeam> getTeamsInContestByCoachJid(String contestJid, String coachJid);
 
-    List<ContestTeamCoach> findContestTeamCoachesByTeamJid(String contestTeamJid);
+    List<ContestTeamCoach> getCoachesOfTeam(String contestTeamJid);
 
-    List<ContestTeamMember> findContestTeamMembersByTeamJid(String contestTeamJid);
+    List<ContestTeamMember> getMembersOfTeam(String contestTeamJid);
 
-    List<ContestTeamMember> findContestTeamMembersByContestJidAndCoachJid(String contestJid, String coachJid);
+    List<ContestTeamMember> getCoachedMembersInContest(String contestJid, String coachJid);
 
     String getTeamAvatarImageURL(String imageName);
 
@@ -52,11 +52,11 @@ public interface ContestTeamService {
 
     void createContestTeamCoach(String contestTeamJid, String coachJid);
 
-    void removeContestTeamCoachByContestTeamCoachId(long contestTeamCoachId);
+    void removeContestTeamCoachById(long contestTeamCoachId);
 
     void createContestTeamMember(String contestTeamJid, String memberJid);
 
-    void removeContestTeamMemberByContestTeamMemberId(long contestTeamMemberId);
+    void removeContestTeamMemberById(long contestTeamMemberId);
 
     void startTeamAsCoach(String contestJid, String teamJid);
 }

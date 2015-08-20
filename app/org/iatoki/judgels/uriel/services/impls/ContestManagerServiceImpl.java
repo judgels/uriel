@@ -31,12 +31,12 @@ public final class ContestManagerServiceImpl implements ContestManagerService {
     }
 
     @Override
-    public boolean isContestManagerInContestByUserJid(String contestJid, String contestManagerJid) {
-        return contestManagerDao.existsByContestJidAndManagerJid(contestJid, contestManagerJid);
+    public boolean isManagerInContest(String contestJid, String contestManagerJid) {
+        return contestManagerDao.existsInContestByJid(contestJid, contestManagerJid);
     }
 
     @Override
-    public Page<ContestManager> pageContestManagersByContestJid(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<ContestManager> getPageOfManagersInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
         List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));

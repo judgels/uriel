@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import java.util.Collection;
 import java.util.List;
 
 @Singleton
@@ -38,7 +39,7 @@ public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public List<ContestTeamMemberModel> findContestTeamMembersInTeam(String teamJid) {
+    public List<ContestTeamMemberModel> getAllInTeam(String teamJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamMemberModel> query = cb.createQuery(ContestTeamMemberModel.class);
         Root<ContestTeamMemberModel> root = query.from(ContestTeamMemberModel.class);
@@ -49,7 +50,7 @@ public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public List<ContestTeamMemberModel> findContestTeamMembersInTeams(List<String> teamJids) {
+    public List<ContestTeamMemberModel> getAllInTeams(Collection<String> teamJids) {
         if (teamJids.isEmpty()) {
             return ImmutableList.of();
         }
@@ -64,7 +65,7 @@ public final class ContestTeamMemberHibernateDao extends AbstractHibernateDao<Lo
     }
 
     @Override
-    public ContestTeamMemberModel findContestTeamMemberByMemberJidInAnyTeam(String userJid, List<String> teamJids) {
+    public ContestTeamMemberModel findByJidInAnyTeam(String userJid, Collection<String> teamJids) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestTeamMemberModel> query = cb.createQuery(ContestTeamMemberModel.class);
         Root<ContestTeamMemberModel> root = query.from(ContestTeamMemberModel.class);

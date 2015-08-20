@@ -8,6 +8,7 @@ import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.modules.ContestModule;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +18,9 @@ public interface ContestService {
 
     Contest findContestByJid(String contestJid);
 
-    ScoreboardState getContestStateByJid(String contestJid);
+    ScoreboardState getScoreboardStateInContest(String contestJid);
 
-    Page<Contest> pageAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin);
+    Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin);
 
     List<Contest> getRunningContests(Date timeNow);
 
@@ -27,7 +28,7 @@ public interface ContestService {
 
     void updateContest(long contestId, String name, String description, ContestStyle style);
 
-    void updateContestStyleConfigurationByContestJid(String contestJid, ContestStyleConfig styleConfig);
+    void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig);
 
-    void updateContestModuleConfigurationByContestJid(String contestJid, List<ContestModule> contestModules);
+    void updateContestModuleConfiguration(String contestJid, Collection<ContestModule> contestModules);
 }

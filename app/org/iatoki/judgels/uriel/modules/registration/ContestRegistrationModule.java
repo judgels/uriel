@@ -54,11 +54,11 @@ public final class ContestRegistrationModule implements ContestModule {
     @Override
     @SuppressWarnings(value = "unchecked")
     public Html generateConfigFormInput(Form<?> form) {
-        if (ContestRegistrationConfigForm.class.equals(form.get().getClass())) {
-            return registrationFormView.render((Form<ContestRegistrationConfigForm>) form);
-        } else {
+        if (!ContestRegistrationConfigForm.class.equals(form.get().getClass())) {
             throw new RuntimeException();
         }
+
+        return registrationFormView.render((Form<ContestRegistrationConfigForm>) form);
     }
 
     @Override

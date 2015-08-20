@@ -24,7 +24,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -38,6 +38,25 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         if (databaseVersion < 3) {
             migrateV2toV3();
         }
+        if (databaseVersion < 4) {
+            migrateV3toV4();
+        }
+    }
+
+    private void migrateV3toV4() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String programmingSubmissionTable = "uriel_contest_programming_submission";
+        String readTable = "uriel_contest_read";
+        String newReadTable = "uriel_user_read";
+        Statement statement = connection.createStatement();
+
+        statement.execute("ALTER TABLE " + programmingSubmissionTable + " DROP containerJid;");
+        statement.execute("ALTER TABLE " + programmingSubmissionTable + " CHANGE contestJid containerJid VARCHAR(255);");
+
+        statement.execute("DROP TABLE " + newReadTable + ";");
+        statement.execute("RENAME TABLE " + readTable + " TO " + newReadTable + ";");
     }
 
     private void migrateV2toV3() throws SQLException {
@@ -242,7 +261,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         }
         resultSet.close();
 
-        statement.executeQuery("ALTER TABLE " + readTable + " DROP readId;");
+        statement.execute("ALTER TABLE " + readTable + " DROP readId;");
 
         statement.close();
     }
@@ -283,10 +302,10 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             preparedStatement.executeUpdate();
         }
 
-        statement.executeQuery("ALTER TABLE " + supervisorTable + " DROP announcement;");
-        statement.executeQuery("ALTER TABLE " + supervisorTable + " DROP clarification;");
-        statement.executeQuery("ALTER TABLE " + supervisorTable + " DROP contestant;");
-        statement.executeQuery("ALTER TABLE " + supervisorTable + " DROP problem;");
-        statement.executeQuery("ALTER TABLE " + supervisorTable + " DROP submission;");
+        statement.execute("ALTER TABLE " + supervisorTable + " DROP announcement;");
+        statement.execute("ALTER TABLE " + supervisorTable + " DROP clarification;");
+        statement.execute("ALTER TABLE " + supervisorTable + " DROP contestant;");
+        statement.execute("ALTER TABLE " + supervisorTable + " DROP problem;");
+        statement.execute("ALTER TABLE " + supervisorTable + " DROP submission;");
     }
 }

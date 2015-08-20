@@ -1,17 +1,19 @@
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.uriel.ContestProblem], pageIndex: Long)
-
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-@import play.i18n.Messages
-@import org.iatoki.judgels.uriel.ContestProblemStatus
-@import org.iatoki.judgels.uriel.controllers.routes
 @import scala.collection.JavaConversions
+@import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
+@import org.iatoki.judgels.uriel.ContestProblemStatus
+@import org.iatoki.judgels.uriel.ContestProblem
+
+@(contestId: Long, pageOfContestProblems: Page[ContestProblem], pageIndex: Long)
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listUsedProblems(contestId, newPageIndex)}
 
-@defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(page.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
-    @for(contestProblem <- page.getData) {
+@defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestProblems.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
+    @for(contestProblem <- pageOfContestProblems.getData) {
         <div class="panel panel-default">
             <div class="panel-body">
                 <a href="@routes.ContestProblemController.viewProblem(contestId, contestProblem.getId)">
@@ -29,6 +31,6 @@
     }
 }
 
-@paginationView(page, "id", "asc", "", listFunc)
+@paginationView(pageOfContestProblems, "id", "asc", "", listFunc)
 
 @contestantjs(contestId)

@@ -25,7 +25,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
     }
 
     @Override
-    public long countUnansweredClarificationByContestJid(String contestJid) {
+    public long countUnansweredInContest(String contestJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
         Root<ContestClarificationModel> root = query.from(ContestClarificationModel.class);
@@ -38,7 +38,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
     }
 
     @Override
-    public List<String> findAllAnsweredClarificationJidsInContestByUserJids(String contestJid, Collection<String> userJids) {
+    public List<String> getAnsweredJidsInContestAskedByUsers(String contestJid, Collection<String> userJids) {
         if (userJids.isEmpty()) {
             return ImmutableList.of();
         }
@@ -54,7 +54,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
     }
 
     @Override
-    public long countClarificationsByContestJidAskedByUserJids(String contestJid, Collection<String> userJids) {
+    public long countInContestAskedByUsers(String contestJid, Collection<String> userJids) {
         if (userJids.size() == 0) {
             return 0;
         }
@@ -71,7 +71,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
     }
 
     @Override
-    public List<ContestClarificationModel> findClarificationsByContestJidAskedByUserJids(String contestJid, Collection<String> userJids) {
+    public List<ContestClarificationModel> getAllInContestAskedByUsers(String contestJid, Collection<String> userJids) {
         if (userJids.size() == 0) {
             return ImmutableList.of();
         }
@@ -88,7 +88,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
     }
 
     @Override
-    public List<String> findClarificationJidsByContestJidAskedByUserJids(String contestJid, Collection<String> userJids) {
+    public List<String> getJidsInContestAskedByUsers(String contestJid, Collection<String> userJids) {
         if (userJids.size() == 0) {
             return ImmutableList.of();
         }
