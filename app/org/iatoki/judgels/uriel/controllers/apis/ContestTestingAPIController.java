@@ -2,10 +2,9 @@ package org.iatoki.judgels.uriel.controllers.apis;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.FileSystemProvider;
-import org.iatoki.judgels.gabriel.blackbox.BlackBoxGradingSource;
-import org.iatoki.judgels.sandalphon.blackbox.adapters.impls.BlackBoxSubmissionAdapter;
+import org.iatoki.judgels.gabriel.SubmissionSource;
+import org.iatoki.judgels.sandalphon.ProgrammingSubmissionUtils;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionException;
@@ -20,8 +19,7 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.File;
-import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Singleton
@@ -59,29 +57,25 @@ public final class ContestTestingAPIController extends AbstractJudgelsAPIControl
         String language = form.get("problemLanguage")[0];
         String engine = form.get("problemEngine")[0];
 
-        Http.MultipartFormData.FilePart filePart = body.getFile("source");
-
-        String filename = filePart.getFilename();
-        File file = filePart.getFile();
-
-        String fileContent;
-        try {
-            fileContent = FileUtils.readFileToString(file);
-        } catch (IOException e) {
-            return badRequest();
-        }
-
-        BlackBoxSubmissionAdapter adapter = new BlackBoxSubmissionAdapter();
-
         String submissionJid;
         try {
-            BlackBoxGradingSource source = (BlackBoxGradingSource) adapter.createBlackBoxGradingSourceFromNewSubmission(language, ImmutableList.of("source"), ImmutableMap.of("source", filename), ImmutableMap.of("source", fileContent));
-            submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, source, userJid, "localhost");
-            adapter.storeSubmissionFiles(submissionLocalFileSystemProvider, null, submissionJid, source);
+            SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromNewSubmission(new Http.MultipartFormData() {
+                @Override
+                public Map<String, String[]> asFormUrlEncoded() {
+                    return ImmutableMap.of("language", new String[]{language}, "sourceFileFieldKeys", new String[]{"source"});
+                }
+
+                @Override
+                public List<FilePart> getFiles() {
+                    return ImmutableList.of(body.getFile("source"));
+                }
+            });
+            submissionJid = submissionService.submit(problemJid, contest.getJid(), engine, language, null, submissionSource, userJid, "localhost");
+            ProgrammingSubmissionUtils.storeSubmissionFiles(submissionLocalFileSystemProvider, null, submissionJid, submissionSource);
         } catch (ProgrammingSubmissionException e) {
             return badRequest();
         }
 
-        return ok(submissionJid);
+        return ok();
     }
 }
