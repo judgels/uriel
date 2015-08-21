@@ -94,10 +94,10 @@ public final class ContestController extends AbstractJudgelsController {
     public Result jumpToSubmissions(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            return redirect(routes.ContestSubmissionController.viewSubmissions(contestId));
+            return redirect(routes.ContestProgrammingSubmissionController.viewSubmissions(contestId));
         }
 
-        return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
+        return redirect(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contestId));
     }
 
     @Transactional(readOnly = true)

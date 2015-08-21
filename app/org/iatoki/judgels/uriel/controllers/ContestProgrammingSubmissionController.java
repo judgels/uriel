@@ -111,7 +111,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         ControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
-        return redirect(routes.ContestSubmissionController.viewScreenedSubmissions(contestId));
+        return redirect(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contestId));
     }
 
     @Transactional(readOnly = true)
@@ -141,7 +141,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("submission.list"), routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()))
+                new InternalLink(Messages.get("submission.list"), routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contest.getId()))
         );
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submissions");
 
@@ -171,8 +171,8 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId())),
-                new InternalLink(Messages.get("submission.view"), routes.ContestSubmissionController.viewSubmission(contest.getId(), submission.getId()))
+                new InternalLink(Messages.get("status.supervisor"), routes.ContestProgrammingSubmissionController.viewSubmissions(contest.getId())),
+                new InternalLink(Messages.get("submission.view"), routes.ContestProgrammingSubmissionController.viewSubmission(contest.getId(), submission.getId()))
         );
 
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submission - View");
@@ -210,7 +210,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         ControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("status.supervisor"), routes.ContestSubmissionController.viewSubmissions(contest.getId()))
+                new InternalLink(Messages.get("status.supervisor"), routes.ContestProgrammingSubmissionController.viewSubmissions(contest.getId()))
         );
 
         ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Submissions");
@@ -233,7 +233,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         ControllerUtils.getInstance().addActivityLog("Regrade submission " + programmingSubmission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
+        return redirect(routes.ContestProgrammingSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
     }
 
     @Transactional
@@ -252,7 +252,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         } else if (data.selectJids != null) {
             programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsByJids(data.selectJids);
         } else {
-            return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
+            return redirect(routes.ContestProgrammingSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
         }
 
         for (ProgrammingSubmission programmingSubmission : programmingSubmissions) {
@@ -262,11 +262,11 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         ControllerUtils.getInstance().addActivityLog("Regrade some submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return redirect(routes.ContestSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
+        return redirect(routes.ContestProgrammingSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
     }
 
     private void appendSubtabsLayout(LazyHtml content, Contest contest) {
-        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestSubmissionController.viewSubmissions(contest.getId()), c));
+        content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contest.getId()), routes.ContestProgrammingSubmissionController.viewSubmissions(contest.getId()), c));
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {

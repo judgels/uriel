@@ -35,7 +35,7 @@
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-2", "col-md-10") }
 
-@b3.form(routes.ContestSubmissionController.postSubmitProblem(contest.getId, contestProblem.getProblemJid), 'enctype->"multipart/form-data", 'class->"form-horizontal critical") {
+@b3.form(routes.ContestProgrammingSubmissionController.postSubmitProblem(contest.getId, contestProblem.getProblemJid), 'enctype->"multipart/form-data", 'class->"form-horizontal critical") {
 
     @b3.hidden("engine", "BatchWithSubtasks")
     @b3.hidden("sourceFileFieldKeys", "source")
