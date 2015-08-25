@@ -256,9 +256,9 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             statement1.close();
 
             try {
-                resultSet.findColumn(readJid);
+                resultSet.findColumn("readJid");
             } catch (SQLException e) {
-                statement.execute("ALTER TABLE " + readTable + " ADD \"" + readJid + "\" VARCHAR(255);");
+                statement.execute("ALTER TABLE " + readTable + " ADD readJid VARCHAR(255);");
             }
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + readTable + " SET readJid= ? WHERE id=" + id + ";");
             preparedStatement.setString(1, readJid);
