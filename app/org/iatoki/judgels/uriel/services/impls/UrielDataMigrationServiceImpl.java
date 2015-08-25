@@ -235,6 +235,12 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             preparedStatement.executeUpdate();
         }
 
+        try {
+            statement.execute("ALTER TABLE " + readTable + " ADD readJid VARCHAR(255);");
+        } catch (SQLException e) {
+            // ignore
+        }
+
         String readQuery = "SELECT * FROM " + readTable + "";
         resultSet = statement.executeQuery(readQuery);
         while (resultSet.next()) {
@@ -255,11 +261,6 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
             resultSet1.close();
             statement1.close();
 
-            try {
-                resultSet.findColumn("readJid");
-            } catch (SQLException e) {
-                statement.execute("ALTER TABLE " + readTable + " ADD readJid VARCHAR(255);");
-            }
             PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + readTable + " SET readJid= ? WHERE id=" + id + ";");
             preparedStatement.setString(1, readJid);
             preparedStatement.executeUpdate();
