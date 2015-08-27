@@ -17,3 +17,4 @@ projectFilesBackup/
 conf/*.conf
 !conf/*_default.conf
 application-log*
+external-assets/
