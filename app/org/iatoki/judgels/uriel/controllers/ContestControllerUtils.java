@@ -102,7 +102,7 @@ public final class ContestControllerUtils {
     }
 
     public boolean isSupervisorOrAbove(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
+        return UrielControllerUtils.getInstance().isAdmin() || isManager(contest) || (isSupervisor(contest));
     }
 
     public boolean isCoachOrAbove(Contest contest) {
@@ -152,7 +152,7 @@ public final class ContestControllerUtils {
     }
 
     public boolean isAllowedToManageContest(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || isManager(contest);
+        return UrielControllerUtils.getInstance().isAdmin() || isManager(contest);
     }
 
     public boolean isAllowedToRegisterContest(Contest contest) {
@@ -351,7 +351,7 @@ public final class ContestControllerUtils {
             internalLinkBuilder.add(new InternalLink(contestModule.getTabName(), contestModule.getDefaultJumpTo(contest.getId())));
         }
 
-        if (((contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SUPERVISOR)) && (isSupervisorOrAbove(contest))) || ((ControllerUtils.getInstance().isAdmin()) || (isManager(contest)))) {
+        if (((contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SUPERVISOR)) && (isSupervisorOrAbove(contest))) || ((UrielControllerUtils.getInstance().isAdmin()) || (isManager(contest)))) {
             internalLinkBuilder.add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.jumpToContestants(contest.getId())));
             internalLinkBuilder.add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.jumpToManagers(contest.getId())));
         }

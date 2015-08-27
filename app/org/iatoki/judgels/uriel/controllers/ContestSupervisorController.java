@@ -130,7 +130,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         }
         contestSupervisorService.createContestSupervisor(contest.getId(), userJid, contestPermission);
 
-        ControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateData.username + " as supervisor in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateData.username + " as supervisor in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
@@ -150,7 +150,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
         Form<ContestSupervisorUpdateForm> contestSupervisorUpdateForm = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateData);
 
-        ControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showUpdateSupervisor(contestSupervisorUpdateForm, contest, contestSupervisor);
     }
@@ -179,7 +179,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         }
         contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestPermission);
 
-        ControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
@@ -188,33 +188,33 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, contestSupervisorCreateForm, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("supervisor.list"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
         );
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
 
-        ControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUpdateSupervisor(Form<ContestSupervisorUpdateForm> contestSupervisorUpdateForm, Contest contest, ContestSupervisor contestSupervisor) {
         LazyHtml content = new LazyHtml(updateSupervisorView.render(contest.getId(), contestSupervisor.getId(), contestSupervisorUpdateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.update"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("supervisor.update"), routes.ContestSupervisorController.updateSupervisor(contest.getId(), contestSupervisor.getId()))
         );
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisor - Update");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisor - Update");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .add(new InternalLink(Messages.get("supervisor.supervisors"), routes.ContestController.jumpToSupervisors(contest.getId())))
                         .addAll(Arrays.asList(lastLinks))
@@ -223,6 +223,6 @@ public class ContestSupervisorController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToManageSupervisors(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest);
+        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest);
     }
 }

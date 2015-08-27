@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
-import org.iatoki.judgels.jophiel.UserInfo;
+import org.iatoki.judgels.jophiel.PublicUser;
 import play.mvc.Http;
 
 import java.util.Arrays;
@@ -40,7 +40,7 @@ public final class UrielUtils {
         putInSession("realAvatar", getFromSession("avatar"));
     }
 
-    public static void setUserSession(UserInfo userInfo, User user) {
+    public static void setUserSession(PublicUser userInfo, org.iatoki.judgels.uriel.User user) {
         putInSession("userJid", userInfo.getJid());
         putInSession("name", userInfo.getName());
         putInSession("username", userInfo.getUsername());

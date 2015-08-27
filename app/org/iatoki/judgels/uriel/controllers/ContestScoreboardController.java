@@ -129,15 +129,15 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         }
 
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
         );
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Public Scoreboard");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Public Scoreboard");
 
-        ControllerUtils.getInstance().addActivityLog("View public scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("View public scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional(readOnly = true)
@@ -156,16 +156,16 @@ public class ContestScoreboardController extends AbstractJudgelsController {
 
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Official Scoreboard");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Official Scoreboard");
 
-        ControllerUtils.getInstance().addActivityLog("View official scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("View official scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional
@@ -189,7 +189,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             refreshFrozenScoreboard(contest, contestScoreboardModule, adapter, state);
         }
 
-        ControllerUtils.getInstance().addActivityLog("Refresh all scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Refresh all scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
     }
@@ -347,7 +347,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             }
         }
 
-        ControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -374,7 +374,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .add(new InternalLink(Messages.get("scoreboard.scoreboard"), routes.ContestController.jumpToScoreboard(contest.getId())))
                         .addAll(Arrays.asList(lastLinks))
@@ -383,6 +383,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseScoreboard(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || ContestControllerUtils.getInstance().isSupervisor(contest);
+        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || ContestControllerUtils.getInstance().isSupervisor(contest);
     }
 }

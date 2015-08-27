@@ -125,17 +125,17 @@ public final class ContestFileController extends AbstractJudgelsController {
     private Result showListFiles(Form<ContestFileUploadForm> contestFileUploadForm, Contest contest, List<FileInfo> fileInfos) {
         LazyHtml content = new LazyHtml(listFilesView.render(contestFileUploadForm, contest, fileInfos));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("file.list"), routes.ContestFileController.viewFiles(contest.getId()))
         );
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Files - List");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Files - List");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .add(new InternalLink(Messages.get("file.files"), routes.ContestController.jumpToFiles(contest.getId())))
                         .addAll(Arrays.asList(lastLinks))

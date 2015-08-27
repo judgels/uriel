@@ -5,7 +5,6 @@ GET         /                                                                   
 GET         /auth                                                                                        @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri: String ?= "")
 GET         /authRole                                                                                    @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri: String ?= "")
 GET         /afterLogin                                                                                  @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri: String ?= "")
-GET         /afterProfile                                                                                @org.iatoki.judgels.uriel.controllers.ApplicationController.afterProfile(returnUri: String ?= "")
 POST        /viewAs                                                                                      @org.iatoki.judgels.uriel.controllers.ApplicationController.postViewAs()
 GET         /resetViewAs                                                                                 @org.iatoki.judgels.uriel.controllers.ApplicationController.resetViewAs()
 

@@ -10,7 +10,7 @@ import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
-import org.iatoki.judgels.uriel.controllers.ControllerUtils;
+import org.iatoki.judgels.uriel.controllers.UrielControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
 import org.iatoki.judgels.uriel.runnables.ScoreboardUpdater;
@@ -58,7 +58,7 @@ public final class Global extends AbstractGlobal {
     }
 
     private void buildUtils(Injector injector) {
-        ControllerUtils.buildInstance(injector.instanceOf(Jophiel.class));
+        UrielControllerUtils.buildInstance(injector.instanceOf(Jophiel.class));
         ContestControllerUtils.buildInstance(injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestContestantPasswordService.class));
     }
 

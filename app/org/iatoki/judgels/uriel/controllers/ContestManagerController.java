@@ -68,7 +68,7 @@ public class ContestManagerController extends AbstractJudgelsController {
         }
 
         Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-        boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+        boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
         Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class);
 
         return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
@@ -83,7 +83,7 @@ public class ContestManagerController extends AbstractJudgelsController {
 
         if (formHasErrors(contestManagerCreateForm)) {
             Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-            boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+            boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
 
             return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
@@ -100,7 +100,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             contestManagerCreateForm.reject("error.manager.create.userJid.invalid");
 
             Page<ContestManager> contestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-            boolean canUpdate = ControllerUtils.getInstance().isAdmin();
+            boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
 
             return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
@@ -108,7 +108,7 @@ public class ContestManagerController extends AbstractJudgelsController {
         userService.upsertUserFromJophielUserJid(userJid);
         contestManagerService.createContestManager(contest.getId(), userJid);
 
-        ControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateData.username + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateData.username + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
     }
@@ -117,17 +117,17 @@ public class ContestManagerController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophiel.getAutoCompleteEndPoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest);
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Managers");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Managers");
 
-        ControllerUtils.getInstance().addActivityLog("Open list of managers in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Open list of managers in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .add(new InternalLink(Messages.get("manager.managers"), routes.ContestController.jumpToManagers(contest.getId())))
                         .addAll(Arrays.asList(lastLinks))

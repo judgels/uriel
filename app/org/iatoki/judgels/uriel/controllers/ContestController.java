@@ -163,23 +163,23 @@ public final class ContestController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
-        Page<Contest> pageOfContests = contestService.getPageOfAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), ControllerUtils.getInstance().isAdmin());
+        Page<Contest> pageOfContests = contestService.getPageOfAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), UrielControllerUtils.getInstance().isAdmin());
 
         LazyHtml content = new LazyHtml(listContestsView.render(pageOfContests, pageIndex, orderBy, orderDir, filterString));
-        if (ControllerUtils.getInstance().isAdmin()) {
+        if (UrielControllerUtils.getInstance().isAdmin()) {
             content.appendLayout(c -> headingWithActionLayout.render(Messages.get("contest.list"), new InternalLink(Messages.get("commons.create"), routes.ContestController.createContest()), c));
         } else {
             content.appendLayout(c -> headingLayout.render(Messages.get("contest.list"), c));
         }
-        ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
               new InternalLink(Messages.get("contest.contests"), routes.ContestController.index())
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contests");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contests");
 
-        ControllerUtils.getInstance().addActivityLog("Open list of allowed contests <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Open list of allowed contests <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional(readOnly = true)
@@ -206,16 +206,16 @@ public final class ContestController extends AbstractJudgelsController {
 
         LazyHtml content = new LazyHtml(viewContestView.render(contest, contestModuleService.getModulesInContest(contest.getJid()).stream().collect(Collectors.toMap(m -> m.getType(), m -> m)), pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest), passwordForm, ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
         content.appendLayout(c -> headingLayout.render(contest.getName(), c));
-        ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
               new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
               new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId()))
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
 
-        ControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional
@@ -228,7 +228,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestContestantService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
 
-        ControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.viewContest(contestId));
     }
@@ -244,7 +244,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
         contestContestantService.deleteContestContestant(contestContestant.getId());
 
-        ControllerUtils.getInstance().addActivityLog("Unregister from contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Unregister from contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.viewContest(contestId));
     }
@@ -257,7 +257,7 @@ public final class ContestController extends AbstractJudgelsController {
             return redirect(routes.ContestController.index());
         }
 
-        ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
@@ -285,7 +285,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         ContestControllerUtils.getInstance().establishContestWithPasswordCookie(correctPassword);
 
-        ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
@@ -300,7 +300,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestContestantService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
 
-        ControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
@@ -311,7 +311,7 @@ public final class ContestController extends AbstractJudgelsController {
     public Result createContest() {
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class);
 
-        ControllerUtils.getInstance().addActivityLog("Try to create a contest.");
+        UrielControllerUtils.getInstance().addActivityLog("Try to create a contest.");
 
         return showCreateContest(contestUpsertForm);
     }
@@ -329,7 +329,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
         Contest contest = contestService.createContest(contestUpsertData.name, contestUpsertData.description, ContestStyle.valueOf(contestUpsertData.style));
 
-        ControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
 
         return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
     }
@@ -349,7 +349,7 @@ public final class ContestController extends AbstractJudgelsController {
         contestUpsertData.style = contest.getStyle().name();
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).fill(contestUpsertData);
 
-        ControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showUpdateContestGeneralConfig(contestUpsertForm, contest);
     }
@@ -371,7 +371,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
         contestService.updateContest(contest.getId(), contestUpsertData.name, contestUpsertData.description, ContestStyle.valueOf(contestUpsertData.style));
 
-        ControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
         return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
     }
@@ -386,14 +386,14 @@ public final class ContestController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listModulesView.render(contest, contestModuleService.getModulesInContest(contest.getJid()).stream().collect(Collectors.toMap(m -> m.getType(), m -> m))));
         appendConfigSubtabLayout(content, contest);
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestModuleConfig(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Module");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Module");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Transactional
@@ -458,7 +458,7 @@ public final class ContestController extends AbstractJudgelsController {
             moduleFormMap.put(contestModule, contestModule.generateConfigForm());
         }
 
-        ControllerUtils.getInstance().addActivityLog("Try to update specific config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Try to update specific config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showUpdateContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
     }
@@ -507,7 +507,7 @@ public final class ContestController extends AbstractJudgelsController {
         contestService.updateContestStyleConfiguration(contest.getJid(), contestStyleConfig);
         contestService.updateContestModuleConfiguration(contest.getJid(), updatedContestModuleBuilder.build());
 
-        ControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
 
         return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
     }
@@ -515,42 +515,42 @@ public final class ContestController extends AbstractJudgelsController {
     private Result showCreateContest(Form<ContestUpsertForm> contestUpsertForm) {
         LazyHtml content = new LazyHtml(createContestView.render(contestUpsertForm));
         content.appendLayout(c -> headingLayout.render(Messages.get("contest.create"), c));
-        ControllerUtils.getInstance().appendSidebarLayout(content);
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
                 new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
                 new InternalLink(Messages.get("contest.create"), routes.ContestController.createContest())
         ));
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Create");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Create");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUpdateContestGeneralConfig(Form<ContestUpsertForm> contestUpsertForm, Contest contest) {
         LazyHtml content = new LazyHtml(updateContestView.render(contestUpsertForm, contest));
         appendConfigSubtabLayout(content, contest);
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update General");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update General");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUpdateContestSpecificConfig(Contest contest, Form contestStyleForm, SortedMap<ContestModule, Form<?>> moduleFormMap) {
         LazyHtml content = new LazyHtml(updateContestSpecificView.render(contest, contestStyleForm, moduleFormMap));
         appendConfigSubtabLayout(content, contest);
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Specific");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Specific");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private void appendConfigSubtabLayout(LazyHtml content, Contest contest) {
@@ -562,7 +562,7 @@ public final class ContestController extends AbstractJudgelsController {
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .addAll(Arrays.asList(lastLinks))
                         .build()

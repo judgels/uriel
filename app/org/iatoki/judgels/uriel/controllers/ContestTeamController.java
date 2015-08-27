@@ -171,7 +171,7 @@ public class ContestTeamController extends AbstractJudgelsController {
             contestTeamService.createContestTeam(contest.getId(), contestTeamUpsertData.name);
         }
 
-        ControllerUtils.getInstance().addActivityLog("Create team " + contestTeamUpsertData.name + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Create team " + contestTeamUpsertData.name + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
     }
@@ -190,7 +190,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         contestTeamUpsertData.name = contestTeam.getName();
         Form<ContestTeamUpsertForm> contestTeamUpsertForm = Form.form(ContestTeamUpsertForm.class).fill(contestTeamUpsertData);
 
-        ControllerUtils.getInstance().addActivityLog("Try to update team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Try to update team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showUpdateTeam(contestTeamUpsertForm, contest, contestTeam);
     }
@@ -226,7 +226,7 @@ public class ContestTeamController extends AbstractJudgelsController {
             contestTeamService.updateContestTeam(contestTeam.getId(), contestTeamUpsertData.name);
         }
 
-        ControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
     }
@@ -245,7 +245,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Form<ContestTeamMemberCreateForm> contestTeamMemberCreateForm = Form.form(ContestTeamMemberCreateForm.class);
         Form<ContestTeamMemberUploadForm> contestTeamMemberUploadForm = Form.form(ContestTeamMemberUploadForm.class);
 
-        ControllerUtils.getInstance().addActivityLog("View team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("View team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showViewTeam(contestTeamCoachCreateForm, contestTeamCoachUploadForm, contestTeamMemberCreateForm, contestTeamMemberUploadForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
     }
@@ -296,7 +296,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
         userService.upsertUserFromJophielUserJid(userJid);
 
-        ControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateData.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateData.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -348,7 +348,7 @@ public class ContestTeamController extends AbstractJudgelsController {
                 userService.upsertUserFromJophielUserJid(userJid);
                 contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
             }
-            ControllerUtils.getInstance().addActivityLog("Upload contest team coaches in contest " + contest.getName() + ".");
+            UrielControllerUtils.getInstance().addActivityLog("Upload contest team coaches in contest " + contest.getName() + ".");
         }
         List<UploadResult> failedUploads = failedUploadsBuilder.build();
 
@@ -366,7 +366,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         contestTeamService.removeContestTeamCoachById(contestTeamCoach.getId());
 
-        ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamCoach.getCoachJid() + " from coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Remove " + contestTeamCoach.getCoachJid() + " from coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -413,7 +413,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         }
         contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
 
-        ControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateData.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateData.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -464,7 +464,7 @@ public class ContestTeamController extends AbstractJudgelsController {
                 contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
             }
 
-            ControllerUtils.getInstance().addActivityLog("Upload contest team members in contest " + contest.getName() + ".");
+            UrielControllerUtils.getInstance().addActivityLog("Upload contest team members in contest " + contest.getName() + ".");
         }
         List<UploadResult> failedUploads = failedUploadsBuilder.build();
 
@@ -479,7 +479,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         if (isAllowedToSuperviseContestants(contest) && contestTeam.getContestJid().equals(contest.getJid()) && contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
             contestTeamService.removeContestTeamMemberById(contestTeamMember.getId());
 
-            ControllerUtils.getInstance().addActivityLog("Remove " + contestTeamMember.getMemberJid() + " from member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+            UrielControllerUtils.getInstance().addActivityLog("Remove " + contestTeamMember.getMemberJid() + " from member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
             return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
         } else {
@@ -491,32 +491,32 @@ public class ContestTeamController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, ContestControllerUtils.getInstance().hasContestBegun(contest)));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("team.list"), routes.ContestTeamController.viewTeams(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
 
-        ControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showListScreenedTeams(Page<ContestTeam> pageOfContestTeams, Contest contest, long pageIndex, String orderBy, String orderDir, boolean isAllowedToStartContest) {
         LazyHtml content = new LazyHtml(listScreenedTeamsView.render(contest.getId(), pageOfContestTeams, pageIndex, orderBy, orderDir, isAllowedToStartContest));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("team.list"), routes.ContestTeamController.viewTeams(contest.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
 
-        ControllerUtils.getInstance().addActivityLog("List all screened teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("List all screened teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUpdateTeam(Form<ContestTeamUpsertForm> contestTeamUpsertForm, Contest contest, ContestTeam contestTeam) {
@@ -524,15 +524,15 @@ public class ContestTeamController extends AbstractJudgelsController {
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.update"), c));
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
                 new InternalLink(Messages.get("team.update"), routes.ContestTeamController.updateTeam(contest.getId(), contestTeam.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - Update");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - Update");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showViewTeamWithCoachCreateForm(Form<ContestTeamCoachCreateForm> contestTeamCoachCreateForm, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers, boolean canUpdate) {
@@ -556,15 +556,15 @@ public class ContestTeamController extends AbstractJudgelsController {
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.view"), c));
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
               new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
               new InternalLink(Messages.get("team.view"), routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - View");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - View");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUploadTeamCoach(List<UploadResult> failedUploads, Contest contest, ContestTeam contestTeam) {
@@ -578,15 +578,15 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
               new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
               new InternalLink(Messages.get("team.view"), routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams - Upload Coach Result");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams - Upload Coach Result");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private Result showUploadTeamMember(List<UploadResult> failedUploads, Contest contest, ContestTeam contestTeam) {
@@ -600,19 +600,19 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
-        ControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
               new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
               new InternalLink(Messages.get("team.view"), routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()))
         );
 
-        ControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams - Upload Member Result");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams - Upload Member Result");
 
-        return ControllerUtils.getInstance().lazyOk(content);
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     private void appendBreadcrumbsLayout(LazyHtml content, Contest contest, InternalLink... lastLinks) {
-        ControllerUtils.getInstance().appendBreadcrumbsLayout(content,
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content,
                 ContestControllerUtils.getInstance().getContestBreadcrumbsBuilder(contest)
                         .add(new InternalLink(Messages.get("contestant.contestants"), routes.ContestController.jumpToContestants(contest.getId())))
                         .addAll(Arrays.asList(lastLinks))
@@ -621,6 +621,6 @@ public class ContestTeamController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return ControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
+        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
     }
 }

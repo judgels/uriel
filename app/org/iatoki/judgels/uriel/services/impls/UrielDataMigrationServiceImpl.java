@@ -24,7 +24,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -40,6 +40,35 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         }
         if (databaseVersion < 4) {
             migrateV3toV4();
+        }
+        if (databaseVersion < 5) {
+            migrateV4toV5();
+        }
+    }
+
+    private void migrateV4toV5() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String jidCacheTable = "uriel_jid_cache";
+        Statement statement = connection.createStatement();
+        String jidCacheQuery = "SELECT * FROM " + jidCacheTable + ";";
+        ResultSet resultSet = statement.executeQuery(jidCacheQuery);
+
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            String jid = resultSet.getString("jid");
+            String displayName = resultSet.getString("displayName");
+
+            if (jid.startsWith("JIDUSER")) {
+                if (displayName.contains("(")) {
+                    displayName = displayName.substring(0, displayName.indexOf("(") - 1);
+
+                    PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + jidCacheTable + " SET displayName= ? WHERE id=" + id + ";");
+                    preparedStatement.setString(1, displayName);
+                    preparedStatement.executeUpdate();
+                }
+            }
         }
     }
 

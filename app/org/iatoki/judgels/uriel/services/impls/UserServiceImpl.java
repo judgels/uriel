@@ -7,10 +7,9 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.jophiel.Jophiel;
-import org.iatoki.judgels.jophiel.UserInfo;
+import org.iatoki.judgels.jophiel.PublicUser;
 import org.iatoki.judgels.jophiel.UserTokens;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.UserNotFoundException;
 import org.iatoki.judgels.uriel.models.daos.UserDao;
 import org.iatoki.judgels.uriel.models.entities.UserModel;
@@ -67,7 +66,7 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserById(long userId) throws UserNotFoundException {
+    public org.iatoki.judgels.uriel.User findUserById(long userId) throws UserNotFoundException {
         UserModel userModel = userDao.findById(userId);
         if (userModel == null) {
             throw new UserNotFoundException("User not found.");
@@ -77,7 +76,7 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findUserByJid(String userJid) {
+    public org.iatoki.judgels.uriel.User findUserByJid(String userJid) {
         UserModel userModel = userDao.findByJid(userJid);
         return createUserFromUserModel(userModel);
     }
@@ -106,10 +105,10 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+    public Page<org.iatoki.judgels.uriel.User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
         List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
+        List<org.iatoki.judgels.uriel.User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
         return new Page<>(users, totalPages, pageIndex, pageSize);
     }
 
@@ -121,13 +120,13 @@ public final class UserServiceImpl implements UserService {
     @Override
     public void upsertUserFromJophielUserJid(String userJid, List<String> roles) {
         try {
-            UserInfo user = jophiel.getUserByUserJid(userJid);
+            PublicUser user = jophiel.getUserByUserJid(userJid);
 
             if (!userDao.existsByJid(userJid)) {
                 createUser(user.getJid(), roles);
             }
 
-            JidCacheServiceImpl.getInstance().putDisplayName(user.getJid(), JudgelsPlayUtils.getUserDisplayName(user.getUsername(), user.getName()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            JidCacheServiceImpl.getInstance().putDisplayName(user.getJid(), JudgelsPlayUtils.getUserDisplayName(user.getUsername()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             AvatarCacheServiceImpl.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         } catch (IOException e) {
             // do nothing
@@ -145,7 +144,7 @@ public final class UserServiceImpl implements UserService {
         return new UserTokens(userModel.userJid, userModel.accessToken, userModel.refreshToken, userModel.idToken, userModel.expirationTime);
     }
 
-    private User createUserFromUserModel(UserModel userModel) {
-        return new User(userModel.id, userModel.userJid, Arrays.asList(userModel.roles.split(",")));
+    private org.iatoki.judgels.uriel.User createUserFromUserModel(UserModel userModel) {
+        return new org.iatoki.judgels.uriel.User(userModel.id, userModel.userJid, Arrays.asList(userModel.roles.split(",")));
     }
 }
