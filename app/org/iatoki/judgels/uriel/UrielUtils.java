@@ -40,12 +40,12 @@ public final class UrielUtils {
         putInSession("realAvatar", getFromSession("avatar"));
     }
 
-    public static void setUserSession(PublicUser userInfo, org.iatoki.judgels.uriel.User user) {
-        putInSession("userJid", userInfo.getJid());
-        putInSession("name", userInfo.getName());
-        putInSession("username", userInfo.getUsername());
+    public static void setUserSession(PublicUser publicUser, User user) {
+        putInSession("userJid", publicUser.getJid());
+        putInSession("name", publicUser.getName());
+        putInSession("username", publicUser.getUsername());
         saveRolesInSession(user.getRoles());
-        putInSession("avatar", userInfo.getProfilePictureUrl().toString());
+        putInSession("avatar", publicUser.getProfilePictureUrl().toString());
     }
 
     public static void restoreSession() {

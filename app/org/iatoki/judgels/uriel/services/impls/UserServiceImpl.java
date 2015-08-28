@@ -120,14 +120,14 @@ public final class UserServiceImpl implements UserService {
     @Override
     public void upsertUserFromJophielUserJid(String userJid, List<String> roles) {
         try {
-            PublicUser user = jophiel.getUserByUserJid(userJid);
+            PublicUser publicUser = jophiel.getPublicUserByJid(userJid);
 
             if (!userDao.existsByJid(userJid)) {
-                createUser(user.getJid(), roles);
+                createUser(publicUser.getJid(), roles);
             }
 
-            JidCacheServiceImpl.getInstance().putDisplayName(user.getJid(), JudgelsPlayUtils.getUserDisplayName(user.getUsername()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-            AvatarCacheServiceImpl.getInstance().putImageUrl(user.getJid(), user.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            JidCacheServiceImpl.getInstance().putDisplayName(publicUser.getJid(), JudgelsPlayUtils.getUserDisplayName(publicUser.getUsername()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            AvatarCacheServiceImpl.getInstance().putImageUrl(publicUser.getJid(), publicUser.getProfilePictureUrl(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         } catch (IOException e) {
             // do nothing
         }
