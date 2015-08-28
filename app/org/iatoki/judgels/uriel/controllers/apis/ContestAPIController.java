@@ -242,11 +242,11 @@ public final class ContestAPIController extends AbstractJudgelsAPIController {
     }
 
     private boolean isContestStarted(Contest contest) {
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.DURATION)) {
+        if (!contest.containsModule(ContestModules.DURATION)) {
             return true;
         }
 
-        ContestDurationModule contestDurationModule = (ContestDurationModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.DURATION);
+        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
         return (!new Date().before(contestDurationModule.getBeginTime()));
     }
 
@@ -254,15 +254,15 @@ public final class ContestAPIController extends AbstractJudgelsAPIController {
         if (isAdmin() || isManager(contest) || isSupervisor(contest)) {
             return true;
         }
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL)) {
+        if (!contest.containsModule(ContestModules.VIRTUAL)) {
             return ((isContestant(contest) && isContestStarted(contest)) || isCoach(contest));
         }
 
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.TRIGGER)) {
+        if (!contest.containsModule(ContestModules.TRIGGER)) {
             return (isContestStarted(contest) && (isCoach(contest) || (isContestant(contest) && contestContestantService.hasContestantStartContest(contest.getJid(), IdentityUtils.getUserJid()))));
         }
 
-        ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.TRIGGER);
+        ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contest.getModule(ContestModules.TRIGGER);
 
         if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.TEAM_MEMBER)) {
             return (isContestant(contest) && (isContestStarted(contest)));

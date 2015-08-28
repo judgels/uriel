@@ -6,7 +6,6 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
-import org.iatoki.judgels.uriel.modules.ContestModule;
 import play.twirl.api.Html;
 
 import java.net.URL;
@@ -17,7 +16,7 @@ import java.util.Set;
 
 public interface ScoreboardAdapter {
 
-    ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap);
+    ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap);
 
     Scoreboard parseScoreboardFromJson(String json);
 

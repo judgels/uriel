@@ -64,7 +64,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
     public Result listContestantPasswords(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
+        if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
@@ -78,7 +78,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
     public Result generateContestantPasswords(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
+        if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
@@ -92,7 +92,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestant = contestContestantService.findContestantInContestById(contestContestantId);
 
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
+        if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 

@@ -7,14 +7,13 @@ import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.IOIScoreboard;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
-import org.iatoki.judgels.uriel.modules.ContestModule;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 

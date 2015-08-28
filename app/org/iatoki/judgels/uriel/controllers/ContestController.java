@@ -204,7 +204,7 @@ public final class ContestController extends AbstractJudgelsController {
             passwordForm = null;
         }
 
-        LazyHtml content = new LazyHtml(viewContestView.render(contest, contestModuleService.getModulesInContest(contest.getJid()).stream().collect(Collectors.toMap(m -> m.getType(), m -> m)), pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest), passwordForm, ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
+        LazyHtml content = new LazyHtml(viewContestView.render(contest, pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest), passwordForm, ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
         content.appendLayout(c -> headingLayout.render(contest.getName(), c));
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
@@ -383,7 +383,7 @@ public final class ContestController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
-        LazyHtml content = new LazyHtml(listModulesView.render(contest, contestModuleService.getModulesInContest(contest.getJid()).stream().collect(Collectors.toMap(m -> m.getType(), m -> m))));
+        LazyHtml content = new LazyHtml(listModulesView.render(contest));
         appendConfigSubtabLayout(content, contest);
         content.appendLayout(c -> headingWithActionLayout.render("#" + contest.getId() + ": " + contest.getName(), new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())), c));
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
@@ -454,7 +454,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         Map<ContestModule, Form<?>> moduleFormMap = Maps.newHashMap();
-        for (ContestModule contestModule : contestModuleService.getModulesInContest(contest.getJid())) {
+        for (ContestModule contestModule : contest.getModules()) {
             moduleFormMap.put(contestModule, contestModule.generateConfigForm());
         }
 
@@ -482,7 +482,7 @@ public final class ContestController extends AbstractJudgelsController {
         boolean checkError = false;
         Map<ContestModule, Form<?>> moduleFormMap = Maps.newHashMap();
         ImmutableList.Builder<ContestModule> updatedContestModuleBuilder = ImmutableList.builder();
-        for (ContestModule contestModule : contestModuleService.getModulesInContest(contest.getJid())) {
+        for (ContestModule contestModule : contest.getModules()) {
             Form<?> moduleForm = contestModule.updateModuleByFormFromRequest(request());
             moduleFormMap.put(contestModule, moduleForm);
             updatedContestModuleBuilder.add(contestModule);

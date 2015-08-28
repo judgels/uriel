@@ -15,15 +15,15 @@
 @import org.iatoki.judgels.uriel.ContestContestant
 @import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm
 
-@(contest: Contest, contestModules: Map[ContestModules, ContestModule], pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
+@(contest: Contest, pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 
 <div class="well">
     @Html(JudgelsPlayUtils.escapeHtmlString(contest.getDescription))
     <hr />
-    @if(contestModules.contains(ContestModules.DURATION)) {
+    @if(contest.containsModule(ContestModules.DURATION)) {
         <p>
-            <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)</time>
-                - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestModules.get(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)</time></small>
+            <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)</time>
+                - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)</time></small>
         </p>
     }
 
@@ -65,7 +65,7 @@
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.viewContestAndListRegistrants(contest.getId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
-@if(contestModules.contains(ContestModules.REGISTRATION)) {
+@if(contest.containsModule(ContestModules.REGISTRATION)) {
     <h3>@Messages.get("contest.registrants") (@pageOfContestContestants.getTotalRowsCount)</h3>
 
     @tableView() {
@@ -90,7 +90,7 @@
     @paginationView(pageOfContestContestants, orderBy, orderDir, filterString, listFunc)
 }
 
-@if(contestModules.contains(ContestModules.VIRTUAL)) {
+@if(contest.containsModule(ContestModules.VIRTUAL)) {
     <script type="text/javascript">
         var confirmMessage = "@Messages.get("contest.start.confirm")";
     </script>

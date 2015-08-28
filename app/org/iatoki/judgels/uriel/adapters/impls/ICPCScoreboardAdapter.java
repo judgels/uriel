@@ -15,7 +15,6 @@ import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
-import org.iatoki.judgels.uriel.modules.ContestModule;
 import org.iatoki.judgels.uriel.modules.ContestModules;
 import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.icpcScoreboardView;
@@ -34,7 +33,7 @@ import java.util.stream.Collectors;
 public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, List<ContestModule> contestModules, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
 
         ICPCContestStyleConfig icpcStyleConfig = new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class);
 
@@ -74,7 +73,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             int attempts = attemptsMap.get(contestantJid).get(problemJid);
             attemptsMap.get(contestantJid).put(problemJid, attempts + 1);
 
-            penaltyMap.get(contestantJid).put(problemJid, computeSubmissionPenalty(((ContestDurationModule) contestModules.stream().filter(m -> m.getType().equals(ContestModules.DURATION)).findFirst().get()).getBeginTime(), submission.getTime()));
+            penaltyMap.get(contestantJid).put(problemJid, computeSubmissionPenalty(((ContestDurationModule) contest.getModule(ContestModules.DURATION)).getBeginTime(), submission.getTime()));
 
             isAcceptedMap.get(contestantJid).put(problemJid, verdict.getCode().equals("AC"));
         }

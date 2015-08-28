@@ -83,13 +83,13 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result viewScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SCOREBOARD) || !ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+        if (!contest.containsModule(ContestModules.SCOREBOARD) || !ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
-        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.SCOREBOARD);
+        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ContestScoreboard contestScoreboard;
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL) && (contestScoreboardModule.getScoreboardFreezeTime() < System.currentTimeMillis()) && (!contestScoreboardModule.isOfficialScoreboardAllowed())) {
+        if (!contest.containsModule(ContestModules.VIRTUAL) && (contestScoreboardModule.getScoreboardFreezeTime() < System.currentTimeMillis()) && (!contestScoreboardModule.isOfficialScoreboardAllowed())) {
             if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
                 contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
             } else {
@@ -143,7 +143,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result viewOfficialScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
+        if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
@@ -171,21 +171,21 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
+        if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
-        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contestModuleService.findModuleInContestByType(contest.getJid(), ContestModules.SCOREBOARD);
+        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
         ScoreboardState state = contestService.getScoreboardStateInContest(contest.getJid());
 
         List<ProgrammingSubmission> submissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
 
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, contestModuleService.getModulesInContest(contest.getJid()), new Gson().toJson(contest.getStyleConfig()), state, submissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, submissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.VIRTUAL)) {
+        if (!contest.containsModule(ContestModules.VIRTUAL)) {
             refreshFrozenScoreboard(contest, contestScoreboardModule, adapter, state);
         }
 
@@ -197,7 +197,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result downloadContestDataAsXLS(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contestModuleService.contestContainsEnabledModule(contest.getJid(), ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
+        if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 
@@ -364,7 +364,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     private void refreshFrozenScoreboard(Contest contest, ContestScoreboardModule contestScoreboardModule, ScoreboardAdapter adapter, ScoreboardState state) {
         List<ProgrammingSubmission> programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), contestScoreboardModule.getScoreboardFreezeTime());
 
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, contestModuleService.getModulesInContest(contest.getJid()), new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
     }
