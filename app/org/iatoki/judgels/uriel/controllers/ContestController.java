@@ -55,7 +55,6 @@ import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
