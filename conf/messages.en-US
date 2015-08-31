@@ -40,7 +40,7 @@ problem.create=Create Problem
 problem.update=Update Problem
 
 problem.alias=Alias
-problem.name=Name
+problem.slug=Slug
 problem.problemJid=Problem JID
 problem.status=Status
 problem.submissionsLimit=Submissions Limit

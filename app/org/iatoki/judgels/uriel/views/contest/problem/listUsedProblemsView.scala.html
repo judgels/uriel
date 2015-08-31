@@ -1,34 +1,30 @@
-@import scala.collection.JavaConversions
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.paginationView
 @import org.iatoki.judgels.uriel.views.html.contest.contestant.contestantjs
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.play.Page
-@import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import org.iatoki.judgels.uriel.ContestProblemStatus
 @import org.iatoki.judgels.uriel.ContestProblem
 
-@(contestId: Long, pageOfContestProblems: Page[ContestProblem], pageIndex: Long)
+@(contestId: Long, pageOfContestProblems: Page[ContestProblem], pageIndex: Long, problemTitlesMap: Map[String, String])
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestProblemController.listUsedProblems(contestId, newPageIndex)}
 
-@defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestProblems.getData.map(s => s.getProblemJid).toSeq))) { displayNamesMap =>
-    @for(contestProblem <- pageOfContestProblems.getData) {
-        <div class="panel panel-default">
-            <div class="panel-body">
-                <a href="@routes.ContestProblemController.viewProblem(contestId, contestProblem.getId)">
-                    @contestProblem.getAlias
-                    - @displayNamesMap.get(contestProblem.getProblemJid)
-                </a>
-                @if(contestProblem.getStatus == ContestProblemStatus.CLOSED) {
-                    <div class="pull-right"><span class="label label-danger">CLOSED</span></div>
-                }else { @if(contestProblem.getSubmissionsLimit != 0) {
-                    <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLeft)</div>
-                }}
-                <div class="clearfix"></div>
-            </div>
+@for(contestProblem <- pageOfContestProblems.getData) {
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <a href="@routes.ContestProblemController.viewProblem(contestId, contestProblem.getId)">
+                @contestProblem.getAlias
+                - @problemTitlesMap.get(contestProblem.getProblemJid)
+            </a>
+            @if(contestProblem.getStatus == ContestProblemStatus.CLOSED) {
+                <div class="pull-right"><span class="label label-danger">CLOSED</span></div>
+            }else { @if(contestProblem.getSubmissionsLimit != 0) {
+                <div class="pull-right">@Messages.get("submission.left") : @(contestProblem.getSubmissionsLeft)</div>
+            }}
+            <div class="clearfix"></div>
         </div>
-    }
+    </div>
 }
 
 @paginationView(pageOfContestProblems, "id", "asc", "", listFunc)

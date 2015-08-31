@@ -11,6 +11,7 @@ import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.gabriel.GradingLanguageRegistry;
+import org.iatoki.judgels.sandalphon.ResourceDisplayNameUtils;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionUtils;
 import org.iatoki.judgels.sandalphon.adapters.GradingEngineAdapterRegistry;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
@@ -164,7 +165,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         String authorName = JidCacheServiceImpl.getInstance().getDisplayName(submission.getAuthorJid());
         ContestProblem contestProblem = contestProblemService.findContestProblemInContestAndJid(contest.getJid(), submission.getProblemJid());
         String contestProblemAlias = contestProblem.getAlias();
-        String contestProblemName = JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid());
+        String contestProblemName = ResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
         String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
 
         LazyHtml content = new LazyHtml(GradingEngineAdapterRegistry.getInstance().getByGradingEngineName(submission.getGradingEngine()).renderViewSubmission(submission, submissionSource, authorName, contestProblemAlias, contestProblemName, gradingLanguageName, contest.getName()));

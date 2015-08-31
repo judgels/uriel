@@ -8,6 +8,7 @@ import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
+import org.iatoki.judgels.sandalphon.ResourceDisplayNameUtils;
 import org.iatoki.judgels.sandalphon.Sandalphon;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
@@ -50,6 +51,9 @@ import javax.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
@@ -92,8 +96,10 @@ public class ContestProblemController extends AbstractJudgelsController {
             replacementBuilder.add(contestProblem);
         }
         pageOfContestProblems = new Page<>(replacementBuilder.build(), pageOfContestProblems.getTotalRowsCount(), pageOfContestProblems.getPageIndex(), pageOfContestProblems.getPageSize());
+        List<String> problemJids = pageOfContestProblems.getData().stream().map(cp -> cp.getProblemJid()).collect(Collectors.toList());
+        Map<String, String> problemTitlesMap = ResourceDisplayNameUtils.buildTitlesMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
 
-        LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), pageOfContestProblems, pageIndex));
+        LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), pageOfContestProblems, pageIndex, problemTitlesMap));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
         if (isAllowedToSuperviseProblems(contest)) {
             appendSubtabsLayout(content, contest);
@@ -186,8 +192,10 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
 
         Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfProblemsInContest(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
+        List<String> problemJids = pageOfContestProblems.getData().stream().map(cp -> cp.getProblemJid()).collect(Collectors.toList());
+        Map<String, String> problemSlugsMap = ResourceDisplayNameUtils.buildSlugsMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids));
 
-        LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString));
+        LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, problemSlugsMap));
         content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
@@ -235,21 +243,21 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
 
         ContestProblemCreateForm contestProblemCreateData = contestProblemCreateForm.get();
-        String problemName = null;
+        String problemDisplayName = null;
         try {
-            problemName = sandalphon.verifyProblemJid(contestProblemCreateData.problemJid);
+            problemDisplayName = sandalphon.verifyProblemJid(contestProblemCreateData.problemJid);
         } catch (IOException e) {
             contestProblemCreateForm.reject("error.system.sandalphon.connection");
             return showCreateProblem(contestProblemCreateForm, contest);
         }
 
-        if ((problemName == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.alias)) {
+        if ((problemDisplayName == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.alias)) {
             contestProblemCreateForm.reject("error.problem.create.problemJidOrAlias.invalid");
             return showCreateProblem(contestProblemCreateForm, contest);
         }
 
         contestProblemService.createContestProblem(contest.getId(), contestProblemCreateData.problemJid, contestProblemCreateData.problemSecret, contestProblemCreateData.alias, contestProblemCreateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateData.status));
-        JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, problemName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, problemDisplayName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateData.alias + " in contest " + contest.getName() + ".");
 
