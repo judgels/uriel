@@ -22,6 +22,7 @@ import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
+import org.iatoki.judgels.uriel.controllers.securities.GuestView;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.forms.ContestEnterWithPasswordForm;
@@ -56,7 +57,6 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.SortedMap;
 
-@Authenticated(value = {LoggedIn.class, HasRole.class})
 @Singleton
 @Named
 public final class ContestController extends AbstractJudgelsController {
@@ -76,19 +76,17 @@ public final class ContestController extends AbstractJudgelsController {
         this.contestService = contestService;
     }
 
-    @Transactional(readOnly = true)
-    public Result index() {
-        return listAllowedContests(0, "id", "desc", "");
-    }
-
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result jumpToAnnouncements(long contestId) {
         return redirect(routes.ContestAnnouncementController.viewPublishedAnnouncements(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result jumpToProblems(long contestId) {
         return redirect(routes.ContestProblemController.viewUsedProblems(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToSubmissions(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -99,6 +97,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -109,6 +108,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestScoreboardController.viewScoreboard(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToClarifications(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -119,6 +119,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestClarificationController.viewScreenedClarifications(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToContestants(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -129,6 +130,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestContestantController.viewContestants(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToTeams(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -138,6 +140,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestContestantController.viewContestants(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToPasswords(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -148,18 +151,28 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestContestantController.viewContestants(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result jumpToSupervisors(long contestId) {
         return redirect(routes.ContestSupervisorController.viewSupervisors(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result jumpToManagers(long contestId) {
         return redirect(routes.ContestManagerController.viewManagers(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     public Result jumpToFiles(long contestId) {
         return redirect(routes.ContestFileController.viewFiles(contestId));
     }
 
+    @Authenticated(value = GuestView.class)
+    @Transactional(readOnly = true)
+    public Result index() {
+        return listAllowedContests(0, "id", "desc", "");
+    }
+
+    @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
         Page<Contest> pageOfContests = contestService.getPageOfAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), UrielControllerUtils.getInstance().isAdmin());
@@ -181,11 +194,13 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
     public Result viewContest(long contestId) throws ContestNotFoundException {
         return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
     }
 
+    @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
     public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -217,6 +232,7 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result registerToAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -232,6 +248,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.viewContest(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result unregisterFromAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -248,6 +265,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.viewContest(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result enterContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -261,6 +279,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result enterContestWithPassword(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -289,6 +308,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result startContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -304,6 +324,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Authorized(value = "admin")
     @Transactional(readOnly = true)
     @AddCSRFToken
@@ -315,6 +336,7 @@ public final class ContestController extends AbstractJudgelsController {
         return showCreateContest(contestUpsertForm);
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
@@ -333,6 +355,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateContestGeneralConfig(long contestId) throws ContestNotFoundException {
@@ -353,6 +376,7 @@ public final class ContestController extends AbstractJudgelsController {
         return showUpdateContestGeneralConfig(contestUpsertForm, contest);
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     @RequireCSRFCheck
     public Result postUpdateContestGeneralConfig(long contestId) throws ContestNotFoundException {
@@ -375,6 +399,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result updateContestModuleConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -395,6 +420,7 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result enableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -407,6 +433,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     public Result disableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
@@ -419,6 +446,7 @@ public final class ContestController extends AbstractJudgelsController {
         return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result updateContestSpecificConfig(long contestId) throws ContestNotFoundException {
@@ -462,12 +490,13 @@ public final class ContestController extends AbstractJudgelsController {
         return showUpdateContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
     }
 
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     @RequireCSRFCheck
     public Result postUpdateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest);
         }
 

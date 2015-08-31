@@ -1,19 +1,21 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
+import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.jophiel.UserActivityMessage;
+import org.iatoki.judgels.jophiel.forms.ViewpointForm;
+import org.iatoki.judgels.jophiel.views.html.client.linkedClientsLayout;
+import org.iatoki.judgels.jophiel.views.html.viewas.viewAsLayout;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
-import org.iatoki.judgels.jophiel.Jophiel;
-import org.iatoki.judgels.jophiel.UserActivityMessage;
-import org.iatoki.judgels.jophiel.forms.ViewpointForm;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsControllerUtils;
-import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
-import org.iatoki.judgels.play.views.html.layouts.profileView;
+import org.iatoki.judgels.play.controllers.ControllerUtils;
+import org.iatoki.judgels.play.views.html.layouts.guestLoginView;
 import org.iatoki.judgels.play.views.html.layouts.menusLayout;
-import org.iatoki.judgels.jophiel.views.html.client.linkedClientsLayout;
-import org.iatoki.judgels.jophiel.views.html.viewas.viewAsLayout;
+import org.iatoki.judgels.play.views.html.layouts.profileView;
+import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.services.impls.UserActivityMessageServiceImpl;
 import play.data.Form;
@@ -37,12 +39,18 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         if (isAdmin()) {
             internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), routes.UserController.index()));
         }
-        LazyHtml sidebarContent = new LazyHtml(profileView.render(
-                IdentityUtils.getUsername(),
-                IdentityUtils.getUserRealName(),
-                org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.profile().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()),
-                org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())
-        ));
+
+        LazyHtml sidebarContent;
+        if (UrielUtils.isGuest()) {
+            sidebarContent = new LazyHtml(guestLoginView.render(routes.ApplicationController.auth(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), jophiel.getRegisterUri().toString()));
+        } else {
+            sidebarContent = new LazyHtml(profileView.render(
+                    IdentityUtils.getUsername(),
+                    IdentityUtils.getUserRealName(),
+                    org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.profile().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()),
+                    org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.logout(routes.ApplicationController.index().absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure())
+                ));
+        }
         if (UrielUtils.trullyHasRole("admin")) {
             Form<ViewpointForm> form = Form.form(ViewpointForm.class);
             if (JudgelsPlayUtils.hasViewPoint()) {
@@ -63,14 +71,16 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
     }
 
     public void addActivityLog(String log) {
-        String newLog = log;
-        try {
-            if (JudgelsPlayUtils.hasViewPoint()) {
-                newLog += " view as " +  IdentityUtils.getUserJid();
+        if (!UrielUtils.isGuest()) {
+            String newLog = log;
+            try {
+                if (JudgelsPlayUtils.hasViewPoint()) {
+                    newLog += " view as " + IdentityUtils.getUserJid();
+                }
+                UserActivityMessageServiceImpl.getInstance().addUserActivityMessage(new UserActivityMessage(System.currentTimeMillis(), UrielUtils.getRealUserJid(), newLog, IdentityUtils.getIpAddress()));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            UserActivityMessageServiceImpl.getInstance().addUserActivityMessage(new UserActivityMessage(System.currentTimeMillis(), UrielUtils.getRealUserJid(), newLog, IdentityUtils.getIpAddress()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 

@@ -177,7 +177,7 @@ contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
 
 contest.module.clarificationConfig=Clarification Module Config
 contest.module.durationConfig=Duration Module Config
-contest.module.limitedConfig=Limited Module Config
+contest.module.registrationConfig=Registration Module Config
 contest.module.pauseConfig=Pause Module Config
 contest.module.scoreboardConfig=Scoreboard Module Config
 contest.module.triggerConfig=Trigger Module Config

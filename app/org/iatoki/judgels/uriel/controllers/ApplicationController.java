@@ -36,15 +36,7 @@ public final class ApplicationController extends AbstractJudgelsController {
     }
 
     public Result index() {
-        if (session().containsKey("username") && session().containsKey("role")) {
-            return redirect(routes.ContestController.index());
-        } else if (session().containsKey("username")) {
-            String returnUri = routes.ContestController.index().absoluteURL(request(), request().secure());
-            return redirect(routes.ApplicationController.authRole(returnUri));
-        } else {
-            String returnUri = routes.ContestController.index().absoluteURL(request(), request().secure());
-            return redirect(routes.ApplicationController.auth(returnUri));
-        }
+        return redirect(routes.ContestController.index());
     }
 
     public Result auth(String returnUri) {

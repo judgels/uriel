@@ -6,10 +6,16 @@
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-<h4>@Messages.get("contest.module.limitedConfig")</h4>
+<h4>@Messages.get("contest.module.registrationConfig")</h4>
 
 @formErrorView(contestRegistrationConfigForm)
 
-@b3.text(contestRegistrationConfigForm("registerStartTime"), '_label -> Messages.get("contest.registerStartTime"), 'class -> "form-control form_date_time")
+@b3.inputWrapped("text", contestRegistrationConfigForm("registerStartTime"), '_label -> Messages.get("contest.registerStartTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+
 @b3.text(contestRegistrationConfigForm("registerDuration"), '_label -> Messages.get("contest.registerDuration"), 'class -> "form-control form_time")
 @b3.number(contestRegistrationConfigForm("maxRegistrants"), '_label -> Messages.get("contest.maxRegistrants"), 'class -> "form-control")

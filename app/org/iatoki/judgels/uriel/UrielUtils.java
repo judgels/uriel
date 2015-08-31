@@ -16,6 +16,10 @@ public final class UrielUtils {
         // prevent instantiation
     }
 
+    public static boolean isGuest() {
+        return IdentityUtils.getUserJid().startsWith("guest");
+    }
+
     public static List<String> getDefaultRoles() {
         return ImmutableList.of("user");
     }
@@ -29,7 +33,7 @@ public final class UrielUtils {
     }
 
     public static boolean hasRole(String role) {
-        return Arrays.asList(getFromSession("role").split(",")).contains(role);
+        return Http.Context.current().session().containsKey("role") && Arrays.asList(getFromSession("role").split(",")).contains(role);
     }
 
     public static void backupSession() {
