@@ -175,6 +175,8 @@ contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
 contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
 
+contest.module.enable=Enable
+contest.module.disable=Disable
 contest.module.clarificationConfig=Clarification Module Config
 contest.module.durationConfig=Duration Module Config
 contest.module.registrationConfig=Registration Module Config

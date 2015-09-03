@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
@@ -348,7 +349,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        Contest contest = contestService.createContest(contestUpsertData.name, contestUpsertData.description, ContestStyle.valueOf(contestUpsertData.style));
+        Contest contest = contestService.createContest(contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style));
 
         UrielControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
 
@@ -392,7 +393,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        contestService.updateContest(contest.getId(), contestUpsertData.name, contestUpsertData.description, ContestStyle.valueOf(contestUpsertData.style));
+        contestService.updateContest(contest.getId(), contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style));
 
         UrielControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 

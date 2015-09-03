@@ -18,7 +18,7 @@
 @(contest: Contest, pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, isAllowedToRegister: Boolean, isAllowedToUnregister: Boolean, isRegistered: Boolean, isAllowedToStart: Boolean, isAllowedToViewEnterContestButton: Boolean, passwordForm: Form[ContestEnterWithPasswordForm], isAllowedToUpdate: Boolean)
 
 <div class="well">
-    @Html(JudgelsPlayUtils.escapeHtmlString(contest.getDescription))
+    @Html(contest.getDescription)
     <hr />
     @if(contest.containsModule(ContestModules.DURATION)) {
         <p>

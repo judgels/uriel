@@ -8,5 +8,5 @@
 @helper.CSRF.formField
 
 @b3.text(contestAnnouncementUpsertForm("title"), '_label -> Messages.get("announcement.title"))
-@b3.textarea(contestAnnouncementUpsertForm("content"), '_label -> Messages.get("announcement.content"), 'class -> "ckeditor")
+@b3.textarea(contestAnnouncementUpsertForm("content"), '_label -> Messages.get("announcement.content"), 'class -> "ckeditor form-control")
 @b3.select(contestAnnouncementUpsertForm("status"), Seq("DRAFT" -> "Draft", "PUBLISHED" -> "Published"), '_label -> Messages.get("announcement.status"), 'class -> "selectpicker")

@@ -1,25 +1,26 @@
+@import play.i18n.Messages
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.uriel.Contest
 @import org.iatoki.judgels.uriel.modules.ContestModules
 
 @(contest: Contest)
 
-<h2>Enabled Modules</h2>
+<h3>Enabled Modules</h3>
 
 @for(module <- contest.getModulesSet) {
     <div class="well clearfix">
         @module.name()
-    <div class="pull-right"><a href="@routes.ContestController.disableModule(contest.getId(), module.name())" class="btn btn-primary">Disable</a></div>
+    <div class="pull-right"><a href="@routes.ContestController.disableModule(contest.getId(), module.name())" class="btn btn-primary">@Messages.get("contest.module.disable")</a></div>
     </div>
 }
 
-<h2>Disabled Modules</h2>
+<h3>Disabled Modules</h3>
 
 @for(module <- ContestModules.values()) {
     @if(!contest.containsModule(module)) {
         <div class="well clearfix">
             @module.name()
-            <div class="pull-right"><a href="@routes.ContestController.enableModule(contest.getId(), module.name())" class="btn btn-primary">Enable</a></div>
+            <div class="pull-right"><a href="@routes.ContestController.enableModule(contest.getId(), module.name())" class="btn btn-primary">@Messages.get("contest.module.enable")</a></div>
         </div>
     }
 }

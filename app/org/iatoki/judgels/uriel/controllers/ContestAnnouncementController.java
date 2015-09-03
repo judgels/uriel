@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
+import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
@@ -149,7 +150,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
-        contestAnnouncementService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertData.title, contestAnnouncementUpsertData.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
+        contestAnnouncementService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
 
         UrielControllerUtils.getInstance().addActivityLog("Create " + contestAnnouncementUpsertData.status + " announcement with title " + contestAnnouncementUpsertData.title + " in contest " + contest.getName() + ".");
 
@@ -192,7 +193,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
-        contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertData.title, contestAnnouncementUpsertData.content, ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
+        contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
 
         UrielControllerUtils.getInstance().addActivityLog("Update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + ".");
 
