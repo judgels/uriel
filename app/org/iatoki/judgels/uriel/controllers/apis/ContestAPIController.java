@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.play.IdentityUtils;
-import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
@@ -33,6 +32,7 @@ import org.iatoki.judgels.uriel.services.ContestTeamService;
 import play.data.DynamicForm;
 import play.db.jpa.Transactional;
 import play.libs.Json;
+import play.mvc.Controller;
 import play.mvc.Result;
 
 import javax.imageio.ImageIO;
@@ -53,7 +53,7 @@ import java.util.stream.Collectors;
 
 @Singleton
 @Named
-public final class ContestAPIController extends AbstractJudgelsAPIController {
+public final class ContestAPIController extends Controller {
 
     private final ContestAnnouncementService contestAnnouncementService;
     private final ContestClarificationService contestClarificationService;
