@@ -6,11 +6,12 @@ import com.google.inject.util.Providers;
 import org.iatoki.judgels.AWSFileSystemProvider;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.LocalFileSystemProvider;
+import org.iatoki.judgels.api.sealtiel.SealtielAPI;
+import org.iatoki.judgels.api.sealtiel.SealtielFactory;
 import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
 import org.iatoki.judgels.sandalphon.Sandalphon;
-import org.iatoki.judgels.sealtiel.Sealtiel;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.services.impls.UserServiceImpl;
 
@@ -20,7 +21,7 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
     protected void manualBinding() {
         bind(Jophiel.class).toInstance(jophiel());
         bind(Sandalphon.class).toInstance(sandalphon());
-        bind(Sealtiel.class).toInstance(sealtiel());
+        bind(SealtielAPI.class).toInstance(sealtielAPI());
         bind(FileSystemProvider.class).annotatedWith(ContestFileSystemProvider.class).toInstance(contestFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(TeamAvatarFileSystemProvider.class).toInstance(teamAvatarFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(ProgrammingSubmissionLocalFileSystemProvider.class).toInstance(submissionLocalFileSystemProvider());
@@ -58,8 +59,12 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
         return new Sandalphon(urielProperties().getSandalphonBaseUrl(), urielProperties().getSandalphonClientJid(), urielProperties().getSandalphonClientSecret());
     }
 
-    private Sealtiel sealtiel() {
-        return new Sealtiel(urielProperties().getSealtielBaseUrl(), urielProperties().getSealtielClientJid(), urielProperties().getSealtielClientSecret());
+    private SealtielAPI sealtielAPI() {
+        String baseUrl = urielProperties().getSealtielBaseUrl();
+        String clientJid = urielProperties().getSealtielClientJid();
+        String clientSecret = urielProperties().getSealtielClientSecret();
+
+        return SealtielFactory.createSealtiel(baseUrl).connectWithBasicAuth(clientJid, clientSecret);
     }
 
     private FileSystemProvider teamAvatarFileSystemProvider() {
