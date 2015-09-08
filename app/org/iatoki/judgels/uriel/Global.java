@@ -4,7 +4,7 @@ import akka.actor.Scheduler;
 import org.iatoki.judgels.api.sealtiel.SealtielAPI;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.runnables.UserActivityMessagePusher;
-import org.iatoki.judgels.jophiel.services.impls.DefaultUserActivityMessageServiceImpl;
+import org.iatoki.judgels.jophiel.services.impls.UserActivityMessageServiceImpl;
 import org.iatoki.judgels.play.AbstractGlobal;
 import org.iatoki.judgels.play.services.BaseDataMigrationService;
 import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
@@ -26,7 +26,6 @@ import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
-import org.iatoki.judgels.uriel.services.impls.UserActivityMessageServiceImpl;
 import play.Application;
 import play.inject.Injector;
 import play.libs.Akka;
@@ -54,7 +53,7 @@ public final class Global extends AbstractGlobal {
     private void buildServices(Injector injector) {
         JidCacheServiceImpl.buildInstance(injector.instanceOf(JidCacheDao.class));
         AvatarCacheServiceImpl.buildInstance(injector.instanceOf(Jophiel.class), injector.instanceOf(AvatarCacheDao.class));
-        DefaultUserActivityMessageServiceImpl.buildInstance(injector.instanceOf(Jophiel.class));
+        UserActivityMessageServiceImpl.buildInstance();
     }
 
     private void buildUtils(Injector injector) {
