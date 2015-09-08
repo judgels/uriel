@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.gabriel.SubmissionSource;
+import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionUtils;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionException;
@@ -12,7 +13,6 @@ import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.Transactional;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 
@@ -24,7 +24,7 @@ import java.util.Map;
 
 @Singleton
 @Named
-public final class ContestTestingAPIController extends Controller {
+public final class ContestTestingAPIController extends AbstractJudgelsAPIController {
 
     private final ContestService contestService;
     private final ProgrammingSubmissionService submissionService;
