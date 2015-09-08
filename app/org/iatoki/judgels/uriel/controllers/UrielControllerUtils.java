@@ -3,11 +3,13 @@ package org.iatoki.judgels.uriel.controllers;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.UserActivityMessage;
+import org.iatoki.judgels.jophiel.forms.SearchProfileForm;
 import org.iatoki.judgels.jophiel.forms.ViewpointForm;
 import org.iatoki.judgels.jophiel.services.impls.UserActivityMessageServiceImpl;
 import org.iatoki.judgels.jophiel.views.html.client.linkedClientsLayout;
 import org.iatoki.judgels.jophiel.views.html.isLoggedInLayout;
 import org.iatoki.judgels.jophiel.views.html.isLoggedOutLayout;
+import org.iatoki.judgels.jophiel.views.html.profile.searchProfileLayout;
 import org.iatoki.judgels.jophiel.views.html.viewas.viewAsLayout;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
@@ -64,6 +66,8 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
         sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophiel.getLinkedClientsEndPoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));
+        Form<SearchProfileForm> searchProfileForm = Form.form(SearchProfileForm.class);
+        sidebarContent.appendLayout(c -> searchProfileLayout.render(searchProfileForm, jophiel.getAutoCompleteEndPoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", jophiel.getViewProfileEndPoint(), c));
 
         content.appendLayout(c -> sidebarLayout.render(sidebarContent.render(), c));
         if ((IdentityUtils.getUserJid() == null) || UrielUtils.isGuest()) {
