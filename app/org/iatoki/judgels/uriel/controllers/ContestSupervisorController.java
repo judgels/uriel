@@ -111,7 +111,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
             userJid = null;
         }
 
-        if ((userJid == null) || !contestSupervisorService.isContestSupervisorInContest(contest.getJid(), userJid)) {
+        if ((userJid == null) || contestSupervisorService.isContestSupervisorInContest(contest.getJid(), userJid)) {
             contestSupervisorCreateForm.reject("error.supervisor.create.userJid.invalid");
 
             Page<ContestSupervisor> pageOfContestSupervisors = contestSupervisorService.getPageOfSupervisorsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
