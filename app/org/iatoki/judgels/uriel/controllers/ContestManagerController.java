@@ -96,7 +96,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             userJid = null;
         }
 
-        if ((userJid == null) || !contestManagerService.isManagerInContest(contest.getJid(), userJid)) {
+        if ((userJid == null) || contestManagerService.isManagerInContest(contest.getJid(), userJid)) {
             contestManagerCreateForm.reject("error.manager.create.userJid.invalid");
 
             Page<ContestManager> contestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
