@@ -13,7 +13,7 @@ public class ICPCContestStyleConfig implements ContestStyleConfig {
         this.languageRestriction = languageRestriction;
     }
 
-    public static ICPCContestStyleConfig defaultConfig(Contest contest) {
+    public static ICPCContestStyleConfig defaultConfig() {
         return new ICPCContestStyleConfig(20, LanguageRestriction.defaultRestriction());
     }
 

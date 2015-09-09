@@ -207,20 +207,20 @@ public final class ContestServiceImpl implements ContestService {
 
         contestDao.persist(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        Contest contest = createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
-
         ContestStyleModel contestStyleModel = new ContestStyleModel();
-        contestStyleModel.contestJid = contest.getJid();
+        contestStyleModel.contestJid = contestModel.jid;
 
         if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-            contestStyleModel.config = new Gson().toJson(ICPCContestStyleConfig.defaultConfig(contest));
+            contestStyleModel.config = new Gson().toJson(ICPCContestStyleConfig.defaultConfig());
         } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-            contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig(contest));
+            contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig());
         }
 
         contestStyleDao.persist(contestStyleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         createDefaultContestModules(contestModel, style);
+
+        Contest contest = createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
 
         return contest;
     }
@@ -243,9 +243,9 @@ public final class ContestServiceImpl implements ContestService {
 
         if (isStyleChanged) {
             if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-                contestStyleModel.config = new Gson().toJson(ICPCContestStyleConfig.defaultConfig(contest));
+                contestStyleModel.config = new Gson().toJson(ICPCContestStyleConfig.defaultConfig());
             } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-                contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig(contest));
+                contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig());
             }
 
             try {

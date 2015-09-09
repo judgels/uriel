@@ -10,7 +10,7 @@ public class IOIContestStyleConfig implements ContestStyleConfig {
         this.languageRestriction = languageRestriction;
     }
 
-    public static IOIContestStyleConfig defaultConfig(Contest contest) {
+    public static IOIContestStyleConfig defaultConfig() {
         return new IOIContestStyleConfig(LanguageRestriction.defaultRestriction());
     }
 
