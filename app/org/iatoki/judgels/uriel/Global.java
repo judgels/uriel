@@ -1,8 +1,10 @@
 package org.iatoki.judgels.uriel;
 
 import akka.actor.Scheduler;
-import org.iatoki.judgels.api.sealtiel.SealtielAPI;
-import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.api.jophiel.JophielClientAPI;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
+import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
 import org.iatoki.judgels.jophiel.runnables.UserActivityMessagePusher;
 import org.iatoki.judgels.jophiel.services.impls.UserActivityMessageServiceImpl;
 import org.iatoki.judgels.play.AbstractGlobal;
@@ -22,7 +24,6 @@ import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
-import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
@@ -52,12 +53,13 @@ public final class Global extends AbstractGlobal {
 
     private void buildServices(Injector injector) {
         JidCacheServiceImpl.buildInstance(injector.instanceOf(JidCacheDao.class));
-        AvatarCacheServiceImpl.buildInstance(injector.instanceOf(Jophiel.class), injector.instanceOf(AvatarCacheDao.class));
+        AvatarCacheServiceImpl.buildInstance(injector.instanceOf(AvatarCacheDao.class));
         UserActivityMessageServiceImpl.buildInstance();
     }
 
     private void buildUtils(Injector injector) {
-        UrielControllerUtils.buildInstance(injector.instanceOf(Jophiel.class));
+        JophielClientControllerUtils.buildInstance(UrielProperties.getInstance().getJophielBaseUrl());
+        UrielControllerUtils.buildInstance(injector.instanceOf(JophielClientAPI.class), injector.instanceOf(JophielPublicAPI.class));
         ContestControllerUtils.buildInstance(injector.instanceOf(ContestContestantService.class), injector.instanceOf(ContestSupervisorService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestManagerService.class), injector.instanceOf(ContestTeamService.class), injector.instanceOf(ContestContestantPasswordService.class));
     }
 
@@ -65,9 +67,9 @@ public final class Global extends AbstractGlobal {
         Scheduler scheduler = Akka.system().scheduler();
         ExecutionContextExecutor context = Akka.system().dispatcher();
 
-        GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, injector.instanceOf(ProgrammingSubmissionService.class), injector.instanceOf(SealtielAPI.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
+        GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, injector.instanceOf(ProgrammingSubmissionService.class), injector.instanceOf(SealtielClientAPI.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
         ScoreboardUpdater updater = new ScoreboardUpdater(injector.instanceOf(ContestService.class), injector.instanceOf(ContestModuleService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(ProgrammingSubmissionService.class));
-        UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(injector.instanceOf(Jophiel.class), injector.instanceOf(UserService.class), UserActivityMessageServiceImpl.getInstance());
+        UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(injector.instanceOf(JophielClientAPI.class), UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);

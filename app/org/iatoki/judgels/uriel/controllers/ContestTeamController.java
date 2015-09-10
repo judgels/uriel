@@ -3,6 +3,9 @@ package org.iatoki.judgels.uriel.controllers;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -11,7 +14,6 @@ import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.messageView;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
@@ -68,16 +70,16 @@ public class ContestTeamController extends AbstractJudgelsController {
     private final ContestService contestService;
     private final ContestSupervisorService contestSupervisorService;
     private final ContestTeamService contestTeamService;
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
 
     @Inject
-    public ContestTeamController(ContestContestantService contestContestantService, ContestService contestService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService, Jophiel jophiel, UserService userService) {
+    public ContestTeamController(ContestContestantService contestContestantService, ContestService contestService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService, JophielPublicAPI jophielPublicAPI, UserService userService) {
         this.contestContestantService = contestContestantService;
         this.contestService = contestService;
         this.contestSupervisorService = contestSupervisorService;
         this.contestTeamService = contestTeamService;
-        this.jophiel = jophiel;
+        this.jophielPublicAPI = jophielPublicAPI;
         this.userService = userService;
     }
 
@@ -268,33 +270,33 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         ContestTeamCoachCreateForm contestTeamCoachCreateData = contestTeamCoachCreateForm.get();
 
-        String userJid;
+        JophielUser jophielUser;
         try {
-            userJid = jophiel.verifyUsername(contestTeamCoachCreateData.username);
-        } catch (IOException e) {
-            userJid = null;
+            jophielUser = jophielPublicAPI.findUserByJid(contestTeamCoachCreateData.username);
+        } catch (JudgelsAPIClientException e) {
+            jophielUser = null;
         }
 
-        if (userJid == null) {
+        if (jophielUser == null) {
             contestTeamCoachCreateForm.reject("error.team.userNotFound");
 
             return showViewTeamWithCoachCreateForm(contestTeamCoachCreateForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         }
 
-        if (contestTeamService.isUserACoachInTeam(userJid, contestTeam.getJid())) {
+        if (contestTeamService.isUserACoachInTeam(jophielUser.getJid(), contestTeam.getJid())) {
             contestTeamCoachCreateForm.reject("error.team.userAlreadyACoach");
 
             return showViewTeamWithCoachCreateForm(contestTeamCoachCreateForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         }
 
-        if (contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
+        if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
             contestTeamCoachCreateForm.reject("error.team.userAlreadyAContestant");
 
             return showViewTeamWithCoachCreateForm(contestTeamCoachCreateForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         }
 
-        contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
-        userService.upsertUserFromJophielUserJid(userJid);
+        contestTeamService.createContestTeamCoach(contestTeam.getJid(), jophielUser.getJid());
+        userService.upsertUserFromJophielUser(jophielUser);
 
         UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateData.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
@@ -326,27 +328,27 @@ public class ContestTeamController extends AbstractJudgelsController {
             }
 
             for (String username : usernames) {
-                String userJid;
+                JophielUser jophielUser;
                 try {
-                    userJid = jophiel.verifyUsername(username);
-                } catch (IOException e) {
-                    userJid = null;
+                    jophielUser = jophielPublicAPI.findUserByUsername(username);
+                } catch (JudgelsAPIClientException e) {
+                    jophielUser = null;
                 }
 
-                if (userJid == null) {
+                if (jophielUser == null) {
                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userNotFound")));
                 }
 
-                if (contestTeamService.isUserACoachInTeam(userJid, contestTeam.getJid())) {
+                if (contestTeamService.isUserACoachInTeam(jophielUser.getJid(), contestTeam.getJid())) {
                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userAlreadyACoach")));
                 }
 
-                if (contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
+                if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userAlreadyAContestant")));
                 }
 
-                userService.upsertUserFromJophielUserJid(userJid);
-                contestTeamService.createContestTeamCoach(contestTeam.getJid(), userJid);
+                userService.upsertUserFromJophielUser(jophielUser);
+                contestTeamService.createContestTeamCoach(contestTeam.getJid(), jophielUser.getJid());
             }
             UrielControllerUtils.getInstance().addActivityLog("Upload contest team coaches in contest " + contest.getName() + ".");
         }
@@ -389,29 +391,29 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         ContestTeamMemberCreateForm contestTeamMemberCreateData = contestTeamMemberCreateForm.get();
 
-        String userJid;
+        JophielUser jophielUser;
         try {
-            userJid = jophiel.verifyUsername(contestTeamMemberCreateData.username);
-        } catch (IOException e) {
-            userJid = null;
+            jophielUser = jophielPublicAPI.findUserByUsername(contestTeamMemberCreateData.username);
+        } catch (JudgelsAPIClientException e) {
+            jophielUser = null;
         }
 
-        if (userJid == null) {
+        if (jophielUser == null) {
             contestTeamMemberCreateForm.reject("error.team.userNotFound");
 
             return showViewTeamWithMemberCreateForm(contestTeamMemberCreateForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         }
 
-        if (contestTeamService.isUserPartOfAnyTeamInContest(contest.getJid(), userJid)) {
+        if (contestTeamService.isUserPartOfAnyTeamInContest(contest.getJid(), jophielUser.getJid())) {
             contestTeamMemberCreateForm.reject("error.team.userAlreadyHasTeam");
 
             return showViewTeamWithMemberCreateForm(contestTeamMemberCreateForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseContestants(contest));
         }
 
-        if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
-            contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+        if (!contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
+            contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.APPROVED);
         }
-        contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
+        contestTeamService.createContestTeamMember(contestTeam.getJid(), jophielUser.getJid());
 
         UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberCreateData.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
 
@@ -442,26 +444,26 @@ public class ContestTeamController extends AbstractJudgelsController {
             }
 
             for (String username : usernames) {
-                String userJid;
+                JophielUser jophielUser;
                 try {
-                    userJid = jophiel.verifyUsername(username);
-                } catch (IOException e) {
-                    userJid = null;
+                    jophielUser = jophielPublicAPI.findUserByUsername(username);
+                } catch (JudgelsAPIClientException e) {
+                    jophielUser = null;
                 }
 
-                if (userJid == null) {
+                if (jophielUser == null) {
                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userNotFound")));
                 }
 
-                if (contestTeamService.isUserPartOfAnyTeamInContest(contest.getJid(), userJid)) {
+                if (contestTeamService.isUserPartOfAnyTeamInContest(contest.getJid(), jophielUser.getJid())) {
                     failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.team.userAlreadyHasTeam")));
                 }
 
-                if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
-                    contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                if (!contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
+                    contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.APPROVED);
                 }
 
-                contestTeamService.createContestTeamMember(contestTeam.getJid(), userJid);
+                contestTeamService.createContestTeamMember(contestTeam.getJid(), jophielUser.getJid());
             }
 
             UrielControllerUtils.getInstance().addActivityLog("Upload contest team members in contest " + contest.getName() + ".");
@@ -552,7 +554,7 @@ public class ContestTeamController extends AbstractJudgelsController {
     }
 
     private Result showViewTeam(Form<ContestTeamCoachCreateForm> contestTeamCoachCreateForm, Form<ContestTeamCoachUploadForm> contestTeamCoachUploadForm, Form<ContestTeamMemberCreateForm> contestTeamMemberCreateForm, Form<ContestTeamMemberUploadForm> contestTeamMemberUploadForm, Contest contest, ContestTeam contestTeam, List<ContestTeamCoach> contestTeamCoaches, List<ContestTeamMember> contestTeamMembers, boolean canUpdate) {
-        LazyHtml content = new LazyHtml(viewTeamView.render(contest.getId(), contestTeam, contestTeamCoachCreateForm, contestTeamCoachUploadForm, contestTeamMemberCreateForm, contestTeamMemberUploadForm, contestTeamCoaches, contestTeamMembers, canUpdate, jophiel.getAutoCompleteEndPoint()));
+        LazyHtml content = new LazyHtml(viewTeamView.render(contest.getId(), contestTeam, contestTeamCoachCreateForm, contestTeamCoachUploadForm, contestTeamMemberCreateForm, contestTeamMemberUploadForm, contestTeamCoaches, contestTeamMembers, canUpdate, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.view"), c));
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);

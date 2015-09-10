@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers.apis;
+package org.iatoki.judgels.uriel.controllers.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

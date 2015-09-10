@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.services.impls;
 
-import org.iatoki.judgels.api.sealtiel.SealtielAPI;
+import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.sandalphon.services.impls.AbstractProgrammingSubmissionServiceImpl;
 import org.iatoki.judgels.uriel.config.GabrielClientJid;
@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 public final class ProgrammingSubmissionServiceImpl extends AbstractProgrammingSubmissionServiceImpl<ProgrammingSubmissionModel, ProgrammingGradingModel> implements ProgrammingSubmissionService {
 
     @Inject
-    public ProgrammingSubmissionServiceImpl(ProgrammingSubmissionDao programmingSubmissionDao, ProgrammingGradingDao programmingGradingDao, SealtielAPI sealtielAPI, @GabrielClientJid String gabrielClientJid) {
+    public ProgrammingSubmissionServiceImpl(ProgrammingSubmissionDao programmingSubmissionDao, ProgrammingGradingDao programmingGradingDao, SealtielClientAPI sealtielAPI, @GabrielClientJid String gabrielClientJid) {
         super(programmingSubmissionDao, programmingGradingDao, sealtielAPI, gabrielClientJid);
     }
 }

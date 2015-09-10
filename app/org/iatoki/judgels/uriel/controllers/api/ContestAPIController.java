@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers.apis;
+package org.iatoki.judgels.uriel.controllers.api;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;

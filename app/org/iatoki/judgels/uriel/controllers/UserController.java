@@ -2,13 +2,15 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
@@ -35,7 +37,6 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.IOException;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = "admin")
@@ -45,12 +46,12 @@ public final class UserController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
 
     @Inject
-    public UserController(Jophiel jophiel, UserService userService) {
-        this.jophiel = jophiel;
+    public UserController(JophielPublicAPI jophielPublicAPI, UserService userService) {
+        this.jophielPublicAPI = jophielPublicAPI;
         this.userService = userService;
     }
 
@@ -98,26 +99,26 @@ public final class UserController extends AbstractJudgelsController {
         }
 
         UserCreateForm userCreateData = userCreateForm.get();
-        String userJid;
+        JophielUser jophielUser;
         try {
-            userJid = jophiel.verifyUsername(userCreateData.username);
-        } catch (IOException e) {
-            userJid = null;
+            jophielUser = jophielPublicAPI.findUserByUsername(userCreateData.username);
+        } catch (JudgelsAPIClientException e) {
+            jophielUser = null;
         }
 
-        if (userJid == null) {
+        if (jophielUser == null) {
             userCreateForm.reject(Messages.get("user.create.error.usernameNotFound"));
             return showCreateUser(userCreateForm);
         }
 
-        if (userService.existsByUserJid(userJid)) {
+        if (userService.existsByUserJid(jophielUser.getJid())) {
             userCreateForm.reject(Messages.get("user.create.error.userAlreadyExists"));
             return showCreateUser(userCreateForm);
         }
 
-        userService.upsertUserFromJophielUserJid(userJid, userCreateData.getRolesAsList());
+        userService.upsertUserFromJophielUser(jophielUser, userCreateData.getRolesAsList());
 
-        UrielControllerUtils.getInstance().addActivityLog("Create user " + userJid + ".");
+        UrielControllerUtils.getInstance().addActivityLog("Create user " + jophielUser.getJid() + ".");
 
         return redirect(routes.UserController.index());
     }
@@ -182,7 +183,7 @@ public final class UserController extends AbstractJudgelsController {
     }
 
     private Result showCreateUser(Form<UserCreateForm> userCreateForm) {
-        LazyHtml content = new LazyHtml(createUserView.render(userCreateForm, jophiel.getAutoCompleteEndPoint()));
+        LazyHtml content = new LazyHtml(createUserView.render(userCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> headingLayout.render(Messages.get("user.create"), c));
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(

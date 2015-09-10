@@ -134,10 +134,10 @@ GET         /contests/:cId/scoreboard/official                                  
 GET         /contests/:cId/scoreboard/refresh                                               @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.refreshAllScoreboard(cId: Long)
 GET         /contests/:cId/data/download                                                    @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.downloadContestDataAsXLS(cId: Long)
 
-POST        /contest/:cId/ajax/clarification/unread                                         @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unreadClarification(cId: Long)
-POST        /contest/:cId/ajax/clarification/unanswered                                     @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unansweredClarification(cId: Long)
-POST        /contest/:cId/ajax/announcement/unread                                          @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.unreadAnnouncement(cId: Long)
-GET         /team/avatar/:imageName                                                         @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.renderTeamAvatarImage(imageName: String)
+POST        /contest/:cId/ajax/clarification/unread                                         @org.iatoki.judgels.uriel.controllers.api.ContestAPIController.unreadClarification(cId: Long)
+POST        /contest/:cId/ajax/clarification/unanswered                                     @org.iatoki.judgels.uriel.controllers.api.ContestAPIController.unansweredClarification(cId: Long)
+POST        /contest/:cId/ajax/announcement/unread                                          @org.iatoki.judgels.uriel.controllers.api.ContestAPIController.unreadAnnouncement(cId: Long)
+GET         /team/avatar/:imageName                                                         @org.iatoki.judgels.uriel.controllers.api.ContestAPIController.renderTeamAvatarImage(imageName: String)
 
 GET         /users                                                                          @org.iatoki.judgels.uriel.controllers.UserController.index()
 GET         /users/                                                                         @org.iatoki.judgels.uriel.controllers.UserController.listUsers(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
@@ -148,5 +148,5 @@ GET         /users/:uId/update                                                  
 POST        /users/:uId/update                                                              @org.iatoki.judgels.uriel.controllers.UserController.postUpdateUser(uId: Long)
 GET         /users/:uId/delete                                                              @org.iatoki.judgels.uriel.controllers.UserController.deleteUser(uId: Long)
 
-POST        /apis/testing/singleFileBlackBoxSubmit                                          @org.iatoki.judgels.uriel.controllers.apis.ContestTestingAPIController.singleFileBlackBoxSubmit()
-POST        /apis/scoreboards                                                               @org.iatoki.judgels.uriel.controllers.apis.ContestAPIController.getScoreboard()
+POST        /apis/testing/singleFileBlackBoxSubmit                                          @org.iatoki.judgels.uriel.controllers.api.ContestTestingAPIController.singleFileBlackBoxSubmit()
+POST        /apis/scoreboards                                                               @org.iatoki.judgels.uriel.controllers.api.ContestAPIController.getScoreboard()

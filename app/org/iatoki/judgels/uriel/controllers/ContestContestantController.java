@@ -2,7 +2,9 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
-import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -53,15 +55,15 @@ public class ContestContestantController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 1000;
 
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
     private final ContestSupervisorService contestSupervisorService;
     private final UserService userService;
 
     @Inject
-    public ContestContestantController(Jophiel jophiel, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, UserService userService) {
-        this.jophiel = jophiel;
+    public ContestContestantController(JophielPublicAPI jophielPublicAPI, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, UserService userService) {
+        this.jophielPublicAPI = jophielPublicAPI;
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
         this.contestSupervisorService = contestSupervisorService;
@@ -113,8 +115,8 @@ public class ContestContestantController extends AbstractJudgelsController {
 
         ContestContestantCreateForm contestContestantCreateData = contestContestantCreateForm.get();
         try {
-            String userJid = jophiel.verifyUsername(contestContestantCreateData.username);
-            if (userJid == null) {
+            JophielUser jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
+            if (jophielUser == null) {
                 Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                 contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
@@ -124,7 +126,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
             }
 
-            if (contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
+            if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
                 Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                 contestContestantCreateForm.reject("error.contestant.create.userIsAlreadyContestant");
 
@@ -134,13 +136,13 @@ public class ContestContestantController extends AbstractJudgelsController {
                 return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
             }
 
-            userService.upsertUserFromJophielUserJid(userJid);
-            contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.valueOf(contestContestantCreateData.status));
+            userService.upsertUserFromJophielUser(jophielUser);
+            contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.valueOf(contestContestantCreateData.status));
 
             UrielControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateData.username + " in contest " + contest.getName() + ".");
 
             return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
-        } catch (IOException e) {
+        } catch (JudgelsAPIClientException e) {
             Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
             contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
@@ -211,18 +213,18 @@ public class ContestContestantController extends AbstractJudgelsController {
                 String[] usernames = FileUtils.readFileToString(userFile).split("\n");
                 for (String username : usernames) {
                     try {
-                        String userJid = jophiel.verifyUsername(username);
-                        if (userJid != null) {
-                            if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
-                                userService.upsertUserFromJophielUserJid(userJid);
-                                contestContestantService.createContestContestant(contest.getId(), userJid, ContestContestantStatus.APPROVED);
+                        JophielUser jophielUser = jophielPublicAPI.findUserByUsername(username);
+                        if (jophielUser != null) {
+                            if (!contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
+                                userService.upsertUserFromJophielUser(jophielUser);
+                                contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.APPROVED);
                             } else {
                                 failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
                             }
                         } else {
                             failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.userNotExist")));
                         }
-                    } catch (IOException e) {
+                    } catch (JudgelsAPIClientException e) {
                         failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.userNotExist")));
                     }
                 }
@@ -239,7 +241,7 @@ public class ContestContestantController extends AbstractJudgelsController {
     }
 
     private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophiel.getAutoCompleteEndPoint()));
+        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);

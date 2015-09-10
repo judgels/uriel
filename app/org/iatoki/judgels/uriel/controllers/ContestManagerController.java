@@ -1,11 +1,13 @@
 package org.iatoki.judgels.uriel.controllers;
 
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm;
@@ -29,7 +31,6 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.IOException;
 import java.util.Arrays;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -41,14 +42,14 @@ public class ContestManagerController extends AbstractJudgelsController {
 
     private final ContestManagerService contestManagerService;
     private final ContestService contestService;
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
 
     @Inject
-    public ContestManagerController(ContestManagerService contestManagerService, ContestService contestService, Jophiel jophiel, UserService userService) {
+    public ContestManagerController(ContestManagerService contestManagerService, ContestService contestService, JophielPublicAPI jophielPublicAPI, UserService userService) {
         this.contestManagerService = contestManagerService;
         this.contestService = contestService;
-        this.jophiel = jophiel;
+        this.jophielPublicAPI = jophielPublicAPI;
         this.userService = userService;
     }
 
@@ -89,14 +90,14 @@ public class ContestManagerController extends AbstractJudgelsController {
         }
 
         ContestManagerCreateForm contestManagerCreateData = contestManagerCreateForm.get();
-        String userJid;
+        JophielUser jophielUser;
         try {
-            userJid = jophiel.verifyUsername(contestManagerCreateData.username);
-        } catch (IOException e) {
-            userJid = null;
+            jophielUser = jophielPublicAPI.findUserByUsername(contestManagerCreateData.username);
+        } catch (JudgelsAPIClientException e) {
+            jophielUser = null;
         }
 
-        if ((userJid == null) || contestManagerService.isManagerInContest(contest.getJid(), userJid)) {
+        if ((jophielUser == null) || contestManagerService.isManagerInContest(contest.getJid(), jophielUser.getJid())) {
             contestManagerCreateForm.reject("error.manager.create.userJid.invalid");
 
             Page<ContestManager> contestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -105,8 +106,8 @@ public class ContestManagerController extends AbstractJudgelsController {
             return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
 
-        userService.upsertUserFromJophielUserJid(userJid);
-        contestManagerService.createContestManager(contest.getId(), userJid);
+        userService.upsertUserFromJophielUser(jophielUser);
+        contestManagerService.createContestManager(contest.getId(), jophielUser.getJid());
 
         UrielControllerUtils.getInstance().addActivityLog("Add manager " + contestManagerCreateData.username + " in contest " + contest.getName() + ".");
 
@@ -114,7 +115,7 @@ public class ContestManagerController extends AbstractJudgelsController {
     }
 
     private Result showListCreateManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophiel.getAutoCompleteEndPoint()));
+        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

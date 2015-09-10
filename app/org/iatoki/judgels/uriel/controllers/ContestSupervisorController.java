@@ -2,7 +2,9 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
@@ -35,7 +37,6 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -46,14 +47,14 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
 
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final ContestService contestService;
     private final ContestSupervisorService contestSupervisorService;
     private final UserService userService;
 
     @Inject
-    public ContestSupervisorController(Jophiel jophiel, ContestService contestService, ContestSupervisorService contestSupervisorService, UserService userService) {
-        this.jophiel = jophiel;
+    public ContestSupervisorController(JophielPublicAPI jophielPublicAPI, ContestService contestService, ContestSupervisorService contestSupervisorService, UserService userService) {
+        this.jophielPublicAPI = jophielPublicAPI;
         this.contestService = contestService;
         this.contestSupervisorService = contestSupervisorService;
         this.userService = userService;
@@ -104,14 +105,14 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         }
 
         ContestSupervisorCreateForm contestSupervisorCreateData = contestSupervisorCreateForm.get();
-        String userJid;
+        JophielUser jophielUser;
         try {
-            userJid = jophiel.verifyUsername(contestSupervisorCreateData.username);
-        } catch (IOException e) {
-            userJid = null;
+            jophielUser = jophielPublicAPI.findUserByUsername(contestSupervisorCreateData.username);
+        } catch (JudgelsAPIClientException e) {
+            jophielUser = null;
         }
 
-        if ((userJid == null) || contestSupervisorService.isContestSupervisorInContest(contest.getJid(), userJid)) {
+        if ((jophielUser == null) || contestSupervisorService.isContestSupervisorInContest(contest.getJid(), jophielUser.getJid())) {
             contestSupervisorCreateForm.reject("error.supervisor.create.userJid.invalid");
 
             Page<ContestSupervisor> pageOfContestSupervisors = contestSupervisorService.getPageOfSupervisorsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -120,7 +121,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
             return showListCreateSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, contestSupervisorCreateForm, contest);
         }
 
-        userService.upsertUserFromJophielUserJid(userJid);
+        userService.upsertUserFromJophielUser(jophielUser);
 
         ContestPermission contestPermission;
         if (contestSupervisorCreateData.allowedPermissions != null) {
@@ -128,7 +129,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         } else {
             contestPermission = new ContestPermission(contestSupervisorCreateData.allowedPermissions.keySet(), contestSupervisorCreateData.isAllowedAll);
         }
-        contestSupervisorService.createContestSupervisor(contest.getId(), userJid, contestPermission);
+        contestSupervisorService.createContestSupervisor(contest.getId(), jophielUser.getJid(), contestPermission);
 
         UrielControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateData.username + " as supervisor in contest " + contest.getName() + ".");
 
@@ -185,7 +186,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
     }
 
     private Result showListCreateSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestSupervisorCreateForm> contestSupervisorCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, contestSupervisorCreateForm, jophiel.getAutoCompleteEndPoint()));
+        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, contestSupervisorCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

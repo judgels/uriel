@@ -6,10 +6,13 @@ import com.google.inject.util.Providers;
 import org.iatoki.judgels.AWSFileSystemProvider;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.LocalFileSystemProvider;
-import org.iatoki.judgels.api.sealtiel.SealtielAPI;
+import org.iatoki.judgels.api.jophiel.JophielClientAPI;
+import org.iatoki.judgels.api.jophiel.JophielFactory;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
 import org.iatoki.judgels.api.sealtiel.SealtielFactory;
 import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
-import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.jophiel.JophielAuthAPI;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
 import org.iatoki.judgels.sandalphon.Sandalphon;
 import org.iatoki.judgels.uriel.UrielProperties;
@@ -19,9 +22,11 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
 
     @Override
     protected void manualBinding() {
-        bind(Jophiel.class).toInstance(jophiel());
+        bind(JophielAuthAPI.class).toInstance(jophielAuthAPI());
+        bind(JophielClientAPI.class).toInstance(jophielClientAPI());
+        bind(JophielPublicAPI.class).toInstance(jophielPublicAPI());
         bind(Sandalphon.class).toInstance(sandalphon());
-        bind(SealtielAPI.class).toInstance(sealtielAPI());
+        bind(SealtielClientAPI.class).toInstance(sealtielClientAPI());
         bind(FileSystemProvider.class).annotatedWith(ContestFileSystemProvider.class).toInstance(contestFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(TeamAvatarFileSystemProvider.class).toInstance(teamAvatarFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(ProgrammingSubmissionLocalFileSystemProvider.class).toInstance(submissionLocalFileSystemProvider());
@@ -51,20 +56,24 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
         return UrielProperties.getInstance();
     }
 
-    private Jophiel jophiel() {
-        return new Jophiel(urielProperties().getJophielBaseUrl(), urielProperties().getJophielClientJid(), urielProperties().getJophielClientSecret());
+    private JophielAuthAPI jophielAuthAPI() {
+        return new JophielAuthAPI(urielProperties().getJophielBaseUrl(), urielProperties().getJophielClientJid(), urielProperties().getJophielClientSecret());
+    }
+
+    private JophielClientAPI jophielClientAPI() {
+        return JophielFactory.createJophiel(urielProperties().getJophielBaseUrl()).connectToClientAPI(urielProperties().getJophielClientJid(), urielProperties().getJophielClientSecret());
+    }
+
+    private JophielPublicAPI jophielPublicAPI() {
+        return JophielFactory.createJophiel(urielProperties().getJophielBaseUrl()).connectToPublicAPI();
     }
 
     private Sandalphon sandalphon() {
         return new Sandalphon(urielProperties().getSandalphonBaseUrl(), urielProperties().getSandalphonClientJid(), urielProperties().getSandalphonClientSecret());
     }
 
-    private SealtielAPI sealtielAPI() {
-        String baseUrl = urielProperties().getSealtielBaseUrl();
-        String clientJid = urielProperties().getSealtielClientJid();
-        String clientSecret = urielProperties().getSealtielClientSecret();
-
-        return SealtielFactory.createSealtiel(baseUrl).connectWithBasicAuth(clientJid, clientSecret);
+    private SealtielClientAPI sealtielClientAPI() {
+        return SealtielFactory.createSealtiel(urielProperties().getSealtielBaseUrl()).connectToClientAPI(urielProperties().getSealtielClientJid(), urielProperties().getSealtielClientSecret());
     }
 
     private FileSystemProvider teamAvatarFileSystemProvider() {

@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.services;
 
+import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
 import org.iatoki.judgels.uriel.User;
@@ -21,7 +22,7 @@ public interface UserService extends BaseUserService {
 
     void deleteUser(long userId);
 
-    void upsertUserFromJophielUserJid(String userJid);
+    void upsertUserFromJophielUser(JophielUser jophielUser);
 
-    void upsertUserFromJophielUserJid(String userJid, List<String> roles);
+    void upsertUserFromJophielUser(JophielUser jophielUser, List<String> roles);
 }

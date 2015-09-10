@@ -1,8 +1,10 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import org.iatoki.judgels.jophiel.Jophiel;
+import org.iatoki.judgels.api.jophiel.JophielClientAPI;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.jophiel.UserActivityMessage;
+import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
 import org.iatoki.judgels.jophiel.forms.SearchProfileForm;
 import org.iatoki.judgels.jophiel.forms.ViewpointForm;
 import org.iatoki.judgels.jophiel.services.impls.UserActivityMessageServiceImpl;
@@ -30,10 +32,12 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
 
     private static UrielControllerUtils INSTANCE;
 
-    private final Jophiel jophiel;
+    private final JophielClientAPI jophielClientAPI;
+    private final JophielPublicAPI jophielPublicAPI;
 
-    private UrielControllerUtils(Jophiel jophiel) {
-        this.jophiel = jophiel;
+    public UrielControllerUtils(JophielClientAPI jophielClientAPI, JophielPublicAPI jophielPublicAPI) {
+        this.jophielClientAPI = jophielClientAPI;
+        this.jophielPublicAPI = jophielPublicAPI;
     }
 
     @Override
@@ -46,7 +50,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
 
         LazyHtml sidebarContent;
         if (UrielUtils.isGuest()) {
-            sidebarContent = new LazyHtml(guestLoginView.render(routes.ApplicationController.auth(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), jophiel.getRegisterUri().toString()));
+            sidebarContent = new LazyHtml(guestLoginView.render(routes.ApplicationController.auth(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), JophielClientControllerUtils.getInstance().getRegisterUrl()));
         } else {
             sidebarContent = new LazyHtml(profileView.render(
                     IdentityUtils.getUsername(),
@@ -62,18 +66,18 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
                 viewpointForm.username = IdentityUtils.getUsername();
                 form.fill(viewpointForm);
             }
-            sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophiel.getAutoCompleteEndPoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
+            sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
-        sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophiel.getLinkedClientsEndPoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));
+        sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophielClientAPI.getLinkedClientsAPIEndpoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));
         Form<SearchProfileForm> searchProfileForm = Form.form(SearchProfileForm.class);
-        sidebarContent.appendLayout(c -> searchProfileLayout.render(searchProfileForm, jophiel.getAutoCompleteEndPoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", jophiel.getViewProfileEndPoint(), c));
+        sidebarContent.appendLayout(c -> searchProfileLayout.render(searchProfileForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", JophielClientControllerUtils.getInstance().getUserViewProfileUrl(), c));
 
         content.appendLayout(c -> sidebarLayout.render(sidebarContent.render(), c));
         if ((IdentityUtils.getUserJid() == null) || UrielUtils.isGuest()) {
-            content.appendLayout(c -> isLoggedInLayout.render(jophiel.getIsLoggedInEndPoint(), routes.ApplicationController.auth(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), "lib/jophielcommons/javascripts/isLoggedIn.js", c));
+            content.appendLayout(c -> isLoggedInLayout.render(jophielClientAPI.getUserIsLoggedInAPIEndpoint(), routes.ApplicationController.auth(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), "lib/jophielcommons/javascripts/isLoggedIn.js", c));
         } else {
-            content.appendLayout(c -> isLoggedOutLayout.render(jophiel.getIsLoggedInEndPoint(), org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.logout(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), "lib/jophielcommons/javascripts/isLoggedOut.js", c));
+            content.appendLayout(c -> isLoggedOutLayout.render(jophielClientAPI.getUserIsLoggedInAPIEndpoint(), org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.logout(ControllerUtils.getCurrentUrl(Http.Context.current().request())).absoluteURL(Http.Context.current().request(), Http.Context.current().request().secure()), "lib/jophielcommons/javascripts/isLoggedOut.js", c));
         }
     }
 
@@ -95,11 +99,11 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         }
     }
 
-    public static synchronized void buildInstance(Jophiel jophiel) {
+    public static synchronized void buildInstance(JophielClientAPI jophielClientAPI, JophielPublicAPI jophielPublicAPI) {
         if (INSTANCE != null) {
             throw new UnsupportedOperationException("ControllerUtils instance has already been built");
         }
-        INSTANCE = new UrielControllerUtils(jophiel);
+        INSTANCE = new UrielControllerUtils(jophielClientAPI, jophielPublicAPI);
     }
 
     static UrielControllerUtils getInstance() {

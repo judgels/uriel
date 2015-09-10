@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
@@ -82,7 +83,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
                 ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findByJidInAnyTeam(contestContestantModel.userJid, contestTeamJids);
                 resultBuilder.put(contestContestantModel.userJid, getTeamImageURLFromImageName(contestTeamModelMap.get(contestTeamMemberModel.teamJid).teamImageName));
             } else {
-                resultBuilder.put(contestContestantModel.userJid, AvatarCacheServiceImpl.getInstance().getAvatarUrl(contestContestantModel.userJid));
+                resultBuilder.put(contestContestantModel.userJid, AvatarCacheServiceImpl.getInstance().getAvatarUrl(contestContestantModel.userJid, JophielClientControllerUtils.getInstance().getUserDefaultAvatarUrl()));
             }
         }
 
@@ -124,7 +125,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
 
     private URL getTeamImageURLFromImageName(String imageName) {
         try {
-            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.apis.routes.ContestAPIController.renderTeamAvatarImage(imageName));
+            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.api.routes.ContestAPIController.renderTeamAvatarImage(imageName));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

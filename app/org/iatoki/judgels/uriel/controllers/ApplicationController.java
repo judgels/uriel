@@ -1,9 +1,12 @@
 package org.iatoki.judgels.uriel.controllers;
 
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
-import org.iatoki.judgels.jophiel.Jophiel;
 import org.iatoki.judgels.jophiel.forms.ViewpointForm;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
@@ -20,18 +23,17 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.IOException;
 
 @Singleton
 @Named
 public final class ApplicationController extends AbstractJudgelsController {
 
-    private final Jophiel jophiel;
+    private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
 
     @Inject
-    public ApplicationController(Jophiel jophiel, UserService userService) {
-        this.jophiel = jophiel;
+    public ApplicationController(JophielPublicAPI jophielPublicAPI, UserService userService) {
+        this.jophielPublicAPI = jophielPublicAPI;
         this.userService = userService;
     }
 
@@ -76,13 +78,13 @@ public final class ApplicationController extends AbstractJudgelsController {
         }
 
         JudgelsPlayUtils.updateUserJidCache(JidCacheServiceImpl.getInstance());
-        Jophiel.updateUserAvatarCache(AvatarCacheServiceImpl.getInstance());
+        JophielClientControllerUtils.updateUserAvatarCache(AvatarCacheServiceImpl.getInstance());
 
         if (JudgelsPlayUtils.hasViewPoint()) {
             try {
                 UrielUtils.backupSession();
-                UrielUtils.setUserSession(jophiel.getPublicUserByJid(JudgelsPlayUtils.getViewPoint()), userService.findUserByJid(JudgelsPlayUtils.getViewPoint()));
-            } catch (IOException e) {
+                UrielUtils.setUserSession(jophielPublicAPI.findUserByJid(JudgelsPlayUtils.getViewPoint()), userService.findUserByJid(JudgelsPlayUtils.getViewPoint()));
+            } catch (JudgelsAPIClientException e) {
                 JudgelsPlayUtils.removeViewPoint();
                 UrielUtils.restoreSession();
             }
@@ -98,24 +100,18 @@ public final class ApplicationController extends AbstractJudgelsController {
         if (!formHasErrors(viewpointForm) && UrielUtils.trullyHasRole("admin")) {
             ViewpointForm viewpointData = viewpointForm.get();
             try {
-                String userJid = jophiel.verifyUsername(viewpointData.username);
-                if (userJid != null) {
-                    try {
-                        userService.upsertUserFromJophielUserJid(userJid);
-                        if (!JudgelsPlayUtils.hasViewPoint()) {
-                            UrielUtils.backupSession();
-                        }
-                        JudgelsPlayUtils.setViewPointInSession(userJid);
-                        UrielUtils.setUserSession(jophiel.getPublicUserByJid(userJid), userService.findUserByJid(userJid));
-
-                        UrielControllerUtils.getInstance().addActivityLog("View as user " + viewpointData.username + ".");
-
-                    } catch (IOException e) {
-                        JudgelsPlayUtils.removeViewPoint();
-                        UrielUtils.restoreSession();
+                JophielUser jophielUser = jophielPublicAPI.findUserByUsername(viewpointData.username);
+                if (jophielUser != null) {
+                    userService.upsertUserFromJophielUser(jophielUser);
+                    if (!JudgelsPlayUtils.hasViewPoint()) {
+                        UrielUtils.backupSession();
                     }
+                    JudgelsPlayUtils.setViewPointInSession(jophielUser.getJid());
+                    UrielUtils.setUserSession(jophielUser, userService.findUserByJid(jophielUser.getJid()));
+
+                    UrielControllerUtils.getInstance().addActivityLog("View as user " + viewpointData.username + ".");
                 }
-            } catch (IOException e) {
+            } catch (JudgelsAPIClientException e) {
                 // do nothing
                 e.printStackTrace();
             }
