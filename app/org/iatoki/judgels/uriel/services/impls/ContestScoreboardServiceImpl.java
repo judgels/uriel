@@ -7,8 +7,6 @@ import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.Scoreboard;
-import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestScoreboardDao;
@@ -26,9 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.NoResultException;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,7 +57,8 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     public ContestScoreboard findScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
         ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestJid, scoreboardType.name());
-        return createContestScoreboardFromModel(contestScoreboardModel, ContestStyle.valueOf(contestModel.style));
+
+        return ContestScoreboardServiceUtils.createContestScoreboardFromModel(contestScoreboardModel, ContestStyle.valueOf(contestModel.style));
     }
 
     @Override
@@ -81,7 +78,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
         for (ContestContestantModel contestContestantModel : contestContestantModels) {
             if (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(contestContestantModel.userJid, contestTeamJids)) {
                 ContestTeamMemberModel contestTeamMemberModel = contestTeamMemberDao.findByJidInAnyTeam(contestContestantModel.userJid, contestTeamJids);
-                resultBuilder.put(contestContestantModel.userJid, getTeamImageURLFromImageName(contestTeamModelMap.get(contestTeamMemberModel.teamJid).teamImageName));
+                resultBuilder.put(contestContestantModel.userJid, ContestTeamServiceUtils.getTeamImageURLFromImageName(contestTeamModelMap.get(contestTeamMemberModel.teamJid).teamImageName));
             } else {
                 resultBuilder.put(contestContestantModel.userJid, AvatarCacheServiceImpl.getInstance().getAvatarUrl(contestContestantModel.userJid, JophielClientControllerUtils.getInstance().getUserDefaultAvatarUrl()));
             }
@@ -103,7 +100,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
         frozenContestScoreboardModel.scoreboard = contestScoreboardModel.scoreboard;
         frozenContestScoreboardModel.type = ContestScoreboardType.FROZEN.name();
 
-        contestScoreboardDao.edit(frozenContestScoreboardModel, "scoreUpdater", "localhost");
+        contestScoreboardDao.edit(frozenContestScoreboardModel, "scoreboardUpdater", "localhost");
     }
 
     @Override
@@ -115,19 +112,6 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
             contestScoreboardDao.edit(contestScoreboardModel, "scoreboardUpdater", "localhost");
         } catch (NoResultException e) {
             // just do nothing
-        }
-    }
-
-    private ContestScoreboard createContestScoreboardFromModel(ContestScoreboardModel contestScoreboardModel, ContestStyle style) {
-        Scoreboard scoreboard = ScoreboardAdapters.fromContestStyle(style).parseScoreboardFromJson(contestScoreboardModel.scoreboard);
-        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard, new Date(contestScoreboardModel.timeUpdate));
-    }
-
-    private URL getTeamImageURLFromImageName(String imageName) {
-        try {
-            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.api.routes.ContestAPIController.renderTeamAvatarImage(imageName));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
         }
     }
 }

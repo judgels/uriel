@@ -33,6 +33,7 @@ GET         /contest/:cId/teams                                                 
 GET         /contest/:cId/supervisors                                                       @org.iatoki.judgels.uriel.controllers.ContestController.jumpToSupervisors(cId: Long)
 GET         /contest/:cId/managers                                                          @org.iatoki.judgels.uriel.controllers.ContestController.jumpToManagers(cId: Long)
 GET         /contest/:cId/files                                                             @org.iatoki.judgels.uriel.controllers.ContestController.jumpToFiles(cId: Long)
+GET         /contest/:cId/passwords                                                         @org.iatoki.judgels.uriel.controllers.ContestController.jumpToPasswords(cId: Long)
 
 GET         /contests/:cId/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.updateContestGeneralConfig(cId: Long)
 POST        /contests/:cId/update/general                                                   @org.iatoki.judgels.uriel.controllers.ContestController.postUpdateContestGeneralConfig(cId: Long)

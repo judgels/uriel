@@ -18,9 +18,7 @@ import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.modules.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
-import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.password.listContestantPasswordsView;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
@@ -42,17 +40,13 @@ public final class ContestPasswordController extends AbstractJudgelsController {
 
     private final ContestContestantPasswordService contestContestantPasswordService;
     private final ContestContestantService contestContestantService;
-    private final ContestModuleService contestModuleService;
     private final ContestService contestService;
-    private final ContestSupervisorService contestSupervisorService;
 
     @Inject
-    public ContestPasswordController(ContestContestantPasswordService contestContestantPasswordService, ContestContestantService contestContestantService, ContestModuleService contestModuleService, ContestService contestService, ContestSupervisorService contestSupervisorService) {
+    public ContestPasswordController(ContestContestantPasswordService contestContestantPasswordService, ContestContestantService contestContestantService, ContestService contestService) {
         this.contestContestantPasswordService = contestContestantPasswordService;
         this.contestContestantService = contestContestantService;
-        this.contestModuleService = contestModuleService;
         this.contestService = contestService;
-        this.contestSupervisorService = contestSupervisorService;
     }
 
     @Transactional(readOnly = true)
@@ -65,7 +59,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestContestant> pageOfContestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -79,10 +73,10 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        contestContestantPasswordService.generateContestantPasswordForAllContestants(contest.getJid());
+        contestContestantPasswordService.generateContestantPasswordForAllContestants(contest.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         return redirect(routes.ContestPasswordController.viewContestantPasswords(contest.getId()));
     }
@@ -93,10 +87,10 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         ContestContestant contestant = contestContestantService.findContestantInContestById(contestContestantId);
 
         if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        contestContestantPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid());
+        contestContestantPasswordService.generateContestantPassword(contest.getJid(), contestant.getUserJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         return redirect(routes.ContestPasswordController.viewContestantPasswords(contest.getId()));
     }
@@ -105,14 +99,14 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listContestantPasswordsView.render(contest.getId(), pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, passwordsMap));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.passwords"), c));
 
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contestant.passwords"), routes.ContestPasswordController.viewContestantPasswords(contest.getId()))
         );
-        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Passwords");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog("Open list of passwords in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
@@ -127,6 +121,6 @@ public final class ContestPasswordController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.CONTESTANT, IdentityUtils.getUserJid());
     }
 }

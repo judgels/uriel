@@ -27,7 +27,6 @@ import org.iatoki.judgels.uriel.forms.ContestContestantUpdateForm;
 import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.listCreateContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.updateContestantView;
@@ -58,15 +57,13 @@ public class ContestContestantController extends AbstractJudgelsController {
     private final JophielPublicAPI jophielPublicAPI;
     private final ContestService contestService;
     private final ContestContestantService contestContestantService;
-    private final ContestSupervisorService contestSupervisorService;
     private final UserService userService;
 
     @Inject
-    public ContestContestantController(JophielPublicAPI jophielPublicAPI, ContestService contestService, ContestContestantService contestContestantService, ContestSupervisorService contestSupervisorService, UserService userService) {
+    public ContestContestantController(JophielPublicAPI jophielPublicAPI, ContestService contestService, ContestContestantService contestContestantService, UserService userService) {
         this.jophielPublicAPI = jophielPublicAPI;
         this.contestService = contestService;
         this.contestContestantService = contestContestantService;
-        this.contestSupervisorService = contestSupervisorService;
         this.userService = userService;
     }
 
@@ -80,18 +77,18 @@ public class ContestContestantController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result listCreateContestants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
         boolean canUpdate = isAllowedToSuperviseContestants(contest);
 
-        Form<ContestContestantCreateForm> form = Form.form(ContestContestantCreateForm.class);
-        Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
+        Form<ContestContestantCreateForm> contestContestantCreateForm = Form.form(ContestContestantCreateForm.class);
+        Form<ContestContestantUploadForm> contestContestantUploadForm = Form.form(ContestContestantUploadForm.class);
 
-        return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, contest);
+        return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, contestContestantUploadForm, contest);
     }
 
     @Transactional
@@ -99,56 +96,40 @@ public class ContestContestantController extends AbstractJudgelsController {
     public Result postCreateContestant(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseContestants(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestContestantCreateForm> contestContestantCreateForm = Form.form(ContestContestantCreateForm.class).bindFromRequest();
 
         if (formHasErrors(contestContestantCreateForm)) {
-            Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
-
-            Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-            boolean canUpdate = isAllowedToSuperviseContestants(contest);
-
-            return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
+            return showListCreateContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, contestContestantCreateForm, contest);
         }
 
         ContestContestantCreateForm contestContestantCreateData = contestContestantCreateForm.get();
         try {
             JophielUser jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
             if (jophielUser == null) {
-                Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                 contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
-                Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-                boolean canUpdate = isAllowedToSuperviseContestants(contest);
-
-                return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
+                return showListCreateContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, contestContestantCreateForm, contest);
             }
 
             if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
-                Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
                 contestContestantCreateForm.reject("error.contestant.create.userIsAlreadyContestant");
 
-                Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-                boolean canUpdate = isAllowedToSuperviseContestants(contest);
-
-                return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
+                return showListCreateContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, contestContestantCreateForm, contest);
             }
 
-            userService.upsertUserFromJophielUser(jophielUser);
-            contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.valueOf(contestContestantCreateData.status));
+            userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestContestantService.createContestContestant(contest.getJid(), jophielUser.getJid(), ContestContestantStatus.valueOf(contestContestantCreateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
             UrielControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateData.username + " in contest " + contest.getName() + ".");
 
             return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
         } catch (JudgelsAPIClientException e) {
-            Form<ContestContestantUploadForm> form2 = Form.form(ContestContestantUploadForm.class);
             contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
-            Page<ContestContestant> contestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-            boolean canUpdate = isAllowedToSuperviseContestants(contest);
-            return showListCreateContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, form2, contest);
+            return showListCreateContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, contestContestantCreateForm, contest);
         }
     }
 
@@ -158,16 +139,16 @@ public class ContestContestantController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestContestant = contestContestantService.findContestantInContestById(contestContestantId);
         if (!isAllowedToSuperviseContestants(contest) || !contestContestant.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestContestantUpdateForm contestContestantUpsertData = new ContestContestantUpdateForm();
-        contestContestantUpsertData.status = contestContestant.getStatus().name();
-        Form<ContestContestantUpdateForm> contestContestantUpsertForm = Form.form(ContestContestantUpdateForm.class).fill(contestContestantUpsertData);
+        ContestContestantUpdateForm contestContestantUpdateData = new ContestContestantUpdateForm();
+        contestContestantUpdateData.status = contestContestant.getStatus().name();
+        Form<ContestContestantUpdateForm> contestContestantUpdateForm = Form.form(ContestContestantUpdateForm.class).fill(contestContestantUpdateData);
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateContestant(contestContestantUpsertForm, contest, contestContestant);
+        return showUpdateContestant(contestContestantUpdateForm, contest, contestContestant);
     }
 
     @Transactional
@@ -176,7 +157,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestContestant = contestContestantService.findContestantInContestById(contestContestantId);
         if (!isAllowedToSuperviseContestants(contest) || !contestContestant.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestContestantUpdateForm> contestContestantUpdateForm = Form.form(ContestContestantUpdateForm.class).bindFromRequest();
@@ -186,7 +167,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
 
         ContestContestantUpdateForm contestContestantUpdateData = contestContestantUpdateForm.get();
-        contestContestantService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateData.status));
+        contestContestantService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantUpdateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + ".");
 
@@ -199,7 +180,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!isAllowedToSuperviseContestants(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ImmutableList.Builder<UploadResult> failedUploadsBuilder = ImmutableList.builder();
@@ -216,8 +197,8 @@ public class ContestContestantController extends AbstractJudgelsController {
                         JophielUser jophielUser = jophielPublicAPI.findUserByUsername(username);
                         if (jophielUser != null) {
                             if (!contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
-                                userService.upsertUserFromJophielUser(jophielUser);
-                                contestContestantService.createContestContestant(contest.getId(), jophielUser.getJid(), ContestContestantStatus.APPROVED);
+                                userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                                contestContestantService.createContestContestant(contest.getJid(), jophielUser.getJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
                             } else {
                                 failedUploadsBuilder.add(new UploadResult(username, Messages.get("error.contestant.isAlreadyContestant")));
                             }
@@ -240,11 +221,19 @@ public class ContestContestantController extends AbstractJudgelsController {
         return showUploadContestantResult(failedUploads, contest);
     }
 
-    private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> form, Form<ContestContestantUploadForm> form2, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, form, form2, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
+    private Result showListCreateContestantWithContestantCreateForm(long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> contestContestantCreateForm, Contest contest) {
+        Form<ContestContestantUploadForm> contestContestantUploadForm = Form.form(ContestContestantUploadForm.class);
+
+        Page<ContestContestant> pageOfContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+
+        return showListCreateContestant(pageOfContestants, pageIndex, orderBy, orderDir, filterString, true, contestContestantCreateForm, contestContestantUploadForm, contest);
+    }
+
+    private Result showListCreateContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestContestantCreateForm> contestContestantCreateForm, Form<ContestContestantUploadForm> contestContestantUploadForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listCreateContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, contestContestantCreateForm, contestContestantUploadForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contestant.list"), routes.ContestContestantController.viewContestants(contest.getId()))
@@ -259,7 +248,7 @@ public class ContestContestantController extends AbstractJudgelsController {
     private Result showUpdateContestant(Form<ContestContestantUpdateForm> form, Contest contest, ContestContestant contestContestant) {
         LazyHtml content = new LazyHtml(updateContestantView.render(contest.getId(), contestContestant.getId(), form));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.update"), c));
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
 
         appendBreadcrumbsLayout(content, contest,
@@ -281,7 +270,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.upload.result"), c));
 
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("contestant.list"), routes.ContestContestantController.viewContestants(contest.getId()))
@@ -301,6 +290,6 @@ public class ContestContestantController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseContestants(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CONTESTANT));
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.CONTESTANT, IdentityUtils.getUserJid());
     }
 }

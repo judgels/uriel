@@ -17,6 +17,7 @@ import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -35,8 +36,8 @@ import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.modules.scoreboard.ContestScoreboardModule;
-import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -63,7 +64,6 @@ import java.util.stream.Collectors;
 @Named
 public class ContestScoreboardController extends AbstractJudgelsController {
 
-    private final ContestModuleService contestModuleService;
     private final ContestProblemService contestProblemService;
     private final ContestScoreboardService contestScoreboardService;
     private final ContestService contestService;
@@ -71,8 +71,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     private final ProgrammingSubmissionService programmingSubmissionService;
 
     @Inject
-    public ContestScoreboardController(ContestModuleService contestModuleService, ContestProblemService contestProblemService, ContestScoreboardService contestScoreboardService, ContestService contestService, ContestTeamService contestTeamService, ProgrammingSubmissionService programmingSubmissionService) {
-        this.contestModuleService = contestModuleService;
+    public ContestScoreboardController(ContestProblemService contestProblemService, ContestScoreboardService contestScoreboardService, ContestService contestService, ContestTeamService contestTeamService, ProgrammingSubmissionService programmingSubmissionService) {
         this.contestProblemService = contestProblemService;
         this.contestScoreboardService = contestScoreboardService;
         this.contestService = contestService;
@@ -83,13 +82,14 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result viewScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contest.containsModule(ContestModules.SCOREBOARD) || !ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!contest.containsModule(ContestModules.SCOREBOARD) || !ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
+        ContestDurationModule contestDurationModule = ((ContestDurationModule) contest.getModule(ContestModules.DURATION));
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ContestScoreboard contestScoreboard;
-        if (!contest.containsModule(ContestModules.VIRTUAL) && (contestScoreboardModule.getScoreboardFreezeTime() < System.currentTimeMillis()) && (!contestScoreboardModule.isOfficialScoreboardAllowed())) {
+        if (!contest.containsModule(ContestModules.VIRTUAL) && ((contestDurationModule.getEndTime().getTime() - contestScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis()) && (!contestScoreboardModule.isOfficialScoreboardAllowed())) {
             if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
                 contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
             } else {
@@ -113,7 +113,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             scoreboard = adapter.filterOpenProblems(scoreboard, openProblemJids);
 
             if (contestScoreboardModule.isIncognitoScoreboard()) {
-                if (ContestControllerUtils.getInstance().isCoach(contest)) {
+                if (ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid())) {
                     List<ContestTeamMember> contestTeamMembers = contestTeamService.getCoachedMembersInContest(contest.getJid(), IdentityUtils.getUserJid());
                     content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), true, contestTeamMembers.stream().map(ct -> ct.getMemberJid()).collect(Collectors.toSet())));
                 } else {
@@ -128,7 +128,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             appendSubtabsLayout(content, contest);
         }
 
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestScoreboardController.viewScoreboard(contest.getId()))
@@ -144,7 +144,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     public Result viewOfficialScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestScoreboard contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
@@ -155,7 +155,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[]{new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestScoreboardController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestScoreboardController.downloadContestDataAsXLS(contest.getId()))}, c));
 
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()))
@@ -172,7 +172,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
@@ -198,7 +198,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     public Result downloadContestDataAsXLS(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestScoreboard contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
@@ -383,6 +383,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseScoreboard(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || ContestControllerUtils.getInstance().isSupervisor(contest);
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.SCOREBOARD, IdentityUtils.getUserJid());
     }
 }

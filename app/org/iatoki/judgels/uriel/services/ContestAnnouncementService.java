@@ -15,9 +15,9 @@ public interface ContestAnnouncementService {
 
     long countUnreadAnnouncementsInContest(String userJid, String contestJid);
 
-    void createContestAnnouncement(long contestId, String title, String content, ContestAnnouncementStatus status);
+    void createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress);
 
-    void updateContestAnnouncement(long contestAnnouncementId, String title, String content, ContestAnnouncementStatus status);
+    void updateContestAnnouncement(String contestAnnouncementJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress);
 
-    void readContestAnnouncements(String userJid, Collection<String> contestAnnouncementJids);
+    void readContestAnnouncements(String userJid, Collection<String> contestAnnouncementJids, String userIpAddress);
 }

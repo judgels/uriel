@@ -9,5 +9,5 @@ public interface ContestManagerService {
 
     Page<ContestManager> getPageOfManagersInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    void createContestManager(long contestId, String userJid);
+    void createContestManager(String contestJid, String userJid, String createUserJid, String createUserIpAddress);
 }

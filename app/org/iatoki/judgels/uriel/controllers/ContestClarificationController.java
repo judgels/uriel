@@ -28,10 +28,8 @@ import org.iatoki.judgels.uriel.modules.ContestModules;
 import org.iatoki.judgels.uriel.modules.clarification.ContestClarificationModule;
 import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
-import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.createClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.listClarificationsView;
@@ -63,19 +61,15 @@ public class ContestClarificationController extends AbstractJudgelsController {
     private static final long PAGE_SIZE = 20;
 
     private final ContestClarificationService contestClarificationService;
-    private final ContestModuleService contestModuleService;
     private final ContestProblemService contestProblemService;
     private final ContestService contestService;
-    private final ContestSupervisorService contestSupervisorService;
     private final ContestTeamService contestTeamService;
 
     @Inject
-    public ContestClarificationController(ContestClarificationService contestClarificationService, ContestModuleService contestModuleService, ContestProblemService contestProblemService, ContestService contestService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService) {
+    public ContestClarificationController(ContestClarificationService contestClarificationService, ContestProblemService contestProblemService, ContestService contestService, ContestTeamService contestTeamService) {
         this.contestClarificationService = contestClarificationService;
-        this.contestModuleService = contestModuleService;
         this.contestProblemService = contestProblemService;
         this.contestService = contestService;
-        this.contestSupervisorService = contestSupervisorService;
         this.contestTeamService = contestTeamService;
     }
 
@@ -88,8 +82,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
     public Result listScreenedClarifications(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -99,7 +93,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contest.getModule(ContestModules.CLARIFICATION);
 
         Page<ContestClarification> pageOfContestClarifications;
-        boolean coach = ContestControllerUtils.getInstance().isCoach(contest);
+        boolean coach = ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid());
         if (coach) {
             List<ContestTeam> contestTeams = contestTeamService.getTeamsInContestByCoachJid(contest.getJid(), IdentityUtils.getUserJid());
             ImmutableList.Builder<ContestTeamMember> contestTeamMembersBuilder = ImmutableList.builder();
@@ -111,7 +105,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         } else {
             pageOfContestClarifications = contestClarificationService.getPageOfClarificationsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ImmutableList.of(IdentityUtils.getUserJid()));
         }
-        contestClarificationService.readContestClarifications(IdentityUtils.getUserJid(), pageOfContestClarifications.getData().stream().filter(c -> c.isAnswered()).map(c -> c.getJid()).collect(Collectors.toList()));
+        contestClarificationService.readContestClarifications(IdentityUtils.getUserJid(), pageOfContestClarifications.getData().stream().filter(c -> c.isAnswered()).map(c -> c.getJid()).collect(Collectors.toList()), IdentityUtils.getIpAddress());
 
         LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, pageOfContestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
         if (coach) {
@@ -126,13 +120,12 @@ public class ContestClarificationController extends AbstractJudgelsController {
             }
         } else {
             content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
-
         }
 
         if (isAllowedToSuperviseClarifications(contest)) {
             content.appendLayout(c -> accessTypeByStatusLayout.render(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()), routes.ContestClarificationController.viewClarifications(contest.getId()), c));
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
 
         appendBreadcrumbsLayout(content, contest,
@@ -150,8 +143,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result createClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToDoContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -181,8 +174,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateClarification(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToDoContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToDoContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -213,8 +206,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!ContestControllerUtils.getInstance().isCoach(contest) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestClarificationChangeForm contestClarificationChangeData = new ContestClarificationChangeForm();
@@ -238,8 +231,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!ContestControllerUtils.getInstance().isCoach(contest) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestClarificationChangeForm> contestClarificationChangeForm = Form.form(ContestClarificationChangeForm.class).bindFromRequest();
@@ -249,7 +242,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarificationChangeForm contestClarificationChangeData = contestClarificationChangeForm.get();
-        contestClarificationService.updateContestClarification(contestClarification.getId(), contestClarificationChangeData.title, contestClarificationChangeData.question);
+        contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationChangeData.title, contestClarificationChangeData.question, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update clarification " + contestClarification.getTitle() + " content in contest " + contest.getName() + ".");
 
@@ -270,7 +263,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         if (!isAllowedToSuperviseClarifications(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestClarification> pageOfContestClarifications = contestClarificationService.getPageOfClarificationsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
@@ -279,7 +272,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId()))
@@ -302,7 +295,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
         if (!isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
         ContestClarificationUpdateForm contestClarificationUpsertData = new ContestClarificationUpdateForm();
@@ -326,7 +319,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
         if (!isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
         Form<ContestClarificationUpdateForm> contestClarificationUpsertForm = Form.form(ContestClarificationUpdateForm.class).bindFromRequest();
@@ -336,7 +329,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarificationUpdateForm contestClarificationUpdateData = contestClarificationUpsertForm.get();
-        contestClarificationService.updateContestClarification(contestClarification.getId(), contestClarificationUpdateData.answer, ContestClarificationStatus.valueOf(contestClarificationUpdateData.status));
+        contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationUpdateData.answer, ContestClarificationStatus.valueOf(contestClarificationUpdateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + ".");
 
@@ -351,7 +344,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarificationCreateForm contestClarificationCreateData = contestClarificationCreateForm.get();
-        contestClarificationService.createContestClarification(contest.getId(), contestClarificationCreateData.title, contestClarificationCreateData.question, contestClarificationCreateData.topicJid);
+        contestClarificationService.createContestClarification(contest.getJid(), contestClarificationCreateData.title, contestClarificationCreateData.question, contestClarificationCreateData.topicJid, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Create clarification " + contestClarificationCreateData.title + " in contest " + contest.getName() + ".");
 
@@ -366,7 +359,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         if (isAllowedToSuperviseClarifications(contest)) {
             appendSubtabsLayout(content, contest);
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
@@ -380,10 +373,10 @@ public class ContestClarificationController extends AbstractJudgelsController {
     private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> contestClarificationChangeForm, Contest contest, ContestClarification contestClarification) {
         LazyHtml content = new LazyHtml(updateClarificationContentView.render(contest, contestClarification, contestClarificationChangeForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             appendSubtabsLayout(content, contest);
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
@@ -398,7 +391,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(updateClarificationAnswerView.render(contest.getId(), contestClarification, contestClarificationUpdateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId())),
@@ -423,6 +416,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseClarifications(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.CLARIFICATION));
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.CLARIFICATION, IdentityUtils.getUserJid());
     }
 }

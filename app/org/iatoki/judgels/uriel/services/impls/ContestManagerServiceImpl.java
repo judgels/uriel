@@ -2,7 +2,6 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestManager;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
@@ -39,23 +38,21 @@ public final class ContestManagerServiceImpl implements ContestManagerService {
     public Page<ContestManager> getPageOfManagersInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));
+        List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> ContestManagerServiceUtils.createContestManagerFromModel(m));
 
         return new Page<>(contestManagers, totalPages, pageIndex, pageSize);
     }
 
     @Override
-    public void createContestManager(long contestId, String userJid) {
-        ContestModel contestModel = contestDao.findById(contestId);
+    public void createContestManager(String contestJid, String userJid, String createUserJid, String createUserIpAddress) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestManagerModel contestManagerModel = new ContestManagerModel();
         contestManagerModel.contestJid = contestModel.jid;
         contestManagerModel.userJid = userJid;
 
-        contestManagerDao.persist(contestManagerModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-    }
+        contestManagerDao.persist(contestManagerModel, createUserJid, createUserIpAddress);
 
-    private ContestManager createContestManagerFromModel(ContestManagerModel contestManagerModel) {
-        return new ContestManager(contestManagerModel.id, contestManagerModel.contestJid, contestManagerModel.userJid);
+        contestDao.edit(contestModel, createUserJid, createUserIpAddress);
     }
 }

@@ -9,6 +9,8 @@ import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
+import org.iatoki.judgels.play.views.html.layouts.actionsLayout;
+import org.iatoki.judgels.play.views.html.layouts.alertLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
@@ -43,6 +45,9 @@ import org.iatoki.judgels.uriel.views.html.contest.modules.listModulesView;
 import org.iatoki.judgels.uriel.views.html.contest.specific.updateContestSpecificView;
 import org.iatoki.judgels.uriel.views.html.contest.updateContestView;
 import org.iatoki.judgels.uriel.views.html.contest.viewContestView;
+import org.iatoki.judgels.uriel.views.html.contest.viewContestWithPasswordView;
+import org.iatoki.judgels.uriel.views.html.contest.viewRegistrantsLayoutView;
+import org.iatoki.judgels.uriel.views.html.contest.viewVirtualContestLayout;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -91,7 +96,7 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result jumpToSubmissions(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestProgrammingSubmissionController.viewSubmissions(contestId));
         }
 
@@ -102,7 +107,7 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result jumpToScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contestId));
         }
 
@@ -113,7 +118,7 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result jumpToClarifications(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
+        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestClarificationController.viewClarifications(contestId));
         }
 
@@ -124,9 +129,6 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result jumpToContestants(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isCoach(contest)) {
-            return redirect(routes.ContestTeamController.viewScreenedTeams(contestId));
-        }
 
         return redirect(routes.ContestContestantController.viewContestants(contestId));
     }
@@ -135,21 +137,17 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result jumpToTeams(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            return redirect(routes.ContestTeamController.viewTeams(contestId));
+        if (ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid())) {
+            return redirect(routes.ContestTeamController.viewScreenedTeams(contestId));
         }
-        return redirect(routes.ContestContestantController.viewContestants(contestId));
+
+        return redirect(routes.ContestTeamController.viewTeams(contestId));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     public Result jumpToPasswords(long contestId) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-        if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest)) {
-            return redirect(routes.ContestPasswordController.viewContestantPasswords(contestId));
-        }
-
-        return redirect(routes.ContestContestantController.viewContestants(contestId));
+        return redirect(routes.ContestPasswordController.viewContestantPasswords(contestId));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -176,7 +174,12 @@ public final class ContestController extends AbstractJudgelsController {
     @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
     public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
-        Page<Contest> pageOfContests = contestService.getPageOfAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid(), UrielControllerUtils.getInstance().isAdmin());
+        Page<Contest> pageOfContests;
+        if (UrielControllerUtils.getInstance().isAdmin()) {
+            pageOfContests = contestService.getPageOfContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+        } else {
+            pageOfContests = contestService.getPageOfAllowedContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, IdentityUtils.getUserJid());
+        }
 
         LazyHtml content = new LazyHtml(listContestsView.render(pageOfContests, pageIndex, orderBy, orderDir, filterString));
         if (UrielControllerUtils.getInstance().isAdmin()) {
@@ -198,7 +201,36 @@ public final class ContestController extends AbstractJudgelsController {
     @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
     public Result viewContest(long contestId) throws ContestNotFoundException {
-        return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
+        Contest contest = contestService.findContestById(contestId);
+        if (contest.containsModule(ContestModules.REGISTRATION)) {
+            return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
+        }
+
+        if (!ContestControllerUtils.getInstance().isAllowedToViewContest(contest, IdentityUtils.getUserJid())) {
+            return redirect(routes.ContestController.index());
+        }
+
+        LazyHtml content = getBasicViewContestContent(contest);
+
+        ImmutableList.Builder<InternalLink> actionsBuilder = ImmutableList.builder();
+        addBasicActionsInViewContest(contest, actionsBuilder);
+        content.appendLayout(c -> actionsLayout.render(actionsBuilder.build(), false, c));
+
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())), c));
+        } else {
+            content.appendLayout(c -> headingLayout.render(contest.getName(), c));
+        }
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
+                new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
+                new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId()))
+        ));
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
+
+        UrielControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+
+        return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
     @Authenticated(value = GuestView.class)
@@ -206,21 +238,37 @@ public final class ContestController extends AbstractJudgelsController {
     public Result viewContestAndListRegistrants(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToViewContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToViewContest(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.index());
         }
 
-        Page<ContestContestant> pageOfContestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+        LazyHtml content = getBasicViewContestContent(contest);
 
-        Form<ContestEnterWithPasswordForm> passwordForm;
-        if (ContestControllerUtils.getInstance().requiresPasswordToEnterContest(contest)) {
-            passwordForm = Form.form(ContestEnterWithPasswordForm.class);
-        } else {
-            passwordForm = null;
+        ImmutableList.Builder<InternalLink> actionsBuilder = ImmutableList.builder();
+
+        if (ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid())) {
+            actionsBuilder.add(new InternalLink(Messages.get("contest.register"), routes.ContestController.registerToAContest(contest.getId())));
         }
 
-        LazyHtml content = new LazyHtml(viewContestView.render(contest, pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest), ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest), ContestControllerUtils.getInstance().isContestant(contest) && !ContestControllerUtils.getInstance().hasContestEnded(contest), ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest), ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest), passwordForm, ContestControllerUtils.getInstance().isAllowedToManageContest(contest)));
-        content.appendLayout(c -> headingLayout.render(contest.getName(), c));
+        if (ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest, IdentityUtils.getUserJid())) {
+            actionsBuilder.add(new InternalLink(Messages.get("contest.unregister"), routes.ContestController.unregisterFromAContest(contest.getId())));
+        }
+        addBasicActionsInViewContest(contest, actionsBuilder);
+
+        content.appendLayout(c -> actionsLayout.render(actionsBuilder.build(), false, c));
+
+        Page<ContestContestant> pageOfContestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
+        content.appendLayout(c -> viewRegistrantsLayoutView.render(contest, pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, c));
+
+        if (ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid()) && !ContestControllerUtils.getInstance().hasContestEnded(contest)) {
+            content.appendLayout(c -> alertLayout.render(Messages.get("contest.registeredAndNotStarted"), c));
+        }
+
+        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())), c));
+        } else {
+            content.appendLayout(c -> headingLayout.render(contest.getName(), c));
+        }
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         UrielControllerUtils.getInstance().appendBreadcrumbsLayout(content, ImmutableList.of(
               new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()),
@@ -238,11 +286,11 @@ public final class ContestController extends AbstractJudgelsController {
     public Result registerToAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.index());
         }
 
-        contestContestantService.createContestContestant(contest.getId(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED);
+        contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
@@ -254,7 +302,7 @@ public final class ContestController extends AbstractJudgelsController {
     public Result unregisterFromAContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.index());
         }
 
@@ -271,8 +319,12 @@ public final class ContestController extends AbstractJudgelsController {
     public Result enterContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.index());
+        }
+
+        if (!ContestControllerUtils.getInstance().isCoachOrAbove(contest, IdentityUtils.getUserJid()) && ContestControllerUtils.getInstance().isLegitimateContestant(contest, IdentityUtils.getUserJid()) && !ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid())) {
+            contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
 
         UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -285,11 +337,16 @@ public final class ContestController extends AbstractJudgelsController {
     public Result enterContestWithPassword(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.index());
         }
 
         Form<ContestEnterWithPasswordForm> contestEnterWithPasswordForm = Form.form(ContestEnterWithPasswordForm.class).bindFromRequest();
+
+        if (formHasErrors(contestEnterWithPasswordForm)) {
+            flash("password", Messages.get("contestant.password.incorrect"));
+            return redirect(routes.ContestController.viewContest(contest.getId()));
+        }
 
         String password = contestEnterWithPasswordForm.get().password;
         String correctPassword = contestContestantPasswordService.getContestantPassword(contest.getJid(), IdentityUtils.getUserJid());
@@ -314,15 +371,15 @@ public final class ContestController extends AbstractJudgelsController {
     public Result startContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest)) {
-            return redirect(routes.ContestController.index());
+        if (!ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest, IdentityUtils.getUserJid())) {
+            return redirect(routes.ContestController.viewContest(contest.getId()));
         }
 
-        contestContestantService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid());
+        contestContestantService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return redirect(routes.ContestController.jumpToAnnouncements(contestId));
+        return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -349,7 +406,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        Contest contest = contestService.createContest(contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style));
+        Contest contest = contestService.createContest(contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
 
@@ -362,8 +419,8 @@ public final class ContestController extends AbstractJudgelsController {
     public Result updateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestUpsertForm contestUpsertData = new ContestUpsertForm();
@@ -383,8 +440,8 @@ public final class ContestController extends AbstractJudgelsController {
     public Result postUpdateContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).bindFromRequest();
@@ -393,7 +450,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        contestService.updateContest(contest.getId(), contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style));
+        contestService.updateContest(contest.getJid(), contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
@@ -404,8 +461,8 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result updateContestModuleConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         LazyHtml content = new LazyHtml(listModulesView.render(contest));
@@ -425,11 +482,11 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional
     public Result enableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        contestModuleService.enableModule(contest.getJid(), ContestModules.valueOf(contestModule));
+        contestModuleService.enableModule(contest.getJid(), ContestModules.valueOf(contestModule), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
     }
@@ -438,11 +495,11 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional
     public Result disableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        contestModuleService.disableModule(contest.getJid(), ContestModules.valueOf(contestModule));
+        contestModuleService.disableModule(contest.getJid(), ContestModules.valueOf(contestModule), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
     }
@@ -453,8 +510,8 @@ public final class ContestController extends AbstractJudgelsController {
     public Result updateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form styleConfigForm = null;
@@ -497,8 +554,8 @@ public final class ContestController extends AbstractJudgelsController {
     public Result postUpdateContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form styleConfigForm = null;
@@ -533,12 +590,37 @@ public final class ContestController extends AbstractJudgelsController {
             contestStyleConfig = new IOIContestStyleConfig(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(formData.allowedLanguageNames, formData.isAllowedAll));
         }
 
-        contestService.updateContestStyleConfiguration(contest.getJid(), contestStyleConfig);
-        contestService.updateContestModuleConfiguration(contest.getJid(), updatedContestModuleBuilder.build());
+        contestService.updateContestStyleConfiguration(contest.getJid(), contestStyleConfig, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestService.updateContestModuleConfiguration(contest.getJid(), updatedContestModuleBuilder.build(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
 
         return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+    }
+
+    private LazyHtml getBasicViewContestContent(Contest contest) {
+        LazyHtml content;
+        if (ContestControllerUtils.getInstance().requiresPasswordToEnterContest(contest, IdentityUtils.getUserJid())) {
+            Form<ContestEnterWithPasswordForm> passwordForm = Form.form(ContestEnterWithPasswordForm.class);
+            content = new LazyHtml(viewContestWithPasswordView.render(contest, passwordForm));
+        } else {
+            content = new LazyHtml(viewContestView.render(contest));
+        }
+        if (contest.containsModule(ContestModules.VIRTUAL)) {
+            content.appendLayout(c -> viewVirtualContestLayout.render(c));
+        }
+
+        return content;
+    }
+
+    private void addBasicActionsInViewContest(Contest contest, ImmutableList.Builder<InternalLink> actionsBuilder) {
+        if (ContestControllerUtils.getInstance().isAllowedToStartContestAsContestant(contest, IdentityUtils.getUserJid())) {
+            actionsBuilder.add(new InternalLink(Messages.get("contest.start"), routes.ContestController.startContest(contest.getId())));
+        }
+
+        if (ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest, IdentityUtils.getUserJid())) {
+            actionsBuilder.add(new InternalLink(Messages.get("contest.enter"), routes.ContestController.enterContest(contest.getId())));
+        }
     }
 
     private Result showCreateContest(Form<ContestUpsertForm> contestUpsertForm) {

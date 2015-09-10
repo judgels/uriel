@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
@@ -116,7 +117,7 @@ public final class UserController extends AbstractJudgelsController {
             return showCreateUser(userCreateForm);
         }
 
-        userService.upsertUserFromJophielUser(jophielUser, userCreateData.getRolesAsList());
+        userService.upsertUserFromJophielUser(jophielUser, userCreateData.getRolesAsList(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Create user " + jophielUser.getJid() + ".");
 
@@ -165,7 +166,7 @@ public final class UserController extends AbstractJudgelsController {
         }
 
         UserUpdateForm userUpdateData = userUpdateForm.get();
-        userService.updateUser(user.getId(), userUpdateData.getRolesAsList());
+        userService.updateUser(user.getUserJid(), userUpdateData.getRolesAsList(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update user " + user.getUserJid() + ".");
 
@@ -175,7 +176,7 @@ public final class UserController extends AbstractJudgelsController {
     @Transactional
     public Result deleteUser(long userId) throws UserNotFoundException {
         User user = userService.findUserById(userId);
-        userService.deleteUser(user.getId());
+        userService.deleteUser(user.getUserJid());
 
         UrielControllerUtils.getInstance().addActivityLog("Delete user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 

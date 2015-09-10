@@ -8,5 +8,6 @@ public enum ContestPermissions {
     CLARIFICATION,
     CONTESTANT,
     TEAM,
-    SCOREBOARD
+    SCOREBOARD,
+    FILE
 }

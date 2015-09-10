@@ -28,12 +28,12 @@ public final class ContestPasswordModule implements TabbedContestModule {
 
     @Override
     public boolean isAllowedToViewTab(ContestControllerUtils contestControllerUtils, Contest contest, String userJid) {
-        return contestControllerUtils.isSupervisorOrAbove(contest);
+        return contestControllerUtils.isSupervisorOrAbove(contest, userJid);
     }
 
     @Override
     public Call getDefaultJumpTo(long contestId) {
-        return routes.ContestPasswordController.viewContestantPasswords(contestId);
+        return routes.ContestController.jumpToPasswords(contestId);
     }
 
     @Override

@@ -27,7 +27,6 @@ import org.iatoki.judgels.uriel.forms.ContestProblemCreateForm;
 import org.iatoki.judgels.uriel.forms.ContestProblemUpdateForm;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.problem.createProblemView;
 import org.iatoki.judgels.uriel.views.html.contest.problem.listProblemsView;
@@ -64,15 +63,13 @@ public class ContestProblemController extends AbstractJudgelsController {
 
     private final ContestProblemService contestProblemService;
     private final ContestService contestService;
-    private final ContestSupervisorService contestSupervisorService;
     private final ProgrammingSubmissionService programmingSubmissionService;
     private final Sandalphon sandalphon;
 
     @Inject
-    public ContestProblemController(ContestProblemService contestProblemService, ContestService contestService, ContestSupervisorService contestSupervisorService, ProgrammingSubmissionService programmingSubmissionService, Sandalphon sandalphon) {
+    public ContestProblemController(ContestProblemService contestProblemService, ContestService contestService, ProgrammingSubmissionService programmingSubmissionService, Sandalphon sandalphon) {
         this.contestProblemService = contestProblemService;
         this.contestService = contestService;
-        this.contestSupervisorService = contestSupervisorService;
         this.programmingSubmissionService = programmingSubmissionService;
         this.sandalphon = sandalphon;
     }
@@ -85,8 +82,8 @@ public class ContestProblemController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result listUsedProblems(long contestId, long pageIndex) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfUsedProblemsInContest(contest.getJid(), pageIndex, PAGE_SIZE);
@@ -104,7 +101,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         if (isAllowedToSuperviseProblems(contest)) {
             appendSubtabsLayout(content, contest);
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewUsedProblems(contest.getId()))
@@ -121,8 +118,8 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result viewProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest) || !isAllowedToViewProblem(contest, contestProblem)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid()) || !isAllowedToViewProblem(contest, contestProblem)) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         long submissionsLeft = -1;
@@ -145,7 +142,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         } else {
             content = new LazyHtml(viewProblemView.render(requestUrl, requestBody, submissionsLeft, contestProblem.getStatus() == ContestProblemStatus.CLOSED));
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestProblemController.viewUsedProblems(contest.getId())),
@@ -188,7 +185,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result listProblems(long contestId, long page, String sortBy, String orderBy, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseProblems(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfProblemsInContest(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
@@ -198,7 +195,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, problemSlugsMap));
         content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("problem.list"), routes.ContestProblemController.viewProblems(contest.getId()))
@@ -215,7 +212,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseProblems(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestProblemCreateForm contestProblemCreateData = new ContestProblemCreateForm();
@@ -233,7 +230,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result postCreateProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseProblems(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestProblemCreateForm> contestProblemCreateForm = Form.form(ContestProblemCreateForm.class).bindFromRequest();
@@ -256,7 +253,7 @@ public class ContestProblemController extends AbstractJudgelsController {
             return showCreateProblem(contestProblemCreateForm, contest);
         }
 
-        contestProblemService.createContestProblem(contest.getId(), contestProblemCreateData.problemJid, contestProblemCreateData.problemSecret, contestProblemCreateData.alias, contestProblemCreateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateData.status));
+        contestProblemService.createContestProblem(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.problemSecret, contestProblemCreateData.alias, contestProblemCreateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, problemDisplayName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateData.alias + " in contest " + contest.getName() + ".");
@@ -270,7 +267,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
         if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestProblemUpdateForm contestProblemUpdateData = new ContestProblemUpdateForm();
@@ -290,7 +287,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
         if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestProblemUpdateForm> contestProblemUpdateForm = Form.form(ContestProblemUpdateForm.class).bindFromRequest();
@@ -300,7 +297,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
 
         ContestProblemUpdateForm contestProblemUpdateData = contestProblemUpdateForm.get();
-        contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemUpdateData.alias, contestProblemUpdateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateData.status));
+        contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemUpdateData.alias, contestProblemUpdateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemUpdateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
@@ -311,7 +308,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(createProblemView.render(contest.getId(), contestProblemCreateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.create"), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestProblemController.viewProblems(contest.getId())),
@@ -326,7 +323,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(updateProblemView.render(contest.getId(), contestProblem, contestProblemUpdateForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.update") + " " + contestProblem.getAlias(), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestProblemController.viewProblems(contest.getId())),
@@ -352,7 +349,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseProblems(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.PROBLEM));
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.PROBLEM, IdentityUtils.getUserJid());
     }
 
     private boolean isAllowedToViewProblem(Contest contest, ContestProblem contestProblem) {

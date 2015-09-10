@@ -42,21 +42,21 @@ public interface ContestTeamService {
 
     String getTeamAvatarImageURL(String imageName);
 
-    void createContestTeam(long contestId, String name);
+    void createContestTeam(String contestJid, String name, String userJid, String userIpAddress);
 
-    void createContestTeam(long contestId, String name, File teamImage, String extension) throws IOException;
+    void createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException;
 
-    void updateContestTeam(long contestTeamId, String name);
+    void updateContestTeam(String contestTeamJid, String name, String userJid, String userIpAddress);
 
-    void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException;
+    void updateContestTeam(String contestTeamJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException;
 
-    void createContestTeamCoach(String contestTeamJid, String coachJid);
+    void createContestTeamCoach(String contestTeamJid, String coachJid, String userJid, String userIpAddress);
 
     void removeContestTeamCoachById(long contestTeamCoachId);
 
-    void createContestTeamMember(String contestTeamJid, String memberJid);
+    void createContestTeamMember(String contestTeamJid, String memberJid, String userJid, String userIpAddress);
 
     void removeContestTeamMemberById(long contestTeamMemberId);
 
-    void startTeamAsCoach(String contestJid, String teamJid);
+    void startTeamAsCoach(String contestJid, String teamJid, String userJid, String userIpAddress);
 }

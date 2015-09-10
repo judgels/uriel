@@ -24,7 +24,7 @@ public interface ContestProblemService {
 
     Map<String, String> getMappedJidToAliasInContest(String contestJid);
 
-    void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status);
+    void createContestProblem(String contestJid, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress);
 
-    void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status);
+    void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress);
 }

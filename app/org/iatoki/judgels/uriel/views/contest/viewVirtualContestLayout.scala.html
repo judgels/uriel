@@ -1,0 +1,10 @@
+@import play.i18n.Messages
+
+@(content: Html)
+
+@content
+
+<script type="text/javascript">
+        var confirmMessage = "@Messages.get("contest.start.confirm")";
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertStartContest.js")"></script>

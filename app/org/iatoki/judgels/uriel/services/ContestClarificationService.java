@@ -18,11 +18,11 @@ public interface ContestClarificationService {
 
     long countUnreadClarificationsInContest(Collection<String> askerJids, String userJid, String contestJid, boolean answered);
 
-    void createContestClarification(long contestId, String title, String question, String topicJid);
+    void createContestClarification(String contestJid, String title, String question, String topicJid, String userJid, String userIpAddress);
 
-    void updateContestClarification(long contestClarificationId, String title, String question);
+    void updateContestClarification(String contestClarificationJid, String title, String question, String userJid, String userIpAddress);
 
-    void updateContestClarification(long contestClarificationId, String answer, ContestClarificationStatus status);
+    void updateContestClarification(String contestClarificationJid, String answer, ContestClarificationStatus status, String userJid, String userIpAddress);
 
-    void readContestClarifications(String userJid, Collection<String> contestClarificationJids);
+    void readContestClarifications(String userJid, Collection<String> contestClarificationJids, String userIpAddress);
 }

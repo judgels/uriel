@@ -25,7 +25,6 @@ import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
-import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
@@ -59,19 +58,17 @@ public final class ContestAPIController extends AbstractJudgelsAPIController {
     private final ContestClarificationService contestClarificationService;
     private final ContestContestantService contestContestantService;
     private final ContestManagerService contestManagerService;
-    private final ContestModuleService contestModuleService;
     private final ContestScoreboardService contestScoreboardService;
     private final ContestService contestService;
     private final ContestSupervisorService contestSupervisorService;
     private final ContestTeamService contestTeamService;
 
     @Inject
-    public ContestAPIController(ContestAnnouncementService contestAnnouncementService, ContestClarificationService contestClarificationService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestModuleService contestModuleService, ContestScoreboardService contestScoreboardService, ContestService contestService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService) {
+    public ContestAPIController(ContestAnnouncementService contestAnnouncementService, ContestClarificationService contestClarificationService, ContestContestantService contestContestantService, ContestManagerService contestManagerService, ContestScoreboardService contestScoreboardService, ContestService contestService, ContestSupervisorService contestSupervisorService, ContestTeamService contestTeamService) {
         this.contestAnnouncementService = contestAnnouncementService;
         this.contestClarificationService = contestClarificationService;
         this.contestContestantService = contestContestantService;
         this.contestManagerService = contestManagerService;
-        this.contestModuleService = contestModuleService;
         this.contestScoreboardService = contestScoreboardService;
         this.contestService = contestService;
         this.contestSupervisorService = contestSupervisorService;

@@ -15,7 +15,7 @@ public interface ContestSupervisorService {
 
     Page<ContestSupervisor> getPageOfSupervisorsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 
-    void createContestSupervisor(long contestId, String userJid, ContestPermission contestPermission);
+    void createContestSupervisor(String contestJid, String userJid, ContestPermission contestPermission, String createUserJid, String createUserIpAddress);
 
-    void updateContestSupervisor(long contestSupervisorId, ContestPermission contestPermission);
+    void updateContestSupervisor(long contestSupervisorId, ContestPermission contestPermission, String userJid, String userIpAddress);
 }

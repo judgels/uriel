@@ -22,7 +22,7 @@ public final class ContestSupervisorModule implements TabbedContestModule {
 
     @Override
     public boolean isAllowedToViewTab(ContestControllerUtils contestControllerUtils, Contest contest, String userJid) {
-        return contestControllerUtils.isSupervisorOrAbove(contest);
+        return contestControllerUtils.isSupervisorOrAbove(contest, userJid);
     }
 
     @Override

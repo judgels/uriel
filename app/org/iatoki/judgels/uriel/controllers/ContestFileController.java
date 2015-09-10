@@ -1,10 +1,12 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import org.iatoki.judgels.FileInfo;
+import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.forms.ContestFileUploadForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.services.ContestFileService;
@@ -58,7 +60,7 @@ public final class ContestFileController extends AbstractJudgelsController {
     public Result listFiles(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToManageFiles(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestFileUploadForm> contestFileUploadForm = Form.form(ContestFileUploadForm.class);
@@ -71,7 +73,7 @@ public final class ContestFileController extends AbstractJudgelsController {
     public Result postUploadFile(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToManageFiles(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestFileUploadForm> contestFileUploadForm = Form.form(ContestFileUploadForm.class).bindFromRequest();
@@ -103,7 +105,7 @@ public final class ContestFileController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
             return notFound();
         }
 
@@ -124,7 +126,7 @@ public final class ContestFileController extends AbstractJudgelsController {
 
     private Result showListFiles(Form<ContestFileUploadForm> contestFileUploadForm, Contest contest, List<FileInfo> fileInfos) {
         LazyHtml content = new LazyHtml(listFilesView.render(contestFileUploadForm, contest, fileInfos));
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("file.list"), routes.ContestFileController.viewFiles(contest.getId()))
@@ -144,6 +146,6 @@ public final class ContestFileController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToManageFiles(Contest contest) {
-        return ContestControllerUtils.getInstance().isSupervisorOrAbove(contest);
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.FILE, IdentityUtils.getUserJid());
     }
 }

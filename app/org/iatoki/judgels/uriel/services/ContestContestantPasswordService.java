@@ -9,7 +9,7 @@ public interface ContestContestantPasswordService {
 
     String getContestantPassword(String contestJid, String contestantJid);
 
-    void generateContestantPasswordForAllContestants(String contestJid);
+    void generateContestantPasswordForAllContestants(String contestJid, String userJid, String userIpAddress);
 
-    void generateContestantPassword(String contestJid, String contestantJid);
+    void generateContestantPassword(String contestJid, String contestantJid, String userJid, String userIpAddress);
 }

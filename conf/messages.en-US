@@ -16,10 +16,12 @@ contest.style=Style
 contest.startTime=Start Time
 contest.endTime=End Time
 
+contest.allowedPermissions=Allowed Permissions
 contest.registrants=Registrants
 contest.register=Register
 contest.unregister=Unregister
 contest.enter=Enter
+contest.registeredAndNotStarted=You have been successfully registered. You can enter after contest starts.
 
 announcement.announcements=Announcements
 announcement.list=Announcements
@@ -88,6 +90,7 @@ contestant.contestants=Contestants
 contestant.contestant=Contestant
 contestant.list=Contestants
 contestant.create=Create Contestant
+contestant.update=Update Contestant
 
 contestant.name=Name
 contestant.realName=Real Name

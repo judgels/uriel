@@ -23,11 +23,11 @@ public interface ContestContestantService {
 
     long countContestantsInContest(String contestJid);
 
-    void createContestContestant(long contestId, String userJid, ContestContestantStatus status);
+    void createContestContestant(String contestJid, String userJid, ContestContestantStatus status, String createUserJid, String createUserIpAddress);
 
-    void updateContestContestant(long contestContestantId, ContestContestantStatus status);
+    void updateContestContestant(long contestContestantId, ContestContestantStatus status, String updateUserJid, String updateUserIpAddress);
 
     void deleteContestContestant(long contestContestantId);
 
-    void startContestAsContestant(String contestJid, String userJid);
+    void startContestAsContestant(String contestJid, String userJid, String starterUserJid, String starterUserIpAddress);
 }

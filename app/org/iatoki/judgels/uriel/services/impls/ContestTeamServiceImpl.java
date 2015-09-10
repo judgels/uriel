@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.iatoki.judgels.FileSystemProvider;
-import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -13,7 +12,6 @@ import org.iatoki.judgels.uriel.ContestTeamCoachNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
-import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
@@ -35,13 +33,9 @@ import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Singleton
 @Named("contestTeamService")
@@ -101,7 +95,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-        return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
+        return ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
     }
 
     @Override
@@ -111,7 +105,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             throw new ContestTeamCoachNotFoundException("Contest Team Coach not found.");
         }
 
-        return createContestTeamCoachFromModel(contestTeamCoachModel);
+        return ContestTeamServiceUtils.createContestTeamCoachFromModel(contestTeamCoachModel);
     }
 
     @Override
@@ -121,7 +115,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             throw new ContestTeamMemberNotFoundException("Contest Team Member not found.");
         }
 
-        return createContestTeamMemberFromModel(contestTeamMemberModel);
+        return ContestTeamServiceUtils.createContestTeamMemberFromModel(contestTeamMemberModel);
     }
 
     @Override
@@ -134,7 +128,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
         return new Page<>(contestTeamBuilder.build(), totalPages, pageIndex, pageSize);
     }
@@ -157,7 +151,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
         return new Page<>(contestTeamBuilder.build(), totalRows, pageIndex, pageSize);
     }
@@ -171,7 +165,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
 
         return contestTeamBuilder.build();
@@ -189,7 +183,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(teamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamModel.jid);
 
-            teams.add(createContestTeamFromModel(teamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            teams.add(ContestTeamServiceUtils.createContestTeamFromModel(teamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
 
         return teams.build();
@@ -199,7 +193,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     public List<ContestTeamCoach> getCoachesOfTeam(String contestTeamJid) {
         List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.getAllByTeamJid(contestTeamJid);
 
-        return Lists.transform(contestTeamCoachModels, m -> createContestTeamCoachFromModel(m));
+        return Lists.transform(contestTeamCoachModels, m -> ContestTeamServiceUtils.createContestTeamCoachFromModel(m));
     }
 
     @Override
@@ -211,14 +205,14 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeams(Lists.transform(contestTeamModels, m -> m.jid));
 
-        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
+        return Lists.transform(contestTeamMemberModels, m -> ContestTeamServiceUtils.createContestTeamMemberFromModel(m));
     }
 
     @Override
     public List<ContestTeamMember> getMembersOfTeam(String contestTeamJid) {
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamJid);
 
-        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
+        return Lists.transform(contestTeamMemberModels, m -> ContestTeamServiceUtils.createContestTeamMemberFromModel(m));
     }
 
     @Override
@@ -227,27 +221,29 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void createContestTeam(long contestId, String name) {
-        ContestModel contestModel = contestDao.findById(contestId);
+    public void createContestTeam(String contestJid, String name, String userJid, String userIpAddress) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestTeamModel contestTeamModel = new ContestTeamModel();
         contestTeamModel.contestJid = contestModel.jid;
         contestTeamModel.name = name;
         contestTeamModel.teamImageName = "team-default.png";
 
-        contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.persist(contestTeamModel, userJid, userIpAddress);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void createContestTeam(long contestId, String name, File teamImage, String extension) throws IOException {
-        ContestModel contestModel = contestDao.findById(contestId);
+    public void createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestTeamModel contestTeamModel = new ContestTeamModel();
         contestTeamModel.contestJid = contestModel.jid;
         contestTeamModel.name = name;
         contestTeamModel.teamImageName = "team-default.png";
 
-        contestTeamDao.persist(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.persist(contestTeamModel, userJid, userIpAddress);
 
         String newImageName = contestTeamModel.jid + "-" + JudgelsPlayUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
@@ -255,20 +251,26 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
         contestTeamModel.teamImageName = newImageName;
 
-        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void updateContestTeam(long contestTeamId, String name) {
-        ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
+    public void updateContestTeam(String contestTeamJid, String name, String userJid, String userIpAddress) {
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamJid);
         contestTeamModel.name = name;
 
-        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
+
+        ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void updateContestTeam(long contestTeamId, String name, File teamImage, String extension) throws IOException {
-        ContestTeamModel contestTeamModel = contestTeamDao.findById(contestTeamId);
+    public void updateContestTeam(String contestTeamJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException {
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamJid);
         String newImageName = contestTeamModel.jid + "-" + JudgelsPlayUtils.hashMD5(UUID.randomUUID().toString()) + "." + extension;
         teamAvatarFileSystemProvider.uploadFile(ImmutableList.of(), teamImage, newImageName);
         teamAvatarFileSystemProvider.makeFilePublic(ImmutableList.of(newImageName));
@@ -276,16 +278,28 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         contestTeamModel.name = name;
         contestTeamModel.teamImageName = newImageName;
 
-        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
+
+        ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void createContestTeamCoach(String contestTeamJid, String coachJid) {
+    public void createContestTeamCoach(String contestTeamJid, String coachJid, String userJid, String userIpAddress) {
         ContestTeamCoachModel contestTeamCoachModel = new ContestTeamCoachModel();
         contestTeamCoachModel.teamJid = contestTeamJid;
         contestTeamCoachModel.coachJid = coachJid;
 
-        contestTeamCoachDao.persist(contestTeamCoachModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamCoachDao.persist(contestTeamCoachModel, userJid, userIpAddress);
+
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamJid);
+
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
+
+        ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
@@ -295,12 +309,20 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void createContestTeamMember(String contestTeamJid, String memberJid) {
+    public void createContestTeamMember(String contestTeamJid, String memberJid, String userJid, String userIpAddress) {
         ContestTeamMemberModel contestTeamMemberModel = new ContestTeamMemberModel();
         contestTeamMemberModel.teamJid = contestTeamJid;
         contestTeamMemberModel.memberJid = memberJid;
 
-        contestTeamMemberDao.persist(contestTeamMemberModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamMemberDao.persist(contestTeamMemberModel, userJid, userIpAddress);
+
+        ContestTeamModel contestTeamModel = contestTeamDao.findByJid(contestTeamJid);
+
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
+
+        ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
@@ -310,11 +332,11 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void startTeamAsCoach(String contestJid, String teamJid) {
+    public void startTeamAsCoach(String contestJid, String teamJid, String userJid, String userIpAddress) {
         long now = System.currentTimeMillis();
         ContestTeamModel contestTeamModel = contestTeamDao.findByJid(teamJid);
         contestTeamModel.contestStartTime = now;
-        contestTeamDao.edit(contestTeamModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
 
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamJid);
 
@@ -322,27 +344,11 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestTeamMemberModel.memberJid);
             contestContestantModel.contestStartTime = now;
 
-            contestContestantDao.edit(contestContestantModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestContestantDao.edit(contestContestantModel, userJid, userIpAddress);
         }
-    }
 
-    private ContestTeam createContestTeamFromModel(ContestTeamModel contestTeamModel, List<ContestTeamCoachModel> contestTeamCoachModels, List<ContestTeamMemberModel> contestTeamMemberModels) {
-        return new ContestTeam(contestTeamModel.id, contestTeamModel.jid, contestTeamModel.contestJid, contestTeamModel.name, getTeamImageURLFromImageName(contestTeamModel.teamImageName), new Date(contestTeamModel.contestStartTime), contestTeamCoachModels.stream().map(ctc -> createContestTeamCoachFromModel(ctc)).collect(Collectors.toList()), contestTeamMemberModels.stream().map(ctm -> createContestTeamMemberFromModel(ctm)).collect(Collectors.toList()));
-    }
+        ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
 
-    private ContestTeamCoach createContestTeamCoachFromModel(ContestTeamCoachModel contestTeamCoachModel) {
-        return new ContestTeamCoach(contestTeamCoachModel.id, contestTeamCoachModel.teamJid, contestTeamCoachModel.coachJid);
-    }
-
-    private ContestTeamMember createContestTeamMemberFromModel(ContestTeamMemberModel contestTeamMemberModel) {
-        return new ContestTeamMember(contestTeamMemberModel.id, contestTeamMemberModel.teamJid, contestTeamMemberModel.memberJid);
-    }
-
-    private URL getTeamImageURLFromImageName(String imageName) {
-        try {
-            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.api.routes.ContestAPIController.renderTeamAvatarImage(imageName));
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 }

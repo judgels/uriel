@@ -3,7 +3,6 @@ package org.iatoki.judgels.uriel.services.impls;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemNotFoundException;
@@ -47,19 +46,19 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
             throw new ContestProblemNotFoundException("Contest Problem not found.");
         }
 
-        return createContestProblemFromModel(contestProblemModel);
+        return ContestProblemServiceUtils.createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid) {
         ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestJid, contestProblemJid);
-        return createContestProblemFromModel(contestProblemModel);
+        return ContestProblemServiceUtils.createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public List<ContestProblem> getOpenedProblemsInContest(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getOpenedInContest(contestJid);
-        return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
+        return Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
     }
 
     @Override
@@ -73,7 +72,7 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
 
         long totalPages = contestProblemDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
+        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalPages, pageIndex, pageSize);
     }
@@ -83,7 +82,7 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
         long totalRows = contestProblemDao.countValidInContest(contestJid);
 
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getUsedInContestWithLimit(contestJid, pageIndex * pageSize, pageSize);
-        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
+        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalRows, pageIndex, pageSize);
     }
@@ -102,8 +101,8 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
     }
 
     @Override
-    public void createContestProblem(long contestId, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status) {
-        ContestModel contestModel = contestDao.findById(contestId);
+    public void createContestProblem(String contestJid, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestProblemModel contestProblemModel = new ContestProblemModel();
         contestProblemModel.contestJid = contestModel.jid;
@@ -113,20 +112,22 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
         contestProblemModel.submissionsLimit = submissionsLimit;
         contestProblemModel.status = status.name();
 
-        contestProblemDao.persist(contestProblemModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestProblemDao.persist(contestProblemModel, userJid, userIpAddress);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status) {
+    public void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress) {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
         contestProblemModel.alias = alias;
         contestProblemModel.submissionsLimit = submissionsLimit;
         contestProblemModel.status = status.name();
 
-        contestProblemDao.edit(contestProblemModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-    }
+        contestProblemDao.edit(contestProblemModel, userJid, userIpAddress);
 
-    private ContestProblem createContestProblemFromModel(ContestProblemModel contestProblemModel) {
-        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.submissionsLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
+        ContestModel contestModel = contestDao.findByJid(contestProblemModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 }

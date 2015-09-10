@@ -20,15 +20,17 @@ public interface ContestService {
 
     ScoreboardState getScoreboardStateInContest(String contestJid);
 
-    Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin);
+    Page<Contest> getPageOfContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
+
+    Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid);
 
     List<Contest> getRunningContests(Date timeNow);
 
-    Contest createContest(String name, String description, ContestStyle style);
+    Contest createContest(String name, String description, ContestStyle style, String userJid, String userIpAddress);
 
-    void updateContest(long contestId, String name, String description, ContestStyle style);
+    void updateContest(String contestJid, String name, String description, ContestStyle style, String userJid, String userIpAddress);
 
-    void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig);
+    void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig, String userJid, String userIpAddress);
 
-    void updateContestModuleConfiguration(String contestJid, Collection<ContestModule> contestModules);
+    void updateContestModuleConfiguration(String contestJid, Collection<ContestModule> contestModules, String userJid, String userIpAddress);
 }

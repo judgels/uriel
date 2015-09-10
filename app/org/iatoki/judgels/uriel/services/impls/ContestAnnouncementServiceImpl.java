@@ -2,7 +2,6 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementNotFoundException;
@@ -22,7 +21,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +46,7 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
             throw new ContestAnnouncementNotFoundException("Contest Announcement not found.");
         }
 
-        return createContestAnnouncementFromModel(contestAnnouncementModel);
+        return ContestAnnouncementServiceUtils.createContestAnnouncementFromModel(contestAnnouncementModel);
     }
 
     @Override
@@ -62,7 +60,7 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
 
         long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex, pageIndex * pageSize);
-        List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> createContestAnnouncementFromModel(m));
+        List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> ContestAnnouncementServiceUtils.createContestAnnouncementFromModel(m));
 
         return new Page<>(contestAnnouncements, totalPages, pageIndex, pageSize);
     }
@@ -78,8 +76,8 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     @Override
-    public void createContestAnnouncement(long contestId, String title, String content, ContestAnnouncementStatus status) {
-        ContestModel contestModel = contestDao.findById(contestId);
+    public void createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestAnnouncementModel contestAnnouncementModel = new ContestAnnouncementModel();
         contestAnnouncementModel.contestJid = contestModel.jid;
@@ -87,21 +85,27 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
         contestAnnouncementModel.content = content;
         contestAnnouncementModel.status = status.name();
 
-        contestAnnouncementDao.persist(contestAnnouncementModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestAnnouncementDao.persist(contestAnnouncementModel, userJid, userIpAddress);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void updateContestAnnouncement(long contestAnnouncementId, String title, String content, ContestAnnouncementStatus status) {
-        ContestAnnouncementModel contestAnnouncementModel = contestAnnouncementDao.findById(contestAnnouncementId);
+    public void updateContestAnnouncement(String contestAnnouncementJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress) {
+        ContestAnnouncementModel contestAnnouncementModel = contestAnnouncementDao.findByJid(contestAnnouncementJid);
         contestAnnouncementModel.title = title;
         contestAnnouncementModel.content = content;
         contestAnnouncementModel.status = status.name();
 
-        contestAnnouncementDao.edit(contestAnnouncementModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestAnnouncementDao.edit(contestAnnouncementModel, userJid, userIpAddress);
+
+        ContestModel contestModel = contestDao.findByJid(contestAnnouncementModel.contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void readContestAnnouncements(String userJid, Collection<String> contestAnnouncementJids) {
+    public void readContestAnnouncements(String userJid, Collection<String> contestAnnouncementJids, String userIpAddress) {
         for (String contestAnnouncementJid : contestAnnouncementJids) {
             if (!userReadDao.existsByUserJidAndTypeAndJid(userJid, ContestReadType.ANNOUNCEMENT.name(), contestAnnouncementJid)) {
                 UserReadModel contestReadModel = new UserReadModel();
@@ -109,12 +113,8 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
                 contestReadModel.type = ContestReadType.ANNOUNCEMENT.name();
                 contestReadModel.readJid = contestAnnouncementJid;
 
-                userReadDao.persist(contestReadModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                userReadDao.persist(contestReadModel, userJid, userIpAddress);
             }
         }
-    }
-
-    private ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
-        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.jid, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
     }
 }

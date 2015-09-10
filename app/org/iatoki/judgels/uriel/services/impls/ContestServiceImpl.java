@@ -4,10 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
-import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
@@ -29,12 +27,9 @@ import org.iatoki.judgels.uriel.models.daos.ContestStyleDao;
 import org.iatoki.judgels.uriel.models.daos.ContestSupervisorDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamDao;
-import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;
-import org.iatoki.judgels.uriel.models.entities.ContestContestantModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModuleModel;
-import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel;
 import org.iatoki.judgels.uriel.models.entities.ContestStyleModel;
 import org.iatoki.judgels.uriel.modules.ContestModule;
@@ -92,39 +87,33 @@ public final class ContestServiceImpl implements ContestService {
             throw new ContestNotFoundException("Contest not found.");
         }
 
-        return createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
+        return ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
     }
 
     @Override
     public Contest findContestByJid(String contestJid) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
-        return createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
+        return ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
     }
 
     @Override
     public ScoreboardState getScoreboardStateInContest(String contestJid) {
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.getUsedInContest(contestJid);
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid, ContestContestantModel_.status, ContestContestantStatus.APPROVED.name()), ImmutableMap.of(), 0, -1);
-
-        List<String> problemJids = Lists.transform(contestProblemModels, m -> m.problemJid);
-        List<String> problemAliases = Lists.transform(contestProblemModels, m -> m.alias);
-        List<String> contestantJids = Lists.transform(contestContestantModels, m -> m.userJid);
-
-        return new ScoreboardState(problemJids, problemAliases, contestantJids);
+        return ContestScoreboardServiceUtils.getScoreboardStateInContest(contestProblemDao, contestContestantDao, contestJid);
     }
 
     @Override
-    public Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid, boolean isAdmin) {
-        if (isAdmin) {
-            long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
-            List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+    public Page<Contest> getPageOfContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
+        List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
-            List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m, contestModuleDao.getEnabledInContest(m.jid)));
-            return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
-        }
+        List<Contest> contests = Lists.transform(contestModels, m -> ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, m, contestModuleDao.getEnabledInContest(m.jid)));
+        return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
+    }
 
-        List<String> contestJidsWhereIsContestant = contestContestantDao.getContestJidsByJid(IdentityUtils.getUserJid());
+    @Override
+    public Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid) {
+        List<String> contestJidsWhereIsContestant = contestContestantDao.getContestJidsByJid(userJid);
         List<ContestModel> contestModels = contestDao.findSortedByFilters("id", "desc", "", ImmutableMap.of(), ImmutableMap.of(ContestModel_.jid, contestJidsWhereIsContestant), 0, -1);
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
@@ -156,9 +145,9 @@ public final class ContestServiceImpl implements ContestService {
             contestModels = contestModels.stream().skip(pageIndex * pageSize).limit(pageSize).collect(Collectors.toList());
         } else {
             // Enable any contest
-            List<String> contestJidsWhereIsManager = contestManagerDao.getContestJidsByJid(IdentityUtils.getUserJid());
-            List<String> contestJidsWhereIsSupervisor = contestSupervisorDao.getContestJidsByJid(IdentityUtils.getUserJid());
-            List<String> contestTeamJids = contestTeamCoachDao.getTeamJidsByJid(IdentityUtils.getUserJid());
+            List<String> contestJidsWhereIsManager = contestManagerDao.getContestJidsByJid(userJid);
+            List<String> contestJidsWhereIsSupervisor = contestSupervisorDao.getContestJidsByJid(userJid);
+            List<String> contestTeamJids = contestTeamCoachDao.getTeamJidsByJid(userJid);
             List<String> contestJidsWhereIsCoach = contestTeamDao.getContestJidsByJids(contestTeamJids);
             List<ContestModuleModel> contestRegistrationModules = contestModuleDao.getEnabledByName(ContestModules.REGISTRATION.name());
 
@@ -173,7 +162,7 @@ public final class ContestServiceImpl implements ContestService {
             contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(ContestModel_.jid, contestJids), pageIndex * pageSize, pageSize);
         }
 
-        List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(m, contestModuleDao.getEnabledInContest(m.jid)));
+        List<Contest> contests = Lists.transform(contestModels, m -> ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, m, contestModuleDao.getEnabledInContest(m.jid)));
         return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
     }
 
@@ -195,17 +184,17 @@ public final class ContestServiceImpl implements ContestService {
             }
         }
 
-        return Lists.transform(runningContestModelsBuilder.build(), m -> createContestFromModel(m, contestModuleDao.getEnabledInContest(m.jid)));
+        return Lists.transform(runningContestModelsBuilder.build(), m -> ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, m, contestModuleDao.getEnabledInContest(m.jid)));
     }
 
     @Override
-    public Contest createContest(String name, String description, ContestStyle style) {
+    public Contest createContest(String name, String description, ContestStyle style, String userJid, String userIpAddress) {
         ContestModel contestModel = new ContestModel();
         contestModel.name = name;
         contestModel.description = description;
         contestModel.style = style.name();
 
-        contestDao.persist(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestDao.persist(contestModel, userJid, userIpAddress);
 
         ContestStyleModel contestStyleModel = new ContestStyleModel();
         contestStyleModel.contestJid = contestModel.jid;
@@ -216,30 +205,30 @@ public final class ContestServiceImpl implements ContestService {
             contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig());
         }
 
-        contestStyleDao.persist(contestStyleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestStyleDao.persist(contestStyleModel, userJid, userIpAddress);
 
-        createDefaultContestModules(contestModel, style);
+        createDefaultContestModules(contestModel, style, userJid, userIpAddress);
 
-        Contest contest = createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
+        Contest contest = ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
 
         return contest;
     }
 
     @Override
-    public void updateContest(long contestId, String name, String description, ContestStyle style) {
+    public void updateContest(String contestJid, String name, String description, ContestStyle style, String userJid, String userIpAddress) {
         boolean isStyleChanged;
 
-        ContestModel contestModel = contestDao.findById(contestId);
+        ContestModel contestModel = contestDao.findByJid(contestJid);
 
         contestModel.name = name;
         contestModel.description = description;
         isStyleChanged = !contestModel.style.equals(style.name());
         contestModel.style = style.name();
 
-        contestDao.edit(contestModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestDao.edit(contestModel, userJid, userIpAddress);
 
         ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestModel.jid);
-        Contest contest = createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
+        Contest contest = ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
 
         if (isStyleChanged) {
             if (contestModel.style.equals(ContestStyle.ICPC.name())) {
@@ -247,6 +236,8 @@ public final class ContestServiceImpl implements ContestService {
             } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
                 contestStyleModel.config = new Gson().toJson(IOIContestStyleConfig.defaultConfig());
             }
+
+            contestStyleDao.edit(contestStyleModel, userJid, userIpAddress);
 
             try {
                 ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.OFFICIAL.name());
@@ -270,19 +261,15 @@ public final class ContestServiceImpl implements ContestService {
 
                 contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
-                contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
             }
-        }
-
-        if (isStyleChanged) {
-            contestStyleDao.edit(contestStyleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
     }
 
     @Override
-    public void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig) {
-        ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestJid);
+    public void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig, String userJid, String userIpAddress) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
+        ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestJid);
 
         if (contestModel.style.equals(ContestStyle.ICPC.name())) {
             contestStyleModel.config = new Gson().toJson(styleConfig);
@@ -290,38 +277,26 @@ public final class ContestServiceImpl implements ContestService {
             contestStyleModel.config = new Gson().toJson(styleConfig);
         }
 
-        contestStyleDao.edit(contestStyleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestStyleDao.edit(contestStyleModel, userJid, userIpAddress);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override
-    public void updateContestModuleConfiguration(String contestJid, Collection<ContestModule> contestModules) {
+    public void updateContestModuleConfiguration(String contestJid, Collection<ContestModule> contestModules, String userJid, String userIpAddress) {
         for (ContestModule contestModule : contestModules) {
             ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.getType().name());
             contestModuleModel.config = contestModule.toJSONString();
 
-            contestModuleDao.edit(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestModuleDao.edit(contestModuleModel, userJid, userIpAddress);
         }
+
+        ContestModel contestModel = contestDao.findByJid(contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
-    private Contest createContestFromModel(ContestModel contestModel, List<ContestModuleModel> contestModuleModels) {
-        ContestStyleConfig contestStyleConfig = null;
-        ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestModel.jid);
-        if (contestModel.style.equals(ContestStyle.ICPC.name())) {
-            contestStyleConfig = new Gson().fromJson(contestStyleModel.config, ICPCContestStyleConfig.class);
-        } else if (contestModel.style.equals(ContestStyle.IOI.name())) {
-            contestStyleConfig = new Gson().fromJson(contestStyleModel.config, IOIContestStyleConfig.class);
-        }
-
-        ImmutableMap.Builder<ContestModules, ContestModule> contestModuleBuilder = ImmutableMap.builder();
-        for (ContestModuleModel contestModuleModel : contestModuleModels) {
-            ContestModules contestModules = ContestModules.valueOf(contestModuleModel.name);
-            contestModuleBuilder.put(contestModules, contestModuleFactory.parseFromConfig(contestModules, contestModuleModel.config));
-        }
-
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestStyle.valueOf(contestModel.style), contestStyleConfig, contestModuleBuilder.build());
-    }
-
-    private List<ContestModuleModel> createDefaultContestModules(ContestModel contestModel, ContestStyle style) {
+    private List<ContestModuleModel> createDefaultContestModules(ContestModel contestModel, ContestStyle style, String userJid, String userIpAddress) {
         String contestJid = contestModel.jid;
 
         ImmutableList.Builder<ContestModuleModel> moduleModelBuilder = ImmutableList.builder();
@@ -332,7 +307,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleModel.name = ContestModules.CLARIFICATION.name();
         contestModuleModel.config = contestModuleFactory.createDefaultContestModule(ContestModules.CLARIFICATION).toJSONString();
 
-        contestModuleDao.persist(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
         contestModuleModel = new ContestModuleModel();
@@ -341,7 +316,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleModel.name = ContestModules.SUPERVISOR.name();
         contestModuleModel.config = contestModuleFactory.createDefaultContestModule(ContestModules.SUPERVISOR).toJSONString();
 
-        contestModuleDao.persist(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
         contestModuleModel = new ContestModuleModel();
@@ -350,7 +325,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleModel.name = ContestModules.SCOREBOARD.name();
         contestModuleModel.config = contestModuleFactory.createDefaultContestModule(ContestModules.SCOREBOARD).toJSONString();
 
-        contestModuleDao.persist(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
         contestModuleModel = new ContestModuleModel();
@@ -359,7 +334,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleModel.name = ContestModules.DURATION.name();
         contestModuleModel.config = contestModuleFactory.createDefaultContestModule(ContestModules.DURATION).toJSONString();
 
-        contestModuleDao.persist(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
         contestModuleModel = new ContestModuleModel();
@@ -368,7 +343,7 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleModel.name = ContestModules.FILE.name();
         contestModuleModel.config = contestModuleFactory.createDefaultContestModule(ContestModules.FILE).toJSONString();
 
-        contestModuleDao.persist(contestModuleModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
         ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
@@ -377,12 +352,12 @@ public final class ContestServiceImpl implements ContestService {
 
         ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
         ScoreboardState config = getScoreboardStateInContest(contestModel.jid);
-        ScoreboardContent content = adapter.computeScoreboardContent(createContestFromModel(contestModel, contestModuleDao.getEnabledInContest(contestModel.jid)), contestStyleDao.findInContest(contestJid).config, config, ImmutableList.of(), ImmutableMap.of());
+        ScoreboardContent content = adapter.computeScoreboardContent(ContestServiceUtils.createContestFromModel(contestStyleDao, contestModuleFactory, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid)), contestStyleDao.findInContest(contestJid).config, config, ImmutableList.of(), ImmutableMap.of());
         Scoreboard scoreboard = adapter.createScoreboard(config, content);
 
         contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
-        contestScoreboardDao.persist(contestScoreboardModel, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
 
         return moduleModelBuilder.build();
     }

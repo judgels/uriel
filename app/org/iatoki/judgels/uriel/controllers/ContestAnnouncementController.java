@@ -13,19 +13,18 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestAnnouncement;
 import org.iatoki.judgels.uriel.ContestAnnouncementNotFoundException;
 import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
-import org.iatoki.judgels.uriel.ContestPermissions;
-import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
-import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.services.ContestSupervisorService;
+import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm;
+import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
+import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.createAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.listAnnouncementsView;
-import org.iatoki.judgels.uriel.views.html.contest.announcement.updateAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.listPublishedAnnouncementsView;
+import org.iatoki.judgels.uriel.views.html.contest.announcement.updateAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -50,13 +49,11 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
 
     private final ContestAnnouncementService contestAnnouncementService;
     private final ContestService contestService;
-    private final ContestSupervisorService contestSupervisorService;
 
     @Inject
-    public ContestAnnouncementController(ContestAnnouncementService contestAnnouncementService, ContestService contestService, ContestSupervisorService contestSupervisorService) {
+    public ContestAnnouncementController(ContestAnnouncementService contestAnnouncementService, ContestService contestService) {
         this.contestAnnouncementService = contestAnnouncementService;
         this.contestService = contestService;
-        this.contestSupervisorService = contestSupervisorService;
     }
 
     @Transactional
@@ -67,19 +64,19 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     @Transactional
     public Result listPublishedAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest)) {
+        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestController.viewContest(contest.getId()));
         }
 
         Page<ContestAnnouncement> pageOfContestAnnouncements = contestAnnouncementService.getPageOfAnnouncementsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, ContestAnnouncementStatus.PUBLISHED.name());
-        contestAnnouncementService.readContestAnnouncements(IdentityUtils.getUserJid(), pageOfContestAnnouncements.getData().stream().map(c -> c.getJid()).collect(Collectors.toList()));
+        contestAnnouncementService.readContestAnnouncements(IdentityUtils.getUserJid(), pageOfContestAnnouncements.getData().stream().map(c -> c.getJid()).collect(Collectors.toList()), IdentityUtils.getIpAddress());
 
         LazyHtml content = new LazyHtml(listPublishedAnnouncementsView.render(contest.getId(), pageOfContestAnnouncements, pageIndex, orderBy, orderDir, filterString));
         content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.list"), c));
         if (isAllowedToSuperviseAnnouncements(contest)) {
             appendSubtabsLayout(content, contest);
         }
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("announcement.list"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId()))
@@ -100,7 +97,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     public Result listAnnouncements(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseAnnouncements(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Page<ContestAnnouncement> pageOfContestAnnouncements = contestAnnouncementService.getPageOfAnnouncementsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString, null);
@@ -108,7 +105,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listAnnouncementsView.render(contest.getId(), pageOfContestAnnouncements, pageIndex, orderBy, orderDir, filterString));
         content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("announcement.list"), new InternalLink(Messages.get("commons.create"), routes.ContestAnnouncementController.createAnnouncement(contest.getId())), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("announcement.list"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId()))
@@ -125,7 +122,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     public Result createAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseAnnouncements(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class);
@@ -140,7 +137,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     public Result postCreateAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!isAllowedToSuperviseAnnouncements(contest)) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class).bindFromRequest();
@@ -150,7 +147,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
-        contestAnnouncementService.createContestAnnouncement(contest.getId(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
+        contestAnnouncementService.createContestAnnouncement(contest.getJid(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Create " + contestAnnouncementUpsertData.status + " announcement with title " + contestAnnouncementUpsertData.title + " in contest " + contest.getName() + ".");
 
@@ -163,7 +160,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
         if (!isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = new ContestAnnouncementUpsertForm();
@@ -183,7 +180,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
         if (!isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
-            return ContestControllerUtils.getInstance().tryEnteringContest(contest);
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class).bindFromRequest();
@@ -193,7 +190,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
-        contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getId(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status));
+        contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getJid(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + ".");
 
@@ -204,7 +201,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(createAnnouncementView.render(contest.getId(), contestAnnouncementUpsertForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("announcement.create"), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewAnnouncements(contest.getId())),
@@ -219,7 +216,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(updateAnnouncementView.render(contest.getId(), contestAnnouncement.getId(), contestAnnouncementUpsertForm));
         content.appendLayout(c -> headingLayout.render(Messages.get("announcement.update"), c));
         appendSubtabsLayout(content, contest);
-        ContestControllerUtils.getInstance().appendTabsLayout(content, contest);
+        ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId())),
@@ -244,6 +241,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     }
 
     private boolean isAllowedToSuperviseAnnouncements(Contest contest) {
-        return UrielControllerUtils.getInstance().isAdmin() || ContestControllerUtils.getInstance().isManager(contest) || (ContestControllerUtils.getInstance().isSupervisor(contest) && contestSupervisorService.findContestSupervisorInContestByUserJid(contest.getJid(), IdentityUtils.getUserJid()).getContestPermission().isAllowed(ContestPermissions.ANNOUNCEMENT));
+        return ContestControllerUtils.getInstance().isPermittedToSupervise(contest, ContestPermissions.ANNOUNCEMENT, IdentityUtils.getUserJid());
     }
 }
