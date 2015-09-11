@@ -7,7 +7,10 @@ contest.list=Contests
 contest.create=Create Contest
 contest.view=View Contest
 contest.update=Update Contest
+contest.lock=Lock Contest
+contest.unlock=Unlock Contest
 
+contest.isLocked=Contest is Locked
 contest.name=Name
 contest.description=Description
 contest.type=Type
@@ -40,6 +43,7 @@ problem.problem=Problem
 problem.list=Problems
 problem.create=Create Problem
 problem.update=Update Problem
+problem.delete.confirmation=Are you sure you want to delete?
 
 problem.alias=Alias
 problem.slug=Slug
@@ -91,6 +95,7 @@ contestant.contestant=Contestant
 contestant.list=Contestants
 contestant.create=Create Contestant
 contestant.update=Update Contestant
+contestant.delete.confirmation=Are you sure you want to delete?
 
 contestant.name=Name
 contestant.realName=Real Name
@@ -112,6 +117,7 @@ supervisor.supervisors=Supervisors
 supervisor.list=Supervisors
 supervisor.create=Create Supervisor
 supervisor.update=Update Supervisor
+supervisor.delete.confirmation=Are you sure you want to delete?
 
 supervisor.username=Username
 supervisor.name=Name
@@ -125,6 +131,7 @@ manager.create=Create Manager
 manager.username=Username
 manager.userJid=User JID
 manager.name=Name
+manager.delete.confirmation=Are you sure you want to delete?
 
 permission.announcement=Supervise announcements
 permission.problem=Supervise problems
@@ -178,15 +185,53 @@ contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
 contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
 
+contest.modules.enabled=Enabled Modules
+contest.modules.disabled=Disabled Modules
+
 contest.module.enable=Enable
+contest.module.enable.error.dependencies=Modules can''t be enabled need dependencies {0}.
+contest.module.enable.error.contradiction=Modules can''t be enabled because of contradictive modules: {0}.
 contest.module.disable=Disable
-contest.module.clarificationConfig=Clarification Module Config
+contest.module.disable.error.dependencies=Modules can''t be disabled because depended by {0}.
+contest.module.clarificationTimeLimitConfig=Clarification Time Limit Module Config
 contest.module.durationConfig=Duration Module Config
 contest.module.registrationConfig=Registration Module Config
 contest.module.pauseConfig=Pause Module Config
 contest.module.scoreboardConfig=Scoreboard Module Config
+contest.module.frozenScoreboardConfig=Frozen Scoreboard Module Config
 contest.module.triggerConfig=Trigger Module Config
 contest.module.virtualConfig=Virtual Module Config
+
+contest.module.DURATION=Duration
+contest.module.DURATION.description=Limit the contest within certain duration
+contest.module.CLARIFICATION=Clarification
+contest.module.CLARIFICATION.description=Enable clarification for contest.
+contest.module.CLARIFICATION_TIME_LIMIT=Clarification Time Limit
+contest.module.CLARIFICATION_TIME_LIMIT.description=Enable clarification time limit, require Clarification and Duration module.
+contest.module.SUPERVISOR=Supervisor
+contest.module.SUPERVISOR.description=Enable supervisors in contest.
+contest.module.SCOREBOARD=Scoreboard
+contest.module.SCOREBOARD.description=Enable scoreboard in contest.
+contest.module.FROZEN_SCOREBOARD=Scoreboard
+contest.module.FROZEN_SCOREBOARD.description=Enable frozen scoreboard in contest, require Scoreboard and Duration module.
+contest.module.VIRTUAL=Virtual
+contest.module.VIRTUAL.description=Enable virtual contest time corresponding to each user.
+contest.module.TEAM=Team
+contest.module.TEAM.description=Enable team in contest, team consists of coach, team leader, and team members.
+contest.module.TRIGGER=Trigger
+contest.module.TRIGGER.description=Enable config to change start trigger in virtual contests, require Virtual and Team module.
+contest.module.EXCLUSIVE=Exclusive
+contest.module.EXCLUSIVE.description=Make contest exclusive, when running only exclusive contests can be opened by contestants of exclusive contests.
+contest.module.PAUSE=Pause
+contest.module.PAUSE.description=Pause a contest, paused contest can't be done by contestants.
+contest.module.REGISTRATION=Registration
+contest.module.REGISTRATION.description=Enable registration to contest, only registered contestants may do contest, can''t be run with Limited module.
+contest.module.PASSWORD=Password
+contest.module.PASSWORD.description=Make contest require password to enter.
+contest.module.FILE=File
+contest.module.FILE.description=Enable file in contest.
+contest.module.LIMITED=Limited
+contest.module.LIMITED.description=Limit contest to be viewed and done by only contestants, can''t be run with Registration module.
 
 contest.beginTime=Begin Time
 contest.contestDuration=Contest Duration

@@ -27,4 +27,6 @@ public interface ContestProblemService {
     void createContestProblem(String contestJid, String problemJid, String problemSecret, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress);
 
     void updateContestProblem(long contestProblemId, String alias, long submissionsLimit, ContestProblemStatus status, String userJid, String userIpAddress);
+
+    void deleteContestProblem(long contestProblemId);
 }

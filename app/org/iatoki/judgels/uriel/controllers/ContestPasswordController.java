@@ -15,7 +15,7 @@ import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -72,7 +72,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
     public Result generateContestantPasswords(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -86,7 +86,7 @@ public final class ContestPasswordController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestContestant contestant = contestContestantService.findContestantInContestById(contestContestantId);
 
-        if (!contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.PASSWORD) || !isAllowedToSuperviseContestants(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 

@@ -18,7 +18,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
-import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.ContestTeam;
@@ -86,7 +86,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
-        if (!contest.containsModule(ContestModules.TEAM) || !contestTeam.getContestJid().equals(contest.getJid()) || !ContestControllerUtils.getInstance().isAllowedToStartContestForTeamAsCoach(contest, contestTeam, IdentityUtils.getUserJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !contestTeam.getContestJid().equals(contest.getJid()) || !ContestControllerUtils.getInstance().isAllowedToStartContestForTeamAsCoach(contest, contestTeam, IdentityUtils.getUserJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -110,7 +110,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         Page<ContestTeam> pageOfContestTeams = contestTeamService.getPageOfTeamsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        boolean canUpdate = isAllowedToSuperviseTeams(contest);
+        boolean canUpdate = !contest.isLocked() && isAllowedToSuperviseTeams(contest);
         Form<ContestTeamUpsertForm> contestTeamUpsertForm = Form.form(ContestTeamUpsertForm.class);
 
         return showListCreateTeam(pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
@@ -138,7 +138,7 @@ public class ContestTeamController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateTeam(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest)) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -180,7 +180,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -198,7 +198,7 @@ public class ContestTeamController extends AbstractJudgelsController {
     public Result postUpdateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -254,7 +254,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -305,7 +305,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -358,7 +358,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
         ContestTeamCoach contestTeamCoach = contestTeamService.findContestTeamCoachById(contestTeamCoachId);
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid()) || !contestTeamCoach.getTeamJid().equals(contestTeam.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid()) || !contestTeamCoach.getTeamJid().equals(contestTeam.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -375,7 +375,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -421,7 +421,7 @@ public class ContestTeamController extends AbstractJudgelsController {
     public Result postUploadTeamMember(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -474,7 +474,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
         ContestTeamMember contestTeamMember = contestTeamService.findContestTeamMemberById(contestTeamMemberId);
-        if (!contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid()) || !contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid()) || !contestTeamMember.getTeamJid().equals(contestTeam.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 

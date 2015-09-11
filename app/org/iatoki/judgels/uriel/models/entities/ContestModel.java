@@ -19,6 +19,8 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public String style;
 
+    public boolean locked;
+
     public ContestModel() {
     }
 

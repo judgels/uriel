@@ -1,0 +1,13 @@
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.modules.contest.clarificationtimelimit.ContestClarificationTimeLimitConfigForm
+
+@(contestClarificationTimeLimitConfigForm: Form[ContestClarificationTimeLimitConfigForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.clarificationTimeLimitConfig")</h4>
+
+@formErrorView(contestClarificationTimeLimitConfigForm)
+
+@b3.text(contestClarificationTimeLimitConfigForm("clarificationDuration"), '_label -> Messages.get("contest.clarificationDuration"), 'class -> "form-control form_time")

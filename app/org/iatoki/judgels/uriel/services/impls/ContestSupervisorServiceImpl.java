@@ -86,4 +86,11 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
 
         contestDao.edit(contestModel, userJid, userIpAddress);
     }
+
+    @Override
+    public void deleteContestSupervisor(long contestSupervisorId) {
+        ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
+
+        contestSupervisorDao.remove(contestSupervisorModel);
+    }
 }

@@ -188,11 +188,13 @@ public class ContestProblemController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
+        boolean canDelete = ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid());
+
         Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfProblemsInContest(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
         List<String> problemJids = pageOfContestProblems.getData().stream().map(cp -> cp.getProblemJid()).collect(Collectors.toList());
         Map<String, String> problemSlugsMap = ResourceDisplayNameUtils.buildSlugsMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids));
 
-        LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, problemSlugsMap));
+        LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, canDelete, problemSlugsMap));
         content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
@@ -211,7 +213,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result createProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseProblems(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseProblems(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -229,7 +231,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateProblem(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseProblems(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseProblems(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -266,7 +268,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result updateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
-        if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -286,7 +288,7 @@ public class ContestProblemController extends AbstractJudgelsController {
     public Result postUpdateProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
-        if (!isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseProblems(contest) || !contestProblem.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -302,6 +304,21 @@ public class ContestProblemController extends AbstractJudgelsController {
         UrielControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
+    }
+
+    @Transactional
+    public Result deleteProblem(long contestId, long contestProblemId) throws ContestNotFoundException, ContestProblemNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        ContestProblem contestProblem = contestProblemService.findContestProblemById(contestProblemId);
+        if (contest.isLocked() || !ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid()) || !contestProblem.getContestJid().equals(contest.getJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
+        }
+
+        contestProblemService.deleteContestProblem(contestProblem.getId());
+
+        UrielControllerUtils.getInstance().addActivityLog("Delete problem " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()) + ".");
+
+        return redirect(routes.UserController.index());
     }
 
     private Result showCreateProblem(Form<ContestProblemCreateForm> contestProblemCreateForm, Contest contest) {

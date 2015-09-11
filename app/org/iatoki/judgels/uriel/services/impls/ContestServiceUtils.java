@@ -11,9 +11,9 @@ import org.iatoki.judgels.uriel.models.daos.ContestStyleDao;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestModuleModel;
 import org.iatoki.judgels.uriel.models.entities.ContestStyleModel;
-import org.iatoki.judgels.uriel.modules.ContestModule;
-import org.iatoki.judgels.uriel.modules.ContestModuleFactory;
-import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.ContestModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModuleFactory;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 
 import java.util.List;
 
@@ -23,7 +23,7 @@ final class ContestServiceUtils {
         // prevent instantiation
     }
 
-    static Contest createContestFromModel(ContestStyleDao contestStyleDao, ContestModuleFactory contestModuleFactory, ContestModel contestModel, List<ContestModuleModel> contestModuleModels) {
+    static Contest createContestFromModel(ContestStyleDao contestStyleDao, ContestModel contestModel, List<ContestModuleModel> contestModuleModels) {
         ContestStyleConfig contestStyleConfig = null;
         ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestModel.jid);
         if (contestModel.style.equals(ContestStyle.ICPC.name())) {
@@ -34,10 +34,10 @@ final class ContestServiceUtils {
 
         ImmutableMap.Builder<ContestModules, ContestModule> contestModuleBuilder = ImmutableMap.builder();
         for (ContestModuleModel contestModuleModel : contestModuleModels) {
-            ContestModules contestModules = ContestModules.valueOf(contestModuleModel.name);
-            contestModuleBuilder.put(contestModules, contestModuleFactory.parseFromConfig(contestModules, contestModuleModel.config));
+            ContestModules contestModule = ContestModules.valueOf(contestModuleModel.name);
+            contestModuleBuilder.put(contestModule, ContestModuleFactory.parseFromConfig(contestModule, contestModuleModel.config));
         }
 
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, ContestStyle.valueOf(contestModel.style), contestStyleConfig, contestModuleBuilder.build());
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, contestModel.locked, ContestStyle.valueOf(contestModel.style), contestStyleConfig, contestModuleBuilder.build());
     }
 }

@@ -72,7 +72,7 @@ public final class ContestFileController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postUploadFile(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToManageFiles(contest)) {
+        if (contest.isLocked() || !isAllowedToManageFiles(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 

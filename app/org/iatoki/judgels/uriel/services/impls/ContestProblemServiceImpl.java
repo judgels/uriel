@@ -130,4 +130,11 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
 
         contestDao.edit(contestModel, userJid, userIpAddress);
     }
+
+    @Override
+    public void deleteContestProblem(long contestProblemId) {
+        ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
+
+        contestProblemDao.remove(contestProblemModel);
+    }
 }

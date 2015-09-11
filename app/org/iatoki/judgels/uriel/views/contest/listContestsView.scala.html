@@ -1,3 +1,4 @@
+@import org.iatoki.judgels.uriel.modules.contest.ContestModules
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
@@ -5,8 +6,7 @@
 @import org.iatoki.judgels.play.Page
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import org.iatoki.judgels.uriel.Contest
-@import org.iatoki.judgels.uriel.modules.ContestModules
-@import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule
+@import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule
 
 @(pageOfContests: Page[Contest], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)
 

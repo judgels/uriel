@@ -222,7 +222,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
     @Transactional
     public Result regradeSubmission(long contestId, long submissionId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, ProgrammingSubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseSubmissions(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseSubmissions(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -238,7 +238,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
     @Transactional
     public Result regradeSubmissions(long contestId, long pageIndex, String orderBy, String orderDir, String contestantJid, String problemJid) throws ContestNotFoundException, ProgrammingSubmissionNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseSubmissions(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseSubmissions(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 

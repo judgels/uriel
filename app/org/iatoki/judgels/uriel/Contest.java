@@ -2,8 +2,8 @@ package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import org.iatoki.judgels.uriel.modules.ContestModule;
-import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.ContestModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 
 import java.util.List;
 import java.util.Map;
@@ -15,15 +15,17 @@ public final class Contest {
     private final String jid;
     private final String name;
     private final String description;
+    private final boolean locked;
     private final ContestStyle style;
     private final ContestStyleConfig styleConfig;
     private final Map<ContestModules, ContestModule> modules;
 
-    public Contest(long id, String jid, String name, String description, ContestStyle style, ContestStyleConfig styleConfig, Map<ContestModules, ContestModule> modules) {
+    public Contest(long id, String jid, String name, String description, boolean locked, ContestStyle style, ContestStyleConfig styleConfig, Map<ContestModules, ContestModule> modules) {
         this.id = id;
         this.jid = jid;
         this.name = name;
         this.description = description;
+        this.locked = locked;
         this.style = style;
         this.styleConfig = styleConfig;
         this.modules = modules;
@@ -43,6 +45,10 @@ public final class Contest {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 
     public ContestStyle getStyle() {

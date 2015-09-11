@@ -24,9 +24,9 @@ import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.forms.ContestClarificationChangeForm;
 import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm;
 import org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm;
-import org.iatoki.judgels.uriel.modules.ContestModules;
-import org.iatoki.judgels.uriel.modules.clarification.ContestClarificationModule;
-import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.clarificationtimelimit.ContestClarificationTimeLimitModule;
+import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -90,8 +90,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
         }
 
-        ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contest.getModule(ContestModules.CLARIFICATION);
-
         Page<ContestClarification> pageOfContestClarifications;
         boolean coach = ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid());
         if (coach) {
@@ -110,9 +108,10 @@ public class ContestClarificationController extends AbstractJudgelsController {
         LazyHtml content = new LazyHtml(listScreenedClarificationsView.render(contest, pageOfContestClarifications, pageIndex, orderBy, orderDir, filterString, coach));
         if (coach) {
             content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
-        } else if (contest.containsModule(ContestModules.DURATION)) {
+        } else if (contest.containsModule(ContestModules.CLARIFICATION_TIME_LIMIT)) {
             ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-            if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+            ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
+            if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
                 content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
             } else {
                 content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
@@ -151,17 +150,16 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
         }
 
-        ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contest.getModule(ContestModules.CLARIFICATION);
-
         Form<ContestClarificationCreateForm> contestClarificationCreateForm = Form.form(ContestClarificationCreateForm.class);
-        if (!contest.containsModule(ContestModules.DURATION)) {
+        if (!contest.containsModule(ContestModules.CLARIFICATION_TIME_LIMIT)) {
             UrielControllerUtils.getInstance().addActivityLog("Try to create clarification in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
             return showCreateClarification(contestClarificationCreateForm, contest);
         }
 
         ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+        ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
+        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
@@ -182,14 +180,13 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
         }
 
-        ContestClarificationModule contestClarificationModule = (ContestClarificationModule) contest.getModule(ContestModules.CLARIFICATION);
-
-        if (!contest.containsModule(ContestModules.DURATION)) {
+        if (!contest.containsModule(ContestModules.CLARIFICATION_TIME_LIMIT)) {
             return processCreateClarification(contest);
         }
 
         ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationModule.getClarificationDuration()))) {
+        ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
+        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
@@ -206,7 +203,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -227,11 +224,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
-            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid()) || contestClarification.isAnswered() || !contestClarification.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -259,7 +256,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
-            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         if (!isAllowedToSuperviseClarifications(contest)) {
@@ -290,11 +287,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
-            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
@@ -314,11 +311,11 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
-            return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
         ContestClarification contestClarification = contestClarificationService.findContestClarificationById(contestClarificationId);
-        if (!isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseClarifications(contest) || !contestClarification.getContestJid().equals(contest.getJid())) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 

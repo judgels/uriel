@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
+import org.iatoki.judgels.play.views.html.layouts.alertLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.play.views.html.layouts.tabLayout;
@@ -13,15 +14,15 @@ import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.modules.ContestModule;
-import org.iatoki.judgels.uriel.modules.ContestModuleComparator;
-import org.iatoki.judgels.uriel.modules.ContestModules;
-import org.iatoki.judgels.uriel.modules.TabbedContestModule;
-import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
-import org.iatoki.judgels.uriel.modules.registration.ContestRegistrationModule;
-import org.iatoki.judgels.uriel.modules.trigger.ContestTrigger;
-import org.iatoki.judgels.uriel.modules.trigger.ContestTriggerModule;
-import org.iatoki.judgels.uriel.modules.virtual.ContestVirtualModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModuleComparator;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.TabbedContestModule;
+import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.modules.contest.registration.ContestRegistrationModule;
+import org.iatoki.judgels.uriel.modules.contest.trigger.ContestTrigger;
+import org.iatoki.judgels.uriel.modules.contest.trigger.ContestTriggerModule;
+import org.iatoki.judgels.uriel.modules.contest.virtual.ContestVirtualModule;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
@@ -295,11 +296,19 @@ public final class ContestControllerUtils {
     }
 
     public boolean isAllowedToDoContest(Contest contest, String userJid) {
+        if (contest.isLocked()) {
+            return false;
+        }
+
         if (isSupervisorOrAbove(contest, userJid)) {
             return true;
         }
 
         if (isCoach(contest, userJid)) {
+            return false;
+        }
+
+        if (contest.containsModule(ContestModules.PAUSE)) {
             return false;
         }
 
@@ -369,6 +378,9 @@ public final class ContestControllerUtils {
         }
 
         content.appendLayout(c -> contestTimeLayout.render(contestBeginTime, contestEndTime, c));
+        if (contest.isLocked()) {
+            content.appendLayout(c -> alertLayout.render(Messages.get("contest.isLocked"), c));
+        }
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
 
         if (isAllowedToManageContest(contest, userJid)) {

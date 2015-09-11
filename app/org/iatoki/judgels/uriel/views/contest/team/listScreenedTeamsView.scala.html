@@ -29,13 +29,14 @@
             <td class="text-center">
                 @if(!isAllowedToStartContest) {
                     @Messages.get("contest.cantStart")
-                }else {
-                @if(contestTeam.isStarted) {
-                    @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
-                }else {
-                    <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
-                        @Messages.get("contest.start")</a>
-                }}
+                } else {
+                    @if(contestTeam.isStarted) {
+                        @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
+                    } else {
+                        <a href="@org.iatoki.judgels.uriel.controllers.routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
+                            @Messages.get("contest.start")</a>
+                    }
+                }
             </td>
         </tr>
     }

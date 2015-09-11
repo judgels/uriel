@@ -11,9 +11,9 @@ import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
-import org.iatoki.judgels.uriel.modules.ContestModules;
-import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
-import org.iatoki.judgels.uriel.modules.scoreboard.ContestScoreboardModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -40,28 +40,26 @@ public final class ScoreboardUpdater implements Runnable {
     public void run() {
         JPA.withTransaction(() -> {
                 Date timeNow = new Date();
-                for (Contest contest : contestService.getRunningContests(timeNow)) {
-                    if (contest.containsModule(ContestModules.SCOREBOARD)) {
-                        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
-                        boolean frozeScoreboard = false;
-                        if (contest.containsModule(ContestModules.DURATION)) {
-                            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-                            frozeScoreboard = System.currentTimeMillis() > (contestDurationModule.getEndTime().getTime() - contestScoreboardModule.getScoreboardFreezeTime());
-                        }
-
-                        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-                        ContestScoreboard contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-                        if ((!contest.containsModule(ContestModules.VIRTUAL)) && (!contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) && frozeScoreboard) {
-                            contestScoreboardService.upsertFrozenScoreboard(contestScoreboard.getId());
-                        }
-                        ScoreboardState state = contestService.getScoreboardStateInContest(contest.getJid());
-
-                        List<ProgrammingSubmission> submissions = submissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
-
-                        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, submissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
-                        Scoreboard scoreboard = adapter.createScoreboard(state, content);
-                        contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
+                for (Contest contest : contestService.getRunningContestsWithScoreboardModule(timeNow)) {
+                    boolean frozeScoreboard = false;
+                    if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
+                        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
+                        ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
+                        frozeScoreboard = System.currentTimeMillis() > (contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime());
                     }
+
+                    ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+                    ContestScoreboard contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+                    if ((contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) && (!contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) && frozeScoreboard) {
+                        contestScoreboardService.upsertFrozenScoreboard(contestScoreboard.getId());
+                    }
+                    ScoreboardState state = contestService.getScoreboardStateInContest(contest.getJid());
+
+                    List<ProgrammingSubmission> programmingSubmissions = submissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
+
+                    ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
+                    Scoreboard scoreboard = adapter.createScoreboard(state, content);
+                    contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
                 }
             });
     }

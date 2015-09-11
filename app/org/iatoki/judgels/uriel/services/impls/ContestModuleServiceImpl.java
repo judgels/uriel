@@ -4,8 +4,8 @@ import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestModuleDao;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestModuleModel;
-import org.iatoki.judgels.uriel.modules.ContestModuleFactory;
-import org.iatoki.judgels.uriel.modules.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.ContestModuleFactory;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestModuleService;
 
 import javax.inject.Inject;
@@ -18,13 +18,11 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
 
     private final ContestDao contestDao;
     private final ContestModuleDao contestModuleDao;
-    private final ContestModuleFactory contestModuleFactory;
 
     @Inject
-    public ContestModuleServiceImpl(ContestDao contestDao, ContestModuleDao contestModuleDao, ContestModuleFactory contestModuleFactory) {
+    public ContestModuleServiceImpl(ContestDao contestDao, ContestModuleDao contestModuleDao) {
         this.contestDao = contestDao;
         this.contestModuleDao = contestModuleDao;
-        this.contestModuleFactory = contestModuleFactory;
     }
 
     @Override
@@ -33,7 +31,7 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
             ContestModuleModel contestModuleModel = new ContestModuleModel();
             contestModuleModel.contestJid = contestJid;
             contestModuleModel.name = contestModule.name();
-            contestModuleModel.config = contestModuleFactory.createDefaultContestModule(contestModule).toJSONString();
+            contestModuleModel.config = ContestModuleFactory.createDefaultContestModule(contestModule).toJSONString();
             contestModuleModel.enabled = true;
 
             contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);

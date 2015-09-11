@@ -18,4 +18,6 @@ public interface ContestSupervisorService {
     void createContestSupervisor(String contestJid, String userJid, ContestPermission contestPermission, String createUserJid, String createUserIpAddress);
 
     void updateContestSupervisor(long contestSupervisorId, ContestPermission contestPermission, String userJid, String userIpAddress);
+
+    void deleteContestSupervisor(long contestSupervisorId);
 }

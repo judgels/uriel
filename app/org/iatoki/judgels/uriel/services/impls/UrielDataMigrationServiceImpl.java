@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.services.impls;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -24,7 +25,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 5;
+        return 6;
     }
 
     @Override
@@ -43,6 +44,53 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         }
         if (databaseVersion < 5) {
             migrateV4toV5();
+        }
+        if (databaseVersion < 6) {
+            migrateV5toV6();
+        }
+    }
+
+    private void migrateV5toV6() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String contestModuleTable = "uriel_contest_module";
+
+        Statement statement = connection.createStatement();
+        String contestQuery = "SELECT * FROM " + contestModuleTable + " WHERE name = \"CLARIFICATION\" OR name = \"SCOREBOARD\";";
+        ResultSet resultSet = statement.executeQuery(contestQuery);
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            String jid = resultSet.getString("contestJid");
+            String name = resultSet.getString("name");
+            String config = resultSet.getString("config");
+            String userCreate = resultSet.getString("userCreate");
+            long timeCreate = resultSet.getLong("timeCreate");
+            String ipCreate = resultSet.getString("ipCreate");
+            String userUpdate = resultSet.getString("userUpdate");
+            long timeUpdate = resultSet.getLong("timeUpdate");
+            String ipUpdate = resultSet.getString("ipUpdate");
+
+            Map<String, Object> configMap = new Gson().fromJson(config, new TypeToken<HashMap<String, Object>>() { }.getType());
+            Map<String, Object> newConfigMap = Maps.newHashMap(configMap);
+
+            if ("CLARIFICATION".equals(name)) {
+                long clarificationDuration = (long) (double) configMap.get("clarificationDuration");
+                Map<String, Long> clarificationTimeLimitConfigMap = ImmutableMap.of("clarificationDuration", clarificationDuration);
+                newConfigMap.remove("clarificationDuration");
+
+                insertIntoModule(connection, contestModuleTable, jid, "CLARIFICATION_TIME_LIMIT", new Gson().toJson(clarificationTimeLimitConfigMap), userCreate, timeCreate, ipCreate, userUpdate, timeUpdate, ipUpdate);
+            } else if ("SCOREBOARD".equals(name)) {
+                long scoreboardFreezeTime = (long) (double) configMap.get("scoreboardFreezeTime");
+                Map<String, Long> scoreboardFreezeTimeConfigMap = ImmutableMap.of("scoreboardFreezeTime", scoreboardFreezeTime);
+                newConfigMap.remove("scoreboardFreezeTime");
+
+                insertIntoModule(connection, contestModuleTable, jid, "FROZEN_SCOREBOARD", new Gson().toJson(scoreboardFreezeTimeConfigMap), userCreate, timeCreate, ipCreate, userUpdate, timeUpdate, ipUpdate);
+            }
+
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + contestModuleTable + " SET config = ? WHERE id = " + id + ";");
+            preparedStatement.setString(1, new Gson().toJson(newConfigMap));
+            preparedStatement.executeUpdate();
         }
     }
 

@@ -35,9 +35,10 @@ import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.modules.ContestModules;
-import org.iatoki.judgels.uriel.modules.duration.ContestDurationModule;
-import org.iatoki.judgels.uriel.modules.scoreboard.ContestScoreboardModule;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
+import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
+import org.iatoki.judgels.uriel.modules.contest.scoreboard.ContestScoreboardModule;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -89,11 +90,18 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         ContestDurationModule contestDurationModule = ((ContestDurationModule) contest.getModule(ContestModules.DURATION));
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ContestScoreboard contestScoreboard;
-        if (!contest.containsModule(ContestModules.VIRTUAL) && ((contestDurationModule.getEndTime().getTime() - contestScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis()) && (!contestScoreboardModule.isOfficialScoreboardAllowed())) {
-            if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
-                contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
+        if (contestScoreboardModule.isOfficialScoreboardAllowed()) {
+            contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+        } else if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
+            ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
+            if ((contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis()) {
+                if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
+                    contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
+                } else {
+                    contestScoreboard = null;
+                }
             } else {
-                contestScoreboard = null;
+                contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             }
         } else {
             contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
@@ -171,7 +179,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
     @Transactional
     public Result refreshAllScoreboard(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
+        if (contest.isLocked() || !contest.containsModule(ContestModules.SCOREBOARD) || !isAllowedToSuperviseScoreboard(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -185,8 +193,9 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
 
-        if (!contest.containsModule(ContestModules.VIRTUAL)) {
-            refreshFrozenScoreboard(contest, contestScoreboardModule, adapter, state);
+        if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
+            ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
+            refreshFrozenScoreboard(contest, contestFrozenScoreboardModule, adapter, state);
         }
 
         UrielControllerUtils.getInstance().addActivityLog("Refresh all scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
@@ -361,8 +370,8 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         }
     }
 
-    private void refreshFrozenScoreboard(Contest contest, ContestScoreboardModule contestScoreboardModule, ScoreboardAdapter adapter, ScoreboardState state) {
-        List<ProgrammingSubmission> programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), contestScoreboardModule.getScoreboardFreezeTime());
+    private void refreshFrozenScoreboard(Contest contest, ContestFrozenScoreboardModule contestFrozenScoreboardModule, ScoreboardAdapter adapter, ScoreboardState state) {
+        List<ProgrammingSubmission> programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), contestFrozenScoreboardModule.getScoreboardFreezeTime());
 
         ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);

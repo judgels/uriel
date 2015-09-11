@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestManager;
+import org.iatoki.judgels.uriel.ContestManagerNotFoundException;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestManagerDao;
 import org.iatoki.judgels.uriel.models.entities.ContestManagerModel;
@@ -35,6 +36,17 @@ public final class ContestManagerServiceImpl implements ContestManagerService {
     }
 
     @Override
+    public ContestManager findContestManagerById(long contestManagerId) throws ContestManagerNotFoundException {
+        ContestManagerModel contestManagerModel = contestManagerDao.findById(contestManagerId);
+
+        if (contestManagerModel == null) {
+            throw new ContestManagerNotFoundException("Contest Manager Not Found.");
+        }
+
+        return ContestManagerServiceUtils.createContestManagerFromModel(contestManagerModel);
+    }
+
+    @Override
     public Page<ContestManager> getPageOfManagersInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
@@ -54,5 +66,12 @@ public final class ContestManagerServiceImpl implements ContestManagerService {
         contestManagerDao.persist(contestManagerModel, createUserJid, createUserIpAddress);
 
         contestDao.edit(contestModel, createUserJid, createUserIpAddress);
+    }
+
+    @Override
+    public void deleteContestManager(long contestManagerId) {
+        ContestManagerModel contestManagerModel = contestManagerDao.findById(contestManagerId);
+
+        contestManagerDao.remove(contestManagerModel);
     }
 }

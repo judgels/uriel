@@ -121,7 +121,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     @AddCSRFToken
     public Result createAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseAnnouncements(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -136,7 +136,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateAnnouncement(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        if (!isAllowedToSuperviseAnnouncements(contest)) {
+        if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -159,7 +159,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     public Result updateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
-        if (!isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
@@ -179,7 +179,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
     public Result postUpdateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
-        if (!isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
+        if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 

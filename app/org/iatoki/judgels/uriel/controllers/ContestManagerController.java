@@ -11,15 +11,17 @@ import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestManager;
-import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.ContestManagerNotFoundException;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.services.ContestManagerService;
-import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.services.ContestManagerService;
+import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.manager.listCreateManagersView;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -70,7 +72,7 @@ public class ContestManagerController extends AbstractJudgelsController {
         }
 
         Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
-        boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
+        boolean canUpdate = !contest.isLocked() && UrielControllerUtils.getInstance().isAdmin();
         Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class);
 
         return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
@@ -81,6 +83,11 @@ public class ContestManagerController extends AbstractJudgelsController {
     @RequireCSRFCheck
     public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+
+        if (contest.isLocked()) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
+        }
+
         Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class).bindFromRequest();
 
         if (formHasErrors(contestManagerCreateForm)) {
@@ -114,6 +121,23 @@ public class ContestManagerController extends AbstractJudgelsController {
 
         return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
     }
+
+    @Authorized(value = "admin")
+    @Transactional
+    public Result deleteManager(long contestId, long contestManagerId) throws ContestNotFoundException, ContestManagerNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        ContestManager contestManager = contestManagerService.findContestManagerById(contestManagerId);
+        if (contest.isLocked() || !contestManager.getContestJid().equals(contest.getJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
+        }
+
+        contestManagerService.deleteContestManager(contestManager.getId());
+
+        UrielControllerUtils.getInstance().addActivityLog("Delete manager " + JidCacheServiceImpl.getInstance().getDisplayName(contestManager.getUserJid()) + ".");
+
+        return redirect(routes.UserController.index());
+    }
+
 
     private Result showListCreateManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
         LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
