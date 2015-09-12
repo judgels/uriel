@@ -1,6 +1,11 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
+import org.iatoki.judgels.api.JudgelsAPIClientException;
+import org.iatoki.judgels.api.sandalphon.SandalphonClientAPI;
+import org.iatoki.judgels.api.sandalphon.SandalphonProblem;
+import org.iatoki.judgels.api.sandalphon.SandalphonProblemStatementRenderRequestParam;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -8,8 +13,7 @@ import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
-import org.iatoki.judgels.sandalphon.ResourceDisplayNameUtils;
-import org.iatoki.judgels.sandalphon.Sandalphon;
+import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
@@ -47,11 +51,10 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import java.io.IOException;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -64,14 +67,14 @@ public class ContestProblemController extends AbstractJudgelsController {
     private final ContestProblemService contestProblemService;
     private final ContestService contestService;
     private final ProgrammingSubmissionService programmingSubmissionService;
-    private final Sandalphon sandalphon;
+    private final SandalphonClientAPI sandalphonClientAPI;
 
     @Inject
-    public ContestProblemController(ContestProblemService contestProblemService, ContestService contestService, ProgrammingSubmissionService programmingSubmissionService, Sandalphon sandalphon) {
+    public ContestProblemController(ContestProblemService contestProblemService, ContestService contestService, ProgrammingSubmissionService programmingSubmissionService, SandalphonClientAPI sandalphonClientAPI) {
         this.contestProblemService = contestProblemService;
         this.contestService = contestService;
         this.programmingSubmissionService = programmingSubmissionService;
-        this.sandalphon = sandalphon;
+        this.sandalphonClientAPI = sandalphonClientAPI;
     }
 
     @Transactional(readOnly = true)
@@ -94,7 +97,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
         pageOfContestProblems = new Page<>(replacementBuilder.build(), pageOfContestProblems.getTotalRowsCount(), pageOfContestProblems.getPageIndex(), pageOfContestProblems.getPageSize());
         List<String> problemJids = pageOfContestProblems.getData().stream().map(cp -> cp.getProblemJid()).collect(Collectors.toList());
-        Map<String, String> problemTitlesMap = ResourceDisplayNameUtils.buildTitlesMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
+        Map<String, String> problemTitlesMap = SandalphonResourceDisplayNameUtils.buildTitlesMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
 
         LazyHtml content = new LazyHtml(listUsedProblemsView.render(contest.getId(), pageOfContestProblems, pageIndex, problemTitlesMap));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.problems"), c));
@@ -127,14 +130,27 @@ public class ContestProblemController extends AbstractJudgelsController {
             submissionsLeft = contestProblem.getSubmissionsLimit() - programmingSubmissionService.countProgrammingSubmissionsByUserJid(contest.getJid(), contestProblem.getProblemJid(), IdentityUtils.getUserJid());
         }
 
-        String requestUrl = sandalphon.getProblemStatementRenderUri().toString();
-        String requestBody = "";
+        SandalphonProblemStatementRenderRequestParam param = new SandalphonProblemStatementRenderRequestParam();
+
+        param.setProblemSecret(contestProblem.getProblemSecret());
+        param.setCurrentMillis(System.currentTimeMillis());
+        param.setStatementLanguage(ContestControllerUtils.getInstance().getCurrentStatementLanguage());
+        param.setSwitchStatementLanguageUrl(routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()));
+        param.setPostSubmitUrl(routes.ContestProgrammingSubmissionController.postSubmitProblem(contest.getId(), contestProblem.getProblemJid()).absoluteURL(request(), request().secure()));
+        param.setReasonNotAllowedToSubmit(null);
+
+        Set<String> allowedGradingLanguages;
 
         if (contest.isICPC()) {
-            requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestProgrammingSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((ICPCContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
-        } else if (contest.isIOI()) {
-            requestBody = sandalphon.getProblemStatementRenderRequestBody(contestProblem.getProblemJid(), contestProblem.getProblemSecret(), System.currentTimeMillis(), ContestControllerUtils.getInstance().getCurrentStatementLanguage(), routes.ContestProgrammingSubmissionController.postSubmitProblem(contestId, contestProblem.getProblemJid()).absoluteURL(request(), request().secure()), routes.ContestProblemController.switchLanguage(contestId, contestProblemId).absoluteURL(request(), request().secure()), null, ((IOIContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction());
+            allowedGradingLanguages = ((ICPCContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction().getAllowedLanguageNames();
+        } else {
+            allowedGradingLanguages = ((IOIContestStyleConfig) contest.getStyleConfig()).getLanguageRestriction().getAllowedLanguageNames();
         }
+
+        param.setAllowedGradingLanguages(StringUtils.join(allowedGradingLanguages, ","));
+
+        String requestUrl = sandalphonClientAPI.getProblemStatementRenderAPIEndpoint(contestProblem.getProblemJid());
+        String requestBody = sandalphonClientAPI.constructProblemStatementRenderAPIRequestBody(contestProblem.getProblemJid(), param);
 
         LazyHtml content;
         if (UrielProperties.getInstance().isContestCritial(contest.getJid())) {
@@ -164,9 +180,9 @@ public class ContestProblemController extends AbstractJudgelsController {
             return notFound();
         }
 
-        URI imageUri = sandalphon.getProblemMediaRenderUri(contestProblem.getProblemJid(), imageFilename);
+        String imageUrl = sandalphonClientAPI.getProblemStatementMediaRenderAPIEndpoint(contestProblem.getProblemJid(), imageFilename);
 
-        return redirect(imageUri.toString());
+        return redirect(imageUrl);
     }
 
     public Result switchLanguage(long contestId, long contestProblemId) {
@@ -192,7 +208,7 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         Page<ContestProblem> pageOfContestProblems = contestProblemService.getPageOfProblemsInContest(contest.getJid(), page, PAGE_SIZE, sortBy, orderBy, filterString, null);
         List<String> problemJids = pageOfContestProblems.getData().stream().map(cp -> cp.getProblemJid()).collect(Collectors.toList());
-        Map<String, String> problemSlugsMap = ResourceDisplayNameUtils.buildSlugsMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids));
+        Map<String, String> problemSlugsMap = SandalphonResourceDisplayNameUtils.buildSlugsMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids));
 
         LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, canDelete, problemSlugsMap));
         content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.createProblem(contestId)), c));
@@ -242,21 +258,22 @@ public class ContestProblemController extends AbstractJudgelsController {
         }
 
         ContestProblemCreateForm contestProblemCreateData = contestProblemCreateForm.get();
-        String problemDisplayName = null;
+
+        SandalphonProblem sandalphonProblem;
         try {
-            problemDisplayName = sandalphon.verifyProblemJid(contestProblemCreateData.problemJid);
-        } catch (IOException e) {
+            sandalphonProblem = sandalphonClientAPI.findProblemByJid(contestProblemCreateData.problemJid);
+        } catch (JudgelsAPIClientException e) {
             contestProblemCreateForm.reject("error.system.sandalphon.connection");
             return showCreateProblem(contestProblemCreateForm, contest);
         }
 
-        if ((problemDisplayName == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.alias)) {
+        if ((sandalphonProblem == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.alias)) {
             contestProblemCreateForm.reject("error.problem.create.problemJidOrAlias.invalid");
             return showCreateProblem(contestProblemCreateForm, contest);
         }
 
         contestProblemService.createContestProblem(contest.getJid(), contestProblemCreateData.problemJid, contestProblemCreateData.problemSecret, contestProblemCreateData.alias, contestProblemCreateData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemCreateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-        JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, problemDisplayName, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        JidCacheServiceImpl.getInstance().putDisplayName(contestProblemCreateData.problemJid, sandalphonProblem.getDisplayName(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemCreateData.alias + " in contest " + contest.getName() + ".");
 

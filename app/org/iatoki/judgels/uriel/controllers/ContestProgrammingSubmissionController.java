@@ -15,7 +15,7 @@ import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionException;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionNotFoundException;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionUtils;
-import org.iatoki.judgels.sandalphon.ResourceDisplayNameUtils;
+import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
 import org.iatoki.judgels.sandalphon.adapters.GradingEngineAdapterRegistry;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
@@ -162,7 +162,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         String authorName = JidCacheServiceImpl.getInstance().getDisplayName(submission.getAuthorJid());
         ContestProblem contestProblem = contestProblemService.findContestProblemInContestAndJid(contest.getJid(), submission.getProblemJid());
         String contestProblemAlias = contestProblem.getAlias();
-        String contestProblemName = ResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
+        String contestProblemName = SandalphonResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
         String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();
 
         LazyHtml content = new LazyHtml(GradingEngineAdapterRegistry.getInstance().getByGradingEngineName(submission.getGradingEngine()).renderViewSubmission(submission, submissionSource, authorName, contestProblemAlias, contestProblemName, gradingLanguageName, contest.getName()));

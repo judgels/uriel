@@ -9,12 +9,13 @@ import org.iatoki.judgels.LocalFileSystemProvider;
 import org.iatoki.judgels.api.jophiel.JophielClientAPI;
 import org.iatoki.judgels.api.jophiel.JophielFactory;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.sandalphon.SandalphonClientAPI;
+import org.iatoki.judgels.api.sandalphon.SandalphonFactory;
 import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
 import org.iatoki.judgels.api.sealtiel.SealtielFactory;
 import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
 import org.iatoki.judgels.jophiel.JophielAuthAPI;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
-import org.iatoki.judgels.sandalphon.Sandalphon;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.services.impls.UserServiceImpl;
 
@@ -25,7 +26,7 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
         bind(JophielAuthAPI.class).toInstance(jophielAuthAPI());
         bind(JophielClientAPI.class).toInstance(jophielClientAPI());
         bind(JophielPublicAPI.class).toInstance(jophielPublicAPI());
-        bind(Sandalphon.class).toInstance(sandalphon());
+        bind(SandalphonClientAPI.class).toInstance(sandalphonClientAPI());
         bind(SealtielClientAPI.class).toInstance(sealtielClientAPI());
         bind(FileSystemProvider.class).annotatedWith(ContestFileSystemProvider.class).toInstance(contestFileSystemProvider());
         bind(FileSystemProvider.class).annotatedWith(TeamAvatarFileSystemProvider.class).toInstance(teamAvatarFileSystemProvider());
@@ -68,8 +69,8 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
         return JophielFactory.createJophiel(urielProperties().getJophielBaseUrl()).connectToPublicAPI();
     }
 
-    private Sandalphon sandalphon() {
-        return new Sandalphon(urielProperties().getSandalphonBaseUrl(), urielProperties().getSandalphonClientJid(), urielProperties().getSandalphonClientSecret());
+    private SandalphonClientAPI sandalphonClientAPI() {
+        return SandalphonFactory.createSandalphon(urielProperties().getSandalphonBaseUrl()).connectToClientAPI(urielProperties().getSandalphonClientJid(), urielProperties().getSandalphonClientSecret());
     }
 
     private SealtielClientAPI sealtielClientAPI() {
