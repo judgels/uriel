@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 public final class ProgrammingSubmissionServiceImpl extends AbstractProgrammingSubmissionServiceImpl<ProgrammingSubmissionModel, ProgrammingGradingModel> implements ProgrammingSubmissionService {
 
     @Inject
-    public ProgrammingSubmissionServiceImpl(ProgrammingSubmissionDao programmingSubmissionDao, ProgrammingGradingDao programmingGradingDao, SealtielClientAPI sealtielAPI, @GabrielClientJid String gabrielClientJid) {
-        super(programmingSubmissionDao, programmingGradingDao, sealtielAPI, gabrielClientJid);
+    public ProgrammingSubmissionServiceImpl(ProgrammingSubmissionDao programmingSubmissionDao, ProgrammingGradingDao programmingGradingDao, SealtielClientAPI sealtielClientAPI, @GabrielClientJid String gabrielClientJid) {
+        super(programmingSubmissionDao, programmingGradingDao, sealtielClientAPI, gabrielClientJid);
     }
 }
