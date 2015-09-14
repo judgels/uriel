@@ -35,11 +35,16 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
             contestModuleModel.enabled = true;
 
             contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
+        } else {
+            ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.name());
+            contestModuleModel.enabled = true;
 
-            ContestModel contestModel = contestDao.findByJid(contestJid);
-
-            contestDao.edit(contestModel, userJid, userIpAddress);
+            contestModuleDao.edit(contestModuleModel, userJid, userIpAddress);
         }
+
+        ContestModel contestModel = contestDao.findByJid(contestJid);
+
+        contestDao.edit(contestModel, userJid, userIpAddress);
     }
 
     @Override

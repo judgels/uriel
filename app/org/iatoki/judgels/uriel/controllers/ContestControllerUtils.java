@@ -210,8 +210,8 @@ public final class ContestControllerUtils {
             return true;
         }
 
-        if (!isLegitimateContestant(contest, userJid)) {
-            return false;
+        if (contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) {
+            return isContestant(contest, userJid);
         }
 
         if (contest.containsModule(ContestModules.PASSWORD)) {
