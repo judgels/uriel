@@ -339,7 +339,7 @@ public final class ContestController extends AbstractJudgelsController {
             return redirect(routes.ContestController.index());
         }
 
-        if (!ContestControllerUtils.getInstance().isCoachOrAbove(contest, IdentityUtils.getUserJid()) && ContestControllerUtils.getInstance().isLegitimateContestant(contest, IdentityUtils.getUserJid()) && !ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid())) {
+        if (!ContestControllerUtils.getInstance().isCoachOrAbove(contest, IdentityUtils.getUserJid()) && !(contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) && !ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid())) {
             contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
 

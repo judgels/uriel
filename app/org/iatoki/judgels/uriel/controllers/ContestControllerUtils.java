@@ -104,10 +104,6 @@ public final class ContestControllerUtils {
         return contestContestantService.isContestantInContest(contest.getJid(), userJid);
     }
 
-    public boolean isLegitimateContestant(Contest contest, String userJid) {
-        return (contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) && isContestant(contest, userJid);
-    }
-
     public boolean isManagerOrAbove(Contest contest, String userJid) {
         return isAdmin() || isManager(contest, userJid);
     }
