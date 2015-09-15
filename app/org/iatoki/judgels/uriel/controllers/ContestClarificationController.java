@@ -23,7 +23,7 @@ import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.forms.ContestClarificationChangeForm;
 import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm;
-import org.iatoki.judgels.uriel.forms.ContestClarificationUpdateForm;
+import org.iatoki.judgels.uriel.forms.ContestClarificationEditForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.clarificationtimelimit.ContestClarificationTimeLimitModule;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
@@ -34,8 +34,8 @@ import org.iatoki.judgels.uriel.services.ContestTeamService;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.createClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.listClarificationsView;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.listScreenedClarificationsView;
-import org.iatoki.judgels.uriel.views.html.contest.clarification.updateClarificationAnswerView;
-import org.iatoki.judgels.uriel.views.html.contest.clarification.updateClarificationContentView;
+import org.iatoki.judgels.uriel.views.html.contest.clarification.editClarificationAnswerView;
+import org.iatoki.judgels.uriel.views.html.contest.clarification.editClarificationContentView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -195,7 +195,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
+    public Result editClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -215,12 +215,12 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update clarification " + contestClarification.getTitle() + " content in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateClarificationContent(contestClarificationChangeForm, contest, contestClarification);
+        return showEditClarificationContent(contestClarificationChangeForm, contest, contestClarification);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
+    public Result postEditClarificationContent(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -235,7 +235,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Form<ContestClarificationChangeForm> contestClarificationChangeForm = Form.form(ContestClarificationChangeForm.class).bindFromRequest();
 
         if (formHasErrors(contestClarificationChangeForm)) {
-            return showUpdateClarificationContent(contestClarificationChangeForm, contest, contestClarification);
+            return showEditClarificationContent(contestClarificationChangeForm, contest, contestClarification);
         }
 
         ContestClarificationChangeForm contestClarificationChangeData = contestClarificationChangeForm.get();
@@ -283,7 +283,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
+    public Result editClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -295,19 +295,19 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
-        ContestClarificationUpdateForm contestClarificationUpsertData = new ContestClarificationUpdateForm();
+        ContestClarificationEditForm contestClarificationUpsertData = new ContestClarificationEditForm();
         contestClarificationUpsertData.answer = contestClarification.getAnswer();
         contestClarificationUpsertData.status = contestClarification.getStatus().name();
-        Form<ContestClarificationUpdateForm> contestClarificationUpsertForm = Form.form(ContestClarificationUpdateForm.class).fill(contestClarificationUpsertData);
+        Form<ContestClarificationEditForm> contestClarificationUpsertForm = Form.form(ContestClarificationEditForm.class).fill(contestClarificationUpsertData);
 
         UrielControllerUtils.getInstance().addActivityLog("Try to answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateClarificationAnswer(contestClarificationUpsertForm, contest, contestClarification);
+        return showEditClarificationAnswer(contestClarificationUpsertForm, contest, contestClarification);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
+    public Result postEditClarificationAnswer(long contestId, long contestClarificationId) throws ContestNotFoundException, ContestClarificationNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!contest.containsModule(ContestModules.CLARIFICATION)) {
@@ -319,14 +319,14 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
-        Form<ContestClarificationUpdateForm> contestClarificationUpsertForm = Form.form(ContestClarificationUpdateForm.class).bindFromRequest();
+        Form<ContestClarificationEditForm> contestClarificationUpsertForm = Form.form(ContestClarificationEditForm.class).bindFromRequest();
 
         if (formHasErrors(contestClarificationUpsertForm)) {
-            return showUpdateClarificationAnswer(contestClarificationUpsertForm, contest, contestClarification);
+            return showEditClarificationAnswer(contestClarificationUpsertForm, contest, contestClarification);
         }
 
-        ContestClarificationUpdateForm contestClarificationUpdateData = contestClarificationUpsertForm.get();
-        contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationUpdateData.answer, ContestClarificationStatus.valueOf(contestClarificationUpdateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        ContestClarificationEditForm contestClarificationEditData = contestClarificationUpsertForm.get();
+        contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationEditData.answer, ContestClarificationStatus.valueOf(contestClarificationEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog("Answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + ".");
 
@@ -367,8 +367,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateClarificationContent(Form<ContestClarificationChangeForm> contestClarificationChangeForm, Contest contest, ContestClarification contestClarification) {
-        LazyHtml content = new LazyHtml(updateClarificationContentView.render(contest, contestClarification, contestClarificationChangeForm));
+    private Result showEditClarificationContent(Form<ContestClarificationChangeForm> contestClarificationChangeForm, Contest contest, ContestClarification contestClarification) {
+        LazyHtml content = new LazyHtml(editClarificationContentView.render(contest, contestClarification, contestClarificationChangeForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             appendSubtabsLayout(content, contest);
@@ -377,22 +377,22 @@ public class ContestClarificationController extends AbstractJudgelsController {
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.contestant"), routes.ContestClarificationController.viewScreenedClarifications(contest.getId())),
-                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.updateClarificationContent(contest.getId(), contestClarification.getId()))
+                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.editClarificationContent(contest.getId(), contestClarification.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarification - Update Content");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateClarificationAnswer(Form<ContestClarificationUpdateForm> contestClarificationUpdateForm, Contest contest, ContestClarification contestClarification) {
-        LazyHtml content = new LazyHtml(updateClarificationAnswerView.render(contest.getId(), contestClarification, contestClarificationUpdateForm));
+    private Result showEditClarificationAnswer(Form<ContestClarificationEditForm> contestClarificationEditForm, Contest contest, ContestClarification contestClarification) {
+        LazyHtml content = new LazyHtml(editClarificationAnswerView.render(contest.getId(), contestClarification, contestClarificationEditForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.update"), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestClarificationController.viewClarifications(contest.getId())),
-                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.updateClarificationAnswer(contest.getId(), contestClarification.getId()))
+                new InternalLink(Messages.get("clarification.update"), routes.ContestClarificationController.editClarificationAnswer(contest.getId(), contestClarification.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarification - Update Answer");
 

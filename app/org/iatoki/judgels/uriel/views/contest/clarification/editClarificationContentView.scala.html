@@ -12,7 +12,7 @@
 
 @formErrorView(contestClarificationChangeForm)
 
-@b3.form(routes.ContestClarificationController.postUpdateClarificationContent(contest.getId, contestClarification.getId)) {
+@b3.form(routes.ContestClarificationController.postEditClarificationContent(contest.getId, contestClarification.getId)) {
 
     @helper.CSRF.formField
 

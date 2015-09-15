@@ -22,7 +22,7 @@ import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
-import org.iatoki.judgels.uriel.views.html.contest.manager.listCreateManagersView;
+import org.iatoki.judgels.uriel.views.html.contest.manager.listAddManagersView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -59,12 +59,12 @@ public class ContestManagerController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewManagers(long contestId) throws ContestNotFoundException {
-        return listCreateManagers(contestId, 0, "id", "asc", "");
+        return listAddManagers(contestId, 0, "id", "asc", "");
     }
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result listCreateManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result listAddManagers(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
@@ -75,13 +75,13 @@ public class ContestManagerController extends AbstractJudgelsController {
         boolean canUpdate = !contest.isLocked() && UrielControllerUtils.getInstance().isAdmin();
         Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class);
 
-        return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
+        return showlistAddManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
     }
 
     @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
-    public Result postCreateManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result postAddManager(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.isLocked()) {
@@ -94,7 +94,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
             boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
 
-            return showListCreateManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
+            return showlistAddManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
 
         ContestManagerCreateForm contestManagerCreateData = contestManagerCreateForm.get();
@@ -111,7 +111,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             Page<ContestManager> contestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
             boolean canUpdate = UrielControllerUtils.getInstance().isAdmin();
 
-            return showListCreateManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
+            return showlistAddManager(contestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
 
         userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -124,7 +124,7 @@ public class ContestManagerController extends AbstractJudgelsController {
 
     @Authorized(value = "admin")
     @Transactional
-    public Result deleteManager(long contestId, long contestManagerId) throws ContestNotFoundException, ContestManagerNotFoundException {
+    public Result removeManager(long contestId, long contestManagerId) throws ContestNotFoundException, ContestManagerNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestManager contestManager = contestManagerService.findContestManagerById(contestManagerId);
         if (contest.isLocked() || !contestManager.getContestJid().equals(contest.getJid())) {
@@ -139,8 +139,8 @@ public class ContestManagerController extends AbstractJudgelsController {
     }
 
 
-    private Result showListCreateManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
+    private Result showlistAddManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listAddManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

@@ -24,7 +24,7 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.createAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.listAnnouncementsView;
 import org.iatoki.judgels.uriel.views.html.contest.announcement.listPublishedAnnouncementsView;
-import org.iatoki.judgels.uriel.views.html.contest.announcement.updateAnnouncementView;
+import org.iatoki.judgels.uriel.views.html.contest.announcement.editAnnouncementView;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.data.Form;
 import play.db.jpa.Transactional;
@@ -156,7 +156,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
+    public Result editAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
         if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
@@ -171,12 +171,12 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateAnnouncement(contestAnnouncementUpsertForm, contest, contestAnnouncement);
+        return showEditAnnouncement(contestAnnouncementUpsertForm, contest, contestAnnouncement);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
+    public Result postEditAnnouncement(long contestId, long contestAnnouncementId) throws ContestNotFoundException, ContestAnnouncementNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestAnnouncement contestAnnouncement = contestAnnouncementService.findContestAnnouncementById(contestAnnouncementId);
         if (contest.isLocked() || !isAllowedToSuperviseAnnouncements(contest) || !contestAnnouncement.getContestJid().equals(contest.getJid())) {
@@ -186,7 +186,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class).bindFromRequest();
 
         if (formHasErrors(contestAnnouncementUpsertForm)) {
-            return showUpdateAnnouncement(contestAnnouncementUpsertForm, contest, contestAnnouncement);
+            return showEditAnnouncement(contestAnnouncementUpsertForm, contest, contestAnnouncement);
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
@@ -212,15 +212,15 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateAnnouncement(Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm, Contest contest, ContestAnnouncement contestAnnouncement) {
-        LazyHtml content = new LazyHtml(updateAnnouncementView.render(contest.getId(), contestAnnouncement.getId(), contestAnnouncementUpsertForm));
+    private Result showEditAnnouncement(Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm, Contest contest, ContestAnnouncement contestAnnouncement) {
+        LazyHtml content = new LazyHtml(editAnnouncementView.render(contest.getId(), contestAnnouncement.getId(), contestAnnouncementUpsertForm));
         content.appendLayout(c -> headingLayout.render(Messages.get("announcement.update"), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("status.supervisor"), routes.ContestAnnouncementController.viewPublishedAnnouncements(contest.getId())),
-                new InternalLink(Messages.get("announcement.update"), routes.ContestAnnouncementController.updateAnnouncement(contest.getId(), contestAnnouncement.getId()))
+                new InternalLink(Messages.get("announcement.update"), routes.ContestAnnouncementController.editAnnouncement(contest.getId(), contestAnnouncement.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Announcement - Update");
 

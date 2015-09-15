@@ -1,7 +1,7 @@
 @(contestId: Long)
 
 <script type="text/javascript">
-    var unansweredClarificationUrl = "@org.iatoki.judgels.uriel.controllers.api.routes.ContestAPIController.unansweredClarification(contestId).toString()";
-    var contestClarificationUrl = "@org.iatoki.judgels.uriel.controllers.routes.ContestController.jumpToClarifications(contestId).toString()";
+    var unansweredClarificationUrl = "@org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestClarificationAPIController.getUnansweredClarificationsCount(contestId)";
+    var contestClarificationUrl = "@org.iatoki.judgels.uriel.controllers.routes.ContestController.jumpToClarifications(contestId)";
 </script>
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/supervisor.js")"></script>

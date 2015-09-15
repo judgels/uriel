@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.forms;
 
 import play.data.validation.Constraints;
 
-public final class ContestProblemUpdateForm {
+public final class ContestProblemEditForm {
 
     @Constraints.Required
     public String alias;

@@ -45,8 +45,8 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.createContestView;
 import org.iatoki.judgels.uriel.views.html.contest.listContestsView;
 import org.iatoki.judgels.uriel.views.html.contest.modules.listModulesView;
-import org.iatoki.judgels.uriel.views.html.contest.specific.updateContestSpecificView;
-import org.iatoki.judgels.uriel.views.html.contest.updateContestView;
+import org.iatoki.judgels.uriel.views.html.contest.specific.editContestSpecificView;
+import org.iatoki.judgels.uriel.views.html.contest.editContestView;
 import org.iatoki.judgels.uriel.views.html.contest.viewContestView;
 import org.iatoki.judgels.uriel.views.html.contest.viewContestWithPasswordView;
 import org.iatoki.judgels.uriel.views.html.contest.viewRegistrantsLayoutView;
@@ -108,7 +108,7 @@ public final class ContestController extends AbstractJudgelsController {
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
-    public Result jumpToScoreboard(long contestId) throws ContestNotFoundException {
+    public Result jumpToScoreboards(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contestId));
@@ -224,7 +224,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
             ImmutableList.Builder<InternalLink> manageActionsBuilder = ImmutableList.builder();
-            manageActionsBuilder.add(new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())));
+            manageActionsBuilder.add(new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestGeneralConfig(contest.getId())));
             if ((UrielControllerUtils.getInstance().isAdmin()) && (ContestControllerUtils.getInstance().hasContestEnded(contest))) {
                 if (contest.isLocked()) {
                     manageActionsBuilder.add(new InternalLink(Messages.get("contest.unlock"), routes.ContestController.unlockContest(contest.getId())));
@@ -281,7 +281,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
-            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())), c));
+            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestGeneralConfig(contest.getId())), c));
         } else {
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
         }
@@ -414,7 +414,7 @@ public final class ContestController extends AbstractJudgelsController {
     @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
-    public Result postCreateContest() {
+    public Result postAddContest() {
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).bindFromRequest();
 
         if (formHasErrors(contestUpsertForm)) {
@@ -426,13 +426,13 @@ public final class ContestController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
 
-        return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+        return redirect(routes.ContestController.editContestSpecificConfig(contest.getId()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateContestGeneralConfig(long contestId) throws ContestNotFoundException {
+    public Result editContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
@@ -447,22 +447,22 @@ public final class ContestController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateContestGeneralConfig(contestUpsertForm, contest);
+        return showEditContestGeneralConfig(contestUpsertForm, contest);
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateContestGeneralConfig(long contestId) throws ContestNotFoundException {
+    public Result postEditContestGeneralConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.isLocked() || !ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
-            return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
+            return redirect(routes.ContestController.editContestGeneralConfig(contestId));
         }
 
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).bindFromRequest();
         if (formHasErrors(contestUpsertForm)) {
-            return showUpdateContestGeneralConfig(contestUpsertForm, contest);
+            return showEditContestGeneralConfig(contestUpsertForm, contest);
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
@@ -470,12 +470,12 @@ public final class ContestController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
 
-        return redirect(routes.ContestController.updateContestGeneralConfig(contestId));
+        return redirect(routes.ContestController.editContestGeneralConfig(contestId));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
-    public Result updateContestModuleConfig(long contestId) throws ContestNotFoundException {
+    public Result editContestModuleConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
@@ -485,7 +485,7 @@ public final class ContestController extends AbstractJudgelsController {
         appendConfigSubtabLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestModuleConfig(contest.getId()))
+                new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestModuleConfig(contest.getId()))
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Module");
@@ -498,23 +498,23 @@ public final class ContestController extends AbstractJudgelsController {
     public Result enableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (contest.isLocked() || !EnumUtils.isValidEnum(ContestModules.class, contestModule) || !ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
-            return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+            return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
         }
 
         ContestModules contestModuleType = ContestModules.valueOf(contestModule);
         if (!ContestModuleUtils.getModuleContradiction(contestModuleType).isEmpty() && contest.getModulesSet().containsAll(ContestModuleUtils.getModuleContradiction(contestModuleType))) {
             flashError(Messages.get("contest.module.enable.error.contradiction", ContestModuleUtils.getModuleContradiction(contestModuleType).toString()));
-            return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+            return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
         }
 
         if (!contest.getModulesSet().containsAll(ContestModuleUtils.getModuleDependencies(contestModuleType))) {
             flashError(Messages.get("contest.module.enable.error.dependencies", ContestModuleUtils.getModuleDependencies(contestModuleType).toString()));
-            return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+            return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
         }
 
         contestModuleService.enableModule(contest.getJid(), contestModuleType, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+        return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -522,7 +522,7 @@ public final class ContestController extends AbstractJudgelsController {
     public Result disableModule(long contestId, String contestModule) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (contest.isLocked() || !EnumUtils.isValidEnum(ContestModules.class, contestModule) || !ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
-            return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+            return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
         }
 
         ContestModules contestModuleType = ContestModules.valueOf(contestModule);
@@ -532,13 +532,13 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestModuleService.disableModule(contest.getJid(), contestModuleType, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        return redirect(routes.ContestController.updateContestModuleConfig(contest.getId()));
+        return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateContestSpecificConfig(long contestId) throws ContestNotFoundException {
+    public Result editContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (!ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
@@ -576,17 +576,17 @@ public final class ContestController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update specific config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
+        return showEditContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateContestSpecificConfig(long contestId) throws ContestNotFoundException {
+    public Result postEditContestSpecificConfig(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
         if (contest.isLocked() || !ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
-            return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+            return redirect(routes.ContestController.editContestSpecificConfig(contest.getId()));
         }
 
         Form styleConfigForm = null;
@@ -609,7 +609,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         if (formHasErrors(styleConfigForm) || checkError) {
-            return showUpdateContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
+            return showEditContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
         }
 
         ContestStyleConfig contestStyleConfig = null;
@@ -626,7 +626,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
 
-        return redirect(routes.ContestController.updateContestSpecificConfig(contest.getId()));
+        return redirect(routes.ContestController.editContestSpecificConfig(contest.getId()));
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -701,12 +701,12 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateContestGeneralConfig(Form<ContestUpsertForm> contestUpsertForm, Contest contest) {
-        LazyHtml content = new LazyHtml(updateContestView.render(contestUpsertForm, contest));
+    private Result showEditContestGeneralConfig(Form<ContestUpsertForm> contestUpsertForm, Contest contest) {
+        LazyHtml content = new LazyHtml(editContestView.render(contestUpsertForm, contest));
         appendConfigSubtabLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("commons.update"), routes.ContestController.updateContestGeneralConfig(contest.getId()))
+                new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestGeneralConfig(contest.getId()))
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update General");
@@ -714,12 +714,12 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateContestSpecificConfig(Contest contest, Form contestStyleForm, SortedMap<ContestModule, Form<?>> moduleFormMap) {
-        LazyHtml content = new LazyHtml(updateContestSpecificView.render(contest, contestStyleForm, moduleFormMap));
+    private Result showEditContestSpecificConfig(Contest contest, Form contestStyleForm, SortedMap<ContestModule, Form<?>> moduleFormMap) {
+        LazyHtml content = new LazyHtml(editContestSpecificView.render(contest, contestStyleForm, moduleFormMap));
         appendConfigSubtabLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))
+                new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.editContestSpecificConfig(contest.getId()))
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Update Specific");
@@ -729,9 +729,9 @@ public final class ContestController extends AbstractJudgelsController {
 
     private void appendConfigSubtabLayout(LazyHtml content, Contest contest) {
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(
-                new InternalLink(Messages.get("contest.config.general"), routes.ContestController.updateContestGeneralConfig(contest.getId())),
-                new InternalLink(Messages.get("contest.config.module"), routes.ContestController.updateContestModuleConfig(contest.getId())),
-                new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.updateContestSpecificConfig(contest.getId()))
+                new InternalLink(Messages.get("contest.config.general"), routes.ContestController.editContestGeneralConfig(contest.getId())),
+                new InternalLink(Messages.get("contest.config.module"), routes.ContestController.editContestModuleConfig(contest.getId())),
+                new InternalLink(Messages.get("contest.config.specific"), routes.ContestController.editContestSpecificConfig(contest.getId()))
         ), c));
         if (contest.isLocked()) {
             content.appendLayout(c -> alertLayout.render(Messages.get("contest.isLocked"), c));

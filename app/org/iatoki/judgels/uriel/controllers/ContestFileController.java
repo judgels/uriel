@@ -20,18 +20,14 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import play.mvc.Results;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -100,28 +96,6 @@ public final class ContestFileController extends AbstractJudgelsController {
 
         List<FileInfo> fileInfos = contestFileService.getContestFiles(contest.getJid());
         return showListFiles(contestFileUploadForm, contest, fileInfos);
-    }
-
-    @Transactional(readOnly = true)
-    public Result downloadFile(long contestId, String filename, String any) throws ContestNotFoundException {
-        Contest contest = contestService.findContestById(contestId);
-        if (!ContestControllerUtils.getInstance().isAllowedToEnterContest(contest, IdentityUtils.getUserJid())) {
-            return notFound();
-        }
-
-        String fileURL = contestFileService.getContestFileURL(contest.getJid(), filename);
-        try {
-            new URL(fileURL);
-            return redirect(fileURL);
-        } catch (MalformedURLException e) {
-            File file = new File(fileURL);
-            if (!file.exists()) {
-                return Results.notFound();
-            }
-            Controller.response().setContentType("application/x-download");
-            Controller.response().setHeader("Content-disposition", "attachment; filename=" + file.getName());
-            return ok(file);
-        }
     }
 
     private Result showListFiles(Form<ContestFileUploadForm> contestFileUploadForm, Contest contest, List<FileInfo> fileInfos) {

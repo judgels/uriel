@@ -2,17 +2,17 @@
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.uriel.forms.ContestAnnouncementUpsertForm
+@import org.iatoki.judgels.uriel.forms.ContestTeamUpsertForm
 
-@(contestId: Long, contestAnnouncementId: Long, contestAnnouncementUpsertForm: Form[ContestAnnouncementUpsertForm])
+@(contestId: Long, contestTeamId: Long, contestTeamUpsertForm: Form[ContestTeamUpsertForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(contestAnnouncementUpsertForm)
+@formErrorView(contestTeamUpsertForm)
 
-@b3.form(routes.ContestAnnouncementController.postUpdateAnnouncement(contestId, contestAnnouncementId)) {
+@b3.form(routes.ContestTeamController.postEditTeam(contestId, contestTeamId), 'enctype->"multipart/form-data") {
 
-    @upsertAnnouncementView(contestAnnouncementUpsertForm)
+    @upsertTeamView(contestTeamUpsertForm)
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
 }

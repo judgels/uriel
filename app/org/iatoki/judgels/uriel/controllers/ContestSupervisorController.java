@@ -21,14 +21,14 @@ import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm;
-import org.iatoki.judgels.uriel.forms.ContestSupervisorUpdateForm;
+import org.iatoki.judgels.uriel.forms.ContestSupervisorEditForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.listCreateSupervisorsView;
-import org.iatoki.judgels.uriel.views.html.contest.supervisor.updateSupervisorView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.listAddSupervisorsView;
+import org.iatoki.judgels.uriel.views.html.contest.supervisor.editSupervisorView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -66,12 +66,12 @@ public class ContestSupervisorController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewSupervisors(long contestId) throws ContestNotFoundException {
-        return listCreateSupervisors(contestId, 0, "id", "asc", "");
+        return listAddSupervisors(contestId, 0, "id", "asc", "");
     }
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result listCreateSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result listAddSupervisors(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!contest.containsModule(ContestModules.SUPERVISOR) || !ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
@@ -88,12 +88,12 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
         Form<ContestSupervisorCreateForm> contestSupervisorCreateForm = Form.form(ContestSupervisorCreateForm.class).fill(contestSupervisorCreateData);
 
-        return showListCreateSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, contest);
+        return showlistAddSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, contest);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postCreateSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result postAddSupervisor(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (contest.isLocked() || !contest.containsModule(ContestModules.SUPERVISOR) || !isAllowedToManageSupervisors(contest)) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
@@ -105,7 +105,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         if (formHasErrors(contestSupervisorCreateForm)) {
             Page<ContestSupervisor> pageOfContestSupervisors = contestSupervisorService.getPageOfSupervisorsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            return showListCreateSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, true, canDelete, contestSupervisorCreateForm, contest);
+            return showlistAddSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, true, canDelete, contestSupervisorCreateForm, contest);
         }
 
         ContestSupervisorCreateForm contestSupervisorCreateData = contestSupervisorCreateForm.get();
@@ -121,7 +121,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
             Page<ContestSupervisor> pageOfContestSupervisors = contestSupervisorService.getPageOfSupervisorsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            return showListCreateSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, true, canDelete, contestSupervisorCreateForm, contest);
+            return showlistAddSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, true, canDelete, contestSupervisorCreateForm, contest);
         }
 
         userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -141,45 +141,45 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
+    public Result editSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorById(contestSupervisorId);
         if (contest.isLocked() || !contest.containsModule(ContestModules.SUPERVISOR) || !isAllowedToManageSupervisors(contest) || !contestSupervisor.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestSupervisorUpdateForm contestSupervisorUpdateData = new ContestSupervisorUpdateForm();
-        contestSupervisorUpdateData.isAllowedAll = contestSupervisor.getContestPermission().isAllowedAll();
-        contestSupervisorUpdateData.allowedPermissions = contestSupervisor.getContestPermission().getAllowedPermissions().stream().collect(Collectors.toMap(p -> p, p -> p));
+        ContestSupervisorEditForm contestSupervisorEditData = new ContestSupervisorEditForm();
+        contestSupervisorEditData.isAllowedAll = contestSupervisor.getContestPermission().isAllowedAll();
+        contestSupervisorEditData.allowedPermissions = contestSupervisor.getContestPermission().getAllowedPermissions().stream().collect(Collectors.toMap(p -> p, p -> p));
 
-        Form<ContestSupervisorUpdateForm> contestSupervisorUpdateForm = Form.form(ContestSupervisorUpdateForm.class).fill(contestSupervisorUpdateData);
+        Form<ContestSupervisorEditForm> contestSupervisorEditForm = Form.form(ContestSupervisorEditForm.class).fill(contestSupervisorEditData);
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateSupervisor(contestSupervisorUpdateForm, contest, contestSupervisor);
+        return showEditSupervisor(contestSupervisorEditForm, contest, contestSupervisor);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
+    public Result postEditSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorById(contestSupervisorId);
         if (contest.isLocked() || !contest.containsModule(ContestModules.SUPERVISOR) || !isAllowedToManageSupervisors(contest) || !contestSupervisor.getContestJid().equals(contest.getJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        Form<ContestSupervisorUpdateForm> contestSupervisorUpdateForm = Form.form(ContestSupervisorUpdateForm.class).bindFromRequest();
+        Form<ContestSupervisorEditForm> contestSupervisorEditForm = Form.form(ContestSupervisorEditForm.class).bindFromRequest();
 
-        if (formHasErrors(contestSupervisorUpdateForm)) {
-            return showUpdateSupervisor(contestSupervisorUpdateForm, contest, contestSupervisor);
+        if (formHasErrors(contestSupervisorEditForm)) {
+            return showEditSupervisor(contestSupervisorEditForm, contest, contestSupervisor);
         }
 
-        ContestSupervisorUpdateForm contestSupervisorUpdateData = contestSupervisorUpdateForm.get();
+        ContestSupervisorEditForm contestSupervisorEditData = contestSupervisorEditForm.get();
         ContestPermission contestPermission;
-        if (contestSupervisorUpdateData.allowedPermissions == null) {
-            contestPermission = new ContestPermission(ImmutableSet.of(), contestSupervisorUpdateData.isAllowedAll);
+        if (contestSupervisorEditData.allowedPermissions == null) {
+            contestPermission = new ContestPermission(ImmutableSet.of(), contestSupervisorEditData.isAllowedAll);
         } else {
-            contestPermission = new ContestPermission(contestSupervisorUpdateData.allowedPermissions.keySet(), contestSupervisorUpdateData.isAllowedAll);
+            contestPermission = new ContestPermission(contestSupervisorEditData.allowedPermissions.keySet(), contestSupervisorEditData.isAllowedAll);
         }
         contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestPermission, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
@@ -189,7 +189,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
     }
 
     @Transactional
-    public Result deleteSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
+    public Result removeSupervisor(long contestId, long contestSupervisorId) throws ContestNotFoundException, ContestSupervisorNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestSupervisor contestSupervisor = contestSupervisorService.findContestSupervisorById(contestSupervisorId);
         if (contest.isLocked() || !contest.containsModule(ContestModules.SUPERVISOR) || !isAllowedToManageSupervisors(contest) || !contestSupervisor.getContestJid().equals(contest.getJid())) {
@@ -203,8 +203,8 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         return redirect(routes.UserController.index());
     }
 
-    private Result showListCreateSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestSupervisorCreateForm> contestSupervisorCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
+    private Result showlistAddSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestSupervisorCreateForm> contestSupervisorCreateForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listAddSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
@@ -218,13 +218,13 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateSupervisor(Form<ContestSupervisorUpdateForm> contestSupervisorUpdateForm, Contest contest, ContestSupervisor contestSupervisor) {
-        LazyHtml content = new LazyHtml(updateSupervisorView.render(contest.getId(), contestSupervisor.getId(), contestSupervisorUpdateForm));
+    private Result showEditSupervisor(Form<ContestSupervisorEditForm> contestSupervisorEditForm, Contest contest, ContestSupervisor contestSupervisor) {
+        LazyHtml content = new LazyHtml(editSupervisorView.render(contest.getId(), contestSupervisor.getId(), contestSupervisorEditForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.update"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
-                new InternalLink(Messages.get("supervisor.update"), routes.ContestSupervisorController.updateSupervisor(contest.getId(), contestSupervisor.getId()))
+                new InternalLink(Messages.get("supervisor.update"), routes.ContestSupervisorController.editSupervisor(contest.getId(), contestSupervisor.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisor - Update");
 

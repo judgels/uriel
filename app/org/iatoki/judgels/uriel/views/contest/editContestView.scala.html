@@ -11,7 +11,7 @@
 
 @formErrorView(contestUpsertForm)
 
-@b3.form(routes.ContestController.postUpdateContestGeneralConfig(contest.getId)) {
+@b3.form(routes.ContestController.postEditContestGeneralConfig(contest.getId)) {
 
     @b3.static(Messages.get("commons.id")){@contest.getId}
     @b3.static(Messages.get("commons.jid")){@contest.getJid}

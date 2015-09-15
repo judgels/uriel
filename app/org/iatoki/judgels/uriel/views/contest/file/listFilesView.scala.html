@@ -44,7 +44,7 @@
             <td>@file.getName</td>
             <td><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(file.getLastModifiedTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(file.getLastModifiedTime.getTime)</time></td>
             <td>@JudgelsPlayUtils.formatBytesCount(file.getSize)</td>
-            <td class="text-center"><a href="@routes.ContestFileController.downloadFile(contest.getId, file.getName, null)"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a></td>
+            <td class="text-center"><a href="@org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestFileAPIController.downloadFile(contest.getId, file.getName, null)"><span class="glyphicon glyphicon-download" aria-hidden="true"></span></a></td>
         </tr>
     }
     </tbody>

@@ -5,10 +5,7 @@ import play.data.validation.Constraints;
 import java.util.Arrays;
 import java.util.List;
 
-public final class UserCreateForm {
-
-    @Constraints.Required
-    public String username;
+public final class UserEditForm {
 
     @Constraints.Required
     public String roles;

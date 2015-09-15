@@ -4,7 +4,6 @@ import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.controllers.api.routes;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamCoachModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamMemberModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamModel;
@@ -35,7 +34,7 @@ final class ContestTeamServiceUtils {
 
     static URL getTeamImageURLFromImageName(String imageName) {
         try {
-            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + routes.ContestAPIController.renderTeamAvatarImage(imageName));
+            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestTeamAPIController.renderTeamAvatarImage(imageName));
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

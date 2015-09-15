@@ -1,15 +1,15 @@
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.uriel.forms.UserCreateForm
+@import org.iatoki.judgels.uriel.forms.UserAddForm
 
-@(userCreateForm: Form[UserCreateForm], userAutoCompleteUrl: String)
+@(userCreateForm: Form[UserAddForm], userAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
 @formErrorView(userCreateForm)
 
-@b3.form(routes.UserController.postCreateUser()) {
+@b3.form(routes.UserController.postAddUser()) {
     @helper.CSRF.formField
 
     @b3.text(userCreateForm("username"), '_label -> Messages.get("user.username"), 'class -> "form-control user_autocomplete")

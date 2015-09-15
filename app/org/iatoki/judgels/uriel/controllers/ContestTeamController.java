@@ -38,9 +38,9 @@ import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.contest.team.listCreateTeamsView;
+import org.iatoki.judgels.uriel.views.html.contest.team.listAddTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.team.listScreenedTeamsView;
-import org.iatoki.judgels.uriel.views.html.contest.team.updateTeamView;
+import org.iatoki.judgels.uriel.views.html.contest.team.editTeamView;
 import org.iatoki.judgels.uriel.views.html.contest.team.viewTeamView;
 import org.iatoki.judgels.uriel.views.html.uploadResultView;
 import play.data.Form;
@@ -97,12 +97,12 @@ public class ContestTeamController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     @AddCSRFToken
     public Result viewTeams(long contestId) throws ContestNotFoundException {
-        return listCreateTeams(contestId, 0, "id", "asc", "");
+        return listAddTeams(contestId, 0, "id", "asc", "");
     }
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result listCreateTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
+    public Result listAddTeams(long contestId, long pageIndex, String orderBy, String orderDir, String filterString) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         if (!contest.containsModule(ContestModules.TEAM) || !ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
@@ -113,7 +113,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         boolean canUpdate = !contest.isLocked() && isAllowedToSuperviseTeams(contest);
         Form<ContestTeamUpsertForm> contestTeamUpsertForm = Form.form(ContestTeamUpsertForm.class);
 
-        return showListCreateTeam(pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
+        return showlistAddTeam(pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
     }
 
     @Transactional(readOnly = true)
@@ -147,7 +147,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         if (formHasErrors(contestTeamUpsertForm)) {
             Page<ContestTeam> pageOfContestTeams = contestTeamService.getPageOfTeamsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-            return showListCreateTeam(pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, true, contestTeamUpsertForm, contest);
+            return showlistAddTeam(pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, true, contestTeamUpsertForm, contest);
         }
 
         ContestTeamUpsertForm contestTeamUpsertData = contestTeamUpsertForm.get();
@@ -163,7 +163,7 @@ public class ContestTeamController extends AbstractJudgelsController {
                 boolean canUpdate = isAllowedToSuperviseTeams(contest);
                 contestTeamUpsertForm.reject("team.avatar.error.cantUpdate");
 
-                return showListCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
+                return showlistAddTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
             }
         } else {
             contestTeamService.createContestTeam(contest.getJid(), contestTeamUpsertData.name, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -176,7 +176,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
     @Transactional(readOnly = true)
     @AddCSRFToken
-    public Result updateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
+    public Result editTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
 
@@ -190,12 +190,12 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Try to update team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
-        return showUpdateTeam(contestTeamUpsertForm, contest, contestTeam);
+        return showEditTeam(contestTeamUpsertForm, contest, contestTeam);
     }
 
     @Transactional
     @RequireCSRFCheck
-    public Result postUpdateTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
+    public Result postEditTeam(long contestId, long contestTeamId) throws ContestNotFoundException, ContestTeamNotFoundException {
         Contest contest = contestService.findContestById(contestId);
         ContestTeam contestTeam = contestTeamService.findContestTeamById(contestTeamId);
         if (contest.isLocked() || !contest.containsModule(ContestModules.TEAM) || !isAllowedToSuperviseTeams(contest) || !contestTeam.getContestJid().equals(contest.getJid())) {
@@ -205,7 +205,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         Form<ContestTeamUpsertForm> contestTeamUpsertForm = Form.form(ContestTeamUpsertForm.class).bindFromRequest();
 
         if (formHasErrors(contestTeamUpsertForm)) {
-            return showUpdateTeam(contestTeamUpsertForm, contest, contestTeam);
+            return showEditTeam(contestTeamUpsertForm, contest, contestTeam);
         }
 
         ContestTeamUpsertForm contestTeamUpsertData = contestTeamUpsertForm.get();
@@ -218,7 +218,7 @@ public class ContestTeamController extends AbstractJudgelsController {
             } catch (IOException e) {
                 contestTeamUpsertForm.reject("team.avatar.error.cantUpdate");
 
-                return showUpdateTeam(contestTeamUpsertForm, contest, contestTeam);
+                return showEditTeam(contestTeamUpsertForm, contest, contestTeam);
             }
         } else {
             contestTeamService.updateContestTeam(contestTeam.getJid(), contestTeamUpsertData.name, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -485,8 +485,8 @@ public class ContestTeamController extends AbstractJudgelsController {
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
 
-    private Result showListCreateTeam(Page<ContestTeam> pageOfContestTeams, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestTeamUpsertForm> contestTeamUpsertForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listCreateTeamsView.render(contest.getId(), pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, ContestControllerUtils.getInstance().hasContestBegun(contest)));
+    private Result showlistAddTeam(Page<ContestTeam> pageOfContestTeams, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestTeamUpsertForm> contestTeamUpsertForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listAddTeamsView.render(contest.getId(), pageOfContestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, ContestControllerUtils.getInstance().hasContestBegun(contest)));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
@@ -517,15 +517,15 @@ public class ContestTeamController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showUpdateTeam(Form<ContestTeamUpsertForm> contestTeamUpsertForm, Contest contest, ContestTeam contestTeam) {
-        LazyHtml content = new LazyHtml(updateTeamView.render(contest.getId(), contestTeam.getId(), contestTeamUpsertForm));
+    private Result showEditTeam(Form<ContestTeamUpsertForm> contestTeamUpsertForm, Contest contest, ContestTeam contestTeam) {
+        LazyHtml content = new LazyHtml(editTeamView.render(contest.getId(), contestTeam.getId(), contestTeamUpsertForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("team.update"), c));
         content.appendLayout(c -> subtabLayout.render(ImmutableList.of(new InternalLink(Messages.get("contestant.contestants"), routes.ContestContestantController.viewContestants(contest.getId())), new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId()))), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
         appendBreadcrumbsLayout(content, contest,
                 new InternalLink(Messages.get("team.teams"), routes.ContestTeamController.viewTeams(contest.getId())),
-                new InternalLink(Messages.get("team.update"), routes.ContestTeamController.updateTeam(contest.getId(), contestTeam.getId()))
+                new InternalLink(Messages.get("team.update"), routes.ContestTeamController.editTeam(contest.getId(), contestTeam.getId()))
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Team - Update");

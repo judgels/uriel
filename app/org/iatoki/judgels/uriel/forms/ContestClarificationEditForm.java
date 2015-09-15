@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.forms;
 
-public final class ContestClarificationUpdateForm {
+public final class ContestClarificationEditForm {
 
     public String answer;
 

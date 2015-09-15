@@ -1,11 +1,11 @@
 require(["jquery"], function( __tes__ ) {
     $(document).ready(function() {
         $.post(unansweredClarificationUrl, function(data) {
-            if ((data.success) && (data.count > 0)) {
+            if (data) {
                 if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {
-                    $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data.count);
+                    $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data);
                 } else {
-                    $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").append(" <span class=\"badge\">" + data.count + "</span>");
+                    $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").append(" <span class=\"badge\">" + data + "</span>");
                 }
             } else {
                 if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {
@@ -21,11 +21,11 @@ require(["jquery"], function( __tes__ ) {
         }, "json");
         setInterval(function () {
             $.post(unansweredClarificationUrl, function(data) {
-                if ((data.success) && (data.count > 0)) {
+                if (data) {
                     if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {
-                        $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data.count);
+                        $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").html(data);
                     } else {
-                        $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").append(" <span class=\"badge\">" + data.count + "</span>");
+                        $(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").append(" <span class=\"badge\">" + data + "</span>");
                     }
                 } else {
                     if ($(".navbar-nav > li > a[href=\"" + contestClarificationUrl + "\"]").find(".badge").size() > 0) {

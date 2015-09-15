@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.forms;
 
 import java.util.Map;
 
-public final class ContestSupervisorUpdateForm {
+public final class ContestSupervisorEditForm {
 
     public boolean isAllowedAll;
 

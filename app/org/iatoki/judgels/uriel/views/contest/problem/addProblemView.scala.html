@@ -2,15 +2,15 @@
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.uriel.forms.ContestProblemCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestProblemAddForm
 
-@(contestId: Long, contestProblemCreateForm: Form[ContestProblemCreateForm])
+@(contestId: Long, contestProblemCreateForm: Form[ContestProblemAddForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
 @formErrorView(contestProblemCreateForm)
 
-@b3.form(routes.ContestProblemController.postCreateProblem(contestId)) {
+@b3.form(routes.ContestProblemController.postAddProblem(contestId)) {
 
     @helper.CSRF.formField
 

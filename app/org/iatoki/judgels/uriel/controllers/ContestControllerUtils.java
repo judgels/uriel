@@ -64,7 +64,7 @@ public final class ContestControllerUtils {
         instance = new ContestControllerUtils(contestContestantService, contestSupervisorService, contestManagerService, contestTeamService, contestPasswordService);
     }
 
-    static ContestControllerUtils getInstance() {
+    public static ContestControllerUtils getInstance() {
         if (instance == null) {
             throw new UnsupportedOperationException("ContestControllerUtils instance has not been built");
         }
@@ -380,7 +380,7 @@ public final class ContestControllerUtils {
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
 
         if (isAllowedToManageContest(contest, userJid)) {
-            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("contest.update"), routes.ContestController.updateContestGeneralConfig(contest.getId())), c));
+            content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("contest.update"), routes.ContestController.editContestGeneralConfig(contest.getId())), c));
         } else {
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
         }

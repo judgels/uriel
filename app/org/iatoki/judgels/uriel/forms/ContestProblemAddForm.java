@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.forms;
 
 import play.data.validation.Constraints;
 
-public final class ContestProblemCreateForm {
+public final class ContestProblemAddForm {
 
     @Constraints.Required
     public String problemJid;

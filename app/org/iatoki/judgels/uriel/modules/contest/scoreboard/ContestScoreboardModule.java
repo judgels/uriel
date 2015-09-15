@@ -42,7 +42,7 @@ public final class ContestScoreboardModule extends TabbedContestModule {
 
     @Override
     public Call getDefaultJumpTo(long contestId) {
-        return routes.ContestController.jumpToScoreboard(contestId);
+        return routes.ContestController.jumpToScoreboards(contestId);
     }
 
     @Override

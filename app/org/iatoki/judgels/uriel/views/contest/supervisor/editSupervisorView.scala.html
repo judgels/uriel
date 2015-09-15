@@ -2,16 +2,16 @@
 @import org.iatoki.judgels.play.views.html.formErrorView
 @import org.iatoki.judgels.uriel.views.html.contest.supervisorjs
 @import org.iatoki.judgels.uriel.controllers.routes
-@import org.iatoki.judgels.uriel.forms.ContestSupervisorUpdateForm
+@import org.iatoki.judgels.uriel.forms.ContestSupervisorEditForm
 @import org.iatoki.judgels.uriel.ContestPermissions
 
-@(contestId: Long, contestSupervisorId: Long, contestSupervisorUpdateForm: Form[ContestSupervisorUpdateForm])
+@(contestId: Long, contestSupervisorId: Long, contestSupervisorEditForm: Form[ContestSupervisorEditForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(contestSupervisorUpdateForm)
+@formErrorView(contestSupervisorEditForm)
 
-@b3.form(routes.ContestSupervisorController.postUpdateSupervisor(contestId, contestSupervisorId)) {
+@b3.form(routes.ContestSupervisorController.postEditSupervisor(contestId, contestSupervisorId)) {
 
     @helper.CSRF.formField
 
@@ -48,14 +48,14 @@
 
             <div class="checkbox">
                 <label>
-                    <input type="checkbox" id="isAllowedAll" name="isAllowedAll" value="true" @if(contestSupervisorUpdateForm("isAllowedAll").value && contestSupervisorUpdateForm("isAllowedAll").value.equals("true")){ checked="checked" }> @Messages.get("problem.allowAll")
+                    <input type="checkbox" id="isAllowedAll" name="isAllowedAll" value="true" @if(contestSupervisorEditForm("isAllowedAll").value && contestSupervisorEditForm("isAllowedAll").value.equals("true")){ checked="checked" }> @Messages.get("problem.allowAll")
                 </label>
             </div>
 
             @for(cp <- ContestPermissions.values()) {
                 <div class="checkbox">
                     <label>
-                        <input type="checkbox" class="allowedPermissions" name="allowedPermissions[@cp.name()]" value="@cp.name()" @if(contestSupervisorUpdateForm("allowedLanguageNames[" + cp.name() + "]").value && contestSupervisorUpdateForm("allowedLanguageNames[" + cp.name() + "]").value.equals(cp.name())){ checked="checked" }> @cp.name()
+                        <input type="checkbox" class="allowedPermissions" name="allowedPermissions[@cp.name()]" value="@cp.name()" @if(contestSupervisorEditForm("allowedLanguageNames[" + cp.name() + "]").value && contestSupervisorEditForm("allowedLanguageNames[" + cp.name() + "]").value.equals(cp.name())){ checked="checked" }> @cp.name()
                     </label>
                 </div>
             }
