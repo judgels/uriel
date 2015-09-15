@@ -135,7 +135,7 @@ public class ContestManagerController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Delete manager " + JidCacheServiceImpl.getInstance().getDisplayName(contestManager.getUserJid()) + ".");
 
-        return redirect(routes.UserController.index());
+        return redirect(routes.ContestManagerController.viewManagers(contest.getId()));
     }
 
 

@@ -112,7 +112,7 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public Page<Contest> getPageOfAllowedContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String userJid) {
         List<String> contestJidsWhereIsContestant = contestContestantDao.getContestJidsByJid(userJid);
-        List<ContestModel> contestModels = contestDao.findSortedByFilters("id", "desc", "", ImmutableMap.of(), ImmutableMap.of(ContestModel_.jid, contestJidsWhereIsContestant), 0, -1);
+        List<ContestModel> contestModels = contestDao.findSortedByFiltersIn("id", "desc", "", ImmutableMap.of(ContestModel_.jid, contestJidsWhereIsContestant), 0, -1);
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
         for (ContestModel contestModel : contestModels) {

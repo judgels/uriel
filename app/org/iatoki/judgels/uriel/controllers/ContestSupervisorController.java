@@ -127,7 +127,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         ContestPermission contestPermission;
-        if (contestSupervisorCreateData.allowedPermissions != null) {
+        if (contestSupervisorCreateData.allowedPermissions == null) {
             contestPermission = new ContestPermission(ImmutableSet.of(), contestSupervisorCreateData.isAllowedAll);
         } else {
             contestPermission = new ContestPermission(contestSupervisorCreateData.allowedPermissions.keySet(), contestSupervisorCreateData.isAllowedAll);
@@ -200,7 +200,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Delete supervisor " + JidCacheServiceImpl.getInstance().getDisplayName(contestSupervisor.getUserJid()) + ".");
 
-        return redirect(routes.UserController.index());
+        return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
 
     private Result showlistAddSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestSupervisorCreateForm> contestSupervisorCreateForm, Contest contest) {

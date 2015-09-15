@@ -236,7 +236,7 @@ public class ContestContestantController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog("Delete contestant " + JidCacheServiceImpl.getInstance().getDisplayName(contestContestant.getUserJid()) + ".");
 
-        return redirect(routes.UserController.index());
+        return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
     }
 
     private Result showlistAddContestantWithContestantCreateForm(long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestContestantCreateForm> contestContestantCreateForm, Contest contest) {
