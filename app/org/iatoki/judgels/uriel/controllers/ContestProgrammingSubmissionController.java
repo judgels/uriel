@@ -282,6 +282,6 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
     }
 
     private boolean isAllowedToViewSubmission(Contest contest, ProgrammingSubmission submission) {
-        return submission.getContestJid().equals(contest.getJid()) && (UrielControllerUtils.getInstance().isAdmin() || isAllowedToSuperviseSubmissions(contest) || submission.getAuthorJid().equals(IdentityUtils.getUserJid()));
+        return submission.getContainerJid().equals(contest.getJid()) && (UrielControllerUtils.getInstance().isAdmin() || isAllowedToSuperviseSubmissions(contest) || submission.getAuthorJid().equals(IdentityUtils.getUserJid()));
     }
 }
