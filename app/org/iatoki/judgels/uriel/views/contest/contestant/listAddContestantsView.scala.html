@@ -11,10 +11,10 @@
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import org.iatoki.judgels.uriel.ContestContestant
-@import org.iatoki.judgels.uriel.forms.ContestContestantCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestContestantAddForm
 @import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm
 
-@(contestId: Long, pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, deleteable: Boolean, contestContestantCreateForm: Form[ContestContestantCreateForm], contestContestantUploadForm: Form[ContestContestantUploadForm], jophielAutoCompleteUrl: String)
+@(contestId: Long, pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, deleteable: Boolean, contestContestantAddForm: Form[ContestContestantAddForm], contestContestantUploadForm: Form[ContestContestantUploadForm], jophielAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -29,12 +29,12 @@
 
         @helper.CSRF.formField
 
-        @b3.file(contestContestantCreateForm("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control")
+        @b3.file(contestContestantAddForm("usernames"), '_label -> Messages.get("contestant.usernames"), 'class -> "form-control")
 
         @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.add") }
     }
 
-    @formErrorView(contestContestantCreateForm)
+    @formErrorView(contestContestantAddForm)
 
     <h4>@Messages.get("contest.supervisor.contestant.manualCreate")</h4>
 
@@ -42,8 +42,8 @@
 
         @helper.CSRF.formField
 
-        @b3.text(contestContestantCreateForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
-        @b3.select(contestContestantCreateForm("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"), 'class -> "selectpicker")
+        @b3.text(contestContestantAddForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+        @b3.select(contestContestantAddForm("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"), 'class -> "selectpicker")
 
         <script type="text/javascript">
             var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";

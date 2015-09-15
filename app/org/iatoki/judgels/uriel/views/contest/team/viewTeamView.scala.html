@@ -7,14 +7,14 @@
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import org.iatoki.judgels.uriel.ContestTeam
-@import org.iatoki.judgels.uriel.forms.ContestTeamCoachCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestTeamCoachAddForm
 @import org.iatoki.judgels.uriel.forms.ContestTeamCoachUploadForm
-@import org.iatoki.judgels.uriel.forms.ContestTeamMemberCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestTeamMemberAddForm
 @import org.iatoki.judgels.uriel.forms.ContestTeamMemberUploadForm
 @import org.iatoki.judgels.uriel.ContestTeamCoach
 @import org.iatoki.judgels.uriel.ContestTeamMember
 
-@(contestId: Long, contestTeam: ContestTeam, contestTeamCoachCreateForm: Form[ContestTeamCoachCreateForm], contestTeamCoachUploadForm: Form[ContestTeamCoachUploadForm], contestTeamMemberCreateForm: Form[ContestTeamMemberCreateForm], contestTeamMemberUploadForm: Form[ContestTeamMemberUploadForm], coaches: List[ContestTeamCoach], members: List[ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
+@(contestId: Long, contestTeam: ContestTeam, contestTeamCoachAddForm: Form[ContestTeamCoachAddForm], contestTeamCoachUploadForm: Form[ContestTeamCoachUploadForm], contestTeamMemberAddForm: Form[ContestTeamMemberAddForm], contestTeamMemberUploadForm: Form[ContestTeamMemberUploadForm], coaches: List[ContestTeamCoach], members: List[ContestTeamMember], updateable: Boolean, jophielAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -36,12 +36,12 @@
     }
 
     <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
-    @formErrorView(contestTeamCoachCreateForm)
-    @b3.form(routes.ContestTeamController.postCreateTeamCoach(contestId, contestTeam.getId)) {
+    @formErrorView(contestTeamCoachAddForm)
+    @b3.form(routes.ContestTeamController.postAddTeamCoach(contestId, contestTeam.getId)) {
 
         @helper.CSRF.formField
 
-        @b3.text(contestTeamCoachCreateForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+        @b3.text(contestTeamCoachAddForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
 
         @b3.submit('class -> "btn btn-primary") {
             @Messages.get("commons.add")
@@ -91,12 +91,12 @@
     }
 
     <h4>@Messages.get("contest.supervisor.team.coaches.manualCreate")</h4>
-    @formErrorView(contestTeamMemberCreateForm)
-    @b3.form(routes.ContestTeamController.postCreateTeamMember(contestId, contestTeam.getId)) {
+    @formErrorView(contestTeamMemberAddForm)
+    @b3.form(routes.ContestTeamController.postAddTeamMember(contestId, contestTeam.getId)) {
 
         @helper.CSRF.formField
 
-        @b3.text(contestTeamMemberCreateForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
+        @b3.text(contestTeamMemberAddForm("username"), '_label -> Messages.get("contestant.username"), 'class -> "form-control user_autocomplete")
 
         @b3.submit('class -> "btn btn-primary") {
             @Messages.get("commons.add")

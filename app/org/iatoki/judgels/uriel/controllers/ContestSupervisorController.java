@@ -20,7 +20,7 @@ import org.iatoki.judgels.uriel.ContestSupervisorNotFoundException;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestSupervisorAddForm;
 import org.iatoki.judgels.uriel.forms.ContestSupervisorEditForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -82,11 +82,11 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         boolean canUpdate = !contest.isLocked() && isAllowedToManageSupervisors(contest);
         boolean canDelete = !contest.isLocked() && ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid());
 
-        ContestSupervisorCreateForm contestSupervisorCreateData = new ContestSupervisorCreateForm();
+        ContestSupervisorAddForm contestSupervisorCreateData = new ContestSupervisorAddForm();
         contestSupervisorCreateData.isAllowedAll = true;
         contestSupervisorCreateData.allowedPermissions = Lists.newArrayList(ContestPermissions.values()).stream().collect(Collectors.toMap(p -> p.name(), p -> p.name()));
 
-        Form<ContestSupervisorCreateForm> contestSupervisorCreateForm = Form.form(ContestSupervisorCreateForm.class).fill(contestSupervisorCreateData);
+        Form<ContestSupervisorAddForm> contestSupervisorCreateForm = Form.form(ContestSupervisorAddForm.class).fill(contestSupervisorCreateData);
 
         return showlistAddSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, contest);
     }
@@ -99,7 +99,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        Form<ContestSupervisorCreateForm> contestSupervisorCreateForm = Form.form(ContestSupervisorCreateForm.class).bindFromRequest();
+        Form<ContestSupervisorAddForm> contestSupervisorCreateForm = Form.form(ContestSupervisorAddForm.class).bindFromRequest();
         boolean canDelete = ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid());
 
         if (formHasErrors(contestSupervisorCreateForm)) {
@@ -108,7 +108,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
             return showlistAddSupervisor(pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, true, canDelete, contestSupervisorCreateForm, contest);
         }
 
-        ContestSupervisorCreateForm contestSupervisorCreateData = contestSupervisorCreateForm.get();
+        ContestSupervisorAddForm contestSupervisorCreateData = contestSupervisorCreateForm.get();
         JophielUser jophielUser;
         try {
             jophielUser = jophielPublicAPI.findUserByUsername(contestSupervisorCreateData.username);
@@ -203,8 +203,8 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
 
-    private Result showlistAddSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestSupervisorCreateForm> contestSupervisorCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listAddSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
+    private Result showlistAddSupervisor(Page<ContestSupervisor> pageOfContestSupervisors, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestSupervisorAddForm> contestSupervisorAddForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listAddSupervisorsView.render(contest.getId(), pageOfContestSupervisors, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestSupervisorAddForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("supervisor.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

@@ -22,7 +22,7 @@ import org.iatoki.judgels.uriel.UploadResult;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.forms.ContestContestantCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestContestantAddForm;
 import org.iatoki.judgels.uriel.forms.ContestContestantEditForm;
 import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
@@ -87,7 +87,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         boolean canUpdate = !contest.isLocked() && isAllowedToSuperviseContestants(contest);
         boolean canDelete = !contest.isLocked() && ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid());
 
-        Form<ContestContestantCreateForm> contestContestantCreateForm = Form.form(ContestContestantCreateForm.class);
+        Form<ContestContestantAddForm> contestContestantCreateForm = Form.form(ContestContestantAddForm.class);
         Form<ContestContestantUploadForm> contestContestantUploadForm = Form.form(ContestContestantUploadForm.class);
 
         return showlistAddContestant(contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestContestantCreateForm, contestContestantUploadForm, contest);
@@ -101,26 +101,26 @@ public class ContestContestantController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        Form<ContestContestantCreateForm> contestContestantCreateForm = Form.form(ContestContestantCreateForm.class).bindFromRequest();
+        Form<ContestContestantAddForm> contestContestantCreateForm = Form.form(ContestContestantAddForm.class).bindFromRequest();
         boolean canDelete = ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid());
 
         if (formHasErrors(contestContestantCreateForm)) {
-            return showlistAddContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+            return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
         }
 
-        ContestContestantCreateForm contestContestantCreateData = contestContestantCreateForm.get();
+        ContestContestantAddForm contestContestantCreateData = contestContestantCreateForm.get();
         try {
             JophielUser jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
             if (jophielUser == null) {
                 contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
-                return showlistAddContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+                return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
             }
 
             if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
                 contestContestantCreateForm.reject("error.contestant.create.userIsAlreadyContestant");
 
-                return showlistAddContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+                return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
             }
 
             userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
@@ -132,7 +132,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         } catch (JudgelsAPIClientException e) {
             contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
-            return showlistAddContestantWithContestantCreateForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+            return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
         }
     }
 
@@ -239,15 +239,15 @@ public class ContestContestantController extends AbstractJudgelsController {
         return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
     }
 
-    private Result showlistAddContestantWithContestantCreateForm(long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestContestantCreateForm> contestContestantCreateForm, Contest contest) {
+    private Result showlistAddContestantWithContestantAddForm(long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestContestantAddForm> contestContestantAddForm, Contest contest) {
         Form<ContestContestantUploadForm> contestContestantUploadForm = Form.form(ContestContestantUploadForm.class);
 
         Page<ContestContestant> pageOfContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
 
-        return showlistAddContestant(pageOfContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestContestantCreateForm, contestContestantUploadForm, contest);
+        return showlistAddContestant(pageOfContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestContestantAddForm, contestContestantUploadForm, contest);
     }
 
-    private Result showlistAddContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestContestantCreateForm> contestContestantCreateForm, Form<ContestContestantUploadForm> contestContestantUploadForm, Contest contest) {
+    private Result showlistAddContestant(Page<ContestContestant> contestContestants, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, boolean canDelete, Form<ContestContestantAddForm> contestContestantCreateForm, Form<ContestContestantUploadForm> contestContestantUploadForm, Contest contest) {
         LazyHtml content = new LazyHtml(listAddContestantsView.render(contest.getId(), contestContestants, pageIndex, orderBy, orderDir, filterString, canUpdate, canDelete, contestContestantCreateForm, contestContestantUploadForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("contestant.list"), c));
 

@@ -9,11 +9,11 @@
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.play.Page
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
-@import org.iatoki.judgels.uriel.forms.ContestSupervisorCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestSupervisorAddForm
 @import org.iatoki.judgels.uriel.ContestPermissions
 @import org.iatoki.judgels.uriel.ContestSupervisor
 
-@(contestId: Long, pageOfContestSupervisors: Page[ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, deleteable: Boolean, form: Form[ContestSupervisorCreateForm], jophielAutoCompleteUrl: String)
+@(contestId: Long, pageOfContestSupervisors: Page[ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, deleteable: Boolean, form: Form[ContestSupervisorAddForm], jophielAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 

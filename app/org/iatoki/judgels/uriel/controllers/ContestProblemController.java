@@ -338,8 +338,8 @@ public class ContestProblemController extends AbstractJudgelsController {
         return redirect(routes.UserController.index());
     }
 
-    private Result showAddProblem(Form<ContestProblemAddForm> contestProblemCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(addProblemView.render(contest.getId(), contestProblemCreateForm));
+    private Result showAddProblem(Form<ContestProblemAddForm> contestProblemAddForm, Contest contest) {
+        LazyHtml content = new LazyHtml(addProblemView.render(contest.getId(), contestProblemAddForm));
         content.appendLayout(c -> heading3Layout.render(Messages.get("problem.create"), c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());

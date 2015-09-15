@@ -11,22 +11,22 @@
 @import org.iatoki.judgels.play.JudgelsPlayUtils
 @import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl
 @import org.iatoki.judgels.uriel.ContestManager
-@import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm
+@import org.iatoki.judgels.uriel.forms.ContestManagerAddForm
 
-@(contestId: Long, pageOfContestManagers: Page[ContestManager], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, canUpdate: Boolean, contestManagerCreateForm: Form[ContestManagerCreateForm], jophielAutoCompleteUrl: String)
+@(contestId: Long, pageOfContestManagers: Page[ContestManager], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, canUpdate: Boolean, contestManagerAddForm: Form[ContestManagerAddForm], jophielAutoCompleteUrl: String)
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
 @listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestManagerController.listAddManagers(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
 @if(canUpdate) {
-    @formErrorView(contestManagerCreateForm)
+    @formErrorView(contestManagerAddForm)
 
     @b3.form(routes.ContestManagerController.postAddManager(contestId, pageIndex, orderBy, orderDir, filterString)) {
 
         @helper.CSRF.formField
 
-        @b3.text(contestManagerCreateForm("username"), '_label -> Messages.get("manager.username"), 'class -> "form-control user_autocomplete")
+        @b3.text(contestManagerAddForm("username"), '_label -> Messages.get("manager.username"), 'class -> "form-control user_autocomplete")
 
         <script type="text/javascript">
             var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";

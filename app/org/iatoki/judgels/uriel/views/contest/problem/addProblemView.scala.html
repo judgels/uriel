@@ -4,21 +4,21 @@
 @import org.iatoki.judgels.uriel.controllers.routes
 @import org.iatoki.judgels.uriel.forms.ContestProblemAddForm
 
-@(contestId: Long, contestProblemCreateForm: Form[ContestProblemAddForm])
+@(contestId: Long, contestProblemAddForm: Form[ContestProblemAddForm])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@formErrorView(contestProblemCreateForm)
+@formErrorView(contestProblemAddForm)
 
 @b3.form(routes.ContestProblemController.postAddProblem(contestId)) {
 
     @helper.CSRF.formField
 
-    @b3.text(contestProblemCreateForm("alias"), '_label -> Messages.get("problem.alias"))
-    @b3.text(contestProblemCreateForm("problemJid"), '_label -> Messages.get("problem.problemJid"))
-    @b3.text(contestProblemCreateForm("problemSecret"), '_label -> Messages.get("problem.problemSecret"))
-    @b3.text(contestProblemCreateForm("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
-    @b3.select(contestProblemCreateForm("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "UNUSED" -> "Unused"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
+    @b3.text(contestProblemAddForm("alias"), '_label -> Messages.get("problem.alias"))
+    @b3.text(contestProblemAddForm("problemJid"), '_label -> Messages.get("problem.problemJid"))
+    @b3.text(contestProblemAddForm("problemSecret"), '_label -> Messages.get("problem.problemSecret"))
+    @b3.text(contestProblemAddForm("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
+    @b3.select(contestProblemAddForm("status"), Seq("OPEN" -> "Open", "CLOSED" -> "Closed", "UNUSED" -> "Unused"), '_label -> Messages.get("problem.status"), 'class -> "selectpicker")
 
     @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.create") }
 }

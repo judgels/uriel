@@ -17,7 +17,7 @@ import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.forms.ContestManagerCreateForm;
+import org.iatoki.judgels.uriel.forms.ContestManagerAddForm;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.UserService;
@@ -73,7 +73,7 @@ public class ContestManagerController extends AbstractJudgelsController {
 
         Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
         boolean canUpdate = !contest.isLocked() && UrielControllerUtils.getInstance().isAdmin();
-        Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class);
+        Form<ContestManagerAddForm> contestManagerCreateForm = Form.form(ContestManagerAddForm.class);
 
         return showlistAddManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
     }
@@ -88,7 +88,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        Form<ContestManagerCreateForm> contestManagerCreateForm = Form.form(ContestManagerCreateForm.class).bindFromRequest();
+        Form<ContestManagerAddForm> contestManagerCreateForm = Form.form(ContestManagerAddForm.class).bindFromRequest();
 
         if (formHasErrors(contestManagerCreateForm)) {
             Page<ContestManager> pageOfContestManagers = contestManagerService.getPageOfManagersInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
@@ -97,7 +97,7 @@ public class ContestManagerController extends AbstractJudgelsController {
             return showlistAddManager(pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, contest);
         }
 
-        ContestManagerCreateForm contestManagerCreateData = contestManagerCreateForm.get();
+        ContestManagerAddForm contestManagerCreateData = contestManagerCreateForm.get();
         JophielUser jophielUser;
         try {
             jophielUser = jophielPublicAPI.findUserByUsername(contestManagerCreateData.username);
@@ -139,8 +139,8 @@ public class ContestManagerController extends AbstractJudgelsController {
     }
 
 
-    private Result showlistAddManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerCreateForm> contestManagerCreateForm, Contest contest) {
-        LazyHtml content = new LazyHtml(listAddManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerCreateForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
+    private Result showlistAddManager(Page<ContestManager> pageOfContestManagers, long pageIndex, String orderBy, String orderDir, String filterString, boolean canUpdate, Form<ContestManagerAddForm> contestManagerAddForm, Contest contest) {
+        LazyHtml content = new LazyHtml(listAddManagersView.render(contest.getId(), pageOfContestManagers, pageIndex, orderBy, orderDir, filterString, canUpdate, contestManagerAddForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint()));
         content.appendLayout(c -> heading3Layout.render(Messages.get("manager.list"), c));
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

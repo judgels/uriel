@@ -15,7 +15,7 @@
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
-@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestTeamController.listAddTeams(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestTeamController.listCreateTeams(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
 
 @if(updateable) {
     @formErrorView(form)
