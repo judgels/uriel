@@ -7,7 +7,7 @@
 @import org.iatoki.judgels.uriel.forms.ContestClarificationCreateForm
 @import org.iatoki.judgels.uriel.ContestProblem
 
-@(contest: Contest, contestClarificationCreateForm: Form[ContestClarificationCreateForm], contestProblems: List[ContestProblem])
+@(contest: Contest, contestClarificationCreateForm: Form[ContestClarificationCreateForm], contestProblems: List[ContestProblem], problemTitlesMap: Map[String, String])
 
 @implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
 
@@ -25,7 +25,7 @@
             <select id="topicJid" name="topicJid" class="form-control selectpicker">
                 <option value="@contest.getJid">@Messages.get("clarification.general")</option>
                 @for(contestProblem <- contestProblems) {
-                    <option value="@contestProblem.getProblemJid">@contestProblem.getAlias - @JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid)</option>
+                    <option value="@contestProblem.getProblemJid">@contestProblem.getAlias. @problemTitlesMap.get(contestProblem.getProblemJid)</option>
                 }
             </select>
         </div>

@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
+import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -31,6 +32,7 @@ import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.createClarificationView;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.listClarificationsView;
 import org.iatoki.judgels.uriel.views.html.contest.clarification.listScreenedClarificationsView;
@@ -51,6 +53,7 @@ import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -349,9 +352,16 @@ public class ContestClarificationController extends AbstractJudgelsController {
     }
 
     private Result showCreateClarification(Form<ContestClarificationCreateForm> contestClarificationCreateForm, Contest contest) {
-        List<ContestProblem> contestProblemList = contestProblemService.getOpenedProblemsInContest(contest.getJid());
+        List<ContestProblem> contestProblems = contestProblemService.getOpenedProblemsInContest(contest.getJid());
 
-        LazyHtml content = new LazyHtml(createClarificationView.render(contest, contestClarificationCreateForm, contestProblemList));
+        List<String> problemJids = contestProblemService.getOpenedProblemsInContest(contest.getJid())
+                .stream()
+                .map(p -> p.getProblemJid())
+                .collect(Collectors.toList());
+
+        Map<String, String> problemTitlesMap = SandalphonResourceDisplayNameUtils.buildTitlesMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
+
+        LazyHtml content = new LazyHtml(createClarificationView.render(contest, contestClarificationCreateForm, contestProblems, problemTitlesMap));
         content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.create"), c));
         if (isAllowedToSuperviseClarifications(contest)) {
             appendSubtabsLayout(content, contest);
