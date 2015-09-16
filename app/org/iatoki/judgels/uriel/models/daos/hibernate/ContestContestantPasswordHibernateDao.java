@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.models.daos.impls;
+package org.iatoki.judgels.uriel.models.daos.hibernate;
 
 import com.google.common.collect.ImmutableMap;
 import org.iatoki.judgels.play.models.daos.impls.AbstractHibernateDao;

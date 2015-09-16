@@ -1,12 +1,14 @@
-package org.iatoki.judgels.uriel.models.daos.impls;
+package org.iatoki.judgels.uriel.models.daos.jedishibernate;
 
-import org.iatoki.judgels.play.models.daos.impls.AbstractHibernateDao;
+import org.iatoki.judgels.play.models.daos.impls.AbstractJedisHibernateDao;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
 import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel_;
 import play.db.jpa.JPA;
+import redis.clients.jedis.JedisPool;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.TypedQuery;
@@ -18,10 +20,11 @@ import java.util.List;
 
 @Singleton
 @Named("contestProblemDao")
-public final class ContestProblemHibernateDao extends AbstractHibernateDao<Long, ContestProblemModel> implements ContestProblemDao {
+public final class ContestProblemJedisHibernateDao extends AbstractJedisHibernateDao<Long, ContestProblemModel> implements ContestProblemDao {
 
-    public ContestProblemHibernateDao() {
-        super(ContestProblemModel.class);
+    @Inject
+    public ContestProblemJedisHibernateDao(JedisPool jedisPool) {
+        super(jedisPool, ContestProblemModel.class);
     }
 
     @Override

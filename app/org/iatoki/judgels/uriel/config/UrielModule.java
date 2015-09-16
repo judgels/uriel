@@ -19,7 +19,7 @@ import org.iatoki.judgels.jophiel.services.BaseUserService;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.services.impls.UserServiceImpl;
 
-public final class UrielModule extends AbstractJudgelsPlayModule {
+public class UrielModule extends AbstractJudgelsPlayModule {
 
     @Override
     protected void manualBinding() {
@@ -45,7 +45,7 @@ public final class UrielModule extends AbstractJudgelsPlayModule {
 
     @Override
     protected String getDaosImplPackage() {
-        return "org.iatoki.judgels.uriel.models.daos.impls";
+        return "org.iatoki.judgels.uriel.models.daos.hibernate";
     }
 
     @Override

@@ -1,11 +1,13 @@
-package org.iatoki.judgels.uriel.models.daos.impls;
+package org.iatoki.judgels.uriel.models.daos.jedishibernate;
 
-import org.iatoki.judgels.play.models.daos.impls.AbstractHibernateDao;
+import org.iatoki.judgels.play.models.daos.impls.AbstractJedisHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.ContestTeamCoachDao;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamCoachModel;
 import org.iatoki.judgels.uriel.models.entities.ContestTeamCoachModel_;
 import play.db.jpa.JPA;
+import redis.clients.jedis.JedisPool;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -15,10 +17,11 @@ import java.util.List;
 
 @Singleton
 @Named("contestTeamCoachDao")
-public final class ContestTeamCoachHibernateDao extends AbstractHibernateDao<Long, ContestTeamCoachModel> implements ContestTeamCoachDao {
+public final class ContestTeamCoachJedisHibernateDao extends AbstractJedisHibernateDao<Long, ContestTeamCoachModel> implements ContestTeamCoachDao {
 
-    public ContestTeamCoachHibernateDao() {
-        super(ContestTeamCoachModel.class);
+    @Inject
+    public ContestTeamCoachJedisHibernateDao(JedisPool jedisPool) {
+        super(jedisPool, ContestTeamCoachModel.class);
     }
 
     @Override

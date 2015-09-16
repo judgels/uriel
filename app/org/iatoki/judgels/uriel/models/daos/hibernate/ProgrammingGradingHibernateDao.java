@@ -1,6 +1,6 @@
-package org.iatoki.judgels.uriel.models.daos.impls;
+package org.iatoki.judgels.uriel.models.daos.hibernate;
 
-import org.iatoki.judgels.sandalphon.models.daos.impls.AbstractProgrammingGradingHibernateDao;
+import org.iatoki.judgels.sandalphon.models.daos.hibernate.AbstractProgrammingGradingHibernateDao;
 import org.iatoki.judgels.uriel.models.daos.ProgrammingGradingDao;
 import org.iatoki.judgels.uriel.models.entities.ProgrammingGradingModel;
 
