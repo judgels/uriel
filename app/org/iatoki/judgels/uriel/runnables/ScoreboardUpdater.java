@@ -14,7 +14,6 @@ import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
-import org.iatoki.judgels.uriel.services.ContestModuleService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.JPA;
@@ -25,15 +24,13 @@ import java.util.List;
 public final class ScoreboardUpdater implements Runnable {
 
     private final ContestService contestService;
-    private final ContestModuleService contestModuleService;
     private final ContestScoreboardService contestScoreboardService;
-    private final ProgrammingSubmissionService submissionService;
+    private final ProgrammingSubmissionService programmingSubmissionService;
 
-    public ScoreboardUpdater(ContestService contestService, ContestModuleService contestModuleService, ContestScoreboardService contestScoreboardService, ProgrammingSubmissionService submissionService) {
+    public ScoreboardUpdater(ContestService contestService, ContestScoreboardService contestScoreboardService, ProgrammingSubmissionService programmingSubmissionService) {
         this.contestService = contestService;
-        this.contestModuleService = contestModuleService;
         this.contestScoreboardService = contestScoreboardService;
-        this.submissionService = submissionService;
+        this.programmingSubmissionService = programmingSubmissionService;
     }
 
     @Override
@@ -55,7 +52,7 @@ public final class ScoreboardUpdater implements Runnable {
                     }
                     ScoreboardState state = contestService.getScoreboardStateInContest(contest.getJid());
 
-                    List<ProgrammingSubmission> programmingSubmissions = submissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
+                    List<ProgrammingSubmission> programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
 
                     ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
                     Scoreboard scoreboard = adapter.createScoreboard(state, content);

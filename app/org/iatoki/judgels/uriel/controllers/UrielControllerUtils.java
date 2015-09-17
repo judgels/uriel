@@ -19,6 +19,7 @@ import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsControllerUtils;
 import org.iatoki.judgels.play.controllers.ControllerUtils;
+import org.iatoki.judgels.play.views.html.layouts.contentLayout;
 import org.iatoki.judgels.play.views.html.layouts.guestLoginView;
 import org.iatoki.judgels.play.views.html.layouts.menusLayout;
 import org.iatoki.judgels.play.views.html.layouts.profileView;
@@ -42,6 +43,8 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
 
     @Override
     public void appendSidebarLayout(LazyHtml content) {
+        content.appendLayout(c -> contentLayout.render(c));
+
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
         if (isAdmin()) {
