@@ -35,14 +35,14 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
     public ContestSupervisor findContestSupervisorInContestByUserJid(String contestJid, String userJid) {
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findInContestByJid(contestJid, userJid);
 
-        return ContestSupervisorServiceUtils.createContestSupervisorFromModel(contestSupervisorModel);
+        return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
     public Page<ContestSupervisor> getPageOfSupervisorsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> ContestSupervisorServiceUtils.createContestSupervisorFromModel(m));
+        List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> createContestSupervisorFromModel(m));
         return new Page<>(contestSupervisors, totalPages, pageIndex, pageSize);
     }
 
@@ -53,7 +53,7 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
             throw new ContestSupervisorNotFoundException("Contest Supervisor not found.");
         }
 
-        return ContestSupervisorServiceUtils.createContestSupervisorFromModel(contestSupervisorModel);
+        return createContestSupervisorFromModel(contestSupervisorModel);
     }
 
     @Override
@@ -92,5 +92,9 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
         ContestSupervisorModel contestSupervisorModel = contestSupervisorDao.findById(contestSupervisorId);
 
         contestSupervisorDao.remove(contestSupervisorModel);
+    }
+
+    private static ContestSupervisor createContestSupervisorFromModel(ContestSupervisorModel contestSupervisorModel) {
+        return new ContestSupervisor(contestSupervisorModel.id, contestSupervisorModel.contestJid, contestSupervisorModel.userJid, ContestPermission.fromJSONString(contestSupervisorModel.permission));
     }
 }

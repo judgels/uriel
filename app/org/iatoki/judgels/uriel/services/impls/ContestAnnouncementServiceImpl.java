@@ -21,6 +21,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +47,7 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
             throw new ContestAnnouncementNotFoundException("Contest Announcement not found.");
         }
 
-        return ContestAnnouncementServiceUtils.createContestAnnouncementFromModel(contestAnnouncementModel);
+        return createContestAnnouncementFromModel(contestAnnouncementModel);
     }
 
     @Override
@@ -60,7 +61,7 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
 
         long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex, pageIndex * pageSize);
-        List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> ContestAnnouncementServiceUtils.createContestAnnouncementFromModel(m));
+        List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> createContestAnnouncementFromModel(m));
 
         return new Page<>(contestAnnouncements, totalPages, pageIndex, pageSize);
     }
@@ -116,5 +117,9 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
                 userReadDao.persist(contestReadModel, userJid, userIpAddress);
             }
         }
+    }
+
+    private static ContestAnnouncement createContestAnnouncementFromModel(ContestAnnouncementModel contestAnnouncementModel) {
+        return new ContestAnnouncement(contestAnnouncementModel.id, contestAnnouncementModel.jid, contestAnnouncementModel.contestJid, contestAnnouncementModel.title, contestAnnouncementModel.content, contestAnnouncementModel.userCreate, ContestAnnouncementStatus.valueOf(contestAnnouncementModel.status), new Date(contestAnnouncementModel.timeUpdate));
     }
 }

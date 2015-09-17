@@ -12,6 +12,7 @@ import org.iatoki.judgels.uriel.ContestTeamCoachNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamMember;
 import org.iatoki.judgels.uriel.ContestTeamMemberNotFoundException;
 import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
+import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
@@ -33,9 +34,13 @@ import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Singleton
 @Named("contestTeamService")
@@ -95,7 +100,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-        return ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
+        return createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels);
     }
 
     @Override
@@ -105,7 +110,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             throw new ContestTeamCoachNotFoundException("Contest Team Coach not found.");
         }
 
-        return ContestTeamServiceUtils.createContestTeamCoachFromModel(contestTeamCoachModel);
+        return createContestTeamCoachFromModel(contestTeamCoachModel);
     }
 
     @Override
@@ -115,7 +120,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             throw new ContestTeamMemberNotFoundException("Contest Team Member not found.");
         }
 
-        return ContestTeamServiceUtils.createContestTeamMemberFromModel(contestTeamMemberModel);
+        return createContestTeamMemberFromModel(contestTeamMemberModel);
     }
 
     @Override
@@ -128,7 +133,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
         return new Page<>(contestTeamBuilder.build(), totalPages, pageIndex, pageSize);
     }
@@ -151,7 +156,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
         return new Page<>(contestTeamBuilder.build(), totalRows, pageIndex, pageSize);
     }
@@ -165,7 +170,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(contestTeamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamModel.jid);
 
-            contestTeamBuilder.add(ContestTeamServiceUtils.createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            contestTeamBuilder.add(createContestTeamFromModel(contestTeamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
 
         return contestTeamBuilder.build();
@@ -183,7 +188,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
             List<ContestTeamCoachModel> contestTeamCoachesModel = contestTeamCoachDao.getAllByTeamJid(teamModel.jid);
             List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamModel.jid);
 
-            teams.add(ContestTeamServiceUtils.createContestTeamFromModel(teamModel, contestTeamCoachesModel, contestTeamMemberModels));
+            teams.add(createContestTeamFromModel(teamModel, contestTeamCoachesModel, contestTeamMemberModels));
         }
 
         return teams.build();
@@ -193,7 +198,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     public List<ContestTeamCoach> getCoachesOfTeam(String contestTeamJid) {
         List<ContestTeamCoachModel> contestTeamCoachModels = contestTeamCoachDao.getAllByTeamJid(contestTeamJid);
 
-        return Lists.transform(contestTeamCoachModels, m -> ContestTeamServiceUtils.createContestTeamCoachFromModel(m));
+        return Lists.transform(contestTeamCoachModels, m -> createContestTeamCoachFromModel(m));
     }
 
     @Override
@@ -205,14 +210,14 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeams(Lists.transform(contestTeamModels, m -> m.jid));
 
-        return Lists.transform(contestTeamMemberModels, m -> ContestTeamServiceUtils.createContestTeamMemberFromModel(m));
+        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
     }
 
     @Override
     public List<ContestTeamMember> getMembersOfTeam(String contestTeamJid) {
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(contestTeamJid);
 
-        return Lists.transform(contestTeamMemberModels, m -> ContestTeamServiceUtils.createContestTeamMemberFromModel(m));
+        return Lists.transform(contestTeamMemberModels, m -> createContestTeamMemberFromModel(m));
     }
 
     @Override
@@ -350,5 +355,25 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         ContestModel contestModel = contestDao.findByJid(contestTeamModel.contestJid);
 
         contestDao.edit(contestModel, userJid, userIpAddress);
+    }
+
+    private static ContestTeam createContestTeamFromModel(ContestTeamModel contestTeamModel, List<ContestTeamCoachModel> contestTeamCoachModels, List<ContestTeamMemberModel> contestTeamMemberModels) {
+        return new ContestTeam(contestTeamModel.id, contestTeamModel.jid, contestTeamModel.contestJid, contestTeamModel.name, getTeamImageURLFromImageName(contestTeamModel.teamImageName), new Date(contestTeamModel.contestStartTime), contestTeamCoachModels.stream().map(ctc -> createContestTeamCoachFromModel(ctc)).collect(Collectors.toList()), contestTeamMemberModels.stream().map(ctm -> createContestTeamMemberFromModel(ctm)).collect(Collectors.toList()));
+    }
+
+    private static ContestTeamCoach createContestTeamCoachFromModel(ContestTeamCoachModel contestTeamCoachModel) {
+        return new ContestTeamCoach(contestTeamCoachModel.id, contestTeamCoachModel.teamJid, contestTeamCoachModel.coachJid);
+    }
+
+    private static ContestTeamMember createContestTeamMemberFromModel(ContestTeamMemberModel contestTeamMemberModel) {
+        return new ContestTeamMember(contestTeamMemberModel.id, contestTeamMemberModel.teamJid, contestTeamMemberModel.memberJid);
+    }
+
+    private static URL getTeamImageURLFromImageName(String imageName) {
+        try {
+            return new URL(UrielProperties.getInstance().getUrielBaseUrl() + org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestTeamAPIController.renderTeamAvatarImage(imageName));
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

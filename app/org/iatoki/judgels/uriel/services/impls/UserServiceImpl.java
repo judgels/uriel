@@ -9,6 +9,7 @@ import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.jophiel.UserTokens;
 import org.iatoki.judgels.uriel.UrielUtils;
+import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.UserNotFoundException;
 import org.iatoki.judgels.uriel.models.daos.UserDao;
 import org.iatoki.judgels.uriel.models.entities.UserModel;
@@ -17,6 +18,7 @@ import org.iatoki.judgels.uriel.services.UserService;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Arrays;
 import java.util.List;
 
 @Singleton
@@ -67,13 +69,13 @@ public final class UserServiceImpl implements UserService {
             throw new UserNotFoundException("User not found.");
         }
 
-        return UserServiceUtils.createUserFromUserModel(userModel);
+        return createUserFromUserModel(userModel);
     }
 
     @Override
     public org.iatoki.judgels.uriel.User findUserByJid(String userJid) {
         UserModel userModel = userDao.findByJid(userJid);
-        return UserServiceUtils.createUserFromUserModel(userModel);
+        return createUserFromUserModel(userModel);
     }
 
     @Override
@@ -103,7 +105,7 @@ public final class UserServiceImpl implements UserService {
     public Page<org.iatoki.judgels.uriel.User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
         long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
         List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<org.iatoki.judgels.uriel.User> users = Lists.transform(userModels, m -> UserServiceUtils.createUserFromUserModel(m));
+        List<org.iatoki.judgels.uriel.User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
         return new Page<>(users, totalPages, pageIndex, pageSize);
     }
 
@@ -126,6 +128,14 @@ public final class UserServiceImpl implements UserService {
     public UserTokens getUserTokensByUserJid(String userJid) {
         UserModel userModel = userDao.findByJid(userJid);
 
-        return UserServiceUtils.createUserTokensFromUserModel(userModel);
+        return createUserTokensFromUserModel(userModel);
+    }
+
+    private static UserTokens createUserTokensFromUserModel(UserModel userModel) {
+        return new UserTokens(userModel.userJid, userModel.accessToken, userModel.refreshToken, userModel.idToken, userModel.expirationTime);
+    }
+
+    private static User createUserFromUserModel(UserModel userModel) {
+        return new User(userModel.id, userModel.userJid, Arrays.asList(userModel.roles.split(",")));
     }
 }

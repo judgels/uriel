@@ -48,19 +48,19 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
             throw new ContestContestantNotFoundException("Contest Contestant not found.");
         }
 
-        return ContestContestantServiceUtils.createContestContestantFromModel(contestContestantModel);
+        return createContestContestantFromModel(contestContestantModel);
     }
 
     @Override
     public ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid) {
         ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestContestantJid);
-        return ContestContestantServiceUtils.createContestContestantFromModel(contestContestantModel);
+        return createContestContestantFromModel(contestContestantModel);
     }
 
     @Override
     public List<ContestContestant> getContestantsInContest(String contestJid) {
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
-        return Lists.transform(contestContestantModels, m -> ContestContestantServiceUtils.createContestContestantFromModel(m));
+        return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
     }
 
     @Override
@@ -68,7 +68,7 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
         long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of());
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
 
-        List<ContestContestant> contestContestants = Lists.transform(contestContestantModels, m -> ContestContestantServiceUtils.createContestContestantFromModel(m));
+        List<ContestContestant> contestContestants = Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
 
         return new Page<>(contestContestants, totalPages, pageIndex, pageSize);
     }
@@ -118,5 +118,9 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
             contestContestantDao.edit(contestContestantModel, starterUserJid, starterUserIpAddress);
         }
+    }
+
+    private static ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
+        return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status), contestContestantModel.contestStartTime);
     }
 }

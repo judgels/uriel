@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.iatoki.judgels.play.JidService;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestClarification;
 import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
@@ -14,14 +15,17 @@ import org.iatoki.judgels.uriel.models.daos.UserReadDao;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
+import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.entities.UserReadModel;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
+import play.i18n.Messages;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.metamodel.SingularAttribute;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +55,7 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
 
         ContestModel contestModel = contestDao.findByJid(contestClarificationModel.contestJid);
 
-        return ContestClarificationServiceUtils.createContestClarificationFromModel(contestProblemDao, contestClarificationModel, contestModel);
+        return createContestClarificationFromModel(contestProblemDao, contestClarificationModel, contestModel);
     }
 
     @Override
@@ -65,14 +69,14 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
 
             long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
             List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
-            List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> ContestClarificationServiceUtils.createContestClarificationFromModel(contestProblemDao, m, contestModel));
+            List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(contestProblemDao, m, contestModel));
 
             return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
         }
 
         long totalPages = contestClarificationDao.countInContestAskedByUsers(contestModel.jid, askerJids);
         List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.getAllInContestAskedByUsers(contestModel.jid, askerJids);
-        List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> ContestClarificationServiceUtils.createContestClarificationFromModel(contestProblemDao, m, contestModel));
+        List<ContestClarification> contestClarifications = Lists.transform(contestClarificationModels, m -> createContestClarificationFromModel(contestProblemDao, m, contestModel));
 
         return new Page<>(contestClarifications, totalPages, pageIndex, pageSize);
     }
@@ -155,4 +159,14 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
         }
     }
 
+    private static ContestClarification createContestClarificationFromModel(ContestProblemDao contestProblemDao, ContestClarificationModel contestClarificationModel, ContestModel contestModel) {
+        String topic;
+        if ("CONT".equals(JidService.getInstance().parsePrefix(contestClarificationModel.topicJid))) {
+            topic = "(" + Messages.get("clarification.general") + ")";
+        } else {
+            ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestModel.jid, contestClarificationModel.topicJid);
+            topic = contestProblemModel.alias + " - " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid);
+        }
+        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.jid, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
+    }
 }

@@ -46,19 +46,19 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
             throw new ContestProblemNotFoundException("Contest Problem not found.");
         }
 
-        return ContestProblemServiceUtils.createContestProblemFromModel(contestProblemModel);
+        return createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid) {
         ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestJid, contestProblemJid);
-        return ContestProblemServiceUtils.createContestProblemFromModel(contestProblemModel);
+        return createContestProblemFromModel(contestProblemModel);
     }
 
     @Override
     public List<ContestProblem> getOpenedProblemsInContest(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getOpenedInContest(contestJid);
-        return Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
+        return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
     }
 
     @Override
@@ -72,7 +72,7 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
 
         long totalPages = contestProblemDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
+        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalPages, pageIndex, pageSize);
     }
@@ -82,7 +82,7 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
         long totalRows = contestProblemDao.countValidInContest(contestJid);
 
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getUsedInContestWithLimit(contestJid, pageIndex * pageSize, pageSize);
-        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> ContestProblemServiceUtils.createContestProblemFromModel(m));
+        List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalRows, pageIndex, pageSize);
     }
@@ -136,5 +136,9 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
         ContestProblemModel contestProblemModel = contestProblemDao.findById(contestProblemId);
 
         contestProblemDao.remove(contestProblemModel);
+    }
+
+    private static ContestProblem createContestProblemFromModel(ContestProblemModel contestProblemModel) {
+        return new ContestProblem(contestProblemModel.id, contestProblemModel.contestJid, contestProblemModel.problemJid, contestProblemModel.problemSecret, contestProblemModel.alias, contestProblemModel.submissionsLimit, ContestProblemStatus.valueOf(contestProblemModel.status));
     }
 }
