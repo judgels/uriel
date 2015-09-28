@@ -13,6 +13,7 @@ import org.iatoki.judgels.sandalphon.runnables.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.UrielControllerUtils;
+import org.iatoki.judgels.uriel.models.daos.ActivityLogDao;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
 import org.iatoki.judgels.uriel.runnables.ScoreboardUpdater;
@@ -23,6 +24,7 @@ import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
+import org.iatoki.judgels.uriel.services.impls.ActivityLogServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
@@ -53,6 +55,7 @@ public final class Global extends AbstractGlobal {
     private void buildServices(Injector injector) {
         JidCacheServiceImpl.buildInstance(injector.instanceOf(JidCacheDao.class));
         AvatarCacheServiceImpl.buildInstance(injector.instanceOf(AvatarCacheDao.class));
+        ActivityLogServiceImpl.buildInstance(injector.instanceOf(ActivityLogDao.class));
         UserActivityMessageServiceImpl.buildInstance();
     }
 
