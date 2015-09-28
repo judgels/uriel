@@ -18,7 +18,7 @@ public interface ContestClarificationService {
 
     long countUnreadClarificationsInContest(Collection<String> askerJids, String userJid, String contestJid, boolean answered);
 
-    void createContestClarification(String contestJid, String title, String question, String topicJid, String userJid, String userIpAddress);
+    ContestClarification createContestClarification(String contestJid, String title, String question, String topicJid, String userJid, String userIpAddress);
 
     void updateContestClarification(String contestClarificationJid, String title, String question, String userJid, String userIpAddress);
 

@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -32,7 +33,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -46,6 +46,7 @@ import javax.inject.Singleton;
 public final class UserController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String USER = "user";
 
     private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
@@ -73,8 +74,6 @@ public final class UserController extends AbstractJudgelsController {
         ));
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Users - List");
 
-        UrielControllerUtils.getInstance().addActivityLog("List all users <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -84,8 +83,6 @@ public final class UserController extends AbstractJudgelsController {
         UserAddForm userAddData = new UserAddForm();
         userAddData.roles = StringUtils.join(UrielUtils.getDefaultRoles(), ",");
         Form<UserAddForm> userCreateForm = Form.form(UserAddForm.class).fill(userAddData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to create user <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showAddUser(userCreateForm);
     }
@@ -119,7 +116,7 @@ public final class UserController extends AbstractJudgelsController {
 
         userService.upsertUserFromJophielUser(jophielUser, userCreateData.getRolesAsList(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Create user " + jophielUser.getJid() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD.construct(USER, jophielUser.getJid(), jophielUser.getUsername()));
 
         return redirect(routes.UserController.index());
     }
@@ -137,8 +134,6 @@ public final class UserController extends AbstractJudgelsController {
         ));
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "User - View");
 
-        UrielControllerUtils.getInstance().addActivityLog("View user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -149,8 +144,6 @@ public final class UserController extends AbstractJudgelsController {
         UserEditForm userEditData = new UserEditForm();
         userEditData.roles = StringUtils.join(user.getRoles(), ",");
         Form<UserEditForm> userEditForm = Form.form(UserEditForm.class).fill(userEditData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditUser(userEditForm, user);
     }
@@ -168,7 +161,7 @@ public final class UserController extends AbstractJudgelsController {
         UserEditForm userEditData = userEditForm.get();
         userService.updateUser(user.getUserJid(), userEditData.getRolesAsList(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update user " + user.getUserJid() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT.construct(USER, user.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid())));
 
         return redirect(routes.UserController.index());
     }
@@ -178,7 +171,7 @@ public final class UserController extends AbstractJudgelsController {
         User user = userService.findUserById(userId);
         userService.deleteUser(user.getUserJid());
 
-        UrielControllerUtils.getInstance().addActivityLog("Delete user " + user.getUserJid() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE.construct(USER, user.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(user.getUserJid())));
 
         return redirect(routes.UserController.index());
     }

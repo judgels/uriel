@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
@@ -31,7 +32,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 public class ContestAnnouncementController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String ANNOUNCEMENT = "announcement";
+    private static final String CONTEST = "contest";
 
     private final ContestAnnouncementService contestAnnouncementService;
     private final ContestService contestService;
@@ -83,8 +85,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Announcements");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open list of published announcements in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -112,8 +112,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Announcements");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open all announcements in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -126,8 +124,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to create announcement in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showCreateAnnouncement(contestAnnouncementUpsertForm, contest);
     }
@@ -147,9 +143,9 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         }
 
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
-        contestAnnouncementService.createContestAnnouncement(contest.getJid(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        ContestAnnouncement contestAnnouncement = contestAnnouncementService.createContestAnnouncement(contest.getJid(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Create " + contestAnnouncementUpsertData.status + " announcement with title " + contestAnnouncementUpsertData.title + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), ANNOUNCEMENT, contestAnnouncement.getJid(), contestAnnouncement.getTitle()));
 
         return redirect(routes.ContestAnnouncementController.viewAnnouncements(contest.getId()));
     }
@@ -168,8 +164,6 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         contestAnnouncementUpsertData.content = contestAnnouncement.getContent();
         contestAnnouncementUpsertData.status = contestAnnouncement.getStatus().name();
         Form<ContestAnnouncementUpsertForm> contestAnnouncementUpsertForm = Form.form(ContestAnnouncementUpsertForm.class).fill(contestAnnouncementUpsertData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditAnnouncement(contestAnnouncementUpsertForm, contest, contestAnnouncement);
     }
@@ -192,7 +186,10 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
         ContestAnnouncementUpsertForm contestAnnouncementUpsertData = contestAnnouncementUpsertForm.get();
         contestAnnouncementService.updateContestAnnouncement(contestAnnouncement.getJid(), contestAnnouncementUpsertData.title, JudgelsPlayUtils.toSafeHtml(contestAnnouncementUpsertData.content), ContestAnnouncementStatus.valueOf(contestAnnouncementUpsertData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update announcement  " + contestAnnouncement.getTitle() + " in contest " + contest.getName() + ".");
+        if (!contestAnnouncement.getTitle().equals(contestAnnouncementUpsertData.title)) {
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.RENAME_IN.construct(CONTEST, contest.getJid(), contest.getName(), ANNOUNCEMENT, contestAnnouncement.getJid(), contestAnnouncement.getTitle(), contestAnnouncementUpsertData.title));
+        }
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), ANNOUNCEMENT, contestAnnouncement.getJid(), contestAnnouncementUpsertData.title));
 
         return redirect(routes.ContestAnnouncementController.viewAnnouncements(contest.getId()));
     }

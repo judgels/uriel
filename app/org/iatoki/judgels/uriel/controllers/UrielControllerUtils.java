@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.controllers;
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.api.jophiel.JophielClientAPI;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.jophiel.ActivityKey;
 import org.iatoki.judgels.jophiel.UserActivityMessage;
 import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
 import org.iatoki.judgels.jophiel.forms.SearchProfileForm;
@@ -25,6 +26,7 @@ import org.iatoki.judgels.play.views.html.layouts.menusLayout;
 import org.iatoki.judgels.play.views.html.layouts.profileView;
 import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
 import org.iatoki.judgels.uriel.UrielUtils;
+import org.iatoki.judgels.uriel.services.impls.ActivityLogServiceImpl;
 import play.data.Form;
 import play.i18n.Messages;
 import play.mvc.Http;
@@ -88,14 +90,16 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         return UrielUtils.hasRole("admin");
     }
 
-    public void addActivityLog(String log) {
+    public void addActivityLog(ActivityKey activityKey) {
         if (!UrielUtils.isGuest()) {
-            String newLog = log;
+            long time = System.currentTimeMillis();
+            ActivityLogServiceImpl.getInstance().addActivityLog(activityKey, UrielUtils.getRealUsername(), time, UrielUtils.getRealUserJid(), IdentityUtils.getIpAddress());
+            String log = UrielUtils.getRealUsername() + " " + activityKey.toString();
             try {
                 if (JudgelsPlayUtils.hasViewPoint()) {
-                    newLog += " view as " + IdentityUtils.getUserJid();
+                    log += " view as " + IdentityUtils.getUsername();
                 }
-                UserActivityMessageServiceImpl.getInstance().addUserActivityMessage(new UserActivityMessage(System.currentTimeMillis(), UrielUtils.getRealUserJid(), newLog, IdentityUtils.getIpAddress()));
+                UserActivityMessageServiceImpl.getInstance().addUserActivityMessage(new UserActivityMessage(System.currentTimeMillis(), UrielUtils.getRealUserJid(), log, IdentityUtils.getIpAddress()));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

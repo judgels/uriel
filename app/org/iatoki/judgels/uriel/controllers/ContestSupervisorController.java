@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -34,7 +35,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -49,6 +49,8 @@ import java.util.stream.Collectors;
 public class ContestSupervisorController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String SUPERVISOR = "supervisor";
+    private static final String CONTEST = "contest";
 
     private final JophielPublicAPI jophielPublicAPI;
     private final ContestService contestService;
@@ -134,7 +136,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         }
         contestSupervisorService.createContestSupervisor(contest.getJid(), jophielUser.getJid(), contestPermission, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Add " + contestSupervisorCreateData.username + " as supervisor in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), SUPERVISOR, jophielUser.getJid(), jophielUser.getUsername()));
 
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
@@ -153,8 +155,6 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         contestSupervisorEditData.allowedPermissions = contestSupervisor.getContestPermission().getAllowedPermissions().stream().collect(Collectors.toMap(p -> p, p -> p));
 
         Form<ContestSupervisorEditForm> contestSupervisorEditForm = Form.form(ContestSupervisorEditForm.class).fill(contestSupervisorEditData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditSupervisor(contestSupervisorEditForm, contest, contestSupervisor);
     }
@@ -183,7 +183,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
         }
         contestSupervisorService.updateContestSupervisor(contestSupervisor.getId(), contestPermission, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update supervisor " + contestSupervisor.getUserJid() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), SUPERVISOR, contestSupervisor.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestSupervisor.getUserJid())));
 
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
@@ -198,7 +198,7 @@ public class ContestSupervisorController extends AbstractJudgelsController {
 
         contestSupervisorService.deleteContestSupervisor(contestSupervisor.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Delete supervisor " + JidCacheServiceImpl.getInstance().getDisplayName(contestSupervisor.getUserJid()) + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), SUPERVISOR, contestSupervisor.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestSupervisor.getUserJid())));
 
         return redirect(routes.ContestSupervisorController.viewSupervisors(contest.getId()));
     }
@@ -212,8 +212,6 @@ public class ContestSupervisorController extends AbstractJudgelsController {
                 new InternalLink(Messages.get("supervisor.list"), routes.ContestSupervisorController.viewSupervisors(contest.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Supervisors");
-
-        UrielControllerUtils.getInstance().addActivityLog("List all supervisors in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }

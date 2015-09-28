@@ -11,7 +11,7 @@ GET         /resetViewAs                                                        
 GET         /contests                                                                               @org.iatoki.judgels.uriel.controllers.ContestController.index()
 GET         /contests/                                                                              @org.iatoki.judgels.uriel.controllers.ContestController.listAllowedContests(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
 GET         /contests/new                                                                           @org.iatoki.judgels.uriel.controllers.ContestController.createContest()
-POST        /contests                                                                               @org.iatoki.judgels.uriel.controllers.ContestController.postAddContest()
+POST        /contests                                                                               @org.iatoki.judgels.uriel.controllers.ContestController.postCreateContest()
 
 GET         /contests/:contestId                                                                    @org.iatoki.judgels.uriel.controllers.ContestController.viewContest(contestId: Long)
 GET         /contests/:contestId/                                                                   @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(contestId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filtertring ?= "")

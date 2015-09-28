@@ -77,7 +77,7 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
     }
 
     @Override
-    public void createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress) {
+    public ContestAnnouncement createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestAnnouncementModel contestAnnouncementModel = new ContestAnnouncementModel();
@@ -89,6 +89,8 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
         contestAnnouncementDao.persist(contestAnnouncementModel, userJid, userIpAddress);
 
         contestDao.edit(contestModel, userJid, userIpAddress);
+
+        return createContestAnnouncementFromModel(contestAnnouncementModel);
     }
 
     @Override

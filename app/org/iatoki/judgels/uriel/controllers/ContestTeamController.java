@@ -6,6 +6,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -38,6 +39,7 @@ import org.iatoki.judgels.uriel.services.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.team.listCreateTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.team.listScreenedTeamsView;
 import org.iatoki.judgels.uriel.views.html.contest.team.editTeamView;
@@ -65,6 +67,10 @@ import java.util.List;
 public class ContestTeamController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 1000;
+    private static final String TEAM = "team";
+    private static final String COACH = "coach";
+    private static final String MEMBER = "member";
+    private static final String CONTEST = "contest";
 
     private final ContestContestantService contestContestantService;
     private final ContestService contestService;
@@ -155,9 +161,10 @@ public class ContestTeamController extends AbstractJudgelsController {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart teamImage = body.getFile("teamImage");
 
+        ContestTeam contestTeam;
         if (teamImage != null) {
             try {
-                contestTeamService.createContestTeam(contest.getJid(), contestTeamUpsertData.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+                contestTeam = contestTeamService.createContestTeam(contest.getJid(), contestTeamUpsertData.name, teamImage.getFile(), FilenameUtils.getExtension(teamImage.getFilename()), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             } catch (IOException e) {
                 Page<ContestTeam> contestTeams = contestTeamService.getPageOfTeamsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
                 boolean canUpdate = isAllowedToSuperviseTeams(contest);
@@ -166,10 +173,10 @@ public class ContestTeamController extends AbstractJudgelsController {
                 return showlistCreateTeam(contestTeams, pageIndex, orderBy, orderDir, filterString, canUpdate, contestTeamUpsertForm, contest);
             }
         } else {
-            contestTeamService.createContestTeam(contest.getJid(), contestTeamUpsertData.name, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            contestTeam = contestTeamService.createContestTeam(contest.getJid(), contestTeamUpsertData.name, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
 
-        UrielControllerUtils.getInstance().addActivityLog("Create team " + contestTeamUpsertData.name + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName()));
 
         return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
     }
@@ -187,8 +194,6 @@ public class ContestTeamController extends AbstractJudgelsController {
         ContestTeamUpsertForm contestTeamUpsertData = new ContestTeamUpsertForm();
         contestTeamUpsertData.name = contestTeam.getName();
         Form<ContestTeamUpsertForm> contestTeamUpsertForm = Form.form(ContestTeamUpsertForm.class).fill(contestTeamUpsertData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditTeam(contestTeamUpsertForm, contest, contestTeam);
     }
@@ -224,7 +229,10 @@ public class ContestTeamController extends AbstractJudgelsController {
             contestTeamService.updateContestTeam(contestTeam.getJid(), contestTeamUpsertData.name, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
 
-        UrielControllerUtils.getInstance().addActivityLog("Update team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        if (!contestTeam.getName().equals(contestTeamUpsertData.name)) {
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.RENAME_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), contestTeamUpsertData.name));
+        }
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeamUpsertData.name));
 
         return redirect(routes.ContestTeamController.viewTeams(contest.getId()));
     }
@@ -242,8 +250,6 @@ public class ContestTeamController extends AbstractJudgelsController {
         Form<ContestTeamCoachUploadForm> contestTeamCoachUploadForm = Form.form(ContestTeamCoachUploadForm.class);
         Form<ContestTeamMemberAddForm> contestTeamMemberAddForm = Form.form(ContestTeamMemberAddForm.class);
         Form<ContestTeamMemberUploadForm> contestTeamMemberUploadForm = Form.form(ContestTeamMemberUploadForm.class);
-
-        UrielControllerUtils.getInstance().addActivityLog("View team " + contestTeam.getName() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showViewTeam(contestTeamCoachAddForm, contestTeamCoachUploadForm, contestTeamMemberAddForm, contestTeamMemberUploadForm, contest, contestTeam, contestTeamService.getCoachesOfTeam(contestTeam.getJid()), contestTeamService.getMembersOfTeam(contestTeam.getJid()), isAllowedToSuperviseTeams(contest));
     }
@@ -294,7 +300,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         contestTeamService.createContestTeamCoach(contestTeam.getJid(), jophielUser.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamCoachCreateData.username + " as coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_TO_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), COACH, jophielUser.getJid(), jophielUser.getUsername()));
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -346,7 +352,7 @@ public class ContestTeamController extends AbstractJudgelsController {
                 userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
                 contestTeamService.createContestTeamCoach(contestTeam.getJid(), jophielUser.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
-            UrielControllerUtils.getInstance().addActivityLog("Upload contest team coaches in contest " + contest.getName() + ".");
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.UPLOAD_TO_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), COACH, null, userFile.getName()));
         }
         List<UploadResult> failedUploads = failedUploadsBuilder.build();
 
@@ -364,7 +370,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         contestTeamService.removeContestTeamCoachById(contestTeamCoach.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Remove " + contestTeamCoach.getCoachJid() + " from coach on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), COACH, contestTeamCoach.getCoachJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestTeamCoach.getCoachJid())));
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -411,7 +417,7 @@ public class ContestTeamController extends AbstractJudgelsController {
         }
         contestTeamService.createContestTeamMember(contestTeam.getJid(), jophielUser.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Add " + contestTeamMemberAddData.username + " as member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_TO_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), MEMBER, jophielUser.getJid(), jophielUser.getUsername()));
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -462,7 +468,7 @@ public class ContestTeamController extends AbstractJudgelsController {
                 contestTeamService.createContestTeamMember(contestTeam.getJid(), jophielUser.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             }
 
-            UrielControllerUtils.getInstance().addActivityLog("Upload contest team members in contest " + contest.getName() + ".");
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.UPLOAD_TO_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), MEMBER, null, userFile.getName()));
         }
         List<UploadResult> failedUploads = failedUploadsBuilder.build();
 
@@ -480,7 +486,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         contestTeamService.removeContestTeamMemberById(contestTeamMember.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Remove " + contestTeamMember.getMemberJid() + " from member on team " + contestTeam.getName() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM_IN.construct(CONTEST, contest.getJid(), contest.getName(), TEAM, contestTeam.getJid(), contestTeam.getName(), MEMBER, contestTeamMember.getMemberJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestTeamMember.getMemberJid())));
 
         return redirect(routes.ContestTeamController.viewTeam(contest.getId(), contestTeam.getId()));
     }
@@ -496,8 +502,6 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
 
-        UrielControllerUtils.getInstance().addActivityLog("List all teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -511,8 +515,6 @@ public class ContestTeamController extends AbstractJudgelsController {
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Teams");
-
-        UrielControllerUtils.getInstance().addActivityLog("List all screened teams in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }

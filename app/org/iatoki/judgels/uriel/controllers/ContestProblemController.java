@@ -6,6 +6,7 @@ import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.sandalphon.SandalphonClientAPI;
 import org.iatoki.judgels.api.sandalphon.SandalphonProblem;
 import org.iatoki.judgels.api.sandalphon.SandalphonProgrammingProblemStatementRenderRequestParam;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -45,7 +46,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -63,6 +63,8 @@ import java.util.stream.Collectors;
 public class ContestProblemController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 50;
+    private static final String PROBLEM = "problem";
+    private static final String CONTEST = "contest";
 
     private final ContestProblemService contestProblemService;
     private final ContestService contestService;
@@ -111,8 +113,6 @@ public class ContestProblemController extends AbstractJudgelsController {
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
-
-        UrielControllerUtils.getInstance().addActivityLog("Open list of valid problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
@@ -167,8 +167,6 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problem - View");
 
-        UrielControllerUtils.getInstance().addActivityLog("View problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -220,8 +218,6 @@ public class ContestProblemController extends AbstractJudgelsController {
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Problems");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open all problems in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -237,8 +233,6 @@ public class ContestProblemController extends AbstractJudgelsController {
         contestProblemAddData.submissionsLimit = 0;
         Form<ContestProblemAddForm> contestProblemAddForm = Form.form(ContestProblemAddForm.class);
         contestProblemAddForm = contestProblemAddForm.fill(contestProblemAddData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to add problem in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showAddProblem(contestProblemAddForm, contest);
     }
@@ -275,7 +269,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         contestProblemService.createContestProblem(contest.getJid(), contestProblemAddData.problemJid, contestProblemAddData.problemSecret, contestProblemAddData.alias, contestProblemAddData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemAddData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         JidCacheServiceImpl.getInstance().putDisplayName(contestProblemAddData.problemJid, sandalphonProblem.getDisplayName(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Add problem " + contestProblemAddData.alias + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblemAddData.problemJid, sandalphonProblem.getSlug()));
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
@@ -294,8 +288,6 @@ public class ContestProblemController extends AbstractJudgelsController {
         contestProblemEditData.submissionsLimit = contestProblem.getSubmissionsLimit();
         contestProblemEditData.status = contestProblem.getStatus().name();
         Form<ContestProblemEditForm> contestProblemEditForm = Form.form(ContestProblemEditForm.class).fill(contestProblemEditData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditProblem(contestProblemEditForm, contest, contestProblem);
     }
@@ -318,7 +310,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         ContestProblemEditForm contestProblemEditData = contestProblemEditForm.get();
         contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemEditData.alias, contestProblemEditData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid())));
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
@@ -333,7 +325,7 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         contestProblemService.deleteContestProblem(contestProblem.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Delete problem " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()) + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid())));
 
         return redirect(routes.UserController.index());
     }

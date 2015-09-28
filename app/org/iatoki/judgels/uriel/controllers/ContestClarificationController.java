@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -19,6 +20,7 @@ import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamMember;
+import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
@@ -44,7 +46,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -62,6 +63,8 @@ import java.util.stream.Collectors;
 public class ContestClarificationController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String CLARIFICATION = "clarification";
+    private static final String CONTEST = "contest";
 
     private final ContestClarificationService contestClarificationService;
     private final ContestProblemService contestProblemService;
@@ -136,8 +139,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Clarifications");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open list of own clarifications in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -155,8 +156,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
 
         Form<ContestClarificationCreateForm> contestClarificationCreateForm = Form.form(ContestClarificationCreateForm.class);
         if (!contest.containsModule(ContestModules.CLARIFICATION_TIME_LIMIT)) {
-            UrielControllerUtils.getInstance().addActivityLog("Try to create clarification in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
             return showCreateClarification(contestClarificationCreateForm, contest);
         }
 
@@ -165,8 +164,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
         if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to create clarification in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showCreateClarification(contestClarificationCreateForm, contest);
     }
@@ -216,8 +213,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
         Form<ContestClarificationChangeForm> contestClarificationChangeForm = Form.form(ContestClarificationChangeForm.class).fill(contestClarificationChangeData);
         contestClarificationChangeForm = contestClarificationChangeForm.fill(contestClarificationChangeData);
 
-        UrielControllerUtils.getInstance().addActivityLog("Try to update clarification " + contestClarification.getTitle() + " content in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return showEditClarificationContent(contestClarificationChangeForm, contest, contestClarification);
     }
 
@@ -244,7 +239,10 @@ public class ContestClarificationController extends AbstractJudgelsController {
         ContestClarificationChangeForm contestClarificationChangeData = contestClarificationChangeForm.get();
         contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationChangeData.title, contestClarificationChangeData.question, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update clarification " + contestClarification.getTitle() + " content in contest " + contest.getName() + ".");
+        if (!contestClarification.getTitle().equals(contestClarificationChangeData.title)) {
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.RENAME_IN.construct(CONTEST, contest.getJid(), contest.getName(), CLARIFICATION, contestClarification.getJid(), contestClarification.getTitle(), contestClarificationChangeData.title));
+        }
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), CLARIFICATION, contestClarification.getJid(), contestClarificationChangeData.title));
 
         return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
     }
@@ -279,8 +277,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Clarifications");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open all clarifications in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -302,8 +298,6 @@ public class ContestClarificationController extends AbstractJudgelsController {
         contestClarificationUpsertData.answer = contestClarification.getAnswer();
         contestClarificationUpsertData.status = contestClarification.getStatus().name();
         Form<ContestClarificationEditForm> contestClarificationUpsertForm = Form.form(ContestClarificationEditForm.class).fill(contestClarificationUpsertData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditClarificationAnswer(contestClarificationUpsertForm, contest, contestClarification);
     }
@@ -331,7 +325,7 @@ public class ContestClarificationController extends AbstractJudgelsController {
         ContestClarificationEditForm contestClarificationEditData = contestClarificationUpsertForm.get();
         contestClarificationService.updateContestClarification(contestClarification.getJid(), contestClarificationEditData.answer, ContestClarificationStatus.valueOf(contestClarificationEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Answer clarification " + contestClarification.getTitle() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.ANSWER.construct(CONTEST, contest.getJid(), contest.getName(), CLARIFICATION, contestClarification.getJid(), contestClarification.getTitle()));
 
         return redirect(routes.ContestClarificationController.viewClarifications(contest.getId()));
     }
@@ -344,9 +338,9 @@ public class ContestClarificationController extends AbstractJudgelsController {
         }
 
         ContestClarificationCreateForm contestClarificationCreateData = contestClarificationCreateForm.get();
-        contestClarificationService.createContestClarification(contest.getJid(), contestClarificationCreateData.title, contestClarificationCreateData.question, contestClarificationCreateData.topicJid, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        ContestClarification contestClarification = contestClarificationService.createContestClarification(contest.getJid(), contestClarificationCreateData.title, contestClarificationCreateData.question, contestClarificationCreateData.topicJid, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Create clarification " + contestClarificationCreateData.title + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), CLARIFICATION, contestClarification.getJid(), contestClarificationCreateData.title));
 
         return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
     }

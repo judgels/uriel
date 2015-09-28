@@ -104,7 +104,7 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
     }
 
     @Override
-    public void createContestClarification(String contestJid, String title, String question, String topicJid, String userJid, String userIpAddress) {
+    public ContestClarification createContestClarification(String contestJid, String title, String question, String topicJid, String userJid, String userIpAddress) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestClarificationModel contestClarificationModel = new ContestClarificationModel();
@@ -117,6 +117,8 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
         contestClarificationDao.persist(contestClarificationModel, userJid, userIpAddress);
 
         contestDao.edit(contestModel, userJid, userIpAddress);
+
+        return createContestClarificationFromModel(contestProblemDao, contestClarificationModel, contestModel);
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
+import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -47,7 +48,6 @@ import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -64,6 +64,9 @@ import java.util.stream.Collectors;
 @Singleton
 @Named
 public class ContestScoreboardController extends AbstractJudgelsController {
+
+    private static final String SCOREBOARD = "scoreboard";
+    private static final String CONTEST = "contest";
 
     private final ContestProblemService contestProblemService;
     private final ContestScoreboardService contestScoreboardService;
@@ -143,8 +146,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Public Scoreboard");
 
-        UrielControllerUtils.getInstance().addActivityLog("View public scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -171,8 +172,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Official Scoreboard");
 
-        UrielControllerUtils.getInstance().addActivityLog("View official scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -198,7 +197,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             refreshFrozenScoreboard(contest, contestFrozenScoreboardModule, adapter, state);
         }
 
-        UrielControllerUtils.getInstance().addActivityLog("Refresh all scoreboard in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
 
         return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
     }
@@ -355,8 +354,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                 }
             }
         }
-
-        UrielControllerUtils.getInstance().addActivityLog("Download contest data in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

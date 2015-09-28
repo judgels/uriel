@@ -42,9 +42,9 @@ public interface ContestTeamService {
 
     String getTeamAvatarImageURL(String imageName);
 
-    void createContestTeam(String contestJid, String name, String userJid, String userIpAddress);
+    ContestTeam createContestTeam(String contestJid, String name, String userJid, String userIpAddress);
 
-    void createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException;
+    ContestTeam createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException;
 
     void updateContestTeam(String contestTeamJid, String name, String userJid, String userIpAddress);
 

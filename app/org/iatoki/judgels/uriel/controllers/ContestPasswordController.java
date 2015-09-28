@@ -22,7 +22,6 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.password.listContestantPasswordsView;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -105,8 +104,6 @@ public final class ContestPasswordController extends AbstractJudgelsController {
                 new InternalLink(Messages.get("contestant.passwords"), routes.ContestPasswordController.viewContestantPasswords(contest.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Passwords");
-
-        UrielControllerUtils.getInstance().addActivityLog("Open list of passwords in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }

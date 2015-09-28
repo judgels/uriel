@@ -226,7 +226,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     }
 
     @Override
-    public void createContestTeam(String contestJid, String name, String userJid, String userIpAddress) {
+    public ContestTeam createContestTeam(String contestJid, String name, String userJid, String userIpAddress) {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestTeamModel contestTeamModel = new ContestTeamModel();
@@ -237,10 +237,12 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         contestTeamDao.persist(contestTeamModel, userJid, userIpAddress);
 
         contestDao.edit(contestModel, userJid, userIpAddress);
+
+        return createContestTeamFromModel(contestTeamModel, ImmutableList.of(), ImmutableList.of());
     }
 
     @Override
-    public void createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException {
+    public ContestTeam createContestTeam(String contestJid, String name, File teamImage, String extension, String userJid, String userIpAddress) throws IOException {
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         ContestTeamModel contestTeamModel = new ContestTeamModel();
@@ -259,6 +261,8 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         contestTeamDao.edit(contestTeamModel, userJid, userIpAddress);
 
         contestDao.edit(contestModel, userJid, userIpAddress);
+
+        return createContestTeamFromModel(contestTeamModel, ImmutableList.of(), ImmutableList.of());
     }
 
     @Override

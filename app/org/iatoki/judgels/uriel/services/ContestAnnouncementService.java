@@ -15,7 +15,7 @@ public interface ContestAnnouncementService {
 
     long countUnreadAnnouncementsInContest(String userJid, String contestJid);
 
-    void createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress);
+    ContestAnnouncement createContestAnnouncement(String contestJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress);
 
     void updateContestAnnouncement(String contestAnnouncementJid, String title, String content, ContestAnnouncementStatus status, String userJid, String userIpAddress);
 

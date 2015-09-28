@@ -5,6 +5,7 @@ import org.apache.commons.io.FileUtils;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
@@ -54,6 +55,8 @@ import java.util.List;
 public class ContestContestantController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 1000;
+    private static final String CONTESTANT = "contestant";
+    private static final String CONTEST = "contest";
 
     private final JophielPublicAPI jophielPublicAPI;
     private final ContestService contestService;
@@ -109,31 +112,33 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
 
         ContestContestantAddForm contestContestantCreateData = contestContestantCreateForm.get();
+        JophielUser jophielUser;
         try {
-            JophielUser jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
-            if (jophielUser == null) {
-                contestContestantCreateForm.reject("error.contestant.create.userNotExist");
-
-                return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
-            }
-
-            if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
-                contestContestantCreateForm.reject("error.contestant.create.userIsAlreadyContestant");
-
-                return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
-            }
-
-            userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-            contestContestantService.createContestContestant(contest.getJid(), jophielUser.getJid(), ContestContestantStatus.valueOf(contestContestantCreateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-
-            UrielControllerUtils.getInstance().addActivityLog("Add contestant " + contestContestantCreateData.username + " in contest " + contest.getName() + ".");
-
-            return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
+            jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
         } catch (JudgelsAPIClientException e) {
             contestContestantCreateForm.reject("error.contestant.create.userNotExist");
 
             return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
         }
+
+        if (jophielUser == null) {
+            contestContestantCreateForm.reject("error.contestant.create.userNotExist");
+
+            return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+        }
+
+        if (contestContestantService.isContestantInContest(contest.getJid(), jophielUser.getJid())) {
+            contestContestantCreateForm.reject("error.contestant.create.userIsAlreadyContestant");
+
+            return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+        }
+
+        userService.upsertUserFromJophielUser(jophielUser, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestContestantService.createContestContestant(contest.getJid(), jophielUser.getJid(), ContestContestantStatus.valueOf(contestContestantCreateData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), CONTESTANT, jophielUser.getJid(), jophielUser.getUsername()));
+
+        return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
     }
 
     @Transactional(readOnly = true)
@@ -148,8 +153,6 @@ public class ContestContestantController extends AbstractJudgelsController {
         ContestContestantEditForm contestContestantEditData = new ContestContestantEditForm();
         contestContestantEditData.status = contestContestant.getStatus().name();
         Form<ContestContestantEditForm> contestContestantEditForm = Form.form(ContestContestantEditForm.class).fill(contestContestantEditData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditContestant(contestContestantEditForm, contest, contestContestant);
     }
@@ -172,7 +175,7 @@ public class ContestContestantController extends AbstractJudgelsController {
         ContestContestantEditForm contestContestantEditData = contestContestantEditForm.get();
         contestContestantService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update contestant " + contestContestant.getUserJid() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), CONTESTANT, contestContestant.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestContestant.getUserJid())));
 
         return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
     }
@@ -213,7 +216,7 @@ public class ContestContestantController extends AbstractJudgelsController {
                     }
                 }
 
-                UrielControllerUtils.getInstance().addActivityLog("Upload contestants in contest " + contest.getName() + ".");
+                UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.UPLOAD_IN.construct(CONTEST, contest.getJid(), contest.getName(), CONTESTANT, null, userFile.getName()));
 
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -234,7 +237,7 @@ public class ContestContestantController extends AbstractJudgelsController {
 
         contestContestantService.deleteContestContestant(contestContestant.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Delete contestant " + JidCacheServiceImpl.getInstance().getDisplayName(contestContestant.getUserJid()) + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), CONTESTANT, contestContestant.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestContestant.getUserJid())));
 
         return redirect(routes.ContestContestantController.viewContestants(contest.getId()));
     }
@@ -257,8 +260,6 @@ public class ContestContestantController extends AbstractJudgelsController {
                 new InternalLink(Messages.get("contestant.list"), routes.ContestContestantController.viewContestants(contest.getId()))
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Contestants");
-
-        UrielControllerUtils.getInstance().addActivityLog("Open list of contestants in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }

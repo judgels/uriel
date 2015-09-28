@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.EnumUtils;
+import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
@@ -25,6 +26,7 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
+import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.GuestView;
@@ -56,7 +58,6 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
-import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -71,6 +72,7 @@ import java.util.SortedMap;
 public final class ContestController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String CONTEST = "contest";
 
     private final ContestContestantPasswordService contestContestantPasswordService;
     private final ContestContestantService contestContestantService;
@@ -196,8 +198,6 @@ public final class ContestController extends AbstractJudgelsController {
         ));
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contests");
 
-        UrielControllerUtils.getInstance().addActivityLog("Open list of allowed contests <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -243,8 +243,6 @@ public final class ContestController extends AbstractJudgelsController {
                 new InternalLink(contest.getName(), routes.ContestController.viewContest(contest.getId()))
         ));
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
-
-        UrielControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
@@ -292,8 +290,6 @@ public final class ContestController extends AbstractJudgelsController {
         ));
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - View");
 
-        UrielControllerUtils.getInstance().addActivityLog("View contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -308,7 +304,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Register to contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.viewContest(contestId));
     }
@@ -325,7 +321,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
         contestContestantService.deleteContestContestant(contestContestant.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog("Unregister from contest " + contest.getName() + "  <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.UNREGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.viewContest(contestId));
     }
@@ -342,8 +338,6 @@ public final class ContestController extends AbstractJudgelsController {
         if (!ContestControllerUtils.getInstance().isCoachOrAbove(contest, IdentityUtils.getUserJid()) && !(contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) && !ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid())) {
             contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         }
-
-        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
@@ -377,8 +371,6 @@ public final class ContestController extends AbstractJudgelsController {
 
         ContestControllerUtils.getInstance().establishContestWithPasswordCookie(correctPassword);
 
-        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return redirect(routes.ContestController.jumpToAnnouncements(contestId));
     }
 
@@ -393,7 +385,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestContestantService.startContestAsContestant(contest.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Enter contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.START.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.jumpToAnnouncements(contest.getId()));
     }
@@ -405,8 +397,6 @@ public final class ContestController extends AbstractJudgelsController {
     public Result createContest() {
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class);
 
-        UrielControllerUtils.getInstance().addActivityLog("Try to create a contest.");
-
         return showCreateContest(contestUpsertForm);
     }
 
@@ -414,7 +404,7 @@ public final class ContestController extends AbstractJudgelsController {
     @Authorized(value = "admin")
     @Transactional
     @RequireCSRFCheck
-    public Result postAddContest() {
+    public Result postCreateContest() {
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).bindFromRequest();
 
         if (formHasErrors(contestUpsertForm)) {
@@ -424,7 +414,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
         Contest contest = contestService.createContest(contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Created contest " + contestUpsertData.name + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.CREATE.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.editContestSpecificConfig(contest.getId()));
     }
@@ -444,8 +434,6 @@ public final class ContestController extends AbstractJudgelsController {
         contestUpsertData.description = contest.getDescription();
         contestUpsertData.style = contest.getStyle().name();
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).fill(contestUpsertData);
-
-        UrielControllerUtils.getInstance().addActivityLog("Try to update general config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return showEditContestGeneralConfig(contestUpsertForm, contest);
     }
@@ -468,7 +456,10 @@ public final class ContestController extends AbstractJudgelsController {
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
         contestService.updateContest(contest.getJid(), contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update general config of contest " + contest.getName() + ".");
+        if (!contest.getName().equals(contestUpsertData.name)) {
+            UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.RENAME.construct(CONTEST, contest.getJid(), contest.getName(), contestUpsertData.name));
+        }
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT.construct(CONTEST, contest.getJid(), contestUpsertData.name));
 
         return redirect(routes.ContestController.editContestGeneralConfig(contestId));
     }
@@ -574,7 +565,7 @@ public final class ContestController extends AbstractJudgelsController {
             moduleFormMap.put(contestModule, contestModule.generateConfigForm());
         }
 
-        UrielControllerUtils.getInstance().addActivityLog("Try to update specific config of contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return showEditContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
     }
@@ -624,7 +615,7 @@ public final class ContestController extends AbstractJudgelsController {
         contestService.updateContestStyleConfiguration(contest.getJid(), contestStyleConfig, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         contestService.updateContestModuleConfiguration(contest.getJid(), updatedContestModuleBuilder.build(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Update specific config of contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.editContestSpecificConfig(contest.getId()));
     }
@@ -641,7 +632,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestService.lockContest(contest.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Lock contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.LOCK.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.viewContest(contest.getId()));
     }
@@ -658,7 +649,7 @@ public final class ContestController extends AbstractJudgelsController {
 
         contestService.unlockContest(contest.getJid(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Unlock contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.UNLOCK.construct(CONTEST, contest.getJid(), contest.getName()));
 
         return redirect(routes.ContestController.viewContest(contest.getId()));
     }

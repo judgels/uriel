@@ -24,6 +24,7 @@ import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestProblem;
 import org.iatoki.judgels.uriel.ContestProblemStatus;
+import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
 import org.iatoki.judgels.uriel.config.ProgrammingSubmissionRemoteFileSystemProvider;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -56,6 +57,10 @@ import java.util.Map;
 public final class ContestProgrammingSubmissionController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
+    private static final String SUBMISSION = "submission";
+    private static final String PROGRAMMING_FILES = "programming_files";
+    private static final String PROBLEM = "problem";
+    private static final String CONTEST = "contest";
 
     private final ContestContestantService contestContestantService;
     private final ContestProblemService contestProblemService;
@@ -96,10 +101,11 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         String gradingLanguage = body.asFormUrlEncoded().get("language")[0];
         String gradingEngine = body.asFormUrlEncoded().get("engine")[0];
+        String submissionJid;
 
         try {
             SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromNewSubmission(body);
-            String submissionJid = programmingSubmissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, null, submissionSource, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+            submissionJid = programmingSubmissionService.submit(problemJid, contest.getJid(), gradingEngine, gradingLanguage, null, submissionSource, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
             ProgrammingSubmissionUtils.storeSubmissionFiles(programmingSubmissionLocalFileSystemProvider, programmingSubmissionRemoteFileSystemProvider, submissionJid, submissionSource);
 
         } catch (ProgrammingSubmissionException e) {
@@ -108,7 +114,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
             return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
         }
 
-        UrielControllerUtils.getInstance().addActivityLog("Submit to problem " + contestProblem.getAlias() + " in contest " + contest.getName() + ".");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.SUBMIT.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), SUBMISSION, submissionJid, PROGRAMMING_FILES));
 
         return redirect(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contestId));
     }
@@ -144,8 +150,6 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         );
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submissions");
 
-        UrielControllerUtils.getInstance().addActivityLog("List own submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -175,8 +179,6 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         );
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Submission - View");
-
-        UrielControllerUtils.getInstance().addActivityLog("View submission " + submission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
 
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
@@ -214,8 +216,6 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - All Submissions");
 
-        UrielControllerUtils.getInstance().addActivityLog("List all submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
-
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
@@ -230,7 +230,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromPastSubmission(programmingSubmissionLocalFileSystemProvider, programmingSubmissionRemoteFileSystemProvider, programmingSubmission.getJid());
         programmingSubmissionService.regrade(programmingSubmission.getJid(), submissionSource, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog("Regrade submission " + programmingSubmission.getId() + " in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGRADE.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, programmingSubmission.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(programmingSubmission.getProblemJid()), SUBMISSION, programmingSubmission.getJid(), programmingSubmission.getId() + ""));
 
         return redirect(routes.ContestProgrammingSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
     }
@@ -257,9 +257,9 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
         for (ProgrammingSubmission programmingSubmission : programmingSubmissions) {
             SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromPastSubmission(programmingSubmissionLocalFileSystemProvider, programmingSubmissionRemoteFileSystemProvider, programmingSubmission.getJid());
             programmingSubmissionService.regrade(programmingSubmission.getJid(), submissionSource, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
-        }
 
-        UrielControllerUtils.getInstance().addActivityLog("Regrade some submissions in contest " + contest.getName() + " <a href=\"" + "http://" + Http.Context.current().request().host() + Http.Context.current().request().uri() + "\">link</a>.");
+            UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGRADE.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, programmingSubmission.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(programmingSubmission.getProblemJid()), SUBMISSION, programmingSubmission.getJid(), programmingSubmission.getId() + ""));
+        }
 
         return redirect(routes.ContestProgrammingSubmissionController.listSubmissions(contestId, pageIndex, orderBy, orderDir, contestantJid, problemJid));
     }
