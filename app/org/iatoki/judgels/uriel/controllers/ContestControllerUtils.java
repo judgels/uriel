@@ -140,6 +140,10 @@ public final class ContestControllerUtils {
 
     public boolean hasContestStarted(Contest contest, String userJid) {
         if (contest.containsModule(ContestModules.VIRTUAL)) {
+            if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
+                return false;
+            }
+
             ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), userJid);
             return contestContestant.getContestStartTime() != 0;
         }

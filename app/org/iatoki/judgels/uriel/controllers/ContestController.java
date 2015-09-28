@@ -27,6 +27,7 @@ import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.UrielActivityKeys;
+import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.GuestView;
@@ -222,7 +223,7 @@ public final class ContestController extends AbstractJudgelsController {
         if (contest.isLocked()) {
             content.appendLayout(c -> alertLayout.render(Messages.get("contest.isLocked"), c));
         }
-        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+        if (!UrielUtils.isGuest() && ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
             ImmutableList.Builder<InternalLink> manageActionsBuilder = ImmutableList.builder();
             manageActionsBuilder.add(new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestGeneralConfig(contest.getId())));
             if ((UrielControllerUtils.getInstance().isAdmin()) && (ContestControllerUtils.getInstance().hasContestEnded(contest))) {
@@ -260,11 +261,11 @@ public final class ContestController extends AbstractJudgelsController {
 
         ImmutableList.Builder<InternalLink> actionsBuilder = ImmutableList.builder();
 
-        if (ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid())) {
+        if (!UrielUtils.isGuest() && ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid())) {
             actionsBuilder.add(new InternalLink(Messages.get("contest.register"), routes.ContestController.registerToAContest(contest.getId())));
         }
 
-        if (ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest, IdentityUtils.getUserJid())) {
+        if (!UrielUtils.isGuest() && ContestControllerUtils.getInstance().isAllowedToUnregisterContest(contest, IdentityUtils.getUserJid())) {
             actionsBuilder.add(new InternalLink(Messages.get("contest.unregister"), routes.ContestController.unregisterFromAContest(contest.getId())));
         }
         addBasicActionsInViewContest(contest, actionsBuilder);
@@ -274,11 +275,11 @@ public final class ContestController extends AbstractJudgelsController {
         Page<ContestContestant> pageOfContestContestants = contestContestantService.getPageOfContestantsInContest(contest.getJid(), pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
         content.appendLayout(c -> viewRegistrantsLayoutView.render(contest, pageOfContestContestants, pageIndex, orderBy, orderDir, filterString, c));
 
-        if (ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid()) && !ContestControllerUtils.getInstance().hasContestEnded(contest)) {
+        if (!UrielUtils.isGuest() && ContestControllerUtils.getInstance().isContestant(contest, IdentityUtils.getUserJid()) && !ContestControllerUtils.getInstance().hasContestEnded(contest)) {
             content.appendLayout(c -> alertLayout.render(Messages.get("contest.registeredAndNotStarted"), c));
         }
 
-        if (ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
+        if (!UrielUtils.isGuest() && ContestControllerUtils.getInstance().isAllowedToManageContest(contest, IdentityUtils.getUserJid())) {
             content.appendLayout(c -> headingWithActionLayout.render(contest.getName(), new InternalLink(Messages.get("commons.update"), routes.ContestController.editContestGeneralConfig(contest.getId())), c));
         } else {
             content.appendLayout(c -> headingLayout.render(contest.getName(), c));
