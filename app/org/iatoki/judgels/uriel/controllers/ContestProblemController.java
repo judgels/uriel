@@ -269,7 +269,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         contestProblemService.createContestProblem(contest.getJid(), contestProblemAddData.problemJid, contestProblemAddData.problemSecret, contestProblemAddData.alias, contestProblemAddData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemAddData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         JidCacheServiceImpl.getInstance().putDisplayName(contestProblemAddData.problemJid, sandalphonProblem.getDisplayName(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblemAddData.problemJid, sandalphonProblem.getDisplayName()));
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblemAddData.problemJid, sandalphonProblem.getSlug()));
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
@@ -310,7 +310,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         ContestProblemEditForm contestProblemEditData = contestProblemEditForm.get();
         contestProblemService.updateContestProblem(contestProblem.getId(), contestProblemEditData.alias, contestProblemEditData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid())));
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), SandalphonResourceDisplayNameUtils.parseSlugByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()))));
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
@@ -325,7 +325,7 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         contestProblemService.deleteContestProblem(contestProblem.getId());
 
-        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid())));
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), SandalphonResourceDisplayNameUtils.parseSlugByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()))));
 
         return redirect(routes.UserController.index());
     }

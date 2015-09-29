@@ -114,7 +114,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
             return redirect(routes.ContestProblemController.viewProblem(contestId, contestProblem.getId()));
         }
 
-        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.SUBMIT.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), SUBMISSION, submissionJid, PROGRAMMING_FILES));
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.SUBMIT.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), SandalphonResourceDisplayNameUtils.parseSlugByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid())), SUBMISSION, submissionJid, PROGRAMMING_FILES));
 
         return redirect(routes.ContestProgrammingSubmissionController.viewScreenedSubmissions(contestId));
     }
