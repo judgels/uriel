@@ -269,7 +269,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         contestProblemService.createContestProblem(contest.getJid(), contestProblemAddData.problemJid, contestProblemAddData.problemSecret, contestProblemAddData.alias, contestProblemAddData.submissionsLimit, ContestProblemStatus.valueOf(contestProblemAddData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
         JidCacheServiceImpl.getInstance().putDisplayName(contestProblemAddData.problemJid, sandalphonProblem.getDisplayName(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblemAddData.problemJid, sandalphonProblem.getSlug()));
+        UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.ADD_IN.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblemAddData.problemJid, sandalphonProblem.getDisplayName()));
 
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
