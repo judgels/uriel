@@ -520,6 +520,7 @@ public final class ContestController extends AbstractJudgelsController {
         ContestModules contestModuleType = ContestModules.valueOf(contestModule);
         if (contest.getModulesSet().containsAll(ContestModuleUtils.getDependedModules(contestModuleType)) && !ContestModuleUtils.getDependedModules(contestModuleType).isEmpty()) {
             flashError(Messages.get("contest.module.disable.error.dependencies", ContestModuleUtils.getDependedModules(contestModuleType).toString()));
+            return redirect(routes.ContestController.editContestModuleConfig(contest.getId()));
         }
 
         contestModuleService.disableModule(contest.getJid(), contestModuleType, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
