@@ -45,7 +45,6 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.persistence.NoResultException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -250,18 +249,11 @@ public final class ContestServiceImpl implements ContestService {
 
             contestStyleDao.edit(contestStyleModel, userJid, userIpAddress);
 
-            try {
+            if (contestModuleDao.existsInContestByName(contestJid, ContestModules.SCOREBOARD.name())) {
                 ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.OFFICIAL.name());
                 contestScoreboardDao.remove(contestScoreboardModel);
 
-                contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.FROZEN.name());
-                contestScoreboardDao.remove(contestScoreboardModel);
-            } catch (NoResultException e) {
-                throw new RuntimeException(e);
-            } finally {
-                // TODO recompute everything in this scoreboard include fronzen scoreboard
-
-                ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
+                contestScoreboardModel = new ContestScoreboardModel();
                 contestScoreboardModel.contestJid = contestModel.jid;
                 contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
 
@@ -273,6 +265,13 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
                 contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
+            }
+
+            if (contestModuleDao.existsInContestByName(contestJid, ContestModules.FROZEN_SCOREBOARD.name())) {
+                ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.FROZEN.name());
+                contestScoreboardDao.remove(contestScoreboardModel);
+
+                // TODO recompute frozen scoreboard
             }
         }
     }
