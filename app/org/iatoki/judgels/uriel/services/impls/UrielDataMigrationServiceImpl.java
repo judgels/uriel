@@ -25,7 +25,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 6;
+        return 7;
     }
 
     @Override
@@ -47,6 +47,52 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         }
         if (databaseVersion < 6) {
             migrateV5toV6();
+        }
+        if (databaseVersion < 7) {
+            migrateV6toV7();
+        }
+    }
+
+    private void migrateV6toV7() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String contestModuleTable = "uriel_contest_module";
+
+        Statement statement = connection.createStatement();
+        String scoreboardModuleQuery = "SELECT * FROM " + contestModuleTable + " WHERE name = \"SCOREBOARD\";";
+        ResultSet resultSet = statement.executeQuery(scoreboardModuleQuery);
+        while (resultSet.next()) {
+            long scoreboardId = resultSet.getLong("id");
+            String jid = resultSet.getString("contestJid");
+            String scoreboardConfig = resultSet.getString("config");
+
+            Map<String, Object> scoreboardConfigMap = new Gson().fromJson(scoreboardConfig, new TypeToken<HashMap<String, Object>>() { }.getType());
+            Map<String, Object> newScoreboardConfigMap = Maps.newHashMap(scoreboardConfigMap);
+
+            boolean isOfficialScoreboardAllowed = (boolean) scoreboardConfigMap.get("isOfficialScoreboardAllowed");
+            newScoreboardConfigMap.remove("isOfficialScoreboardAllowed");
+
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + contestModuleTable + " SET config = ? WHERE id = " + scoreboardId + ";");
+            preparedStatement.setString(1, new Gson().toJson(newScoreboardConfigMap));
+            preparedStatement.executeUpdate();
+
+            String frozenScoreboardModuleQuery = "SELECT * FROM " + contestModuleTable + " WHERE name = \"FROZEN_SCOREBOARD\" AND contestJid = \"" + jid + "\";";
+            Statement statement1 = connection.createStatement();
+            ResultSet resultSet1 = statement1.executeQuery(frozenScoreboardModuleQuery);
+            if (resultSet1.next()) {
+                long frozenScoreboardId = resultSet1.getLong("id");
+                String frozenScoreboardConfig = resultSet1.getString("config");
+
+                Map<String, Object> frozenScoreboardConfigMap = new Gson().fromJson(frozenScoreboardConfig, new TypeToken<HashMap<String, Object>>() { }.getType());
+                Map<String, Object> newFrozenScoreboardConfigMap = Maps.newHashMap(frozenScoreboardConfigMap);
+
+                newFrozenScoreboardConfigMap.put("isOfficialScoreboardAllowed", isOfficialScoreboardAllowed);
+
+                preparedStatement = connection.prepareStatement("UPDATE " + contestModuleTable + " SET config = ? WHERE id = " + frozenScoreboardId + ";");
+                preparedStatement.setString(1, new Gson().toJson(newFrozenScoreboardConfigMap));
+                preparedStatement.executeUpdate();
+            }
         }
     }
 

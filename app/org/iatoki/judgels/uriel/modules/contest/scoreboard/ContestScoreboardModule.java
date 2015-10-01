@@ -14,16 +14,10 @@ import play.twirl.api.Html;
 
 public final class ContestScoreboardModule extends TabbedContestModule {
 
-    private boolean isOfficialScoreboardAllowed;
     private boolean isIncognitoScoreboard;
 
-    public ContestScoreboardModule(boolean isOfficialScoreboardAllowed, boolean isIncognitoScoreboard) {
-        this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
+    public ContestScoreboardModule(boolean isIncognitoScoreboard) {
         this.isIncognitoScoreboard = isIncognitoScoreboard;
-    }
-
-    public boolean isOfficialScoreboardAllowed() {
-        return isOfficialScoreboardAllowed;
     }
 
     public boolean isIncognitoScoreboard() {
@@ -64,7 +58,6 @@ public final class ContestScoreboardModule extends TabbedContestModule {
     public Form<?> generateConfigForm() {
         ContestScoreboardConfigForm formData = new ContestScoreboardConfigForm();
         formData.isIncognitoScoreboard = isIncognitoScoreboard;
-        formData.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
 
         return Form.form(ContestScoreboardConfigForm.class).fill(formData);
     }
@@ -73,7 +66,6 @@ public final class ContestScoreboardModule extends TabbedContestModule {
     public Form<?> updateModuleByFormFromRequest(Http.Request request) {
         Form<ContestScoreboardConfigForm> form = Form.form(ContestScoreboardConfigForm.class).bindFromRequest(request);
         ContestScoreboardConfigForm data = form.get();
-        this.isOfficialScoreboardAllowed = data.isOfficialScoreboardAllowed;
         this.isIncognitoScoreboard = data.isIncognitoScoreboard;
 
         return form;

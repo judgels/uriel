@@ -9,10 +9,16 @@ import play.twirl.api.Html;
 
 public final class ContestFrozenScoreboardModule extends ContestModule {
 
+    private boolean isOfficialScoreboardAllowed;
     private long scoreboardFreezeTime;
 
-    public ContestFrozenScoreboardModule(long scoreboardFreezeTime) {
+    public ContestFrozenScoreboardModule(boolean isOfficialScoreboardAllowed, long scoreboardFreezeTime) {
+        this.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
         this.scoreboardFreezeTime = scoreboardFreezeTime;
+    }
+
+    public boolean isOfficialScoreboardAllowed() {
+        return isOfficialScoreboardAllowed;
     }
 
     public long getScoreboardFreezeTime() {
@@ -37,6 +43,7 @@ public final class ContestFrozenScoreboardModule extends ContestModule {
     @Override
     public Form<?> generateConfigForm() {
         ContestFrozenScoreboardConfigForm formData = new ContestFrozenScoreboardConfigForm();
+        formData.isOfficialScoreboardAllowed = isOfficialScoreboardAllowed;
         formData.scoreboardFreezeTime = scoreboardFreezeTime;
 
         return Form.form(ContestFrozenScoreboardConfigForm.class).fill(formData);
@@ -46,6 +53,7 @@ public final class ContestFrozenScoreboardModule extends ContestModule {
     public Form<?> updateModuleByFormFromRequest(Http.Request request) {
         Form<ContestFrozenScoreboardConfigForm> form = Form.form(ContestFrozenScoreboardConfigForm.class).bindFromRequest(request);
         ContestFrozenScoreboardConfigForm data = form.get();
+        this.isOfficialScoreboardAllowed = data.isOfficialScoreboardAllowed;
         this.scoreboardFreezeTime = data.scoreboardFreezeTime;
 
         return form;

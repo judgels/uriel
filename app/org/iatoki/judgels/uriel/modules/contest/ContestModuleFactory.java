@@ -44,9 +44,9 @@ public final class ContestModuleFactory {
             case PAUSE:
                 return new ContestPauseModule();
             case SCOREBOARD:
-                return new ContestScoreboardModule(true, false);
+                return new ContestScoreboardModule(false);
             case FROZEN_SCOREBOARD:
-                return new ContestFrozenScoreboardModule(0);
+                return new ContestFrozenScoreboardModule(false, 0);
             case SUPERVISOR:
                 return new ContestSupervisorModule();
             case TEAM:

@@ -93,11 +93,9 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         ContestDurationModule contestDurationModule = ((ContestDurationModule) contest.getModule(ContestModules.DURATION));
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ContestScoreboard contestScoreboard;
-        if (contestScoreboardModule.isOfficialScoreboardAllowed()) {
-            contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-        } else if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
+        if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
             ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
-            if ((contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis()) {
+            if (!contestFrozenScoreboardModule.isOfficialScoreboardAllowed() && ((contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis())) {
                 if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
                     contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
                 } else {

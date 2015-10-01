@@ -6,7 +6,4 @@ public final class ContestScoreboardConfigForm {
 
     @Constraints.Required
     public boolean isIncognitoScoreboard;
-
-    @Constraints.Required
-    public boolean isOfficialScoreboardAllowed;
 }
