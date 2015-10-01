@@ -17,5 +17,6 @@
     </div>
 }
 
+@b3.checkbox(contestRegistrationConfigForm("manualApproval"), '_label -> Messages.get("contest.manualApproval"), 'class -> "form-control form_time")
 @b3.text(contestRegistrationConfigForm("registerDuration"), '_label -> Messages.get("contest.registerDuration"), 'class -> "form-control form_time")
 @b3.number(contestRegistrationConfigForm("maxRegistrants"), '_label -> Messages.get("contest.maxRegistrants"), 'class -> "form-control")

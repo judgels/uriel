@@ -8,22 +8,26 @@ import play.data.Form;
 import play.mvc.Http;
 import play.twirl.api.Html;
 
-import java.util.Date;
-
 public final class ContestRegistrationModule extends ContestModule {
 
     private long registerStartTime;
+    private boolean manualApproval;
     private long registerDuration;
     private long maxRegistrants;
 
-    public ContestRegistrationModule(Date registerStartTime, long registerDuration, long maxRegistrants) {
-        this.registerStartTime = registerStartTime.getTime();
+    public ContestRegistrationModule(long registerStartTime, boolean manualApproval, long registerDuration, long maxRegistrants) {
+        this.registerStartTime = registerStartTime;
+        this.manualApproval = manualApproval;
         this.registerDuration = registerDuration;
         this.maxRegistrants = maxRegistrants;
     }
 
     public long getRegisterStartTime() {
         return registerStartTime;
+    }
+
+    public boolean isManualApproval() {
+        return manualApproval;
     }
 
     public long getRegisterDuration() {
@@ -53,6 +57,7 @@ public final class ContestRegistrationModule extends ContestModule {
     public Form<?> generateConfigForm() {
         ContestRegistrationConfigForm formData = new ContestRegistrationConfigForm();
         formData.registerStartTime = JudgelsPlayUtils.formatDateTime(registerStartTime);
+        formData.manualApproval = manualApproval;
         formData.registerDuration = registerDuration;
         formData.maxRegistrants = maxRegistrants;
 
@@ -64,6 +69,7 @@ public final class ContestRegistrationModule extends ContestModule {
         Form<ContestRegistrationConfigForm> form = Form.form(ContestRegistrationConfigForm.class).bindFromRequest(request);
         ContestRegistrationConfigForm data = form.get();
         this.registerStartTime = JudgelsPlayUtils.parseDateTime(data.registerStartTime);
+        this.manualApproval = data.manualApproval;
         this.registerDuration = data.registerDuration;
         this.maxRegistrants = data.maxRegistrants;
 

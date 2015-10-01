@@ -41,6 +41,7 @@ import org.iatoki.judgels.uriel.modules.contest.ContestModule;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleComparator;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleUtils;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.registration.ContestRegistrationModule;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestModuleService;
@@ -303,7 +304,12 @@ public final class ContestController extends AbstractJudgelsController {
             return redirect(routes.ContestController.index());
         }
 
-        contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), ContestContestantStatus.APPROVED, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contest.getModule(ContestModules.REGISTRATION);
+        ContestContestantStatus contestContestantStatus = ContestContestantStatus.APPROVED;
+        if (contestRegistrationModule.isManualApproval()) {
+            contestContestantStatus = ContestContestantStatus.IN_CONFIRMATION;
+        }
+        contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), contestContestantStatus, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
 

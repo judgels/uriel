@@ -40,7 +40,7 @@ public final class ContestModuleFactory {
             case EXCLUSIVE:
                 return new ContestExclusiveModule();
             case REGISTRATION:
-                return new ContestRegistrationModule(new Date(), TimeUnit.SECONDS.convert(5, TimeUnit.DAYS), 0);
+                return new ContestRegistrationModule(new Date().getTime(), false, TimeUnit.SECONDS.convert(5, TimeUnit.DAYS), 0);
             case PAUSE:
                 return new ContestPauseModule();
             case SCOREBOARD:
@@ -52,7 +52,7 @@ public final class ContestModuleFactory {
             case TEAM:
                 return new ContestTeamModule();
             case TRIGGER:
-                return new ContestTriggerModule(ContestTrigger.TEAM_MEMBER);
+                return new ContestTriggerModule(ContestTrigger.COACH);
             case VIRTUAL:
                 return new ContestVirtualModule(TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
             case FILE:

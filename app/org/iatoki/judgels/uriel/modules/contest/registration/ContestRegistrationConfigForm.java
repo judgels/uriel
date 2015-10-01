@@ -7,6 +7,8 @@ public final class ContestRegistrationConfigForm {
     @Constraints.Required
     public String registerStartTime;
 
+    public boolean manualApproval;
+
     @Constraints.Required
     public long registerDuration;
 

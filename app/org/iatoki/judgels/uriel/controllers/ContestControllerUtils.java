@@ -248,11 +248,6 @@ public final class ContestControllerUtils {
         }
 
         if (contest.containsModule(ContestModules.TRIGGER)) {
-            ContestTriggerModule contestTriggerModule = (ContestTriggerModule) contest.getModule(ContestModules.TRIGGER);
-            if (contestTriggerModule.getContestTrigger().equals(ContestTrigger.TEAM_MEMBER)) {
-                return !hasContestStarted(contest, userJid);
-            }
-
             return false;
         }
 

@@ -10,4 +10,4 @@
 
 @formErrorView(contestTriggerConfigForm)
 
-@b3.select(contestTriggerConfigForm("contestTrigger"), Seq("COACH" -> "Coach", "TEAM_LEADER" -> "Team Leader", "TEAM_MEMBER" -> "Team Member"), '_label -> Messages.get("contest.contestTrigger"), 'class -> "form-control selectpicker")
+@b3.select(contestTriggerConfigForm("contestTrigger"), Seq("COACH" -> "Coach"), '_label -> Messages.get("contest.contestTrigger"), 'class -> "form-control selectpicker")
