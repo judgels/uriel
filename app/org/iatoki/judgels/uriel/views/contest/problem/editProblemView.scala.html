@@ -16,7 +16,6 @@
     @helper.CSRF.formField
 
     @b3.static('_label -> Messages.get("problem.problemJid")) { @contestProblem.getProblemJid }
-    @b3.static('_label -> Messages.get("problem.problemSecret")) { @contestProblem.getProblemSecret }
 
     @b3.text(contestProblemEditForm("alias"), '_label -> Messages.get("problem.alias"))
     @b3.text(contestProblemEditForm("submissionsLimit"), '_label -> Messages.get("problem.submissionsLimit"))
