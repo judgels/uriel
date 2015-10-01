@@ -46,6 +46,7 @@ import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
+import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -253,16 +254,20 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         ContestProblemAddForm contestProblemAddData = contestProblemCreateForm.get();
 
-        SandalphonProblem sandalphonProblem;
-        try {
-            sandalphonProblem = sandalphonClientAPI.findProblemByJid(contestProblemAddData.problemJid);
-        } catch (JudgelsAPIClientException e) {
-            contestProblemCreateForm.reject("error.system.sandalphon.connection");
+        if (contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemAddData.problemJid, contestProblemAddData.alias)) {
+            contestProblemCreateForm.reject("error.problem.create.problemJidOrAliasUsed");
             return showAddProblem(contestProblemCreateForm, contest);
         }
 
-        if ((sandalphonProblem == null) || contestProblemService.isProblemInContestByJidOrAlias(contest.getJid(), contestProblemAddData.problemJid, contestProblemAddData.alias)) {
-            contestProblemCreateForm.reject("error.problem.create.problemJidOrAlias.invalid");
+        SandalphonProblem sandalphonProblem;
+        try {
+            sandalphonProblem = sandalphonClientAPI.findClientProblem(contestProblemAddData.problemJid, contestProblemAddData.problemSecret);
+        } catch (JudgelsAPIClientException e) {
+            if (e.getStatusCode() >= Http.Status.INTERNAL_SERVER_ERROR) {
+                contestProblemCreateForm.reject("error.system.sandalphon.connection");
+            } else {
+                contestProblemCreateForm.reject("error.problem.create.problemJidOrSecretInvalid");
+            }
             return showAddProblem(contestProblemCreateForm, contest);
         }
 
