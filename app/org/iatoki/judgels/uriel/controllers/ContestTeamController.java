@@ -274,7 +274,7 @@ public class ContestTeamController extends AbstractJudgelsController {
 
         JophielUser jophielUser;
         try {
-            jophielUser = jophielPublicAPI.findUserByJid(contestTeamCoachCreateData.username);
+            jophielUser = jophielPublicAPI.findUserByUsername(contestTeamCoachCreateData.username);
         } catch (JudgelsAPIClientException e) {
             jophielUser = null;
         }
