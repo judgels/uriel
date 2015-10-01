@@ -327,7 +327,7 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), SandalphonResourceDisplayNameUtils.parseSlugByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()))));
 
-        return redirect(routes.UserController.index());
+        return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
 
     private Result showAddProblem(Form<ContestProblemAddForm> contestProblemAddForm, Contest contest) {
