@@ -16,6 +16,8 @@ public interface ContestProblemService {
 
     ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid);
 
+    List<ContestProblem> getProblemsInContest(String contestJid);
+
     List<ContestProblem> getOpenedProblemsInContest(String contestJid);
 
     Page<ContestProblem> getPageOfProblemsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status);

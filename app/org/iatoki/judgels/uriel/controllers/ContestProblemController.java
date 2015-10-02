@@ -13,7 +13,7 @@ import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3Layout;
-import org.iatoki.judgels.play.views.html.layouts.heading3WithActionLayout;
+import org.iatoki.judgels.play.views.html.layouts.heading3WithActionsLayout;
 import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
@@ -210,7 +210,7 @@ public class ContestProblemController extends AbstractJudgelsController {
         Map<String, String> problemSlugsMap = SandalphonResourceDisplayNameUtils.buildSlugsMap(JidCacheServiceImpl.getInstance().getDisplayNames(problemJids));
 
         LazyHtml content = new LazyHtml(listProblemsView.render(contest.getId(), pageOfContestProblems, page, sortBy, orderBy, filterString, canDelete, problemSlugsMap));
-        content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("problem.list"), new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.addProblem(contestId)), c));
+        content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("problem.list"), new InternalLink[]{new InternalLink(Messages.get("commons.create"), routes.ContestProblemController.addProblem(contestId)), new InternalLink(Messages.get("problem.refresh"), routes.ContestProblemController.refreshProblems(contestId))}, c));
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
         UrielControllerUtils.getInstance().appendSidebarLayout(content);
@@ -332,6 +332,26 @@ public class ContestProblemController extends AbstractJudgelsController {
 
         UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.REMOVE_FROM.construct(CONTEST, contest.getJid(), contest.getName(), PROBLEM, contestProblem.getProblemJid(), SandalphonResourceDisplayNameUtils.parseSlugByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()))));
 
+        return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
+    }
+
+    @Transactional
+    public Result refreshProblems(long contestId) throws ContestNotFoundException, ContestProblemNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+        if (contest.isLocked() || !ContestControllerUtils.getInstance().isManagerOrAbove(contest, IdentityUtils.getUserJid())) {
+            return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
+        }
+
+        for (ContestProblem problem : contestProblemService.getOpenedProblemsInContest(contest.getJid())) {
+            SandalphonProblem sandalphonProblem;
+            try {
+                sandalphonProblem = sandalphonClientAPI.findClientProblem(problem.getProblemJid(), problem.getProblemSecret());
+            } catch (JudgelsAPIClientException e) {
+                continue;
+            }
+
+            JidCacheServiceImpl.getInstance().putDisplayName(problem.getProblemJid(), sandalphonProblem.getDisplayName(), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        }
         return redirect(routes.ContestProblemController.viewProblems(contest.getId()));
     }
 

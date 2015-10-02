@@ -56,6 +56,12 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
     }
 
     @Override
+    public List<ContestProblem> getProblemsInContest(String contestJid) {
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.getAllInContest(contestJid);
+        return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
+    }
+
+    @Override
     public List<ContestProblem> getOpenedProblemsInContest(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getOpenedInContest(contestJid);
         return Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));

@@ -71,6 +71,7 @@ POST        /contests/:contestId/announcements/:announcementId                  
 
 GET         /contests/:contestId/problems                                                           @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewUsedProblems(contestId: Long)
 GET         /contests/:contestId/problems/                                                          @org.iatoki.judgels.uriel.controllers.ContestProblemController.listUsedProblems(contestId: Long, pageIndex: Long ?= 0)
+GET         /contests/:contestId/problems/refresh                                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.refreshProblems(contestId: Long)
 GET         /contests/:contestId/problems/:problemId/                                               @org.iatoki.judgels.uriel.controllers.ContestProblemController.viewProblem(contestId: Long, problemId: Long)
 GET         /contests/:contestId/problems/:problemId/render/:name                                   @org.iatoki.judgels.uriel.controllers.ContestProblemController.renderImage(contestId: Long, problemId: Long, name)
 POST        /contests/:contestId/problems/:problemId/switchLanguage                                 @org.iatoki.judgels.uriel.controllers.ContestProblemController.switchLanguage(contestId: Long, problemId: Long)

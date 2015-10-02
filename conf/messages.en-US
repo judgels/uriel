@@ -43,6 +43,7 @@ problem.problem=Problem
 problem.list=Problems
 problem.create=Create Problem
 problem.update=Update Problem
+problem.refresh=Refresh Problems
 problem.delete.confirmation=Are you sure you want to delete?
 
 problem.alias=Alias
