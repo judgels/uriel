@@ -36,11 +36,11 @@ public final class ContestModuleFactory {
             case LIMITED:
                 return new ContestLimitedModule();
             case DURATION:
-                return new ContestDurationModule(new Date(System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS)), TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
+                return new ContestDurationModule(new Date(System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS)), TimeUnit.MILLISECONDS.convert(5, TimeUnit.HOURS));
             case EXCLUSIVE:
                 return new ContestExclusiveModule();
             case REGISTRATION:
-                return new ContestRegistrationModule(new Date().getTime(), false, TimeUnit.SECONDS.convert(5, TimeUnit.DAYS), 0);
+                return new ContestRegistrationModule(new Date().getTime(), false, TimeUnit.MILLISECONDS.convert(5, TimeUnit.DAYS), 0);
             case PAUSE:
                 return new ContestPauseModule();
             case SCOREBOARD:
@@ -54,7 +54,7 @@ public final class ContestModuleFactory {
             case TRIGGER:
                 return new ContestTriggerModule(ContestTrigger.COACH);
             case VIRTUAL:
-                return new ContestVirtualModule(TimeUnit.SECONDS.convert(5, TimeUnit.HOURS));
+                return new ContestVirtualModule(TimeUnit.MILLISECONDS.convert(5, TimeUnit.HOURS));
             case FILE:
                 return new ContestFileModule();
             case PASSWORD:
