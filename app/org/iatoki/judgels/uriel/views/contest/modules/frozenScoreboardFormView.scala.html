@@ -11,4 +11,10 @@
 @formErrorView(contestFrozenScoreboardConfigForm)
 
 @b3.checkbox(contestFrozenScoreboardConfigForm("isOfficialScoreboardAllowed"), '_label -> Messages.get("contest.isOfficialScoreboardAllowed"))
-@b3.text(contestFrozenScoreboardConfigForm("scoreboardFreezeTime"), '_label -> Messages.get("contest.scoreboardFreezeTime"), 'class -> "form-control form_time")
+
+@b3.inputWrapped("scoreboardFreezeTime", contestFrozenScoreboardConfigForm("scoreboardFreezeTime"), '_label -> Messages.get("contest.scoreboardFreezeTime")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds before contest end time</div>
+    </div>
+}

@@ -10,4 +10,9 @@
 
 @formErrorView(contestVirtualConfigForm)
 
-@b3.text(contestVirtualConfigForm("virtualDuration"), '_label -> Messages.get("contest.virtualDuration"), 'class -> "form-control form_time")
+@b3.inputWrapped("virtualDuration", contestVirtualConfigForm("virtualDuration"), '_label -> Messages.get("contest.virtualDuration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}

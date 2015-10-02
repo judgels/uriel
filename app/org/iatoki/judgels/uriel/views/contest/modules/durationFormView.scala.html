@@ -17,6 +17,11 @@
     </div>
 }
 
-@b3.text(contestDurationConfigForm("contestDuration"), '_label -> Messages.get("contest.contestDuration"), 'class -> "form-control form_time")
+@b3.inputWrapped("contestDuration", contestDurationConfigForm("contestDuration"), '_label -> Messages.get("contest.contestDuration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}
 
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/playcommons/javascripts/datetimepicker.js")"></script>

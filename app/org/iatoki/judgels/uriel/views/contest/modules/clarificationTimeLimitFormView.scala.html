@@ -10,4 +10,9 @@
 
 @formErrorView(contestClarificationTimeLimitConfigForm)
 
-@b3.text(contestClarificationTimeLimitConfigForm("clarificationDuration"), '_label -> Messages.get("contest.clarificationDuration"), 'class -> "form-control form_time")
+@b3.inputWrapped("clarificationDuration", contestClarificationTimeLimitConfigForm("clarificationDuration"), '_label -> Messages.get("contest.clarificationDuration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds since contest begin time</div>
+    </div>
+}
