@@ -2,12 +2,14 @@ package org.iatoki.judgels.uriel.services.impls;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
 import org.iatoki.judgels.play.JidService;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestClarification;
 import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 import org.iatoki.judgels.uriel.ContestReadType;
+import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;
@@ -167,7 +169,9 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
             topic = "(" + Messages.get("clarification.general") + ")";
         } else {
             ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestModel.jid, contestClarificationModel.topicJid);
-            topic = contestProblemModel.alias + " - " + JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid);
+
+            String problemName = SandalphonResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
+            topic = contestProblemModel.alias + " - " + problemName;
         }
         return new ContestClarification(contestClarificationModel.id, contestClarificationModel.jid, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
     }
