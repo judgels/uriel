@@ -28,7 +28,7 @@
         }
     }
 
-    @for(contestModule <- modulesForm.keySet()) {
+    @for((contestModule, _) <- modulesForm) {
         @contestModule.generateConfigFormInput(modulesForm.get(contestModule))
     }
 

@@ -1,8 +1,7 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.EnumUtils;
 import org.iatoki.judgels.jophiel.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
@@ -38,7 +37,6 @@ import org.iatoki.judgels.uriel.forms.ContestUpsertForm;
 import org.iatoki.judgels.uriel.forms.ICPCContestStyleConfigForm;
 import org.iatoki.judgels.uriel.forms.IOIContestStyleConfigForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModule;
-import org.iatoki.judgels.uriel.modules.contest.ContestModuleComparator;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleUtils;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.registration.ContestRegistrationModule;
@@ -67,7 +65,6 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.SortedMap;
 
 @Singleton
 @Named
@@ -568,14 +565,14 @@ public final class ContestController extends AbstractJudgelsController {
             styleConfigForm = ioiStyleConfigForm;
         }
 
-        Map<ContestModule, Form<?>> moduleFormMap = Maps.newHashMap();
+        ImmutableMap.Builder<ContestModule, Form<?>> moduleFormMapBuilder = ImmutableMap.builder();
         for (ContestModule contestModule : contest.getModules()) {
-            moduleFormMap.put(contestModule, contestModule.generateConfigForm());
+            moduleFormMapBuilder.put(contestModule, contestModule.generateConfigForm());
         }
 
         UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT.construct(CONTEST, contest.getJid(), contest.getName()));
 
-        return showEditContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
+        return showEditContestSpecificConfig(contest, styleConfigForm, moduleFormMapBuilder.build());
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -596,7 +593,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         boolean checkError = false;
-        Map<ContestModule, Form<?>> moduleFormMap = Maps.newHashMap();
+        ImmutableMap.Builder<ContestModule, Form<?>> moduleFormMap = ImmutableMap.builder();
         ImmutableList.Builder<ContestModule> updatedContestModuleBuilder = ImmutableList.builder();
         for (ContestModule contestModule : contest.getModules()) {
             Form<?> moduleForm = contestModule.updateModuleByFormFromRequest(request());
@@ -608,7 +605,7 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         if (formHasErrors(styleConfigForm) || checkError) {
-            return showEditContestSpecificConfig(contest, styleConfigForm, ImmutableSortedMap.copyOf(moduleFormMap, new ContestModuleComparator()));
+            return showEditContestSpecificConfig(contest, styleConfigForm, moduleFormMap.build());
         }
 
         ContestStyleConfig contestStyleConfig = null;
@@ -713,7 +710,7 @@ public final class ContestController extends AbstractJudgelsController {
         return UrielControllerUtils.getInstance().lazyOk(content);
     }
 
-    private Result showEditContestSpecificConfig(Contest contest, Form contestStyleForm, SortedMap<ContestModule, Form<?>> moduleFormMap) {
+    private Result showEditContestSpecificConfig(Contest contest, Form contestStyleForm, Map<ContestModule, Form<?>> moduleFormMap) {
         LazyHtml content = new LazyHtml(editContestSpecificView.render(contest, contestStyleForm, moduleFormMap));
         appendConfigSubtabLayout(content, contest);
         UrielControllerUtils.getInstance().appendSidebarLayout(content);

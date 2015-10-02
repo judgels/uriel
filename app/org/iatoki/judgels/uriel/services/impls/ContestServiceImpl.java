@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.services.impls;
 
+import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -49,6 +50,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -397,12 +399,13 @@ public final class ContestServiceImpl implements ContestService {
             contestStyleConfig = new Gson().fromJson(contestStyleModel.config, IOIContestStyleConfig.class);
         }
 
-        ImmutableMap.Builder<ContestModules, ContestModule> contestModuleBuilder = ImmutableMap.builder();
+        Map<ContestModules, ContestModule> contestModules = Maps.newTreeMap();
+
         for (ContestModuleModel contestModuleModel : contestModuleModels) {
             ContestModules contestModule = ContestModules.valueOf(contestModuleModel.name);
-            contestModuleBuilder.put(contestModule, ContestModuleFactory.parseFromConfig(contestModule, contestModuleModel.config));
+            contestModules.put(contestModule, ContestModuleFactory.parseFromConfig(contestModule, contestModuleModel.config));
         }
 
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, contestModel.locked, ContestStyle.valueOf(contestModel.style), contestStyleConfig, contestModuleBuilder.build());
+        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, contestModel.locked, ContestStyle.valueOf(contestModel.style), contestStyleConfig, ImmutableMap.copyOf(contestModules));
     }
 }
