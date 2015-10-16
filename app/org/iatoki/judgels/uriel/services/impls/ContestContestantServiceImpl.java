@@ -53,7 +53,7 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     @Override
     public ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestContestantJid);
+        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, contestContestantJid);
         return createContestContestantFromModel(contestContestantModel);
     }
 
@@ -112,7 +112,7 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     @Override
     public void startContestAsContestant(String contestJid, String userJid, String starterUserJid, String starterUserIpAddress) {
-        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, userJid);
+        ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, userJid);
         if (contestContestantModel.contestStartTime == 0) {
             contestContestantModel.contestStartTime = System.currentTimeMillis();
 

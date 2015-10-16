@@ -14,7 +14,7 @@ public interface ContestProblemService {
 
     ContestProblem findContestProblemById(long contestProblemId) throws ContestProblemNotFoundException;
 
-    ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid);
+    ContestProblem findContestProblemInContestByJid(String contestJid, String contestProblemJid);
 
     List<ContestProblem> getProblemsInContest(String contestJid);
 

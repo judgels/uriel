@@ -65,9 +65,9 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
         ContestModel contestModel = contestDao.findByJid(contestJid);
 
         if (askerJids == null) {
-            ImmutableMap.Builder<SingularAttribute<? super ContestClarificationModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+            ImmutableMap.Builder<SingularAttribute<? super ContestClarificationModel, ? extends Object>, String> filterColumnsBuilder = ImmutableMap.builder();
             filterColumnsBuilder.put(ContestClarificationModel_.contestJid, contestJid);
-            Map<SingularAttribute<? super ContestClarificationModel, String>, String> filterColumns = filterColumnsBuilder.build();
+            Map<SingularAttribute<? super ContestClarificationModel, ? extends Object>, String> filterColumns = filterColumnsBuilder.build();
 
             long totalPages = contestClarificationDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
             List<ContestClarificationModel> contestClarificationModels = contestClarificationDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);

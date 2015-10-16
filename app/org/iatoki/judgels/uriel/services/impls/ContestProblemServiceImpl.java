@@ -50,7 +50,7 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
     }
 
     @Override
-    public ContestProblem findContestProblemInContestAndJid(String contestJid, String contestProblemJid) {
+    public ContestProblem findContestProblemInContestByJid(String contestJid, String contestProblemJid) {
         ContestProblemModel contestProblemModel = contestProblemDao.findInContestByJid(contestJid, contestProblemJid);
         return createContestProblemFromModel(contestProblemModel);
     }
@@ -69,12 +69,12 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
 
     @Override
     public Page<ContestProblem> getPageOfProblemsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
-        ImmutableMap.Builder<SingularAttribute<? super ContestProblemModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+        ImmutableMap.Builder<SingularAttribute<? super ContestProblemModel, ? extends Object>, String> filterColumnsBuilder = ImmutableMap.builder();
         filterColumnsBuilder.put(ContestProblemModel_.contestJid, contestJid);
         if (status != null) {
             filterColumnsBuilder.put(ContestProblemModel_.status, status);
         }
-        Map<SingularAttribute<? super ContestProblemModel, String>, String> filterColumns = filterColumnsBuilder.build();
+        Map<SingularAttribute<? super ContestProblemModel, ? extends Object>, String> filterColumns = filterColumnsBuilder.build();
 
         long totalPages = contestProblemDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);

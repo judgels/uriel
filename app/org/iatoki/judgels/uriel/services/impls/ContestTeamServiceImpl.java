@@ -142,7 +142,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
     public Page<ContestTeam> getPageOfTeamsInContestByCoachJid(String contestJid, String coachJid, long pageIndex, long pageSize, String orderBy, String orderDir) {
         List<String> teamJidsInContest = contestTeamDao.getJidsInContest(contestJid);
 
-        Map<SingularAttribute<? super ContestTeamCoachModel, String>, String> filterColumns = ImmutableMap.of(ContestTeamCoachModel_.coachJid, coachJid);
+        Map<SingularAttribute<? super ContestTeamCoachModel, ? extends Object>, String> filterColumns = ImmutableMap.of(ContestTeamCoachModel_.coachJid, coachJid);
         Map<SingularAttribute<? super ContestTeamCoachModel, String>, List<String>> filterColumnsIn = ImmutableMap.of(ContestTeamCoachModel_.teamJid, teamJidsInContest);
 
         long totalRows = contestTeamCoachDao.countByFilters("", filterColumns, filterColumnsIn);
@@ -350,7 +350,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
         List<ContestTeamMemberModel> contestTeamMemberModels = contestTeamMemberDao.getAllInTeam(teamJid);
 
         for (ContestTeamMemberModel contestTeamMemberModel : contestTeamMemberModels) {
-            ContestContestantModel contestContestantModel = contestContestantDao.findInContestByJid(contestJid, contestTeamMemberModel.memberJid);
+            ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, contestTeamMemberModel.memberJid);
             contestContestantModel.contestStartTime = now;
 
             contestContestantDao.edit(contestContestantModel, userJid, userIpAddress);

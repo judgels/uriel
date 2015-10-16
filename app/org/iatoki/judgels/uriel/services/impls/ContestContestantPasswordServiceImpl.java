@@ -46,7 +46,7 @@ public final class ContestContestantPasswordServiceImpl implements ContestContes
 
     @Override
     public void generateContestantPassword(String contestJid, String contestantJid, String userJid, String userIpAddress) {
-        ContestContestantModel contestantModel = contestContestantDao.findInContestByJid(contestJid, contestantJid);
+        ContestContestantModel contestantModel = contestContestantDao.findInContestByContestantJid(contestJid, contestantJid);
         generateNewPassword(contestJid, contestantModel, userJid, userIpAddress);
 
         ContestModel contestModel = contestDao.findByJid(contestJid);

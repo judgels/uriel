@@ -9,7 +9,7 @@ public interface ContestContestantDao extends Dao<Long, ContestContestantModel> 
 
     boolean existsInContestByContestantJid(String contestJid, String contestantJid);
 
-    ContestContestantModel findInContestByJid(String contestJid, String contestantJid);
+    ContestContestantModel findInContestByContestantJid(String contestJid, String contestantJid);
 
     long countInContest(String contestJid);
 

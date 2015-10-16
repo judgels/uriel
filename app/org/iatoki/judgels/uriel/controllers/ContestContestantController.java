@@ -2,6 +2,7 @@ package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.EnumUtils;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
@@ -112,6 +113,11 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
 
         ContestContestantAddForm contestContestantCreateData = contestContestantCreateForm.get();
+
+        if (!EnumUtils.isValidEnum(ContestContestantStatus.class, contestContestantCreateData.status)) {
+            return showlistAddContestantWithContestantAddForm(pageIndex, orderBy, orderDir, filterString, true, canDelete, contestContestantCreateForm, contest);
+        }
+
         JophielUser jophielUser;
         try {
             jophielUser = jophielPublicAPI.findUserByUsername(contestContestantCreateData.username);
@@ -173,6 +179,11 @@ public class ContestContestantController extends AbstractJudgelsController {
         }
 
         ContestContestantEditForm contestContestantEditData = contestContestantEditForm.get();
+
+        if (!EnumUtils.isValidEnum(ContestContestantStatus.class, contestContestantEditData.status)) {
+            return showEditContestant(contestContestantEditForm, contest, contestContestant);
+        }
+
         contestContestantService.updateContestContestant(contestContestant.getId(), ContestContestantStatus.valueOf(contestContestantEditData.status), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.EDIT_IN.construct(CONTEST, contest.getJid(), contest.getName(), CONTESTANT, contestContestant.getUserJid(), JidCacheServiceImpl.getInstance().getDisplayName(contestContestant.getUserJid())));

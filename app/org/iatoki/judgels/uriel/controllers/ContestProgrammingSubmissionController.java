@@ -82,7 +82,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
     @Transactional
     public Result postSubmitProblem(long contestId, String problemJid) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
-        ContestProblem contestProblem = contestProblemService.findContestProblemInContestAndJid(contest.getJid(), problemJid);
+        ContestProblem contestProblem = contestProblemService.findContestProblemInContestByJid(contest.getJid(), problemJid);
 
         if (!ContestControllerUtils.getInstance().isAllowedToDoContest(contest, IdentityUtils.getUserJid()) || !contestProblem.getContestJid().equals(contest.getJid()) || contestProblem.getStatus() == ContestProblemStatus.UNUSED) {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
@@ -164,7 +164,7 @@ public final class ContestProgrammingSubmissionController extends AbstractJudgel
 
         SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromPastSubmission(programmingSubmissionLocalFileSystemProvider, programmingSubmissionRemoteFileSystemProvider, submission.getJid());
         String authorName = JidCacheServiceImpl.getInstance().getDisplayName(submission.getAuthorJid());
-        ContestProblem contestProblem = contestProblemService.findContestProblemInContestAndJid(contest.getJid(), submission.getProblemJid());
+        ContestProblem contestProblem = contestProblemService.findContestProblemInContestByJid(contest.getJid(), submission.getProblemJid());
         String contestProblemAlias = contestProblem.getAlias();
         String contestProblemName = SandalphonResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblem.getProblemJid()), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
         String gradingLanguageName = GradingLanguageRegistry.getInstance().getLanguage(submission.getGradingLanguage()).getName();

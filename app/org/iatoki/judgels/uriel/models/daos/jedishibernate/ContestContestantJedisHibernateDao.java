@@ -39,7 +39,7 @@ public final class ContestContestantJedisHibernateDao extends AbstractJedisHiber
     }
 
     @Override
-    public ContestContestantModel findInContestByJid(String contestJid, String contestantJid) {
+    public ContestContestantModel findInContestByContestantJid(String contestJid, String contestantJid) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<ContestContestantModel> query = cb.createQuery(getModelClass());
         Root<ContestContestantModel> root = query.from(getModelClass());

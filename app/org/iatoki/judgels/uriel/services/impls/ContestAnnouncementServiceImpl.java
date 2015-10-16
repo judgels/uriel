@@ -52,12 +52,12 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
 
     @Override
     public Page<ContestAnnouncement> getPageOfAnnouncementsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString, String status) {
-        ImmutableMap.Builder<SingularAttribute<? super ContestAnnouncementModel, String>, String> filterColumnsBuilder = ImmutableMap.builder();
+        ImmutableMap.Builder<SingularAttribute<? super ContestAnnouncementModel, ? extends Object>, String> filterColumnsBuilder = ImmutableMap.builder();
         filterColumnsBuilder.put(ContestAnnouncementModel_.contestJid, contestJid);
         if (status != null) {
             filterColumnsBuilder.put(ContestAnnouncementModel_.status, status);
         }
-        Map<SingularAttribute<? super ContestAnnouncementModel, String>, String> filterColumns = filterColumnsBuilder.build();
+        Map<SingularAttribute<? super ContestAnnouncementModel, ? extends Object>, String> filterColumns = filterColumnsBuilder.build();
 
         long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
         List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex, pageIndex * pageSize);
