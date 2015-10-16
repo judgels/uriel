@@ -40,8 +40,8 @@ public final class ContestSupervisorServiceImpl implements ContestSupervisorServ
 
     @Override
     public Page<ContestSupervisor> getPageOfSupervisorsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestSupervisorDao.countByFilters(filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of());
-        List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = contestSupervisorDao.countByFiltersEq(filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid));
+        List<ContestSupervisorModel> contestSupervisorModels = contestSupervisorDao.findSortedByFiltersEq(orderBy, orderDir, filterString, ImmutableMap.of(ContestSupervisorModel_.contestJid, contestJid), pageIndex * pageSize, pageSize);
         List<ContestSupervisor> contestSupervisors = Lists.transform(contestSupervisorModels, m -> createContestSupervisorFromModel(m));
         return new Page<>(contestSupervisors, totalPages, pageIndex, pageSize);
     }

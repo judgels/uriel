@@ -77,7 +77,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
         Map<String, ContestTeamModel> contestTeamModelMap = contestTeamModelBuilder.build();
 
         List<String> contestTeamJids = contestTeamModels.stream().map(ct -> ct.jid).collect(Collectors.toList());
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), 0, -1);
 
         for (ContestContestantModel contestContestantModel : contestContestantModels) {
             if (contestTeamMemberDao.isUserRegisteredAsMemberInAnyTeam(contestContestantModel.userJid, contestTeamJids)) {

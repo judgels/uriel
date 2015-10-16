@@ -48,8 +48,8 @@ public final class ContestManagerServiceImpl implements ContestManagerService {
 
     @Override
     public Page<ContestManager> getPageOfManagersInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestManagerDao.countByFilters(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of());
-        List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = contestManagerDao.countByFiltersEq(filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid));
+        List<ContestManagerModel> contestManagerModels = contestManagerDao.findSortedByFiltersEq(orderBy, orderDir, filterString, ImmutableMap.of(ContestManagerModel_.contestJid, contestJid), pageIndex * pageSize, pageSize);
         List<ContestManager> contestManagers = Lists.transform(contestManagerModels, m -> createContestManagerFromModel(m));
 
         return new Page<>(contestManagers, totalPages, pageIndex, pageSize);

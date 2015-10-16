@@ -59,8 +59,8 @@ public final class ContestAnnouncementServiceImpl implements ContestAnnouncement
         }
         Map<SingularAttribute<? super ContestAnnouncementModel, ? extends Object>, String> filterColumns = filterColumnsBuilder.build();
 
-        long totalPages = contestAnnouncementDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
-        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex, pageIndex * pageSize);
+        long totalPages = contestAnnouncementDao.countByFiltersEq(filterString, filterColumns);
+        List<ContestAnnouncementModel> contestAnnouncementModels = contestAnnouncementDao.findSortedByFiltersEq(orderBy, orderDir, filterString, filterColumns, pageIndex, pageIndex * pageSize);
         List<ContestAnnouncement> contestAnnouncements = Lists.transform(contestAnnouncementModels, m -> createContestAnnouncementFromModel(m));
 
         return new Page<>(contestAnnouncements, totalPages, pageIndex, pageSize);

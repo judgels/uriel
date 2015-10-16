@@ -76,8 +76,8 @@ public final class ContestProblemServiceImpl implements ContestProblemService {
         }
         Map<SingularAttribute<? super ContestProblemModel, ? extends Object>, String> filterColumns = filterColumnsBuilder.build();
 
-        long totalPages = contestProblemDao.countByFilters(filterString, filterColumns, ImmutableMap.of());
-        List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFilters(orderBy, orderDir, filterString, filterColumns, ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = contestProblemDao.countByFiltersEq(filterString, filterColumns);
+        List<ContestProblemModel> contestProblemModels = contestProblemDao.findSortedByFiltersEq(orderBy, orderDir, filterString, filterColumns, pageIndex * pageSize, pageSize);
         List<ContestProblem> contestProblems = Lists.transform(contestProblemModels, m -> createContestProblemFromModel(m));
 
         return new Page<>(contestProblems, totalPages, pageIndex, pageSize);

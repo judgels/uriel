@@ -59,14 +59,14 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     @Override
     public List<ContestContestant> getContestantsInContest(String contestJid) {
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), 0, -1);
         return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
     }
 
     @Override
     public Page<ContestContestant> getPageOfContestantsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestContestantDao.countByFilters(filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of());
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = contestContestantDao.countByFiltersEq(filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid));
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq(orderBy, orderDir, filterString, ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), pageIndex * pageSize, pageSize);
 
         List<ContestContestant> contestContestants = Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
 

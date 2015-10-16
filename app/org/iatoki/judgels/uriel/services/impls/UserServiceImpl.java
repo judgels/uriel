@@ -1,13 +1,12 @@
 package org.iatoki.judgels.uriel.services.impls;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.api.jophiel.JophielUser;
+import org.iatoki.judgels.jophiel.UserTokens;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
-import org.iatoki.judgels.jophiel.UserTokens;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.User;
 import org.iatoki.judgels.uriel.UserNotFoundException;
@@ -73,7 +72,7 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public org.iatoki.judgels.uriel.User findUserByJid(String userJid) {
+    public User findUserByJid(String userJid) {
         UserModel userModel = userDao.findByJid(userJid);
         return createUserFromUserModel(userModel);
     }
@@ -102,10 +101,10 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<org.iatoki.judgels.uriel.User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = userDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
-        List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
-        List<org.iatoki.judgels.uriel.User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
+    public Page<User> getPageOfUsers(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
+        long totalPages = userDao.countByFilters(filterString);
+        List<UserModel> userModels = userDao.findSortedByFilters(orderBy, orderDir, filterString, pageIndex * pageSize, pageSize);
+        List<User> users = Lists.transform(userModels, m -> createUserFromUserModel(m));
         return new Page<>(users, totalPages, pageIndex, pageSize);
     }
 

@@ -125,8 +125,8 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
     @Override
     public Page<ContestTeam> getPageOfTeamsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalPages = contestTeamDao.countByFilters(filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of());
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalPages = contestTeamDao.countByFiltersEq(filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid));
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFiltersEq(orderBy, orderDir, filterString, ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), pageIndex * pageSize, pageSize);
 
         ImmutableList.Builder<ContestTeam> contestTeamBuilder = ImmutableList.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {
@@ -163,7 +163,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
     @Override
     public List<ContestTeam> getTeamsInContest(String contestJid) {
-        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), ImmutableMap.of(), 0, -1);
+        List<ContestTeamModel> contestTeamModels = contestTeamDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestTeamModel_.contestJid, contestJid), 0, -1);
 
         ImmutableList.Builder<ContestTeam> contestTeamBuilder = ImmutableList.builder();
         for (ContestTeamModel contestTeamModel : contestTeamModels) {

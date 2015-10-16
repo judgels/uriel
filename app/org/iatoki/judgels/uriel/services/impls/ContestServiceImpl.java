@@ -103,7 +103,7 @@ public final class ContestServiceImpl implements ContestService {
     @Override
     public ScoreboardState getScoreboardStateInContest(String contestJid) {
         List<ContestProblemModel> contestProblemModels = contestProblemDao.getUsedInContest(contestJid);
-        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFilters("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid, ContestContestantModel_.status, ContestContestantStatus.APPROVED.name()), ImmutableMap.of(), 0, -1);
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid, ContestContestantModel_.status, ContestContestantStatus.APPROVED.name()), 0, -1);
 
         List<String> problemJids = Lists.transform(contestProblemModels, m -> m.problemJid);
         List<String> problemAliases = Lists.transform(contestProblemModels, m -> m.alias);
@@ -114,8 +114,8 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public Page<Contest> getPageOfContests(long pageIndex, long pageSize, String orderBy, String orderDir, String filterString) {
-        long totalRowsCount = contestDao.countByFilters(filterString, ImmutableMap.of(), ImmutableMap.of());
-        List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, ImmutableMap.of(), ImmutableMap.of(), pageIndex * pageSize, pageSize);
+        long totalRowsCount = contestDao.countByFilters(filterString);
+        List<ContestModel> contestModels = contestDao.findSortedByFilters(orderBy, orderDir, filterString, pageIndex * pageSize, pageSize);
 
         List<Contest> contests = Lists.transform(contestModels, m -> createContestFromModel(contestStyleDao, m, contestModuleDao.getEnabledInContest(m.jid)));
         return new Page<>(contests, totalRowsCount, pageIndex, pageSize);
@@ -178,7 +178,7 @@ public final class ContestServiceImpl implements ContestService {
 
     @Override
     public List<Contest> getRunningContestsWithScoreboardModule(Date timeNow) {
-        List<ContestModel> contestModels = contestDao.findSortedByFilters("id", "desc", "", ImmutableMap.of(), ImmutableMap.of(), 0, -1);
+        List<ContestModel> contestModels = contestDao.findSortedByFilters("id", "desc", "", 0, -1);
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
         for (ContestModel contestModel : contestModels) {
