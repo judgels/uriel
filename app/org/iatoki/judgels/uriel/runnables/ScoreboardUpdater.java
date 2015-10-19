@@ -37,9 +37,7 @@ public final class ScoreboardUpdater implements Runnable {
     public void run() {
         JPA.withTransaction(() -> {
                 Date timeNow = new Date();
-            System.out.println("update");
                 for (Contest contest : contestService.getRunningContestsWithScoreboardModule(timeNow)) {
-                    System.out.println(contest.getName());
                     boolean frozeScoreboard = false;
                     if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
                         ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
