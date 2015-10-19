@@ -128,7 +128,7 @@ public final class ContestServiceImpl implements ContestService {
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
         for (ContestModel contestModel : contestModels) {
-            if (contestModuleDao.existsInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
+            if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
                 ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestModel.jid, ContestModules.DURATION.name());
                 ContestDurationModule contestDurationModule = (ContestDurationModule) ContestModuleFactory.parseFromConfig(ContestModules.DURATION, contestModuleModel.config);
                 Date currentDate = new Date();
@@ -144,7 +144,7 @@ public final class ContestServiceImpl implements ContestService {
         long totalRowsCount;
         boolean anyExclusiveContest = false;
         for (ContestModel contestModel : contestModels) {
-            anyExclusiveContest = anyExclusiveContest || contestModuleDao.existsInContestByName(contestModel.jid, ContestModules.EXCLUSIVE.name());
+            anyExclusiveContest = anyExclusiveContest || contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.EXCLUSIVE.name());
         }
 
         if (anyExclusiveContest) {
@@ -182,8 +182,8 @@ public final class ContestServiceImpl implements ContestService {
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
         for (ContestModel contestModel : contestModels) {
-            if (contestModuleDao.existsInContestByName(contestModel.jid, ContestModules.SCOREBOARD.name())) {
-                if (contestModuleDao.existsInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
+            if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.SCOREBOARD.name())) {
+                if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
                     ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestModel.jid, ContestModules.DURATION.name());
                     ContestDurationModule contestDurationModule = (ContestDurationModule) ContestModuleFactory.parseFromConfig(ContestModules.DURATION, contestModuleModel.config);
                     Date currentDate = new Date();
@@ -251,7 +251,7 @@ public final class ContestServiceImpl implements ContestService {
 
             contestStyleDao.edit(contestStyleModel, userJid, userIpAddress);
 
-            if (contestModuleDao.existsInContestByName(contestJid, ContestModules.SCOREBOARD.name())) {
+            if (contestModuleDao.existsEnabledInContestByName(contestJid, ContestModules.SCOREBOARD.name())) {
                 ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.OFFICIAL.name());
                 contestScoreboardDao.remove(contestScoreboardModel);
 
@@ -269,7 +269,7 @@ public final class ContestServiceImpl implements ContestService {
                 contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
             }
 
-            if (contestModuleDao.existsInContestByName(contestJid, ContestModules.FROZEN_SCOREBOARD.name())) {
+            if (contestModuleDao.existsEnabledInContestByName(contestJid, ContestModules.FROZEN_SCOREBOARD.name())) {
                 ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.FROZEN.name());
                 contestScoreboardDao.remove(contestScoreboardModel);
 

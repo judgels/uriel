@@ -49,7 +49,7 @@ public final class ContestModuleServiceImpl implements ContestModuleService {
 
     @Override
     public void disableModule(String contestJid, ContestModules contestModule, String userJid, String userIpAddress) {
-        if (contestModuleDao.existsInContestByName(contestJid, contestModule.name())) {
+        if (contestModuleDao.existsEnabledInContestByName(contestJid, contestModule.name())) {
             ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestJid, contestModule.name());
             contestModuleModel.enabled = false;
 

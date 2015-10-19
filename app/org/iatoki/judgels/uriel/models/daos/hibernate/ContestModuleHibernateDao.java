@@ -22,6 +22,17 @@ public final class ContestModuleHibernateDao extends AbstractHibernateDao<Long, 
     }
 
     @Override
+    public boolean existsEnabledInContestByName(String contestJid, String contestModuleName) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestModuleModel> root = query.from(ContestModuleModel.class);
+
+        query.select(cb.count(root)).where(cb.and(cb.equal(root.get(ContestModuleModel_.contestJid), contestJid), cb.equal(root.get(ContestModuleModel_.name), contestModuleName), cb.equal(root.get(ContestModuleModel_.enabled), true)));
+
+        return JPA.em().createQuery(query).getSingleResult() != 0;
+    }
+
+    @Override
     public boolean existsInContestByName(String contestJid, String contestModuleName) {
         CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
         CriteriaQuery<Long> query = cb.createQuery(Long.class);
