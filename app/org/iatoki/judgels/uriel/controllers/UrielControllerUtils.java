@@ -76,7 +76,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
         sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophielClientAPI.getLinkedClientsAPIEndpoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));
         Form<SearchProfileForm> searchProfileForm = Form.form(SearchProfileForm.class);
-        sidebarContent.appendLayout(c -> searchProfileLayout.render(searchProfileForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", JophielClientControllerUtils.getInstance().getUserViewProfileUrl(), c));
+        sidebarContent.appendLayout(c -> searchProfileLayout.render(searchProfileForm, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", JophielClientControllerUtils.getInstance().getUserSearchProfileUrl(), c));
 
         content.appendLayout(c -> sidebarLayout.render(sidebarContent.render(), c));
         if (UrielUtils.isGuest()) {
