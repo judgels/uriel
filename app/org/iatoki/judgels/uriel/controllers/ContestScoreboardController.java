@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.controllers;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -13,13 +12,13 @@ import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionsLayout;
-import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.ContestScoreboardUtils;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
@@ -28,7 +27,6 @@ import org.iatoki.judgels.uriel.ICPCScoreboardEntry;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
-import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
@@ -92,22 +90,24 @@ public class ContestScoreboardController extends AbstractJudgelsController {
 
         ContestDurationModule contestDurationModule = ((ContestDurationModule) contest.getModule(ContestModules.DURATION));
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
-        ContestScoreboard contestScoreboard;
+        ContestScoreboardType contestScoreboardType = ContestScoreboardType.OFFICIAL;
+
         if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
             ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
             if (!contestFrozenScoreboardModule.isOfficialScoreboardAllowed() && ((contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis())) {
                 if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
-                    contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN);
-                } else {
-                    contestScoreboard = null;
+                    contestScoreboardType = ContestScoreboardType.FROZEN;
                 }
-            } else {
-                contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
             }
-        } else {
-            contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
         }
+
+        ContestScoreboard contestScoreboard = null;
+        if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), contestScoreboardType)) {
+            contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), contestScoreboardType);
+        }
+
         ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+
         LazyHtml content;
         if (contestScoreboard == null) {
             content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
@@ -154,12 +154,22 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestScoreboard contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
-        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-        Scoreboard scoreboard = contestScoreboard.getScoreboard();
-        LazyHtml content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+        ContestScoreboard contestScoreboard = null;
+        if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL)) {
+            contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL);
+        }
 
-        content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[]{new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestScoreboardController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestScoreboardController.downloadContestDataAsXLS(contest.getId()))}, c));
+        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+
+        LazyHtml content;
+        if (contestScoreboard == null) {
+            content = new LazyHtml(adapter.renderScoreboard(null, null, JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, ImmutableSet.of()));
+        } else {
+            Scoreboard scoreboard = contestScoreboard.getScoreboard();
+            content = new LazyHtml(adapter.renderScoreboard(scoreboard, contestScoreboard.getLastUpdateTime(), JidCacheServiceImpl.getInstance(), IdentityUtils.getUserJid(), false, scoreboard.getState().getContestantJids().stream().collect(Collectors.toSet())));
+
+            content.appendLayout(c -> heading3WithActionsLayout.render(Messages.get("scoreboard.scoreboard"), new InternalLink[]{new InternalLink(Messages.get("scoreboard.refresh"), routes.ContestScoreboardController.refreshAllScoreboard(contest.getId())), new InternalLink(Messages.get("data.download"), routes.ContestScoreboardController.downloadContestDataAsXLS(contest.getId()))}, c));
+        }
 
         appendSubtabsLayout(content, contest);
         ContestControllerUtils.getInstance().appendTabsLayout(content, contest, IdentityUtils.getUserJid());
@@ -180,20 +190,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
-        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-        ScoreboardState state = contestService.getScoreboardStateInContest(contest.getJid());
-
-        List<ProgrammingSubmission> submissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid());
-
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, submissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
-        Scoreboard scoreboard = adapter.createScoreboard(state, content);
-        contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.OFFICIAL, scoreboard);
-
-        if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
-            ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
-            refreshFrozenScoreboard(contest, contestFrozenScoreboardModule, adapter, state);
-        }
+        ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, programmingSubmissionService, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
 
@@ -363,14 +360,6 @@ public class ContestScoreboardController extends AbstractJudgelsController {
         } catch (IOException e) {
             return internalServerError();
         }
-    }
-
-    private void refreshFrozenScoreboard(Contest contest, ContestFrozenScoreboardModule contestFrozenScoreboardModule, ScoreboardAdapter adapter, ScoreboardState state) {
-        List<ProgrammingSubmission> programmingSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), contestFrozenScoreboardModule.getScoreboardFreezeTime());
-
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, programmingSubmissions, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
-        Scoreboard scoreboard = adapter.createScoreboard(state, content);
-        contestScoreboardService.updateContestScoreboardInContestByType(contest.getJid(), ContestScoreboardType.FROZEN, scoreboard);
     }
 
     private void appendSubtabsLayout(LazyHtml content, Contest contest) {

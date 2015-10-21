@@ -9,16 +9,11 @@ import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.ContestScoreboardType;
 import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
-import org.iatoki.judgels.uriel.Scoreboard;
-import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardState;
-import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
-import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestManagerDao;
@@ -36,6 +31,7 @@ import org.iatoki.judgels.uriel.models.entities.ContestModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModuleModel;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
 import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel;
+import org.iatoki.judgels.uriel.models.entities.ContestScoreboardModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestStyleModel;
 import org.iatoki.judgels.uriel.modules.contest.ContestModule;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleFactory;
@@ -240,7 +236,6 @@ public final class ContestServiceImpl implements ContestService {
         contestDao.edit(contestModel, userJid, userIpAddress);
 
         ContestStyleModel contestStyleModel = contestStyleDao.findInContest(contestModel.jid);
-        Contest contest = createContestFromModel(contestStyleDao, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid));
 
         if (isStyleChanged) {
             if (contestModel.style.equals(ContestStyle.ICPC.name())) {
@@ -251,29 +246,8 @@ public final class ContestServiceImpl implements ContestService {
 
             contestStyleDao.edit(contestStyleModel, userJid, userIpAddress);
 
-            if (contestModuleDao.existsEnabledInContestByName(contestJid, ContestModules.SCOREBOARD.name())) {
-                ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.OFFICIAL.name());
+            for (ContestScoreboardModel contestScoreboardModel : contestScoreboardDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestScoreboardModel_.contestJid, contestModel.jid), 0, -1)) {
                 contestScoreboardDao.remove(contestScoreboardModel);
-
-                contestScoreboardModel = new ContestScoreboardModel();
-                contestScoreboardModel.contestJid = contestModel.jid;
-                contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
-
-                ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-                ScoreboardState state = getScoreboardStateInContest(contestModel.jid);
-                ScoreboardContent content = adapter.computeScoreboardContent(contest, contestStyleModel.config, state, ImmutableList.of(), ImmutableMap.of());
-                Scoreboard scoreboard = adapter.createScoreboard(state, content);
-
-                contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
-
-                contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
-            }
-
-            if (contestModuleDao.existsEnabledInContestByName(contestJid, ContestModules.FROZEN_SCOREBOARD.name())) {
-                ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestModel.jid, ContestScoreboardType.FROZEN.name());
-                contestScoreboardDao.remove(contestScoreboardModel);
-
-                // TODO recompute frozen scoreboard
             }
         }
     }
@@ -373,19 +347,6 @@ public final class ContestServiceImpl implements ContestService {
 
         contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
-
-        ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
-        contestScoreboardModel.contestJid = contestModel.jid;
-        contestScoreboardModel.type = ContestScoreboardType.OFFICIAL.name();
-
-        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(style);
-        ScoreboardState config = getScoreboardStateInContest(contestModel.jid);
-        ScoreboardContent content = adapter.computeScoreboardContent(createContestFromModel(contestStyleDao, contestModel, contestModuleDao.getEnabledInContest(contestModel.jid)), contestStyleDao.findInContest(contestJid).config, config, ImmutableList.of(), ImmutableMap.of());
-        Scoreboard scoreboard = adapter.createScoreboard(config, content);
-
-        contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
-
-        contestScoreboardDao.persist(contestScoreboardModel, userJid, userIpAddress);
 
         return moduleModelBuilder.build();
     }

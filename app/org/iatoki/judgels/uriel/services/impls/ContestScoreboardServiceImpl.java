@@ -25,7 +25,6 @@ import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
-import javax.persistence.NoResultException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -92,30 +91,19 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     }
 
     @Override
-    public void upsertFrozenScoreboard(long contestScoreboardId) {
-        ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findById(contestScoreboardId);
-        ContestScoreboardModel frozenContestScoreboardModel;
-        if (contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name())) {
-            frozenContestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestScoreboardModel.contestJid, ContestScoreboardType.FROZEN.name());
-        } else {
-            frozenContestScoreboardModel = new ContestScoreboardModel();
-        }
-        frozenContestScoreboardModel.contestJid = contestScoreboardModel.contestJid;
-        frozenContestScoreboardModel.scoreboard = contestScoreboardModel.scoreboard;
-        frozenContestScoreboardModel.type = ContestScoreboardType.FROZEN.name();
-
-        contestScoreboardDao.edit(frozenContestScoreboardModel, "scoreboardUpdater", "localhost");
-    }
-
-    @Override
-    public void updateContestScoreboardInContestByType(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard) {
-        try {
+    public void upsertContestScoreboard(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard, String userJid, String ipAddress) {
+        if (contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, scoreboardType.name())) {
             ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestJid, scoreboardType.name());
             contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
 
-            contestScoreboardDao.edit(contestScoreboardModel, "scoreboardUpdater", "localhost");
-        } catch (NoResultException e) {
-            // just do nothing
+            contestScoreboardDao.edit(contestScoreboardModel, userJid, ipAddress);
+        } else {
+            ContestScoreboardModel contestScoreboardModel = new ContestScoreboardModel();
+            contestScoreboardModel.contestJid = contestJid;
+            contestScoreboardModel.type = scoreboardType.name();
+            contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+
+            contestScoreboardDao.persist(contestScoreboardModel, userJid, ipAddress);
         }
     }
 
