@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel;
 
-import com.beust.jcommander.internal.Lists;
+import com.google.common.collect.Lists;
 
 import java.net.URL;
 import java.util.List;
@@ -24,12 +24,31 @@ public class ICPCScoreboardEntry implements ScoreboardEntry, Comparable<ICPCScor
 
     @Override
     public int compareTo(ICPCScoreboardEntry o) {
-        int ignoringTieBreaker = compareToIgnoringTieBreaker(o);
+        int ignoringTieBreaker = compareToIgnoringTieBreakerForEqualRanks(o);
 
         if (ignoringTieBreaker != 0) {
             return ignoringTieBreaker;
         }
 
+        return compareToUsingTieBreakerForEqualRanks(o);
+    }
+
+    public int compareToIgnoringTieBreakerForEqualRanks(ICPCScoreboardEntry o) {
+        if (totalAccepted != o.totalAccepted) {
+            return Integer.compare(o.totalAccepted, totalAccepted);
+        }
+
+        if (totalPenalties != o.totalPenalties) {
+            return Long.compare(totalPenalties, o.totalPenalties);
+        }
+
+        long maxPenalty = getMaxPenalty(isAcceptedList, penaltyList);
+        long otherMaxPenalty = getMaxPenalty(o.isAcceptedList, o.penaltyList);
+
+        return Long.compare(maxPenalty, otherMaxPenalty);
+    }
+
+    private int compareToUsingTieBreakerForEqualRanks(ICPCScoreboardEntry o) {
         int totalAttempts = attemptsList.stream().mapToInt(i -> i).sum();
         int otherTotalAttempts = o.attemptsList.stream().mapToInt(i -> i).sum();
 
@@ -42,25 +61,6 @@ public class ICPCScoreboardEntry implements ScoreboardEntry, Comparable<ICPCScor
         } else {
             return Integer.compare(otherTotalAttempts, totalAttempts);
         }
-    }
-
-    public int compareToIgnoringTieBreaker(ICPCScoreboardEntry o) {
-        if (totalAccepted != o.totalAccepted) {
-            return Integer.compare(o.totalAccepted, totalAccepted);
-        }
-
-        if (totalPenalties != o.totalPenalties) {
-            return Long.compare(totalPenalties, o.totalPenalties);
-        }
-
-        long maxPenalty = getMaxPenalty(isAcceptedList, penaltyList);
-        long otherMaxPenalty = getMaxPenalty(o.isAcceptedList, o.penaltyList);
-
-        if (maxPenalty != otherMaxPenalty) {
-            return Long.compare(maxPenalty, otherMaxPenalty);
-        }
-
-        return 0;
     }
 
     private long getMaxPenalty(List<Boolean> isAcceptedList, List<Long> penaltyList) {

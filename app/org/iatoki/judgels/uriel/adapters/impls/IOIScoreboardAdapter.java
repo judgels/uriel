@@ -152,7 +152,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
         int currentRank = 0;
         for (int i = 0; i < entries.size(); i++) {
             currentRank++;
-            if (i == 0 || entries.get(i).totalScores != entries.get(i - 1).totalScores) {
+            if (i == 0 || entries.get(i).compareToIgnoringTieBreakerForEqualRanks(entries.get(i - 1)) != 0) {
                 entries.get(i).rank = currentRank;
             } else {
                 entries.get(i).rank = entries.get(i - 1).rank;
