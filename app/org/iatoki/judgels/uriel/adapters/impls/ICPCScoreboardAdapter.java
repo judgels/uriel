@@ -44,6 +44,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
         Map<String, Map<String, Integer>> attemptsMap = Maps.newHashMap();
         Map<String, Map<String, Long>> penaltyMap = Maps.newHashMap();
         Map<String, Map<String, Integer>> problemStateMap = Maps.newHashMap();
+        Map<String, Long> lastAcceptedPenaltyMap = Maps.newHashMap();
         Set<String> acceptedProblemJids = Sets.newHashSet();
 
         for (String contestantJid : state.getContestantJids()) {
@@ -54,6 +55,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             for (String problemJid : state.getProblemJids()) {
                 attemptsMap.get(contestantJid).put(problemJid, 0);
                 penaltyMap.get(contestantJid).put(problemJid, 0L);
+                lastAcceptedPenaltyMap.put(contestantJid, 0L);
                 problemStateMap.get(contestantJid).put(problemJid, ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal());
             }
         }
@@ -87,6 +89,8 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
                     problemStateMap.get(contestantJid).put(problemJid, ICPCScoreboardEntry.State.FIRST_ACCEPTED.ordinal());
                     acceptedProblemJids.add(problemJid);
                 }
+
+                lastAcceptedPenaltyMap.put(contestantJid, penaltyInMilliseconds);
             }
         }
 
@@ -100,10 +104,12 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             for (String problemJid : state.getProblemJids()) {
                 int attempts = attemptsMap.get(contestantJid).get(problemJid);
                 long penalty = penaltyMap.get(contestantJid).get(problemJid);
+                long lastAcceptedPenalty = lastAcceptedPenaltyMap.get(contestantJid);
                 int problemState = problemStateMap.get(contestantJid).get(problemJid);
 
                 entry.attemptsList.add(attempts);
                 entry.penaltyList.add(penalty);
+                entry.lastAcceptedPenalty = lastAcceptedPenalty;
                 entry.problemStateList.add(problemState);
 
                 if (problemState != ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal()) {

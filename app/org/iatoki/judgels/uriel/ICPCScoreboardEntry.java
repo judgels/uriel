@@ -18,6 +18,7 @@ public class ICPCScoreboardEntry implements ScoreboardEntry {
     public URL imageURL;
     public int totalAccepted;
     public long totalPenalties;
+    public long lastAcceptedPenalty;
     public List<Integer> attemptsList;
     public List<Long> penaltyList;
     public List<Integer> problemStateList;
