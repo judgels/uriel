@@ -16,13 +16,13 @@ import java.util.Set;
 
 public interface ScoreboardAdapter {
 
-    ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimesMap, Map<String, URL> userJidToImageMap);
+    ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimesMap, Map<String, URL> userJidToImageMap);
 
     Scoreboard parseScoreboardFromJson(String json);
 
     Scoreboard createScoreboard(ScoreboardState state, ScoreboardContent content);
 
-    Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids);
+    Scoreboard filterOpenProblems(Contest contest, Scoreboard scoreboard, Set<String> openProblemJids);
 
     Html renderScoreboard(Scoreboard scoreboard, Date lastUpdateTime, AbstractBaseJidCacheServiceImpl<?> jidCacheService, String currentContestantJid, boolean hiddenRank, Set<String> filterContestantJids);
 }

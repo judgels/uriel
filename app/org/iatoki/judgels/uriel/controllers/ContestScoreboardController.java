@@ -122,7 +122,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                     .map(c -> c.getProblemJid())
                     .collect(Collectors.toSet());
 
-            scoreboard = adapter.filterOpenProblems(scoreboard, openProblemJids);
+            scoreboard = adapter.filterOpenProblems(contest, scoreboard, openProblemJids);
 
             if (contestScoreboardModule.isIncognitoScoreboard()) {
                 if (ContestControllerUtils.getInstance().isCoach(contest, IdentityUtils.getUserJid())) {

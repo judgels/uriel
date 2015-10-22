@@ -5,6 +5,8 @@
 
 <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/sandalphoncommons/javascripts/languageRestriction.js")"></script>
 
+@b3.checkbox(formStyle("usingLastAffectingPenalty"), '_label -> Messages.get("contest.style.IOI.usingLastAffectingPenalty"))
+
 <div class="form-group">
 
     <label class="control-label col-md-3">@Messages.get("problem.allowedLanguages")</label>

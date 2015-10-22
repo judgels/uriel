@@ -1,6 +1,5 @@
 package org.iatoki.judgels.uriel;
 
-import com.google.gson.Gson;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
@@ -42,7 +41,7 @@ public final class ContestScoreboardUtils {
     }
 
     private static void updateScoreboard(Contest contest, ContestScoreboardService contestScoreboardService, ContestScoreboardType contestScoreboardType, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, ScoreboardAdapter adapter, ScoreboardState state, String userJid, String ipAddress) {
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, new Gson().toJson(contest.getStyleConfig()), state, submissions, contestantStartTimes, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, state, submissions, contestantStartTimes, contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         contestScoreboardService.upsertContestScoreboard(contest.getJid(), contestScoreboardType, scoreboard, userJid, ipAddress);
     }

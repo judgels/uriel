@@ -558,6 +558,7 @@ public final class ContestController extends AbstractJudgelsController {
             Form<IOIContestStyleConfigForm> ioiStyleConfigForm = Form.form(IOIContestStyleConfigForm.class);
 
             IOIContestStyleConfigForm formData = new IOIContestStyleConfigForm();
+            formData.usingLastAffectingPenalty = ioiContestStyleConfig.usingLastAffectingPenalty();
             formData.isAllowedAll = LanguageRestrictionAdapter.getFormIsAllowedAllFromLanguageRestriction(ioiContestStyleConfig.getLanguageRestriction());
             formData.allowedLanguageNames = LanguageRestrictionAdapter.getFormAllowedLanguageNamesFromLanguageRestriction(ioiContestStyleConfig.getLanguageRestriction());
 
@@ -614,7 +615,7 @@ public final class ContestController extends AbstractJudgelsController {
             contestStyleConfig = new ICPCContestStyleConfig(formData.wrongSubmissionPenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(formData.allowedLanguageNames, formData.isAllowedAll));
         } else if (contest.isIOI()) {
             IOIContestStyleConfigForm formData = (IOIContestStyleConfigForm) styleConfigForm.get();
-            contestStyleConfig = new IOIContestStyleConfig(LanguageRestrictionAdapter.createLanguageRestrictionFromForm(formData.allowedLanguageNames, formData.isAllowedAll));
+            contestStyleConfig = new IOIContestStyleConfig(formData.usingLastAffectingPenalty, LanguageRestrictionAdapter.createLanguageRestrictionFromForm(formData.allowedLanguageNames, formData.isAllowedAll));
         }
 
         contestService.updateContestStyleConfiguration(contest.getJid(), contestStyleConfig, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());

@@ -36,9 +36,9 @@ import java.util.stream.Collectors;
 public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
 
-        ICPCContestStyleConfig icpcStyleConfig = new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class);
+        ICPCContestStyleConfig icpcStyleConfig = (ICPCContestStyleConfig) contest.getStyleConfig();
         ScoreboardEntryComparator<ICPCScoreboardEntry> comparator = new ICPCScoreboardEntryComparator();
 
         Map<String, Map<String, Integer>> attemptsMap = Maps.newHashMap();
@@ -137,7 +137,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
     }
 
     @Override
-    public Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids) {
+    public Scoreboard filterOpenProblems(Contest contest, Scoreboard scoreboard, Set<String> openProblemJids) {
         // in ICPC-style it does not make sense to differentiate contestant's shown problems
         // and supervisor's shown problems
 

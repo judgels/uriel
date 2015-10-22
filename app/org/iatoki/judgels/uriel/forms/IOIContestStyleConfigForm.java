@@ -4,7 +4,8 @@ import java.util.Map;
 
 public class IOIContestStyleConfigForm {
 
-    public boolean isAllowedAll;
+    public boolean usingLastAffectingPenalty;
 
+    public boolean isAllowedAll;
     public Map<String, String> allowedLanguageNames;
 }

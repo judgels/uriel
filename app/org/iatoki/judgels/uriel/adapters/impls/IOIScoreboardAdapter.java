@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIScoreboard;
 import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
@@ -15,6 +16,7 @@ import org.iatoki.judgels.uriel.ScoreboardContent;
 import org.iatoki.judgels.uriel.ScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.StandardIOIScoreboardEntryComparator;
+import org.iatoki.judgels.uriel.UsingLastAffectingPenaltyIOIScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
@@ -33,9 +35,16 @@ import java.util.stream.Collectors;
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
 
-        ScoreboardEntryComparator<IOIScoreboardEntry> comparator = new StandardIOIScoreboardEntryComparator();
+        IOIContestStyleConfig styleConfig = (IOIContestStyleConfig) contest.getStyleConfig();
+
+        ScoreboardEntryComparator<IOIScoreboardEntry> comparator;
+        if (styleConfig.usingLastAffectingPenalty()) {
+            comparator = new UsingLastAffectingPenaltyIOIScoreboardEntryComparator();
+        } else {
+            comparator = new StandardIOIScoreboardEntryComparator();
+        }
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
         Map<String, Long> lastAffectingPenalties = Maps.newHashMap();
@@ -116,8 +125,15 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
     }
 
     @Override
-    public Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids) {
-        ScoreboardEntryComparator<IOIScoreboardEntry> comparator = new StandardIOIScoreboardEntryComparator();
+    public Scoreboard filterOpenProblems(Contest contest, Scoreboard scoreboard, Set<String> openProblemJids) {
+        IOIContestStyleConfig styleConfig = (IOIContestStyleConfig) contest.getStyleConfig();
+
+        ScoreboardEntryComparator<IOIScoreboardEntry> comparator;
+        if (styleConfig.usingLastAffectingPenalty()) {
+            comparator = new UsingLastAffectingPenaltyIOIScoreboardEntryComparator();
+        } else {
+            comparator = new StandardIOIScoreboardEntryComparator();
+        }
 
         ScoreboardState state = scoreboard.getState();
         IOIScoreboardContent content = (IOIScoreboardContent) scoreboard.getContent();

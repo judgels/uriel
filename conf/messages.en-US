@@ -185,6 +185,7 @@ contest.scope.public.registerStartTime=Register Start Time
 contest.scope.public.registerEndTime=Register End Time
 contest.scope.public.maxRegistrants=Max Registrants
 contest.style.ICPC.wrongSubmissionPenalty=Penalty for wrong submission
+contest.style.IOI.usingLastAffectingPenalty=Incorporate last affecting penalty for ranking?
 
 contest.modules.enabled=Enabled Modules
 contest.modules.disabled=Disabled Modules
