@@ -5,7 +5,9 @@ import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public interface ContestContestantService {
 
@@ -18,6 +20,8 @@ public interface ContestContestantService {
     ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid);
 
     List<ContestContestant> getContestantsInContest(String contestJid);
+
+    Map<String, Date> getContestantStartTimes(String contestJid);
 
     Page<ContestContestant> getPageOfContestantsInContest(String contestJid, long pageIndex, long pageSize, String orderBy, String orderDir, String filterString);
 

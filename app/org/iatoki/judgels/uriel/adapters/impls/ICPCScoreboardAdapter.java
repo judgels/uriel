@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
 
         ICPCContestStyleConfig icpcStyleConfig = new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class);
 
@@ -72,7 +72,8 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             int attempts = attemptsMap.get(contestantJid).get(problemJid);
             attemptsMap.get(contestantJid).put(problemJid, attempts + 1);
 
-            penaltyMap.get(contestantJid).put(problemJid, computeSubmissionPenalty(((ContestDurationModule) contest.getModule(ContestModules.DURATION)).getBeginTime(), submission.getTime()));
+            long penaltyInMilliseconds = computeSubmissionPenaltyInMilliseconds(contest, contestantStartTimes.get(contestantJid), submission.getTime());
+            penaltyMap.get(contestantJid).put(problemJid, convertPenaltyToMinutes(penaltyInMilliseconds));
 
             isAcceptedMap.get(contestantJid).put(problemJid, verdict.getCode().equals("AC"));
         }
@@ -149,16 +150,24 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
         }
     }
 
-    private long computeSubmissionPenalty(Date contestBeginTime, Date submissionTime) {
-        long contestBeginMillis = contestBeginTime.getTime();
-        long submissionMillis = submissionTime.getTime();
-        long millisElapsed = submissionMillis - contestBeginMillis;
-
-        long penalty = TimeUnit.MILLISECONDS.toMinutes(millisElapsed);
-        if (TimeUnit.MINUTES.toMillis(penalty) != millisElapsed) {
-            penalty++;
+    private long convertPenaltyToMinutes(long penaltyInMilliseconds) {
+        long penaltyInMinutes = TimeUnit.MILLISECONDS.toMinutes(penaltyInMilliseconds);
+        if (TimeUnit.MINUTES.toMillis(penaltyInMinutes) != penaltyInMilliseconds) {
+            penaltyInMinutes++;
         }
 
-        return penalty;
+        return penaltyInMinutes;
+    }
+
+    private long computeSubmissionPenaltyInMilliseconds(Contest contest, Date contestStartTime, Date submissionTime) {
+        if (contestStartTime != null) {
+            return submissionTime.getTime() - contestStartTime.getTime();
+        }
+        if (!contest.containsModule(ContestModules.DURATION)) {
+            return 0;
+        }
+
+        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
+        return submissionTime.getTime() - contestDurationModule.getBeginTime().getTime();
     }
 }

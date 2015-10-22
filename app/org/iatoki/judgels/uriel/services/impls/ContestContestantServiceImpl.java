@@ -16,7 +16,10 @@ import org.iatoki.judgels.uriel.services.ContestContestantService;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Singleton
 @Named("contestContestantService")
@@ -61,6 +64,15 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     public List<ContestContestant> getContestantsInContest(String contestJid) {
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), 0, -1);
         return Lists.transform(contestContestantModels, m -> createContestContestantFromModel(m));
+    }
+
+    @Override
+    public Map<String, Date> getContestantStartTimes(String contestJid) {
+        List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), 0, -1);
+
+        return contestContestantModels.stream()
+                .filter(m -> m.contestStartTime != 0)
+                .collect(Collectors.toMap(m -> m.userJid, m -> new Date(m.contestStartTime)));
     }
 
     @Override

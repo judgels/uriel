@@ -38,6 +38,7 @@ import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.modules.contest.scoreboard.ContestScoreboardModule;
+import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
 import org.iatoki.judgels.uriel.services.ContestService;
@@ -68,14 +69,16 @@ public class ContestScoreboardController extends AbstractJudgelsController {
 
     private final ContestProblemService contestProblemService;
     private final ContestScoreboardService contestScoreboardService;
+    private final ContestContestantService contestContestantService;
     private final ContestService contestService;
     private final ContestTeamService contestTeamService;
     private final ProgrammingSubmissionService programmingSubmissionService;
 
     @Inject
-    public ContestScoreboardController(ContestProblemService contestProblemService, ContestScoreboardService contestScoreboardService, ContestService contestService, ContestTeamService contestTeamService, ProgrammingSubmissionService programmingSubmissionService) {
+    public ContestScoreboardController(ContestProblemService contestProblemService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ContestService contestService, ContestTeamService contestTeamService, ProgrammingSubmissionService programmingSubmissionService) {
         this.contestProblemService = contestProblemService;
         this.contestScoreboardService = contestScoreboardService;
+        this.contestContestantService = contestContestantService;
         this.contestService = contestService;
         this.contestTeamService = contestTeamService;
         this.programmingSubmissionService = programmingSubmissionService;
@@ -190,7 +193,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, programmingSubmissionService, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
 
