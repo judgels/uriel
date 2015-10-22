@@ -35,13 +35,13 @@
                     <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
                     <td class="scoreboard-score">
                         <div class="scoreboard-icpc-accepted-attempts">@entry.totalAccepted</div>
-                        <div class="scoreboard-icpc-accepted-penalty">@entry.totalPenalties mins</div>
+                        <div class="scoreboard-icpc-accepted-penalty">@entry.totalPenalties</div>
                     </td>
                     @for(i <- 0 until entry.attemptsList.size) {
                         @if(entry.isAcceptedList.get(i)) {
                             <td class="scoreboard-score scoreboard-icpc-accepted">
                                 <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
-                                <div class="scoreboard-icpc-accepted-penalty">@entry.penaltyList.get(i) mins</div>
+                                <div class="scoreboard-icpc-accepted-penalty">@entry.penaltyList.get(i)</div>
                             </td>
                         } else {
                             @if(entry.attemptsList.get(i) > 0) {
@@ -51,7 +51,7 @@
                                 </td>
                             } else {
                                 <td class="scoreboard-score">
-                                    <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
+                                    <div class="scoreboard-icpc-accepted-attempts">-</div>
                                     <div class="scoreboard-icpc-accepted-penalty">-</div>
                                 </td>
                             }
