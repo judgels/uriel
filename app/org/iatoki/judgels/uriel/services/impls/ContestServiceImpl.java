@@ -348,6 +348,15 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
+        contestModuleModel = new ContestModuleModel();
+        contestModuleModel.contestJid = contestJid;
+        contestModuleModel.enabled = true;
+        contestModuleModel.name = ContestModules.LIMITED.name();
+        contestModuleModel.config = ContestModuleFactory.createDefaultContestModule(ContestModules.LIMITED).toJSONString();
+
+        contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
+        moduleModelBuilder.add(contestModuleModel);
+
         return moduleModelBuilder.build();
     }
 
