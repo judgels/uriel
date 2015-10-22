@@ -16,6 +16,8 @@ import org.iatoki.judgels.uriel.ScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.StandardIOIScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
+import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
@@ -36,9 +38,11 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
         ScoreboardEntryComparator<IOIScoreboardEntry> comparator = new StandardIOIScoreboardEntryComparator();
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
+        Map<String, Long> lastAffectingPenalties = Maps.newHashMap();
 
         for (String contestantJid : state.getContestantJids()) {
             scores.put(contestantJid, Maps.newHashMap());
+            lastAffectingPenalties.put(contestantJid, 0L);
         }
 
         for (ProgrammingSubmission submission : submissions) {
@@ -51,11 +55,26 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             String problemJid = submission.getProblemJid();
             int score = submission.getLatestScore();
 
+            boolean updateLastAffectingPenalty = false;
+
             if (scores.get(contestantJid).containsKey(problemJid)) {
-                score = Math.max(scores.get(contestantJid).get(problemJid), score);
+                int oldScore = scores.get(contestantJid).get(problemJid);
+
+                if (score > oldScore) {
+                    updateLastAffectingPenalty = true;
+                } else {
+                    score = oldScore;
+                }
+            } else {
+                updateLastAffectingPenalty = true;
             }
 
             scores.get(contestantJid).put(problemJid, score);
+
+            if (updateLastAffectingPenalty) {
+                long lastAffectingPenalty = computeLastAffectingPenalty(contest, contestantStartTimes.get(contestantJid), submission.getTime());
+                lastAffectingPenalties.put(contestantJid, lastAffectingPenalty);
+            }
         }
 
         List<IOIScoreboardEntry> entries = Lists.newArrayList();
@@ -76,6 +95,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             }
 
             entry.totalScores = totalScores;
+            entry.lastAffectingPenalty = lastAffectingPenalties.get(contestantJid);
 
             entries.add(entry);
         }
@@ -164,5 +184,18 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
                 entries.get(i).rank = entries.get(i - 1).rank;
             }
         }
+    }
+
+
+    private long computeLastAffectingPenalty(Contest contest, Date contestStartTime, Date submissionTime) {
+        if (contestStartTime != null) {
+            return submissionTime.getTime() - contestStartTime.getTime();
+        }
+        if (!contest.containsModule(ContestModules.DURATION)) {
+            return 0;
+        }
+
+        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
+        return submissionTime.getTime() - contestDurationModule.getBeginTime().getTime();
     }
 }

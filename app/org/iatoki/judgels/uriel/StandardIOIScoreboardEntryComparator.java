@@ -9,6 +9,10 @@ public final class StandardIOIScoreboardEntryComparator extends AbstractScoreboa
 
     @Override
     public int compareWithTieBreakerForEqualRanks(IOIScoreboardEntry entry1, IOIScoreboardEntry entry2) {
+        if (entry1.lastAffectingPenalty != entry2.lastAffectingPenalty) {
+            return Long.compare(entry1.lastAffectingPenalty, entry2.lastAffectingPenalty);
+        }
+
         int submittedProblems1 = (int) entry1.scores.stream().filter(s -> s != null).count();
         int submittedProblems2 = (int) entry2.scores.stream().filter(s -> s != null).count();
 

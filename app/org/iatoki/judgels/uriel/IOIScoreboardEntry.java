@@ -12,6 +12,7 @@ public final class IOIScoreboardEntry implements ScoreboardEntry {
     public URL imageURL;
     public List<Integer> scores;
     public int totalScores;
+    public long lastAffectingPenalty;
 
     public IOIScoreboardEntry() {
         scores = Lists.newArrayList();
