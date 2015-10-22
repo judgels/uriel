@@ -247,7 +247,7 @@ public final class ContestControllerUtils {
             return false;
         }
 
-        if (!contest.containsModule(ContestModules.VIRTUAL) && !isContestant(contest, userJid)) {
+        if (!contest.containsModule(ContestModules.VIRTUAL) || !isContestant(contest, userJid)) {
             return false;
         }
 
