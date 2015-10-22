@@ -196,7 +196,7 @@ public final class ContestControllerUtils {
             return true;
         }
         if (contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) {
-            return hasContestBegun(contest) && isContestant(contest, userJid);
+            return hasContestStarted(contest, userJid) && isContestant(contest, userJid);
         }
 
         return hasContestStarted(contest, userJid);
@@ -239,6 +239,10 @@ public final class ContestControllerUtils {
             return false;
         }
 
+        if (userJid.startsWith("guest")) {
+            return false;
+        }
+
         if (isSupervisorOrAbove(contest, userJid)) {
             return false;
         }
@@ -256,6 +260,10 @@ public final class ContestControllerUtils {
 
     public boolean isAllowedToViewStartContestForTeamButtonInContest(Contest contest, String userJid) {
         if (!contest.containsModule(ContestModules.VIRTUAL) || !hasContestBegun(contest) || hasContestEnded(contest)) {
+            return false;
+        }
+
+        if (userJid.startsWith("guest")) {
             return false;
         }
 
