@@ -14,8 +14,8 @@ public final class ICPCScoreboardEntryComparator extends AbstractScoreboardEntry
             return Long.compare(entry1.totalPenalties, entry2.totalPenalties);
         }
 
-        long maxPenalty1 = getMaxPenalty(entry1.isAcceptedList, entry1.penaltyList);
-        long maxPenalty2 = getMaxPenalty(entry2.isAcceptedList, entry2.penaltyList);
+        long maxPenalty1 = getMaxPenalty(entry1.problemStateList, entry1.penaltyList);
+        long maxPenalty2 = getMaxPenalty(entry2.problemStateList, entry2.penaltyList);
 
         return Long.compare(maxPenalty1, maxPenalty2);
     }
@@ -36,11 +36,11 @@ public final class ICPCScoreboardEntryComparator extends AbstractScoreboardEntry
         }
     }
 
-    private long getMaxPenalty(List<Boolean> isAcceptedList, List<Long> penaltyList) {
+    private long getMaxPenalty(List<Integer> problemStateList, List<Long> penaltyList) {
         long result = 0;
 
-        for (int i = 0; i < isAcceptedList.size(); i++) {
-            if (isAcceptedList.get(i)) {
+        for (int i = 0; i < problemStateList.size(); i++) {
+            if (problemStateList.get(i) != ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal()) {
                 result = Math.max(result, penaltyList.get(i));
             }
         }

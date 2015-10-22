@@ -346,7 +346,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
                     cell.setCellValue(entry.attemptsList.get(i));
                     cell = row.createCell(cellNum++);
 
-                    if (entry.isAcceptedList.get(i)) {
+                    if (entry.problemStateList.get(i) != ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal()) {
                         cell.setCellValue(entry.penaltyList.get(i));
                     }
                 }

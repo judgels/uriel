@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.adapters.impls;
 
+import com.beust.jcommander.internal.Sets;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -42,17 +43,18 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
         Map<String, Map<String, Integer>> attemptsMap = Maps.newHashMap();
         Map<String, Map<String, Long>> penaltyMap = Maps.newHashMap();
-        Map<String, Map<String, Boolean>> isAcceptedMap = Maps.newHashMap();
+        Map<String, Map<String, Integer>> problemStateMap = Maps.newHashMap();
+        Set<String> acceptedProblemJids = Sets.newHashSet();
 
         for (String contestantJid : state.getContestantJids()) {
             attemptsMap.put(contestantJid, Maps.newHashMap());
             penaltyMap.put(contestantJid, Maps.newHashMap());
-            isAcceptedMap.put(contestantJid, Maps.newHashMap());
+            problemStateMap.put(contestantJid, Maps.newHashMap());
 
             for (String problemJid : state.getProblemJids()) {
                 attemptsMap.get(contestantJid).put(problemJid, 0);
                 penaltyMap.get(contestantJid).put(problemJid, 0L);
-                isAcceptedMap.get(contestantJid).put(problemJid, false);
+                problemStateMap.get(contestantJid).put(problemJid, ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal());
             }
         }
 
@@ -66,7 +68,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             if (!attemptsMap.get(contestantJid).containsKey(problemJid)) {
                 continue;
             }
-            if (isAcceptedMap.get(contestantJid).get(problemJid)) {
+            if (problemStateMap.get(contestantJid).get(problemJid) != ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal()) {
                 continue;
             }
 
@@ -78,7 +80,14 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             long penaltyInMilliseconds = computeSubmissionPenaltyInMilliseconds(contest, contestantStartTimes.get(contestantJid), submission.getTime());
             penaltyMap.get(contestantJid).put(problemJid, convertPenaltyToMinutes(penaltyInMilliseconds));
 
-            isAcceptedMap.get(contestantJid).put(problemJid, verdict.getCode().equals("AC"));
+            if (verdict.getCode().equals("AC")) {
+                if (acceptedProblemJids.contains(problemJid)) {
+                    problemStateMap.get(contestantJid).put(problemJid, ICPCScoreboardEntry.State.ACCEPTED.ordinal());
+                } else {
+                    problemStateMap.get(contestantJid).put(problemJid, ICPCScoreboardEntry.State.FIRST_ACCEPTED.ordinal());
+                    acceptedProblemJids.add(problemJid);
+                }
+            }
         }
 
         List<ICPCScoreboardEntry> entries = Lists.newArrayList();
@@ -91,13 +100,13 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             for (String problemJid : state.getProblemJids()) {
                 int attempts = attemptsMap.get(contestantJid).get(problemJid);
                 long penalty = penaltyMap.get(contestantJid).get(problemJid);
-                boolean isAccepted = isAcceptedMap.get(contestantJid).get(problemJid);
+                int problemState = problemStateMap.get(contestantJid).get(problemJid);
 
                 entry.attemptsList.add(attempts);
                 entry.penaltyList.add(penalty);
-                entry.isAcceptedList.add(isAccepted);
+                entry.problemStateList.add(problemState);
 
-                if (isAccepted) {
+                if (problemState != ICPCScoreboardEntry.State.NOT_ACCEPTED.ordinal()) {
                     entry.totalAccepted++;
                     entry.totalPenalties += icpcStyleConfig.getWrongSubmissionPenalty() * (attempts - 1) + penalty;
                 }

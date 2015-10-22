@@ -7,6 +7,12 @@ import java.util.List;
 
 public class ICPCScoreboardEntry implements ScoreboardEntry {
 
+    public enum State {
+        NOT_ACCEPTED,
+        ACCEPTED,
+        FIRST_ACCEPTED
+    }
+
     public int rank;
     public String contestantJid;
     public URL imageURL;
@@ -14,10 +20,10 @@ public class ICPCScoreboardEntry implements ScoreboardEntry {
     public long totalPenalties;
     public List<Integer> attemptsList;
     public List<Long> penaltyList;
-    public List<Boolean> isAcceptedList;
+    public List<Integer> problemStateList;
 
     public ICPCScoreboardEntry() {
-        this.isAcceptedList = Lists.newArrayList();
+        this.problemStateList = Lists.newArrayList();
         this.attemptsList = Lists.newArrayList();
         this.penaltyList = Lists.newArrayList();
     }

@@ -38,8 +38,13 @@
                         <div class="scoreboard-icpc-accepted-penalty">@entry.totalPenalties</div>
                     </td>
                     @for(i <- 0 until entry.attemptsList.size) {
-                        @if(entry.isAcceptedList.get(i)) {
+                        @if(entry.problemStateList.get(i) == ICPCScoreboardEntry.State.ACCEPTED.ordinal()) {
                             <td class="scoreboard-score scoreboard-icpc-accepted">
+                                <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
+                                <div class="scoreboard-icpc-accepted-penalty">@entry.penaltyList.get(i)</div>
+                            </td>
+                        } else { @if(entry.problemStateList.get(i) == ICPCScoreboardEntry.State.FIRST_ACCEPTED.ordinal()) {
+                            <td class="scoreboard-score scoreboard-icpc-first-accepted">
                                 <div class="scoreboard-icpc-accepted-attempts">@entry.attemptsList.get(i)</div>
                                 <div class="scoreboard-icpc-accepted-penalty">@entry.penaltyList.get(i)</div>
                             </td>
@@ -55,7 +60,7 @@
                                     <div class="scoreboard-icpc-accepted-penalty">-</div>
                                 </td>
                             }
-                        }
+                        }}
                     }
                 </tr>
             }
