@@ -199,7 +199,7 @@ public final class ContestControllerUtils {
             return hasContestBegun(contest) && isContestant(contest, userJid);
         }
 
-        return hasContestBegun(contest);
+        return hasContestStarted(contest, userJid);
     }
 
     public boolean isAllowedToEnterContest(Contest contest, String userJid) {
