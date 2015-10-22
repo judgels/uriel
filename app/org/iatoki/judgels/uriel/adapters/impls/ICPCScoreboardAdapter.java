@@ -11,8 +11,10 @@ import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCScoreboard;
 import org.iatoki.judgels.uriel.ICPCScoreboardContent;
 import org.iatoki.judgels.uriel.ICPCScoreboardEntry;
+import org.iatoki.judgels.uriel.ICPCScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
+import org.iatoki.judgels.uriel.ScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
@@ -36,6 +38,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
     public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
 
         ICPCContestStyleConfig icpcStyleConfig = new Gson().fromJson(styleConfig, ICPCContestStyleConfig.class);
+        ScoreboardEntryComparator<ICPCScoreboardEntry> comparator = new ICPCScoreboardEntryComparator();
 
         Map<String, Map<String, Integer>> attemptsMap = Maps.newHashMap();
         Map<String, Map<String, Long>> penaltyMap = Maps.newHashMap();
@@ -103,7 +106,7 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
             entries.add(entry);
         }
 
-        sortEntriesAndAssignRanks(entries);
+        sortEntriesAndAssignRanks(comparator, entries);
 
         return new ICPCScoreboardContent(entries);
     }
@@ -136,13 +139,13 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
         return icpcScoreboardView.render(castScoreboard.getState(), ((ICPCScoreboardContent) (castScoreboard.getContent())).getEntries().stream().filter(e -> filterContestantJids.contains(e.contestantJid)).collect(Collectors.toList()), lastUpdateTime, jidCacheService, currentContestantJid, hiddenRank);
     }
 
-    private void sortEntriesAndAssignRanks(List<ICPCScoreboardEntry> entries) {
-        Collections.sort(entries);
+    private void sortEntriesAndAssignRanks(ScoreboardEntryComparator<ICPCScoreboardEntry> comparator, List<ICPCScoreboardEntry> entries) {
+        Collections.sort(entries, comparator);
 
         int currentRank = 0;
         for (int i = 0; i < entries.size(); i++) {
             currentRank++;
-            if (i == 0 || entries.get(i).compareToIgnoringTieBreakerForEqualRanks(entries.get(i - 1)) != 0) {
+            if (i == 0 || comparator.compareWithoutTieBreakerForEqualRanks(entries.get(i), entries.get(i - 1)) != 0) {
                 entries.get(i).rank = currentRank;
             } else {
                 entries.get(i).rank = entries.get(i - 1).rank;

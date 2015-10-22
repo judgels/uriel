@@ -12,7 +12,9 @@ import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardContent;
+import org.iatoki.judgels.uriel.ScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.ScoreboardState;
+import org.iatoki.judgels.uriel.StandardIOIScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.views.html.contest.scoreboard.ioiScoreboardView;
 import play.i18n.Messages;
@@ -30,6 +32,8 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
     public ScoreboardContent computeScoreboardContent(Contest contest, String styleConfig, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
+
+        ScoreboardEntryComparator<IOIScoreboardEntry> comparator = new StandardIOIScoreboardEntryComparator();
 
         Map<String, Map<String, Integer>> scores = Maps.newHashMap();
 
@@ -76,7 +80,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             entries.add(entry);
         }
 
-        sortEntriesAndAssignRanks(entries);
+        sortEntriesAndAssignRanks(comparator, entries);
 
         return new IOIScoreboardContent(entries);
     }
@@ -93,6 +97,8 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
     public Scoreboard filterOpenProblems(Scoreboard scoreboard, Set<String> openProblemJids) {
+        ScoreboardEntryComparator<IOIScoreboardEntry> comparator = new StandardIOIScoreboardEntryComparator();
+
         ScoreboardState state = scoreboard.getState();
         IOIScoreboardContent content = (IOIScoreboardContent) scoreboard.getContent();
 
@@ -127,7 +133,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             newEntries.add(newEntry);
         }
 
-        sortEntriesAndAssignRanks(newEntries);
+        sortEntriesAndAssignRanks(comparator, newEntries);
 
         return new IOIScoreboard(newState, new IOIScoreboardContent(newEntries));
     }
@@ -146,13 +152,13 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
         return indices.stream().map(i -> list.get(i)).collect(Collectors.toList());
     }
 
-    private void sortEntriesAndAssignRanks(List<IOIScoreboardEntry> entries) {
-        Collections.sort(entries);
+    private void sortEntriesAndAssignRanks(ScoreboardEntryComparator<IOIScoreboardEntry> comparator, List<IOIScoreboardEntry> entries) {
+        Collections.sort(entries, comparator);
 
         int currentRank = 0;
         for (int i = 0; i < entries.size(); i++) {
             currentRank++;
-            if (i == 0 || entries.get(i).compareToIgnoringTieBreakerForEqualRanks(entries.get(i - 1)) != 0) {
+            if (i == 0 || comparator.compareWithoutTieBreakerForEqualRanks(entries.get(i), entries.get(i - 1)) != 0) {
                 entries.get(i).rank = currentRank;
             } else {
                 entries.get(i).rank = entries.get(i - 1).rank;
