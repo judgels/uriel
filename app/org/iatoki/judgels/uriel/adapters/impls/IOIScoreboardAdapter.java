@@ -74,7 +74,7 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
                 } else {
                     score = oldScore;
                 }
-            } else {
+            } else if (score > 0) {
                 updateLastAffectingPenalty = true;
             }
 
