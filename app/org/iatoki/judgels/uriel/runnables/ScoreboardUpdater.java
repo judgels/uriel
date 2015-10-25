@@ -1,5 +1,6 @@
 package org.iatoki.judgels.uriel.runnables;
 
+import com.beust.jcommander.internal.Lists;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestScoreboardUtils;
@@ -9,6 +10,7 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import play.db.jpa.JPA;
 
 import java.util.Date;
+import java.util.List;
 
 public final class ScoreboardUpdater implements Runnable {
 
@@ -26,11 +28,18 @@ public final class ScoreboardUpdater implements Runnable {
 
     @Override
     public void run() {
-        JPA.withTransaction(() -> {
-                Date timeNow = new Date();
-                for (Contest contest : contestService.getRunningContestsWithScoreboardModule(timeNow)) {
-                    ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService, "scoreboardUpdater", "localhost");
-                }
-            });
+        Date timeNow = new Date();
+        List<Contest> runningContests = Lists.newArrayList();
+        try {
+            JPA.withTransaction("default", true, () -> {
+                    runningContests.addAll(contestService.getRunningContestsWithScoreboardModule(timeNow));
+                    return null;
+                });
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
+        }
+        for (Contest contest : runningContests) {
+            ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService, "scoreboardUpdater", "localhost");
+        }
     }
 }

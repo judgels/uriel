@@ -28,7 +28,6 @@ import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardState;
-import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -195,7 +194,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
 
         ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
-        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
+//        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
 
         return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
     }
