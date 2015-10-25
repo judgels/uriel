@@ -124,4 +124,10 @@ public final class ApplicationController extends AbstractJudgelsController {
 
         return redirectToReferer();
     }
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
+    public Result logout(String returnUri) {
+        session().clear();
+        return redirect(returnUri);
+    }
 }

@@ -7,6 +7,7 @@ GET         /authRole                                                           
 GET         /afterLogin                                                                             @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri ?= "")
 POST        /viewAs                                                                                 @org.iatoki.judgels.uriel.controllers.ApplicationController.postViewAs()
 GET         /resetViewAs                                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.resetViewAs()
+GET         /localLogout                                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.logout(returnUri ?= "")
 
 GET         /contests                                                                               @org.iatoki.judgels.uriel.controllers.ContestController.index()
 GET         /contests/                                                                              @org.iatoki.judgels.uriel.controllers.ContestController.listAllowedContests(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")
