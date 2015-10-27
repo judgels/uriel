@@ -11,6 +11,7 @@ contest.lock=Lock Contest
 contest.unlock=Unlock Contest
 
 contest.isLocked=Contest is Locked
+contest.isPaused=Contest is Paused
 contest.name=Name
 contest.description=Description
 contest.type=Type

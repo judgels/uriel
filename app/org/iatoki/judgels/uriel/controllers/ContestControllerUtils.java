@@ -381,6 +381,9 @@ public final class ContestControllerUtils {
         }
 
         content.appendLayout(c -> contestTimeLayout.render(contestBeginTime, contestEndTime, c));
+        if (contest.containsModule(ContestModules.PAUSE)) {
+            content.appendLayout(c -> alertLayout.render(Messages.get("contest.isPaused"), c));
+        }
         if (contest.isLocked()) {
             content.appendLayout(c -> alertLayout.render(Messages.get("contest.isLocked"), c));
         }
