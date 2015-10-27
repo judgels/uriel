@@ -159,6 +159,7 @@ user.username=Username
 user.name=Name
 user.roles=Roles
 
+contest.time.nolimit=Contest has no time limit.
 contest.time_left=Time left
 contest.time.s=s
 contest.time.ended=Contest ended
@@ -289,6 +290,8 @@ team.members.count=#Members
 team.status=Status
 
 team.avatar.error.cantUpdate=Can't Upload Team Avatar into system
+
+password.passwords=Passwords
 
 file.files=Files
 file.list=Files
