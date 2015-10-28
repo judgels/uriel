@@ -16,7 +16,7 @@ import org.iatoki.judgels.uriel.controllers.UrielControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.ActivityLogDao;
 import org.iatoki.judgels.uriel.models.daos.AvatarCacheDao;
 import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
-import org.iatoki.judgels.uriel.runnables.ScoreboardUpdater;
+import org.iatoki.judgels.uriel.runnables.ScoreboardDispatcher;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
@@ -70,7 +70,7 @@ public final class Global extends AbstractGlobal {
         ExecutionContextExecutor context = Akka.system().dispatcher();
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, injector.instanceOf(ProgrammingSubmissionService.class), injector.instanceOf(SealtielClientAPI.class), TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-        ScoreboardUpdater updater = new ScoreboardUpdater(injector.instanceOf(ContestService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ProgrammingSubmissionService.class));
+        ScoreboardDispatcher updater = new ScoreboardDispatcher(scheduler, context, injector.instanceOf(ContestService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ProgrammingSubmissionService.class));
         UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(injector.instanceOf(JophielClientAPI.class), UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);

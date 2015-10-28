@@ -22,4 +22,6 @@ public final class ContestScoreboardModel extends AbstractModel {
 
     @Column(columnDefinition = "LONGTEXT")
     public String scoreboard;
+
+    public long time;
 }

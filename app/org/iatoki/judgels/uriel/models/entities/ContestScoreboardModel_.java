@@ -14,4 +14,5 @@ public abstract class ContestScoreboardModel_  extends AbstractModel_ {
     public static volatile SingularAttribute<ContestScoreboardModel, String> contestJid;
     public static volatile SingularAttribute<ContestScoreboardModel, String> type;
     public static volatile SingularAttribute<ContestScoreboardModel, String> scoreboard;
+    public static volatile SingularAttribute<ContestScoreboardModel, Long> time;
 }

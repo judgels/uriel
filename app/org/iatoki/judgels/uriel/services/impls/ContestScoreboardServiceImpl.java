@@ -91,10 +91,11 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     }
 
     @Override
-    public void upsertContestScoreboard(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard, String userJid, String ipAddress) {
+    public void upsertContestScoreboard(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard, long time, String userJid, String ipAddress) {
         if (contestScoreboardDao.isContestScoreboardExistByContestJidAndScoreboardType(contestJid, scoreboardType.name())) {
             ContestScoreboardModel contestScoreboardModel = contestScoreboardDao.findInContestByScoreboardType(contestJid, scoreboardType.name());
             contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+            contestScoreboardModel.time = time;
 
             contestScoreboardDao.edit(contestScoreboardModel, userJid, ipAddress);
         } else {
@@ -102,6 +103,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
             contestScoreboardModel.contestJid = contestJid;
             contestScoreboardModel.type = scoreboardType.name();
             contestScoreboardModel.scoreboard = new Gson().toJson(scoreboard);
+            contestScoreboardModel.time = time;
 
             contestScoreboardDao.persist(contestScoreboardModel, userJid, ipAddress);
         }
@@ -110,7 +112,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
     private static ContestScoreboard createContestScoreboardFromModel(ContestScoreboardModel contestScoreboardModel, ContestStyle style) {
         Scoreboard scoreboard = ScoreboardAdapters.fromContestStyle(style).parseScoreboardFromJson(contestScoreboardModel.scoreboard);
 
-        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard, new Date(contestScoreboardModel.timeUpdate));
+        return new ContestScoreboard(contestScoreboardModel.id, contestScoreboardModel.contestJid, ContestScoreboardType.valueOf(contestScoreboardModel.type), scoreboard, new Date(contestScoreboardModel.time));
     }
 
     private static URL getTeamImageURLFromImageName(String imageName) {

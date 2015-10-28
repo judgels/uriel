@@ -18,7 +18,6 @@ import org.iatoki.judgels.uriel.ContestNotFoundException;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestScoreboard;
 import org.iatoki.judgels.uriel.ContestScoreboardType;
-import org.iatoki.judgels.uriel.ContestScoreboardUtils;
 import org.iatoki.judgels.uriel.ContestTeam;
 import org.iatoki.judgels.uriel.ContestTeamCoach;
 import org.iatoki.judgels.uriel.ContestTeamMember;
@@ -28,6 +27,7 @@ import org.iatoki.judgels.uriel.IOIScoreboardContent;
 import org.iatoki.judgels.uriel.IOIScoreboardEntry;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.ScoreboardState;
+import org.iatoki.judgels.uriel.UrielActivityKeys;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
@@ -37,6 +37,7 @@ import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.modules.contest.scoreboard.ContestScoreboardModule;
+import org.iatoki.judgels.uriel.runnables.ScoreboardDispatcher;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
@@ -46,6 +47,7 @@ import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.layouts.accessTypeByStatusLayout;
 import play.db.jpa.Transactional;
 import play.i18n.Messages;
+import play.libs.Akka;
 import play.mvc.Result;
 
 import javax.inject.Inject;
@@ -192,9 +194,15 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestScoreboardUtils.updateScoreboards(contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        if (ScoreboardDispatcher.updaterExists(contest.getJid())) {
+            flashInfo(Messages.get("scoreboard.isUpdating"));
+            return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
+        }
 
-//        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
+        ScoreboardDispatcher.updateScoreboard(Akka.system().scheduler(), Akka.system().dispatcher(), contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
+        flashInfo(Messages.get("scoreboard.updateRequestAccepted"));
+
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));
 
         return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
     }

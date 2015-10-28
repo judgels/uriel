@@ -308,6 +308,8 @@ upload.value=Value
 upload.status=Status
 
 scoreboard.not_available=Scoreboard is not available at the moment.
+scoreboard.isUpdating=Scoreboard currently is being updated.
+scoreboard.updateRequestAccepted=Scoreboard update request is accepted.
 
 error.contestant.create.userIsAlreadyContestant=User is already contestant.
 error.contestant.create.userNotExist=User not exist..

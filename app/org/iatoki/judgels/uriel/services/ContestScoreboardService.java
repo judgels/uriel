@@ -15,5 +15,5 @@ public interface ContestScoreboardService {
 
     Map<String, URL> getMappedContestantJidToImageUrlInContest(String contestJid);
 
-    void upsertContestScoreboard(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard, String userJid, String ipAddress);
+    void upsertContestScoreboard(String contestJid, ContestScoreboardType scoreboardType, Scoreboard scoreboard, long time, String userJid, String ipAddress);
 }

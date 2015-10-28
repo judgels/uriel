@@ -25,7 +25,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
 
     @Override
     public long getCodeDataVersion() {
-        return 7;
+        return 8;
     }
 
     @Override
@@ -50,6 +50,27 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
         }
         if (databaseVersion < 7) {
             migrateV6toV7();
+        }
+        if (databaseVersion < 8) {
+            migrateV7toV8();
+        }
+    }
+
+    private void migrateV7toV8() throws SQLException {
+        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String contestScoreboardTable = "uriel_contest_scoreboard";
+
+        Statement statement = connection.createStatement();
+        String scoreboardModuleQuery = "SELECT * FROM " + contestScoreboardTable + ";";
+        ResultSet resultSet = statement.executeQuery(scoreboardModuleQuery);
+        while (resultSet.next()) {
+            long id = resultSet.getLong("id");
+            long timeUpdate = resultSet.getLong("timeUpdate");
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE " + contestScoreboardTable + " SET time = ? WHERE id = " + id + ";");
+            preparedStatement.setLong(1, timeUpdate);
+            preparedStatement.executeUpdate();
         }
     }
 
