@@ -186,7 +186,7 @@ public final class ContestServiceImpl implements ContestService {
                     if (currentDate.after(contestDurationModule.getBeginTime()) && currentDate.before(contestDurationModule.getEndTime())) {
                         runningContestModelsBuilder.add(contestModel);
                     }
-                } else {
+                } else if (!contestModel.locked) {
                     runningContestModelsBuilder.add(contestModel);
                 }
             }
