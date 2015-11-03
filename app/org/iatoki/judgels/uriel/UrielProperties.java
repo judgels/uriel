@@ -18,6 +18,9 @@ public final class UrielProperties {
 
     private String urielBaseUrl;
     private File urielBaseDataDir;
+    private long urielGradingPollerInterval;
+    private long urielScoreboardUpdateInterval;
+    private long urielLogPusherInterval;
     private String urielStressTestSecret;
     private String urielScoreboardSecret;
 
@@ -88,6 +91,18 @@ public final class UrielProperties {
 
     public String getUrielBaseUrl() {
         return urielBaseUrl;
+    }
+
+    public long getUrielGradingPollerInterval() {
+        return urielGradingPollerInterval;
+    }
+
+    public long getUrielScoreboardUpdateInterval() {
+        return urielScoreboardUpdateInterval;
+    }
+
+    public long getUrielLogPusherInterval() {
+        return urielLogPusherInterval;
     }
 
     public String getUrielStressTestSecret() {
@@ -374,6 +389,9 @@ public final class UrielProperties {
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
         urielBaseDataDir = requireDirectoryValue("uriel.baseDataDir");
+        urielGradingPollerInterval = requireLongValue("uriel.interval.gradingPoller");
+        urielScoreboardUpdateInterval = requireLongValue("uriel.interval.scoreboardUpdate");
+        urielLogPusherInterval = requireLongValue("uriel.interval.logPusher");
         urielStressTestSecret = getStringValue("uriel.stressTestSecret");
         urielScoreboardSecret = getStringValue("uriel.scoreboardSecret");
 
@@ -471,6 +489,17 @@ public final class UrielProperties {
 
     private boolean requireBooleanValue(String key) {
         return config.getBoolean(key);
+    }
+
+    private Long getLongValue(String key) {
+        if (!config.hasPath(key)) {
+            return null;
+        }
+        return config.getLong(key);
+    }
+
+    private Long requireLongValue(String key) {
+        return config.getLong(key);
     }
 
     private File requireDirectoryValue(String key) {

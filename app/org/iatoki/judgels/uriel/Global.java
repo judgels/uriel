@@ -73,8 +73,8 @@ public final class Global extends AbstractGlobal {
         ScoreboardUpdaterDispatcher updater = new ScoreboardUpdaterDispatcher(scheduler, context, injector.instanceOf(ContestService.class), injector.instanceOf(ContestScoreboardService.class), injector.instanceOf(ContestContestantService.class), injector.instanceOf(ProgrammingSubmissionService.class));
         UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(injector.instanceOf(JophielClientAPI.class), UserActivityMessageServiceImpl.getInstance());
 
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(3, TimeUnit.SECONDS), poller, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(10, TimeUnit.SECONDS), updater, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(1, TimeUnit.MINUTES), userActivityMessagePusher, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielGradingPollerInterval(), TimeUnit.SECONDS), poller, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielScoreboardUpdateInterval(), TimeUnit.SECONDS), updater, context);
+        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielLogPusherInterval(), TimeUnit.SECONDS), userActivityMessagePusher, context);
     }
 }
