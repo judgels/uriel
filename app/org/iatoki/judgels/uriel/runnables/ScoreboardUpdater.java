@@ -1,9 +1,15 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.runnables;
 
-import com.beust.jcommander.internal.Lists;
-import com.beust.jcommander.internal.Maps;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.OnScoreboardUpdateFinishListener;
+import org.iatoki.judgels.uriel.Scoreboard;
+import org.iatoki.judgels.uriel.ScoreboardContent;
+import org.iatoki.judgels.uriel.ScoreboardState;
 import org.iatoki.judgels.uriel.adapters.ScoreboardAdapter;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
@@ -39,34 +45,38 @@ public final class ScoreboardUpdater implements Runnable {
 
     @Override
     public void run() {
-        ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
-        Map<String, Date> contestantStartTimes = Maps.newHashMap();
-        List<ProgrammingSubmission> submissions = Lists.newArrayList();
         try {
-            JPA.withTransaction("default", true, () -> {
-                    contestantStartTimes.putAll(contestContestantService.getContestantStartTimes(contest.getJid()));
-                    submissions.addAll(programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid()));
-                    return null;
-                });
-        } catch (Throwable t) {
-            throw new RuntimeException(t);
-        }
-        long time = System.currentTimeMillis();
-
-        updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.OFFICIAL, submissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
-
-        if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-            ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
-            long freezeTime = contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime();
-            if (System.currentTimeMillis() >= freezeTime) {
-                List<ProgrammingSubmission> frozenSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), freezeTime);
-                updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.FROZEN, frozenSubmissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
+            ScoreboardAdapter adapter = ScoreboardAdapters.fromContestStyle(contest.getStyle());
+            Map<String, Date> contestantStartTimes = Maps.newHashMap();
+            List<ProgrammingSubmission> submissions = Lists.newArrayList();
+            try {
+                JPA.withTransaction("default", true, () -> {
+                        contestantStartTimes.putAll(contestContestantService.getContestantStartTimes(contest.getJid()));
+                        submissions.addAll(programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJid(contest.getJid()));
+                        return null;
+                    });
+            } catch (Throwable t) {
+                throw new RuntimeException(t);
             }
-        }
+            long time = System.currentTimeMillis();
 
-        for (OnScoreboardUpdateFinishListener onScoreboardUpdateFinishListener : onScoreboardUpdateFinishListeners) {
-            onScoreboardUpdateFinishListener.onFinish(contest.getJid());
+            updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.OFFICIAL, submissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
+
+            if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
+                ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
+                ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
+                long freezeTime = contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime();
+                if (System.currentTimeMillis() >= freezeTime) {
+                    List<ProgrammingSubmission> frozenSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), freezeTime);
+                    updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.FROZEN, frozenSubmissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            for (OnScoreboardUpdateFinishListener onScoreboardUpdateFinishListener : onScoreboardUpdateFinishListeners) {
+                onScoreboardUpdateFinishListener.onFinish(contest.getJid());
+            }
         }
     }
 

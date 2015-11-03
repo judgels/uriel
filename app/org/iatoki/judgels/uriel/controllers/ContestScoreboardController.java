@@ -37,7 +37,7 @@ import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.modules.contest.scoreboard.ContestScoreboardModule;
-import org.iatoki.judgels.uriel.runnables.ScoreboardDispatcher;
+import org.iatoki.judgels.uriel.runnables.ScoreboardUpdaterDispatcher;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestProblemService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
@@ -194,12 +194,12 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        if (ScoreboardDispatcher.updaterExists(contest.getJid())) {
+        if (ScoreboardUpdaterDispatcher.updaterExists(contest.getJid())) {
             flashInfo(Messages.get("scoreboard.isUpdating"));
             return redirect(routes.ContestScoreboardController.viewOfficialScoreboard(contest.getId()));
         }
 
-        ScoreboardDispatcher.updateScoreboard(Akka.system().scheduler(), Akka.system().dispatcher(), contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
+        ScoreboardUpdaterDispatcher.updateScoreboard(Akka.system().scheduler(), Akka.system().dispatcher(), contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
         flashInfo(Messages.get("scoreboard.updateRequestAccepted"));
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REFRESH.construct(CONTEST, contest.getJid(), contest.getName(), SCOREBOARD, null, ""));

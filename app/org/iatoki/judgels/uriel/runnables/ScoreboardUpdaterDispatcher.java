@@ -5,7 +5,6 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Sets;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ScoreboardUpdater;
 import org.iatoki.judgels.uriel.OnScoreboardUpdateFinishListener;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestScoreboardService;
@@ -19,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public final class ScoreboardDispatcher implements Runnable {
+public final class ScoreboardUpdaterDispatcher implements Runnable {
 
     private static final Set<String> UPDATER_JIDS = Sets.newHashSet();
 
@@ -30,7 +29,7 @@ public final class ScoreboardDispatcher implements Runnable {
     private final ContestContestantService contestContestantService;
     private final ProgrammingSubmissionService programmingSubmissionService;
 
-    public ScoreboardDispatcher(Scheduler scheduler, ExecutionContext executor, ContestService contestService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ProgrammingSubmissionService programmingSubmissionService) {
+    public ScoreboardUpdaterDispatcher(Scheduler scheduler, ExecutionContext executor, ContestService contestService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ProgrammingSubmissionService programmingSubmissionService) {
         this.scheduler = scheduler;
         this.executor = executor;
         this.contestService = contestService;
@@ -44,7 +43,7 @@ public final class ScoreboardDispatcher implements Runnable {
     }
 
     public static synchronized void updateScoreboard(Scheduler scheduler, ExecutionContext executor, Contest contest, ContestService contestService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ProgrammingSubmissionService programmingSubmissionService) {
-        if (ScoreboardDispatcher.updaterExists(contest.getJid())) {
+        if (ScoreboardUpdaterDispatcher.updaterExists(contest.getJid())) {
             return;
         }
 
@@ -72,8 +71,8 @@ public final class ScoreboardDispatcher implements Runnable {
             throw new RuntimeException(t);
         }
         for (Contest contest : runningContests) {
-            if (!ScoreboardDispatcher.updaterExists(contest.getJid())) {
-                ScoreboardDispatcher.updateScoreboard(scheduler, executor, contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
+            if (!ScoreboardUpdaterDispatcher.updaterExists(contest.getJid())) {
+                ScoreboardUpdaterDispatcher.updateScoreboard(scheduler, executor, contest, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
             }
         }
     }
