@@ -31,6 +31,8 @@ public final class ContestModuleUtils {
                 return ImmutableList.of(ContestModules.SCOREBOARD, ContestModules.DURATION);
             case TRIGGER:
                 return ImmutableList.of(ContestModules.VIRTUAL, ContestModules.TEAM);
+            case ORGANIZATION:
+                return ImmutableList.of(ContestModules.REGISTRATION);
             default:
                 return ImmutableList.of();
         }

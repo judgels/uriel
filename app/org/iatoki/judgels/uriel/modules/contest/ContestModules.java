@@ -16,5 +16,6 @@ public enum ContestModules {
     REGISTRATION,
     PASSWORD,
     FILE,
-    LIMITED
+    LIMITED,
+    ORGANIZATION
 }

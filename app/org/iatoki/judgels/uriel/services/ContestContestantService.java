@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.services;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
+import org.iatoki.judgels.uriel.ContestContestantOrganization;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 
 import java.util.Date;
@@ -19,6 +20,8 @@ public interface ContestContestantService {
 
     ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid);
 
+    ContestContestantOrganization findContestantOrganizationInContestAndJid(String contestJid, String contestandJid);
+
     List<ContestContestant> getContestantsInContest(String contestJid);
 
     Map<String, Date> getContestantStartTimes(String contestJid);
@@ -29,9 +32,13 @@ public interface ContestContestantService {
 
     void createContestContestant(String contestJid, String userJid, ContestContestantStatus status, String createUserJid, String createUserIpAddress);
 
+    void createContestContestantOrganization(String contestJid, String userJid, String organization, String createUserJid, String createUserIpAddress);
+
     void updateContestContestant(long contestContestantId, ContestContestantStatus status, String updateUserJid, String updateUserIpAddress);
 
     void deleteContestContestant(long contestContestantId);
+
+    void deleteContestContestantOrganization(long contestContestantOrganizationId);
 
     void startContestAsContestant(String contestJid, String userJid, String starterUserJid, String starterUserIpAddress);
 }

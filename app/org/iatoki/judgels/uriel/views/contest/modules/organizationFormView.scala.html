@@ -1,0 +1,21 @@
+@import play.i18n.Messages
+
+@import org.iatoki.judgels.uriel.controllers.routes
+@import org.iatoki.judgels.uriel.modules.contest.organization.ContestOrganizationForm
+
+@import play.api.i18n
+@(contestId: Long, contestOrganizationForm: Form[ContestOrganizationForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h3>@Messages.get("contest.register")</h3>
+
+<p>@Messages.get("contest.organization.description")</p>
+
+@b3.form(routes.ContestController.postRegisterToAContest(contestId)) {
+  @b3.text(contestOrganizationForm("organization"), '_label -> Messages.get("contest.organization"))
+
+  @b3.submit('class -> "btn btn-primary") {
+    @Messages.get("contest.register")
+  }
+}

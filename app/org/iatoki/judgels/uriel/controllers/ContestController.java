@@ -19,9 +19,9 @@ import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.sandalphon.LanguageRestrictionAdapter;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
+import org.iatoki.judgels.uriel.ContestContestantOrganization;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.ContestStyleConfig;
 import org.iatoki.judgels.uriel.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.IOIContestStyleConfig;
@@ -39,6 +39,7 @@ import org.iatoki.judgels.uriel.forms.IOIContestStyleConfigForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModule;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleUtils;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
+import org.iatoki.judgels.uriel.modules.contest.organization.ContestOrganizationForm;
 import org.iatoki.judgels.uriel.modules.contest.registration.ContestRegistrationModule;
 import org.iatoki.judgels.uriel.services.ContestContestantPasswordService;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
@@ -47,6 +48,7 @@ import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.views.html.contest.createContestView;
 import org.iatoki.judgels.uriel.views.html.contest.listContestsView;
 import org.iatoki.judgels.uriel.views.html.contest.modules.listModulesView;
+import org.iatoki.judgels.uriel.views.html.contest.modules.organizationFormView;
 import org.iatoki.judgels.uriel.views.html.contest.specific.editContestSpecificView;
 import org.iatoki.judgels.uriel.views.html.contest.editContestView;
 import org.iatoki.judgels.uriel.views.html.contest.viewContestView;
@@ -301,12 +303,59 @@ public final class ContestController extends AbstractJudgelsController {
             return redirect(routes.ContestController.index());
         }
 
+        if (contest.containsModule(ContestModules.ORGANIZATION)) {
+            return inputOrganizationRegistration(contestId);
+        }
+
         ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contest.getModule(ContestModules.REGISTRATION);
         ContestContestantStatus contestContestantStatus = ContestContestantStatus.APPROVED;
         if (contestRegistrationModule.isManualApproval()) {
             contestContestantStatus = ContestContestantStatus.IN_CONFIRMATION;
         }
         contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), contestContestantStatus, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+
+        UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
+
+        return redirect(routes.ContestController.viewContest(contestId));
+    }
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional
+    public Result inputOrganizationRegistration(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+
+        if (!ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid()) || !contest.containsModule(ContestModules.ORGANIZATION)) {
+            return redirect(routes.ContestController.index());
+        }
+
+        Form<ContestOrganizationForm> form = Form.form(ContestOrganizationForm.class);
+
+        LazyHtml content = new LazyHtml(organizationFormView.render(contestId, form));
+        UrielControllerUtils.getInstance().appendSidebarLayout(content);
+        UrielControllerUtils.getInstance().appendTemplateLayout(content, "Contest - Register Contest");
+
+        return UrielControllerUtils.getInstance().lazyOk(content);
+    }
+
+    @Authenticated(value = {LoggedIn.class, HasRole.class})
+    @Transactional
+    public Result postRegisterToAContest(long contestId) throws ContestNotFoundException {
+        Contest contest = contestService.findContestById(contestId);
+
+        if (!ContestControllerUtils.getInstance().isAllowedToRegisterContest(contest, IdentityUtils.getUserJid()) || !contest.containsModule(ContestModules.ORGANIZATION)) {
+            return redirect(routes.ContestController.index());
+        }
+
+        Form<ContestOrganizationForm> form = Form.form(ContestOrganizationForm.class).bindFromRequest();
+        String organization = form.get().organization;
+
+        ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contest.getModule(ContestModules.REGISTRATION);
+        ContestContestantStatus contestContestantStatus = ContestContestantStatus.APPROVED;
+        if (contestRegistrationModule.isManualApproval()) {
+            contestContestantStatus = ContestContestantStatus.IN_CONFIRMATION;
+        }
+        contestContestantService.createContestContestant(contest.getJid(), IdentityUtils.getUserJid(), contestContestantStatus, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestContestantService.createContestContestantOrganization(contest.getJid(), IdentityUtils.getUserJid(), organization, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.REGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
 
@@ -324,6 +373,11 @@ public final class ContestController extends AbstractJudgelsController {
 
         ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
         contestContestantService.deleteContestContestant(contestContestant.getId());
+
+        if (contest.containsModule(ContestModules.ORGANIZATION)) {
+            ContestContestantOrganization contestContestantOrganization = contestContestantService.findContestantOrganizationInContestAndJid(contest.getJid(), IdentityUtils.getUserJid());
+            contestContestantService.deleteContestContestantOrganization(contestContestantOrganization.getId());
+        }
 
         UrielControllerUtils.getInstance().addActivityLog(UrielActivityKeys.UNREGISTER.construct(CONTEST, contest.getJid(), contest.getName()));
 

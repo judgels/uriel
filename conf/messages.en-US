@@ -192,6 +192,9 @@ contest.style.IOI.usingLastAffectingPenalty=Incorporate last affecting penalty f
 contest.modules.enabled=Enabled Modules
 contest.modules.disabled=Disabled Modules
 
+contest.organization=Organization
+contest.organization.description=Input your organization below (institution or school)
+
 contest.module.enable=Enable
 contest.module.enable.error.dependencies=Modules can''t be enabled because it requires {0}.
 contest.module.enable.error.contradiction=Modules can''t be enabled because it conflicts with {0}.
@@ -236,6 +239,8 @@ contest.module.FILE=Files
 contest.module.FILE.description=Allow public files to be uploaded by supervisors to the contest.
 contest.module.LIMITED=Limited
 contest.module.LIMITED.description=Prevents the contest from being shown and being registered by public users. Contestants must be expicitly added by supervisors. Conflicts with Registration module.
+contest.module.ORGANIZATION=Organization
+contest.module.ORGANIZATION.description=When enabled, user need to input their organization/insitution when registering to a contest
 
 contest.beginTime=Contest begin time
 contest.contestDuration=Contest duration

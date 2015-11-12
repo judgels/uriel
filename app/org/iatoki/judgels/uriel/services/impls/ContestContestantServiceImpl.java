@@ -5,11 +5,14 @@ import com.google.common.collect.Lists;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestContestantNotFoundException;
+import org.iatoki.judgels.uriel.ContestContestantOrganization;
 import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
+import org.iatoki.judgels.uriel.models.daos.ContestContestantOrganizationDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel_;
+import org.iatoki.judgels.uriel.models.entities.ContestContestantOrganizationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 
@@ -27,11 +30,13 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     private final ContestDao contestDao;
     private final ContestContestantDao contestContestantDao;
+    private final ContestContestantOrganizationDao contestContestantOrganizationDao;
 
     @Inject
-    public ContestContestantServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao) {
+    public ContestContestantServiceImpl(ContestDao contestDao, ContestContestantDao contestContestantDao, ContestContestantOrganizationDao contestContestantOrganizationDao) {
         this.contestDao = contestDao;
         this.contestContestantDao = contestContestantDao;
+        this.contestContestantOrganizationDao = contestContestantOrganizationDao;
     }
 
     @Override
@@ -58,6 +63,12 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     public ContestContestant findContestantInContestAndJid(String contestJid, String contestContestantJid) {
         ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, contestContestantJid);
         return createContestContestantFromModel(contestContestantModel);
+    }
+
+    @Override
+    public ContestContestantOrganization findContestantOrganizationInContestAndJid(String contestJid, String contestandJid) {
+        ContestContestantOrganizationModel contestContestantOrganizationModel = contestContestantOrganizationDao.findInContestByContestantJid(contestJid, contestandJid);
+        return createContestContestantOrganizationFromModel(contestContestantOrganizationModel);
     }
 
     @Override
@@ -105,6 +116,20 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     }
 
     @Override
+    public void createContestContestantOrganization(String contestJid, String userJid, String organization, String createUserJid, String createUserIpAddress) {
+        ContestModel contestModel = contestDao.findByJid(contestJid);
+
+        ContestContestantOrganizationModel contestContestantOrganizationModel = new ContestContestantOrganizationModel();
+        contestContestantOrganizationModel.contestJid = contestJid;
+        contestContestantOrganizationModel.userJid = userJid;
+        contestContestantOrganizationModel.organization = organization;
+
+        contestContestantOrganizationDao.persist(contestContestantOrganizationModel, createUserJid, createUserIpAddress);
+
+        contestDao.edit(contestModel, createUserJid, createUserIpAddress);
+    }
+
+    @Override
     public void updateContestContestant(long contestContestantId, ContestContestantStatus status, String updateUserJid, String updateUserIpAddress) {
         ContestContestantModel contestContestantModel = contestContestantDao.findById(contestContestantId);
         contestContestantModel.status = status.name();
@@ -123,6 +148,12 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     }
 
     @Override
+    public void deleteContestContestantOrganization(long contestContestantOrganizationId) {
+        ContestContestantOrganizationModel contestContestantOrganizationModel = contestContestantOrganizationDao.findById(contestContestantOrganizationId);
+        contestContestantOrganizationDao.remove(contestContestantOrganizationModel);
+    }
+
+    @Override
     public void startContestAsContestant(String contestJid, String userJid, String starterUserJid, String starterUserIpAddress) {
         ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, userJid);
         if (contestContestantModel.contestStartTime == 0) {
@@ -134,5 +165,9 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
 
     private static ContestContestant createContestContestantFromModel(ContestContestantModel contestContestantModel) {
         return new ContestContestant(contestContestantModel.id, contestContestantModel.contestJid, contestContestantModel.userJid, ContestContestantStatus.valueOf(contestContestantModel.status), contestContestantModel.contestStartTime);
+    }
+
+    private static ContestContestantOrganization createContestContestantOrganizationFromModel(ContestContestantOrganizationModel contestContestantOrganizationModel) {
+        return new ContestContestantOrganization(contestContestantOrganizationModel.id, contestContestantOrganizationModel.contestJid, contestContestantOrganizationModel.userJid);
     }
 }

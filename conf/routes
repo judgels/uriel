@@ -18,6 +18,7 @@ GET         /contests/:contestId                                                
 GET         /contests/:contestId/                                                                   @org.iatoki.judgels.uriel.controllers.ContestController.viewContestAndListRegistrants(contestId: Long, pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filtertring ?= "")
 
 GET         /contests/:contestId/register                                                           @org.iatoki.judgels.uriel.controllers.ContestController.registerToAContest(contestId: Long)
+POST        /contests/:contestId/register                                                           @org.iatoki.judgels.uriel.controllers.ContestController.postRegisterToAContest(contestId: Long)
 GET         /contests/:contestId/unregister                                                         @org.iatoki.judgels.uriel.controllers.ContestController.unregisterFromAContest(contestId: Long)
 GET         /contests/:contestId/enter                                                              @org.iatoki.judgels.uriel.controllers.ContestController.enterContest(contestId: Long)
 POST        /contests/:contestId/enterWithPassword                                                  @org.iatoki.judgels.uriel.controllers.ContestController.enterContestWithPassword(contestId: Long)

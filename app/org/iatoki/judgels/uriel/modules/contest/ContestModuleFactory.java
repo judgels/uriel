@@ -6,6 +6,7 @@ import org.iatoki.judgels.uriel.modules.contest.clarificationtimelimit.ContestCl
 import org.iatoki.judgels.uriel.modules.contest.file.ContestFileModule;
 import org.iatoki.judgels.uriel.modules.contest.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.modules.contest.limited.ContestLimitedModule;
+import org.iatoki.judgels.uriel.modules.contest.organization.ContestOrganizationModule;
 import org.iatoki.judgels.uriel.modules.contest.password.ContestPasswordModule;
 import org.iatoki.judgels.uriel.modules.contest.registration.ContestRegistrationModule;
 import org.iatoki.judgels.uriel.modules.contest.duration.ContestDurationModule;
@@ -59,6 +60,8 @@ public final class ContestModuleFactory {
                 return new ContestFileModule();
             case PASSWORD:
                 return new ContestPasswordModule();
+            case ORGANIZATION:
+                return new ContestOrganizationModule();
             default:
                 throw new RuntimeException();
         }
@@ -96,6 +99,8 @@ public final class ContestModuleFactory {
                 return new Gson().fromJson(config, ContestFileModule.class);
             case PASSWORD:
                 return new Gson().fromJson(config, ContestPasswordModule.class);
+            case ORGANIZATION:
+                return new Gson().fromJson(config, ContestOrganizationModule.class);
             default:
                 throw new RuntimeException();
         }
