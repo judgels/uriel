@@ -40,8 +40,13 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     }
 
     @Override
-    public boolean isContestantInContest(String contestJid, String contestContestantJid) {
+    public boolean hasRegisteredToContest(String contestJid, String contestContestantJid) {
         return contestContestantDao.existsInContestByContestantJid(contestJid, contestContestantJid);
+    }
+
+    @Override
+    public boolean isContestantInContest(String contestJid, String contestContestantJid) {
+        return contestContestantDao.existsInContestByContestantJid(contestJid, contestContestantJid, ContestContestantStatus.APPROVED.name());
     }
 
     @Override

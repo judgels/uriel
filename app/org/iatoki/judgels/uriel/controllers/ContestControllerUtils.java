@@ -138,6 +138,14 @@ public final class ContestControllerUtils {
         return false;
     }
 
+    public boolean hasRegisteredToContest(Contest contest, String userJid) {
+        if (!contest.containsModule(ContestModules.REGISTRATION)) {
+            return false;
+        }
+
+        return contestContestantService.hasRegisteredToContest(contest.getJid(), userJid);
+    }
+
     public boolean hasContestStarted(Contest contest, String userJid) {
         if (contest.containsModule(ContestModules.VIRTUAL)) {
             if (!contestContestantService.isContestantInContest(contest.getJid(), userJid)) {
@@ -180,7 +188,7 @@ public final class ContestControllerUtils {
         }
 
         ContestRegistrationModule contestRegistrationModule = (ContestRegistrationModule) contest.getModule(ContestModules.REGISTRATION);
-        return (contestRegistrationModule.getRegisterStartTime() < System.currentTimeMillis()) && (contestRegistrationModule.getRegisterStartTime() + contestRegistrationModule.getRegisterDuration() > System.currentTimeMillis()) && ((contestRegistrationModule.getMaxRegistrants() == 0) || (contestContestantService.countContestantsInContest(contest.getJid()) < contestRegistrationModule.getMaxRegistrants())) && !hasContestEnded(contest) && !isContestant(contest, userJid);
+        return (contestRegistrationModule.getRegisterStartTime() < System.currentTimeMillis()) && (contestRegistrationModule.getRegisterStartTime() + contestRegistrationModule.getRegisterDuration() > System.currentTimeMillis()) && ((contestRegistrationModule.getMaxRegistrants() == 0) || (contestContestantService.countContestantsInContest(contest.getJid()) < contestRegistrationModule.getMaxRegistrants())) && !hasContestEnded(contest) && !hasRegisteredToContest(contest, userJid);
     }
 
     public boolean isAllowedToUnregisterContest(Contest contest, String userJid) {

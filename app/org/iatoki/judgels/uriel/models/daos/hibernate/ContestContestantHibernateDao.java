@@ -1,7 +1,6 @@
 package org.iatoki.judgels.uriel.models.daos.hibernate;
 
 import org.iatoki.judgels.play.models.daos.impls.AbstractHibernateDao;
-import org.iatoki.judgels.uriel.ContestContestantStatus;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel;
 import org.iatoki.judgels.uriel.models.entities.ContestContestantModel_;
@@ -29,8 +28,21 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
         Root<ContestContestantModel> root = query.from(getModelClass());
 
         query
+                .select(cb.count(root))
+                .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid)));
+
+        return (JPA.em().createQuery(query).getSingleResult() != 0);
+    }
+
+    @Override
+    public boolean existsInContestByContestantJid(String contestJid, String contestantJid, String status) {
+        CriteriaBuilder cb = JPA.em().getCriteriaBuilder();
+        CriteriaQuery<Long> query = cb.createQuery(Long.class);
+        Root<ContestContestantModel> root = query.from(getModelClass());
+
+        query
             .select(cb.count(root))
-            .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.equal(root.get(ContestContestantModel_.status), ContestContestantStatus.APPROVED.name())));
+            .where(cb.and(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid), cb.equal(root.get(ContestContestantModel_.contestJid), contestJid), cb.equal(root.get(ContestContestantModel_.status), status)));
 
         return (JPA.em().createQuery(query).getSingleResult() != 0);
     }

@@ -12,6 +12,8 @@ import java.util.Map;
 
 public interface ContestContestantService {
 
+    boolean hasRegisteredToContest(String contestJid, String contestContestantJid);
+
     boolean isContestantInContest(String contestJid, String contestContestantJid);
 
     boolean hasContestantStartContest(String contestJid, String contestContestantJid);
