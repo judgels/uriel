@@ -1,8 +1,10 @@
-package org.iatoki.judgels.uriel.config;
+package org.iatoki.judgels.uriel;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.util.Providers;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import org.iatoki.judgels.AWSFileSystemProvider;
 import org.iatoki.judgels.FileSystemProvider;
 import org.iatoki.judgels.LocalFileSystemProvider;
@@ -13,16 +15,40 @@ import org.iatoki.judgels.api.sandalphon.SandalphonClientAPI;
 import org.iatoki.judgels.api.sandalphon.SandalphonFactory;
 import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
 import org.iatoki.judgels.api.sealtiel.SealtielFactory;
-import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
 import org.iatoki.judgels.jophiel.JophielAuthAPI;
 import org.iatoki.judgels.jophiel.services.BaseUserService;
-import org.iatoki.judgels.uriel.UrielProperties;
+import org.iatoki.judgels.play.JudgelsPlayProperties;
+import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
+import org.iatoki.judgels.play.general.GeneralName;
+import org.iatoki.judgels.play.general.GeneralVersion;
+import org.iatoki.judgels.play.migration.BaseDataMigrationService;
+import org.iatoki.judgels.uriel.config.ContestFileSystemProvider;
+import org.iatoki.judgels.uriel.config.GabrielClientJid;
+import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
+import org.iatoki.judgels.uriel.config.ProgrammingSubmissionRemoteFileSystemProvider;
+import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
+import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
 import org.iatoki.judgels.uriel.services.impls.UserServiceImpl;
 
 public class UrielModule extends AbstractJudgelsPlayModule {
 
     @Override
     protected void manualBinding() {
+        org.iatoki.judgels.uriel.BuildInfo$ buildInfo = org.iatoki.judgels.uriel.BuildInfo$.MODULE$;
+
+        bindConstant().annotatedWith(GeneralName.class).to(buildInfo.name());
+        bindConstant().annotatedWith(GeneralVersion.class).to(buildInfo.version());
+
+        // <DEPRECATED>
+        Config config = ConfigFactory.load();
+        JudgelsPlayProperties.buildInstance(buildInfo.name(), buildInfo.version(), config);
+        UrielProperties.buildInstance(config);
+        bind(UrielSingletonsBuilder.class).asEagerSingleton();
+        bind(UrielThreadsScheduler.class).asEagerSingleton();
+        // </DEPRECATED>
+
+        bind(BaseDataMigrationService.class).to(UrielDataMigrationServiceImpl.class);
+
         bind(JophielAuthAPI.class).toInstance(jophielAuthAPI());
         bind(JophielClientAPI.class).toInstance(jophielClientAPI());
         bind(JophielPublicAPI.class).toInstance(jophielPublicAPI());

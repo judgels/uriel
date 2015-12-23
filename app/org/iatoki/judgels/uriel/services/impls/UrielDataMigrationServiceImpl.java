@@ -9,7 +9,7 @@ import com.google.gson.reflect.TypeToken;
 import org.hibernate.Session;
 import org.hibernate.internal.SessionImpl;
 import org.iatoki.judgels.play.JidService;
-import org.iatoki.judgels.play.services.impls.AbstractBaseDataMigrationServiceImpl;
+import org.iatoki.judgels.play.migration.AbstractBaseDataMigrationServiceImpl;
 import org.testng.collections.Maps;
 import play.db.jpa.JPA;
 
