@@ -26,7 +26,7 @@ import org.iatoki.judgels.uriel.forms.ContestSupervisorEditForm;
 import org.iatoki.judgels.uriel.modules.contest.ContestModules;
 import org.iatoki.judgels.uriel.services.ContestService;
 import org.iatoki.judgels.uriel.services.ContestSupervisorService;
-import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.user.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.listAddSupervisorsView;
 import org.iatoki.judgels.uriel.views.html.contest.supervisor.editSupervisorView;

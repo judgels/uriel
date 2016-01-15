@@ -143,14 +143,14 @@ GET         /contests/:contestId/scoreboards/official                           
 GET         /contests/:contestId/scoreboards/refresh                                                @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.refreshAllScoreboard(contestId: Long)
 GET         /contests/:contestId/scoreboards/data                                                   @org.iatoki.judgels.uriel.controllers.ContestScoreboardController.downloadContestDataAsXLS(contestId: Long)
 
-GET         /users                                                                                  @org.iatoki.judgels.uriel.controllers.UserController.index()
-GET         /users/                                                                                 @org.iatoki.judgels.uriel.controllers.UserController.listUsers(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
-GET         /users/new                                                                              @org.iatoki.judgels.uriel.controllers.UserController.addUser()
-POST        /users                                                                                  @org.iatoki.judgels.uriel.controllers.UserController.postAddUser()
-GET         /users/:userId                                                                          @org.iatoki.judgels.uriel.controllers.UserController.viewUser(userId: Long)
-GET         /users/:userId/edit                                                                     @org.iatoki.judgels.uriel.controllers.UserController.editUser(userId: Long)
-POST        /users/:userId                                                                          @org.iatoki.judgels.uriel.controllers.UserController.postEditUser(userId: Long)
-GET         /users/:userId/remove                                                                   @org.iatoki.judgels.uriel.controllers.UserController.removeUser(userId: Long)
+GET         /users                                                                                  @org.iatoki.judgels.uriel.user.UserController.index()
+GET         /users/                                                                                 @org.iatoki.judgels.uriel.user.UserController.listUsers(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "asc", filterString ?= "")
+GET         /users/new                                                                              @org.iatoki.judgels.uriel.user.UserController.addUser()
+POST        /users                                                                                  @org.iatoki.judgels.uriel.user.UserController.postAddUser()
+GET         /users/:userId                                                                          @org.iatoki.judgels.uriel.user.UserController.viewUser(userId: Long)
+GET         /users/:userId/edit                                                                     @org.iatoki.judgels.uriel.user.UserController.editUser(userId: Long)
+POST        /users/:userId                                                                          @org.iatoki.judgels.uriel.user.UserController.postEditUser(userId: Long)
+GET         /users/:userId/remove                                                                   @org.iatoki.judgels.uriel.user.UserController.removeUser(userId: Long)
 
 
 # Internal API

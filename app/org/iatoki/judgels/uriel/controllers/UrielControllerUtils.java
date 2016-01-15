@@ -50,7 +50,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
         internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
         if (isAdmin()) {
-            internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), routes.UserController.index()));
+            internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), org.iatoki.judgels.uriel.user.routes.UserController.index()));
         }
 
         LazyHtml sidebarContent;
@@ -113,7 +113,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         INSTANCE = new UrielControllerUtils(jophielClientAPI, jophielPublicAPI);
     }
 
-    static UrielControllerUtils getInstance() {
+    public static UrielControllerUtils getInstance() {
         if (INSTANCE == null) {
             throw new UnsupportedOperationException("ControllerUtils instance has not been built");
         }

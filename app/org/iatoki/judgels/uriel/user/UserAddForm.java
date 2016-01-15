@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.forms;
+package org.iatoki.judgels.uriel.user;
 
 import play.data.validation.Constraints;
 

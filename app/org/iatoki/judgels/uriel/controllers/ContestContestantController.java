@@ -29,7 +29,7 @@ import org.iatoki.judgels.uriel.forms.ContestContestantEditForm;
 import org.iatoki.judgels.uriel.forms.ContestContestantUploadForm;
 import org.iatoki.judgels.uriel.services.ContestContestantService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.user.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.listAddContestantsView;
 import org.iatoki.judgels.uriel.views.html.contest.contestant.editContestantView;

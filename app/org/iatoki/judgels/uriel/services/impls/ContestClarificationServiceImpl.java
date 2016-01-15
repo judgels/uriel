@@ -13,12 +13,12 @@ import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
 import org.iatoki.judgels.uriel.models.daos.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;
-import org.iatoki.judgels.uriel.models.daos.UserReadDao;
+import org.iatoki.judgels.uriel.user.UserReadDao;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel;
 import org.iatoki.judgels.uriel.models.entities.ContestClarificationModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
 import org.iatoki.judgels.uriel.models.entities.ContestProblemModel;
-import org.iatoki.judgels.uriel.models.entities.UserReadModel;
+import org.iatoki.judgels.uriel.user.UserReadModel;
 import org.iatoki.judgels.uriel.services.ContestClarificationService;
 import play.i18n.Messages;
 

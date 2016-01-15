@@ -1,6 +1,6 @@
-package org.iatoki.judgels.uriel.models.entities;
+package org.iatoki.judgels.uriel.user;
 
-import org.iatoki.judgels.play.models.entities.AbstractModel;
+import org.iatoki.judgels.play.model.AbstractModel;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

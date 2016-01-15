@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.api.jophiel.JophielUser;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
+import org.iatoki.judgels.uriel.user.User;
 import play.mvc.Http;
 
 import java.util.Arrays;

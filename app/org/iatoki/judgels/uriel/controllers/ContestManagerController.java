@@ -21,7 +21,7 @@ import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.forms.ContestManagerAddForm;
 import org.iatoki.judgels.uriel.services.ContestManagerService;
 import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.user.UserService;
 import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.views.html.contest.manager.listAddManagersView;
 import play.data.Form;

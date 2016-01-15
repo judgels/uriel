@@ -1,10 +1,11 @@
-package org.iatoki.judgels.uriel.models.daos;
+package org.iatoki.judgels.uriel.user;
 
-import org.iatoki.judgels.play.models.daos.Dao;
-import org.iatoki.judgels.uriel.models.entities.UserReadModel;
+import com.google.inject.ImplementedBy;
+import org.iatoki.judgels.play.model.Dao;
 
 import java.util.Collection;
 
+@ImplementedBy(UserReadHibernateDao.class)
 public interface UserReadDao extends Dao<Long, UserReadModel> {
 
     boolean existsByUserJidAndTypeAndJid(String userJid, String type, String jid);

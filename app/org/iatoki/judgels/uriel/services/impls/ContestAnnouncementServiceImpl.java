@@ -9,11 +9,11 @@ import org.iatoki.judgels.uriel.ContestAnnouncementStatus;
 import org.iatoki.judgels.uriel.ContestReadType;
 import org.iatoki.judgels.uriel.models.daos.ContestAnnouncementDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
-import org.iatoki.judgels.uriel.models.daos.UserReadDao;
+import org.iatoki.judgels.uriel.user.UserReadDao;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel;
 import org.iatoki.judgels.uriel.models.entities.ContestAnnouncementModel_;
 import org.iatoki.judgels.uriel.models.entities.ContestModel;
-import org.iatoki.judgels.uriel.models.entities.UserReadModel;
+import org.iatoki.judgels.uriel.user.UserReadModel;
 import org.iatoki.judgels.uriel.services.ContestAnnouncementService;
 
 import javax.inject.Inject;

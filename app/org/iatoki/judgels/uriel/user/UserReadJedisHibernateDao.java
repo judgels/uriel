@@ -1,14 +1,10 @@
-package org.iatoki.judgels.uriel.models.daos.jedishibernate;
+package org.iatoki.judgels.uriel.user;
 
-import org.iatoki.judgels.play.models.daos.impls.AbstractJedisHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.UserReadDao;
-import org.iatoki.judgels.uriel.models.entities.UserReadModel;
-import org.iatoki.judgels.uriel.models.entities.UserReadModel_;
+import org.iatoki.judgels.play.model.AbstractJedisHibernateDao;
 import play.db.jpa.JPA;
 import redis.clients.jedis.JedisPool;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -16,7 +12,6 @@ import javax.persistence.criteria.Root;
 import java.util.Collection;
 
 @Singleton
-@Named("userReadDao")
 public final class UserReadJedisHibernateDao extends AbstractJedisHibernateDao<Long, UserReadModel> implements UserReadDao {
 
     @Inject

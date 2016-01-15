@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.user;
 
 import org.iatoki.judgels.play.EntityNotFoundException;
 

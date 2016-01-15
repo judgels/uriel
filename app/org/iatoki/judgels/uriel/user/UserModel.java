@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.models.entities;
+package org.iatoki.judgels.uriel.user;
 
 import org.iatoki.judgels.jophiel.models.entities.AbstractUserModel;
 

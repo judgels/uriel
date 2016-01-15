@@ -35,7 +35,7 @@ import org.iatoki.judgels.uriel.ContestTeamNotFoundException;
 import org.iatoki.judgels.uriel.forms.ContestTeamUpsertForm;
 import org.iatoki.judgels.uriel.UploadResult;
 import org.iatoki.judgels.uriel.services.ContestTeamService;
-import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.user.UserService;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;

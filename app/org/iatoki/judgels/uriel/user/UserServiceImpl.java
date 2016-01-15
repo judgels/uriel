@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.services.impls;
+package org.iatoki.judgels.uriel.user;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
@@ -8,20 +8,15 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.User;
-import org.iatoki.judgels.uriel.UserNotFoundException;
-import org.iatoki.judgels.uriel.models.daos.UserDao;
-import org.iatoki.judgels.uriel.models.entities.UserModel;
-import org.iatoki.judgels.uriel.services.UserService;
+import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
 
 @Singleton
-@Named("userService")
 public final class UserServiceImpl implements UserService {
 
     private final UserDao userDao;
@@ -62,7 +57,7 @@ public final class UserServiceImpl implements UserService {
     }
 
     @Override
-    public org.iatoki.judgels.uriel.User findUserById(long userId) throws UserNotFoundException {
+    public User findUserById(long userId) throws UserNotFoundException {
         UserModel userModel = userDao.findById(userId);
         if (userModel == null) {
             throw new UserNotFoundException("User not found.");

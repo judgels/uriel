@@ -1,15 +1,11 @@
-package org.iatoki.judgels.uriel.models.daos.jedishibernate;
+package org.iatoki.judgels.uriel.user;
 
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.play.models.daos.impls.AbstractJedisHibernateDao;
-import org.iatoki.judgels.uriel.models.daos.UserDao;
-import org.iatoki.judgels.uriel.models.entities.UserModel;
-import org.iatoki.judgels.uriel.models.entities.UserModel_;
 import play.db.jpa.JPA;
 import redis.clients.jedis.JedisPool;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -18,7 +14,6 @@ import javax.persistence.metamodel.SingularAttribute;
 import java.util.List;
 
 @Singleton
-@Named("userDao")
 public final class UserJedisHibernateDao extends AbstractJedisHibernateDao<Long, UserModel> implements UserDao {
 
     @Inject

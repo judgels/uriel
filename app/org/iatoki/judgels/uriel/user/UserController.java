@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers;
+package org.iatoki.judgels.uriel.user;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.StringUtils;
@@ -13,21 +13,17 @@ import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
-import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.User;
-import org.iatoki.judgels.uriel.forms.UserAddForm;
-import org.iatoki.judgels.uriel.UserNotFoundException;
-import org.iatoki.judgels.uriel.services.UserService;
-import org.iatoki.judgels.uriel.forms.UserEditForm;
+import org.iatoki.judgels.uriel.controllers.UrielControllerUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.views.html.user.addUserView;
-import org.iatoki.judgels.uriel.views.html.user.listUsersView;
-import org.iatoki.judgels.uriel.views.html.user.editUserView;
-import org.iatoki.judgels.uriel.views.html.user.viewUserView;
+import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
+import org.iatoki.judgels.uriel.user.html.addUserView;
+import org.iatoki.judgels.uriel.user.html.editUserView;
+import org.iatoki.judgels.uriel.user.html.listUsersView;
+import org.iatoki.judgels.uriel.user.html.viewUserView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -36,13 +32,11 @@ import play.i18n.Messages;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 @Authorized(value = "admin")
 @Singleton
-@Named
 public final class UserController extends AbstractJudgelsController {
 
     private static final long PAGE_SIZE = 20;
