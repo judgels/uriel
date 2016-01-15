@@ -1,13 +1,13 @@
 ->          /                                                                                       playcommons.Routes
 ->          /                                                                                       jophielcommons.Routes
 
-GET         /                                                                                       @org.iatoki.judgels.uriel.controllers.ApplicationController.index()
-GET         /auth                                                                                   @org.iatoki.judgels.uriel.controllers.ApplicationController.auth(returnUri ?= "")
-GET         /authRole                                                                               @org.iatoki.judgels.uriel.controllers.ApplicationController.authRole(returnUri ?= "")
-GET         /afterLogin                                                                             @org.iatoki.judgels.uriel.controllers.ApplicationController.afterLogin(returnUri ?= "")
-POST        /viewAs                                                                                 @org.iatoki.judgels.uriel.controllers.ApplicationController.postViewAs()
-GET         /resetViewAs                                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.resetViewAs()
-GET         /localLogout                                                                            @org.iatoki.judgels.uriel.controllers.ApplicationController.logout(returnUri ?= "")
+GET         /                                                                                       @org.iatoki.judgels.uriel.ApplicationController.index()
+GET         /auth                                                                                   @org.iatoki.judgels.uriel.ApplicationController.auth(returnUri ?= "")
+GET         /authRole                                                                               @org.iatoki.judgels.uriel.ApplicationController.authRole(returnUri ?= "")
+GET         /afterLogin                                                                             @org.iatoki.judgels.uriel.ApplicationController.afterLogin(returnUri ?= "")
+POST        /viewAs                                                                                 @org.iatoki.judgels.uriel.ApplicationController.postViewAs()
+GET         /resetViewAs                                                                            @org.iatoki.judgels.uriel.ApplicationController.resetViewAs()
+GET         /localLogout                                                                            @org.iatoki.judgels.uriel.ApplicationController.logout(returnUri ?= "")
 
 GET         /contests                                                                               @org.iatoki.judgels.uriel.controllers.ContestController.index()
 GET         /contests/                                                                              @org.iatoki.judgels.uriel.controllers.ContestController.listAllowedContests(pageIndex: Long ?= 0, orderBy ?= "id", orderDir ?= "desc", filterString ?= "")

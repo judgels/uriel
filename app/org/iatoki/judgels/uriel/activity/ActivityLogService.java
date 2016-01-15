@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.services;
+package org.iatoki.judgels.uriel.activity;
 
 import org.iatoki.judgels.jophiel.services.BaseActivityLogService;
 

@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel;
+package org.iatoki.judgels.uriel.activity;
 
 import org.iatoki.judgels.jophiel.ActivityKey;
 import org.iatoki.judgels.jophiel.BasicActivityKeyUtils;

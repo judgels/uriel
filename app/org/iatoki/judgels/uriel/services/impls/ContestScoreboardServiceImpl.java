@@ -9,6 +9,7 @@ import org.iatoki.judgels.uriel.ContestStyle;
 import org.iatoki.judgels.uriel.Scoreboard;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.adapters.impls.ScoreboardAdapters;
+import org.iatoki.judgels.uriel.avatar.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.models.daos.ContestContestantDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestScoreboardDao;

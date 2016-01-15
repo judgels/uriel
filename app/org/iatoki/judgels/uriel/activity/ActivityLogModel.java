@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.models.entities;
+package org.iatoki.judgels.uriel.activity;
 
 import org.iatoki.judgels.jophiel.models.entities.AbstractActivityLogModel;
 

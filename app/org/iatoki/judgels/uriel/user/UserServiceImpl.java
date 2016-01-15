@@ -8,8 +8,8 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
-import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
+import org.iatoki.judgels.uriel.avatar.AvatarCacheServiceImpl;
+import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

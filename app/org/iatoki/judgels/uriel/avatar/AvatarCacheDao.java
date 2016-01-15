@@ -1,8 +1,9 @@
-package org.iatoki.judgels.uriel.models.daos;
+package org.iatoki.judgels.uriel.avatar;
 
+import com.google.inject.ImplementedBy;
 import org.iatoki.judgels.jophiel.models.daos.BaseAvatarCacheDao;
-import org.iatoki.judgels.uriel.models.entities.AvatarCacheModel;
 
+@ImplementedBy(AvatarCacheJedisHibernateDao.class)
 public interface AvatarCacheDao extends BaseAvatarCacheDao<AvatarCacheModel> {
 
 }

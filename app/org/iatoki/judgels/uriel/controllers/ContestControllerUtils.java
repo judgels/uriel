@@ -13,6 +13,7 @@ import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.ContestContestant;
 import org.iatoki.judgels.uriel.ContestPermissions;
 import org.iatoki.judgels.uriel.ContestTeam;
+import org.iatoki.judgels.uriel.UrielControllerUtils;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.modules.contest.ContestModule;
 import org.iatoki.judgels.uriel.modules.contest.ContestModuleComparator;

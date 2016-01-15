@@ -10,6 +10,7 @@ import org.iatoki.judgels.uriel.ContestClarificationNotFoundException;
 import org.iatoki.judgels.uriel.ContestClarificationStatus;
 import org.iatoki.judgels.uriel.ContestReadType;
 import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
+import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.models.daos.ContestClarificationDao;
 import org.iatoki.judgels.uriel.models.daos.ContestDao;
 import org.iatoki.judgels.uriel.models.daos.ContestProblemDao;

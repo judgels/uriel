@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.adapters;
 
-import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
+import org.iatoki.judgels.play.jid.AbstractBaseJidCacheServiceImpl;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.Contest;
 import org.iatoki.judgels.uriel.Scoreboard;

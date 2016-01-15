@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers;
+package org.iatoki.judgels.uriel;
 
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
@@ -8,14 +8,13 @@ import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.jophiel.forms.ViewpointForm;
-import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.user.User;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.services.impls.AvatarCacheServiceImpl;
+import org.iatoki.judgels.uriel.avatar.AvatarCacheServiceImpl;
 import org.iatoki.judgels.uriel.user.UserService;
-import org.iatoki.judgels.uriel.services.impls.JidCacheServiceImpl;
+import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
@@ -38,7 +37,7 @@ public final class ApplicationController extends AbstractJudgelsController {
     }
 
     public Result index() {
-        return redirect(routes.ContestController.index());
+        return redirect(org.iatoki.judgels.uriel.controllers.routes.ContestController.index());
     }
 
     public Result auth(String returnUri) {

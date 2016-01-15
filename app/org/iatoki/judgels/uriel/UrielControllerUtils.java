@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.controllers;
+package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.api.jophiel.JophielClientAPI;
@@ -25,8 +25,7 @@ import org.iatoki.judgels.play.views.html.layouts.guestLoginView;
 import org.iatoki.judgels.play.views.html.layouts.menusLayout;
 import org.iatoki.judgels.play.views.html.layouts.profileView;
 import org.iatoki.judgels.play.views.html.layouts.sidebarLayout;
-import org.iatoki.judgels.uriel.UrielUtils;
-import org.iatoki.judgels.uriel.services.impls.ActivityLogServiceImpl;
+import org.iatoki.judgels.uriel.activity.ActivityLogServiceImpl;
 import play.data.Form;
 import play.i18n.Messages;
 import play.mvc.Http;
@@ -48,7 +47,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         content.appendLayout(c -> contentLayout.render(c));
 
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), routes.ContestController.index()));
+        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), org.iatoki.judgels.uriel.controllers.routes.ContestController.index()));
         if (isAdmin()) {
             internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), org.iatoki.judgels.uriel.user.routes.UserController.index()));
         }
@@ -71,7 +70,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
                 viewpointForm.username = IdentityUtils.getUsername();
                 form.fill(viewpointForm);
             }
-            sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", org.iatoki.judgels.uriel.controllers.routes.ApplicationController.postViewAs(), org.iatoki.judgels.uriel.controllers.routes.ApplicationController.resetViewAs(), c));
+            sidebarContent.appendLayout(c -> viewAsLayout.render(form, jophielPublicAPI.getUserAutocompleteAPIEndpoint(), "lib/jophielcommons/javascripts/userAutoComplete.js", routes.ApplicationController.postViewAs(), routes.ApplicationController.resetViewAs(), c));
         }
         sidebarContent.appendLayout(c -> menusLayout.render(internalLinkBuilder.build(), c));
         sidebarContent.appendLayout(c -> linkedClientsLayout.render(jophielClientAPI.getLinkedClientsAPIEndpoint(), "lib/jophielcommons/javascripts/linkedClients.js", c));

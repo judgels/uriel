@@ -1,9 +1,7 @@
-package org.iatoki.judgels.uriel.services.impls;
+package org.iatoki.judgels.uriel.activity;
 
 import org.iatoki.judgels.jophiel.models.daos.BaseActivityLogDao;
 import org.iatoki.judgels.jophiel.services.impls.AbstractBaseActivityLogServiceImpl;
-import org.iatoki.judgels.uriel.models.entities.ActivityLogModel;
-import org.iatoki.judgels.uriel.services.ActivityLogService;
 
 public final class ActivityLogServiceImpl extends AbstractBaseActivityLogServiceImpl<ActivityLogModel> implements ActivityLogService {
 

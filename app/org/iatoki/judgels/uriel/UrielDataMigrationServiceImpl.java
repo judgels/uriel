@@ -1,4 +1,4 @@
-package org.iatoki.judgels.uriel.services.impls;
+package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;

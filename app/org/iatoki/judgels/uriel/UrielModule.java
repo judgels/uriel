@@ -27,7 +27,6 @@ import org.iatoki.judgels.uriel.config.GabrielClientJid;
 import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
 import org.iatoki.judgels.uriel.config.ProgrammingSubmissionRemoteFileSystemProvider;
 import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
-import org.iatoki.judgels.uriel.services.impls.UrielDataMigrationServiceImpl;
 import org.iatoki.judgels.uriel.user.UserServiceImpl;
 
 public class UrielModule extends AbstractJudgelsPlayModule {

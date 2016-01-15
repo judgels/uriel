@@ -1,8 +1,6 @@
-package org.iatoki.judgels.uriel.services.impls;
+package org.iatoki.judgels.uriel.jid;
 
-import org.iatoki.judgels.play.services.impls.AbstractBaseJidCacheServiceImpl;
-import org.iatoki.judgels.uriel.models.daos.JidCacheDao;
-import org.iatoki.judgels.uriel.models.entities.JidCacheModel;
+import org.iatoki.judgels.play.jid.AbstractBaseJidCacheServiceImpl;
 
 public final class JidCacheServiceImpl extends AbstractBaseJidCacheServiceImpl<JidCacheModel> {
 
