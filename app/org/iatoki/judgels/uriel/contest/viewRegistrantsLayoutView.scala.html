@@ -1,0 +1,40 @@
+@import org.iatoki.judgels.uriel.contest.Contest
+@import org.iatoki.judgels.uriel.contest.contestant.ContestContestant
+@import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl
+
+@import scala.collection.JavaConversions
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+@import org.iatoki.judgels.uriel.contest.routes
+@import org.iatoki.judgels.play.Page
+
+@(contest: Contest, pageOfContestContestants: Page[ContestContestant], pageIndex: Long, orderBy: String, orderDir: String, filterString: String)(content: Html)
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestController.viewContestAndListRegistrants(contest.getId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+
+@content
+
+<h3>@Messages.get("contest.registrants") (@pageOfContestContestants.getTotalRowsCount)</h3>
+
+@tableView() {
+    @tableHeadersView(pageOfContestContestants.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "userJid" -> Messages.get("contestant.name")
+    )
+    <tbody>
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestContestants.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestContestant <- pageOfContestContestants.getData) {
+            <tr>
+                <td>@contestContestant.getId</td>
+                <td>@displayNamesMap.get(contestContestant.getUserJid)</td>
+                <td class="text-center">
+            </td>
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+@paginationView(pageOfContestContestants, orderBy, orderDir, filterString, listFunc)

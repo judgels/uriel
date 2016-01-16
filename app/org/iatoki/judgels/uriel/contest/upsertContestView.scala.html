@@ -1,0 +1,12 @@
+@import org.iatoki.judgels.uriel.contest.ContestUpsertForm
+@import play.i18n.Messages
+
+@(contestUpsertForm: Form[ContestUpsertForm])(implicit fieldConstructor: b3.B3FieldConstructor)
+
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/ckeditor.js")"></script>
+
+@helper.CSRF.formField
+
+@b3.text(contestUpsertForm("name"), '_label -> Messages.get("contest.name"))
+@b3.textarea(contestUpsertForm("description"), '_label -> Messages.get("contest.description"), 'class -> "ckeditor form-control")
+@b3.select(contestUpsertForm("style"), Seq("IOI" -> "IOI", "ICPC" -> "ICPC"), '_label -> Messages.get("contest.style"), 'class -> "selectpicker form-control")

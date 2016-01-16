@@ -2,20 +2,18 @@ package org.iatoki.judgels.uriel.controllers.api.testing;
 
 import com.google.gson.Gson;
 import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
-import org.iatoki.judgels.uriel.ContestScoreboard;
-import org.iatoki.judgels.uriel.ContestScoreboardType;
+import org.iatoki.judgels.uriel.contest.scoreboard.ContestScoreboard;
+import org.iatoki.judgels.uriel.contest.scoreboard.ContestScoreboardType;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.services.ContestScoreboardService;
+import org.iatoki.judgels.uriel.contest.scoreboard.ContestScoreboardService;
 import play.data.DynamicForm;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named
 public final class TestingContestScoreboardAPIController extends AbstractJudgelsAPIController {
 
     private final ContestScoreboardService contestScoreboardService;
