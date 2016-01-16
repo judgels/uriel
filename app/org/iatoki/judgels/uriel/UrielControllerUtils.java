@@ -47,7 +47,7 @@ public final class UrielControllerUtils extends AbstractJudgelsControllerUtils {
         content.appendLayout(c -> contentLayout.render(c));
 
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();
-        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), org.iatoki.judgels.uriel.controllers.routes.ContestController.index()));
+        internalLinkBuilder.add(new InternalLink(Messages.get("contest.contests"), org.iatoki.judgels.uriel.contest.routes.ContestController.index()));
         if (isAdmin()) {
             internalLinkBuilder.add(new InternalLink(Messages.get("user.users"), org.iatoki.judgels.uriel.user.routes.UserController.index()));
         }

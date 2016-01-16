@@ -1,0 +1,53 @@
+@import org.iatoki.judgels.uriel.contest.team.ContestTeam
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+@import org.iatoki.judgels.uriel.contest.contestant.html.contestantjs
+@import org.iatoki.judgels.uriel.contest.team.routes
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+
+@(contestId: Long, pageOfContestTeams: Page[ContestTeam], pageIndex: Long, orderBy: String, orderDir: String, isAllowedToStartContest: Boolean)
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestTeamController.listScreenedTeams(contestId, newPageIndex, newOrderBy, newOrderDir)}
+
+@tableView() {
+    @tableHeadersView(pageOfContestTeams.getPageIndex, orderBy, orderDir, "", listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "teamImage" -> Messages.get("team.image"),
+        "name" -> Messages.get("team.name")
+    )
+    <tbody>
+    @for(contestTeam <- pageOfContestTeams.getData) {
+        <tr>
+            <td>@contestTeam.getId</td>
+            <td><img src="@contestTeam.getTeamImage.toString" class="table-image" alt="team_logo"/></td>
+            <td>@contestTeam.getName</td>
+            <td class="text-center">
+                @if(!isAllowedToStartContest) {
+                    @Messages.get("contest.cantStart")
+                } else {
+                    @if(contestTeam.isStarted) {
+                        @Messages.get("contest.started") @@ <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contestTeam.getContestStartTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contestTeam.getContestStartTime.getTime)</time>
+                    } else {
+                        <a href="@routes.ContestTeamController.startTeam(contestId, contestTeam.getId)" type="button" class="start-contest-button btn btn-primary btn-xs">
+                            @Messages.get("contest.start")</a>
+                    }
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+}
+
+<script type="text/javascript">
+var confirmMessage = "@Messages.get("contest.start.confirm")";
+</script>
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/alertStartContest.js")"></script>
+
+@paginationView(pageOfContestTeams, orderBy, orderDir, "", listFunc)
+
+@contestantjs(contestId)

@@ -1,9 +1,0 @@
-@(contestId: Long)
-
-<script type="text/javascript">
-    var unreadAnnouncementUrl = "@org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestAnnouncementAPIController.getUnreadAnnouncementsCount(contestId)";
-    var contestAnnouncementUrl = "@org.iatoki.judgels.uriel.controllers.routes.ContestController.jumpToAnnouncements(contestId)";
-    var unreadClarificationUrl = "@org.iatoki.judgels.uriel.controllers.api.internal.routes.InternalContestClarificationAPIController.getUnreadClarificationsCount(contestId)";
-    var contestClarificationUrl = "@org.iatoki.judgels.uriel.controllers.routes.ContestController.jumpToClarifications(contestId)";
-</script>
-<script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/contestant.js")"></script>

@@ -1,0 +1,36 @@
+@import org.iatoki.judgels.uriel.contest.clarification.ContestClarificationEditForm
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.contest.clarification.ContestClarification
+@import org.iatoki.judgels.uriel.contest.html.supervisorjs
+@import org.iatoki.judgels.uriel.contest.clarification.routes
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+
+@(contestId: Long, clarification: ContestClarification, contestClarificationEditForm: Form[ContestClarificationEditForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(contestClarificationEditForm)
+
+@b3.form(routes.ContestClarificationController.postEditClarificationAnswer(contestId, clarification.getId)) {
+
+    @helper.CSRF.formField
+
+    @b3.static(Messages.get("clarification.title")) { @clarification.getTitle }
+
+    @b3.static(Messages.get("clarification.topic")) { @clarification.getTopic }
+
+    <div class="form-group">
+        <label class="control-label col-md-3">@Messages.get("clarification.question")</label>
+        <div class="col-md-9">
+            @Html(JudgelsPlayUtils.escapeHtmlString(clarification.getQuestion))
+        </div>
+    </div>
+
+    @b3.textarea(contestClarificationEditForm("answer"), '_label -> Messages.get("clarification.answer"), 'class -> "form-control")
+    @b3.select(contestClarificationEditForm("status"), Seq("ANSWERED" -> "Answered"), '_label -> Messages.get("clarification.status"), 'class -> "selectpicker")
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}
+
+@supervisorjs(contestId)

@@ -1,0 +1,30 @@
+@import org.iatoki.judgels.uriel.contest.Contest
+@import org.iatoki.judgels.uriel.contest.module.ContestModules
+@import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule
+@import org.iatoki.judgels.uriel.contest.contestant.ContestContestant
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.Page
+@import org.iatoki.judgels.play.JudgelsPlayUtils
+
+@(contest: Contest)
+
+<script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $('a:contains("Start")').on('click', function() {
+            return confirm("Are you really sure you want to start the contest? You cannot undo this operation!");
+        });
+    });
+</script>
+
+<div class="well">
+    @Html(contest.getDescription)
+    <hr />
+    @if(contest.containsModule(ContestModules.DURATION)) {
+        <p>
+            <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)</time>
+                - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)</time></small>
+        </p>
+    }
+</div>

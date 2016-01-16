@@ -1,0 +1,18 @@
+@import org.iatoki.judgels.uriel.contest.module.clarificationtimelimit.ContestClarificationTimeLimitConfigForm
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@(contestClarificationTimeLimitConfigForm: Form[ContestClarificationTimeLimitConfigForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.clarificationTimeLimitConfig")</h4>
+
+@formErrorView(contestClarificationTimeLimitConfigForm)
+
+@b3.inputWrapped("clarificationDuration", contestClarificationTimeLimitConfigForm("clarificationDuration"), '_label -> Messages.get("contest.clarificationDuration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds since contest begin time</div>
+    </div>
+}

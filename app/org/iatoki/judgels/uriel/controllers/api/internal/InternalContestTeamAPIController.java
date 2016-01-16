@@ -4,16 +4,14 @@ import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.services.ContestTeamService;
+import org.iatoki.judgels.uriel.contest.team.ContestTeamService;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class InternalContestTeamAPIController extends AbstractJudgelsAPIController {
 

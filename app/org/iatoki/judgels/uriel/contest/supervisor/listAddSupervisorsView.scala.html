@@ -1,0 +1,141 @@
+@import org.iatoki.judgels.uriel.contest.supervisor.ContestPermissions
+@import org.iatoki.judgels.uriel.contest.supervisor.ContestSupervisor
+@import org.iatoki.judgels.uriel.contest.supervisor.ContestSupervisorAddForm
+@import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl
+
+@import scala.collection.JavaConversions
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.table.tableView
+@import org.iatoki.judgels.play.views.html.table.tableHeadersView
+@import org.iatoki.judgels.play.views.html.table.searchView
+@import org.iatoki.judgels.play.views.html.table.paginationView
+@import org.iatoki.judgels.uriel.contest.html.supervisorjs
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.contest.supervisor.routes
+@import org.iatoki.judgels.play.Page
+
+@(contestId: Long, pageOfContestSupervisors: Page[ContestSupervisor], pageIndex: Long, orderBy: String, orderDir: String, filterString: String, updateable: Boolean, deleteable: Boolean, form: Form[ContestSupervisorAddForm], jophielAutoCompleteUrl: String)
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@listFunc(newPageIndex: scala.Long, newOrderBy: String, newOrderDir: String, newFilterString: String) = @{routes.ContestSupervisorController.listAddSupervisors(contestId, newPageIndex, newOrderBy, newOrderDir, newFilterString)}
+
+@displayPermission(allowed: Boolean) = {
+    @if(allowed) {
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    }
+}
+
+@if(updateable) {
+    @formErrorView(form)
+
+    @b3.form(routes.ContestSupervisorController.postAddSupervisor(contestId, pageIndex, orderBy, orderDir, filterString)) {
+
+        @helper.CSRF.formField
+
+        @b3.text(form("username"), '_label -> Messages.get("supervisor.username"), 'class -> "form-control user_autocomplete")
+
+        <script type="text/javascript" src="@controllers.routes.Assets.at("lib/jquery/jquery.min.js")"></script>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                function checkState() {
+                    if ($('#isAllowedAll').prop('checked')) {
+                        $('.allowedPermissions').each(function () {
+                            $(this).prop('disabled', true);
+                            $(this).prop('checked', true);
+                        });
+                    } else {
+                        $('.allowedPermissions').each(function () {
+                            $(this).prop('disabled', false);
+                        });
+                    }
+                }
+
+                checkState();
+
+                $('#isAllowedAll').on('click', function () {
+                    checkState();
+                });
+            });
+        </script>
+
+        <div class="form-group">
+
+            <label class="control-label col-md-3">@Messages.get("contest.allowedPermissions")</label>
+
+            <div class="col-md-9">
+
+                <div class="checkbox">
+                    <label>
+                        <input type="checkbox" id="isAllowedAll" name="isAllowedAll" value="true" @if(form("isAllowedAll").value && form("isAllowedAll").value.equals("true")){ checked="checked" }> @Messages.get("problem.allowAll")
+                    </label>
+                </div>
+
+                @for(cp <- ContestPermissions.values()) {
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" class="allowedPermissions" name="allowedPermissions[@cp.name()]" value="@cp.name()" @if(form("allowedLanguageNames[" + cp.name() + "]").value && form("allowedLanguageNames[" + cp.name() + "]").value.equals(cp.name())){ checked="checked" }> @cp.name()
+                        </label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            var jophielAutoCompleteUrl = "@jophielAutoCompleteUrl";
+        </script>
+
+        <script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/jophielcommons/javascripts/userAutoComplete.js")"></script>
+
+        @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.add") }
+    }
+}
+
+@searchView(pageOfContestSupervisors.getPageIndex, orderBy, orderDir, filterString, listFunc)
+
+<div class="clearfix"></div>
+
+@tableView() {
+    @tableHeadersView(pageOfContestSupervisors.getPageIndex, orderBy, orderDir, filterString, listFunc)(
+        "id" -> Messages.get("commons.id"),
+        "userJid" -> Messages.get("supervisor.name"),
+        "announcement" -> Messages.get("permission.announcement"),
+        "problem" -> Messages.get("permission.problem"),
+        "submission" -> Messages.get("permission.submission"),
+        "clarification" -> Messages.get("permission.clarification"),
+        "contestant" -> Messages.get("permission.contestant"),
+        "scoreboard" -> Messages.get("permission.scoreboard"),
+        "team" -> Messages.get("permission.team")
+    )
+    <tbody>
+
+    @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestSupervisors.getData.map(s => s.getUserJid).toSeq))) { displayNamesMap =>
+        @for(contestSupervisor <- pageOfContestSupervisors.getData) {
+            <tr>
+                <td>@contestSupervisor.getId</td>
+                <td>@displayNamesMap.get(contestSupervisor.getUserJid)</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.ANNOUNCEMENT))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.PROBLEM))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.SUBMISSION))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.CLARIFICATION))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.CONTESTANT))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.SCOREBOARD))</td>
+                <td>@displayPermission(contestSupervisor.getContestPermission.isAllowed(ContestPermissions.TEAM))</td>
+                <td class="text-center">
+                    @if(updateable) {
+                        <a href="@routes.ContestSupervisorController.editSupervisor(contestId, contestSupervisor.getId)"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+                    }
+                    @if(deleteable) {
+                        <a href="@routes.ContestSupervisorController.removeSupervisor(contestId, contestSupervisor.getId)" onclick="return confirm('@Messages.get("supervisor.delete.confirmation")');"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                    }
+                </td>
+            </tr>
+        }
+    }
+    </tbody>
+}
+
+@paginationView(pageOfContestSupervisors, orderBy, orderDir, filterString, listFunc)
+
+@supervisorjs(contestId)

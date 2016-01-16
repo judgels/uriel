@@ -8,22 +8,20 @@ import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionException;
 import org.iatoki.judgels.sandalphon.ProgrammingSubmissionUtils;
 import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
-import org.iatoki.judgels.uriel.Contest;
+import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.UrielProperties;
-import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
-import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionLocalFileSystemProvider;
+import org.iatoki.judgels.uriel.contest.ContestService;
 import play.db.jpa.Transactional;
 import play.mvc.Http;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.Map;
 
 @Singleton
-@Named
 public final class TestingContestSubmissionAPIController extends AbstractJudgelsAPIController {
 
     private final ContestService contestService;

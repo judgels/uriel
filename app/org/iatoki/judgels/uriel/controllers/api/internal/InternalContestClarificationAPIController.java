@@ -4,28 +4,26 @@ import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.apis.JudgelsAPIForbiddenException;
 import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
-import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.ContestPermissions;
-import org.iatoki.judgels.uriel.ContestTeamMember;
-import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
+import org.iatoki.judgels.uriel.contest.Contest;
+import org.iatoki.judgels.uriel.contest.ContestNotFoundException;
+import org.iatoki.judgels.uriel.contest.supervisor.ContestPermissions;
+import org.iatoki.judgels.uriel.contest.team.member.ContestTeamMember;
+import org.iatoki.judgels.uriel.contest.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.services.ContestClarificationService;
-import org.iatoki.judgels.uriel.services.ContestService;
-import org.iatoki.judgels.uriel.services.ContestTeamService;
+import org.iatoki.judgels.uriel.contest.clarification.ContestClarificationService;
+import org.iatoki.judgels.uriel.contest.ContestService;
+import org.iatoki.judgels.uriel.contest.team.ContestTeamService;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Singleton
-@Named
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 
 public final class InternalContestClarificationAPIController extends AbstractJudgelsAPIController {

@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.play.models.daos.impls.AbstractHibernateDao;
 import play.db.jpa.JPA;
 
-import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -13,7 +12,6 @@ import javax.persistence.metamodel.SingularAttribute;
 import java.util.List;
 
 @Singleton
-@Named("userDao")
 public final class UserHibernateDao extends AbstractHibernateDao<Long, UserModel> implements UserDao {
 
     public UserHibernateDao() {

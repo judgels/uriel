@@ -3,23 +3,21 @@ package org.iatoki.judgels.uriel.controllers.api.internal;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.apis.JudgelsAPINotFoundException;
 import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
-import org.iatoki.judgels.uriel.Contest;
-import org.iatoki.judgels.uriel.ContestNotFoundException;
-import org.iatoki.judgels.uriel.controllers.ContestControllerUtils;
+import org.iatoki.judgels.uriel.contest.Contest;
+import org.iatoki.judgels.uriel.contest.ContestNotFoundException;
+import org.iatoki.judgels.uriel.contest.ContestControllerUtils;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
-import org.iatoki.judgels.uriel.services.ContestFileService;
-import org.iatoki.judgels.uriel.services.ContestService;
+import org.iatoki.judgels.uriel.contest.file.ContestFileService;
+import org.iatoki.judgels.uriel.contest.ContestService;
 import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named
 @Authenticated(value = {LoggedIn.class, HasRole.class})
 public final class InternalContestFileAPIController extends AbstractJudgelsAPIController {
 

@@ -1,0 +1,22 @@
+@import org.iatoki.judgels.uriel.contest.contestant.ContestContestantEditForm
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.contest.html.supervisorjs
+@import org.iatoki.judgels.uriel.contest.contestant.routes
+
+@(contestId: Long, contestContestantId: Long, contestContestantEditForm: Form[ContestContestantEditForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(contestContestantEditForm)
+
+@b3.form(routes.ContestContestantController.postEditContestant(contestId, contestContestantId)) {
+
+    @helper.CSRF.formField
+
+    @b3.select(contestContestantEditForm("status"), Seq("APPROVED" -> "Approved", "IN_CONFIRMATION" -> "In Confirmation", "DISABLED" -> "Disabled"), '_label -> Messages.get("contestant.status"), 'class -> "selectpicker")
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+}
+
+@supervisorjs(contestId)

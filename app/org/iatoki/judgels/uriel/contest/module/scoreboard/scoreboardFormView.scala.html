@@ -1,0 +1,13 @@
+@import org.iatoki.judgels.uriel.contest.module.scoreboard.ContestScoreboardConfigForm
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@(contestScoreboardConfigForm: Form[ContestScoreboardConfigForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>@Messages.get("contest.module.scoreboardConfig")</h4>
+
+@formErrorView(contestScoreboardConfigForm)
+
+@b3.checkbox(contestScoreboardConfigForm("isIncognitoScoreboard"), '_label -> Messages.get("contest.isIncognitoScoreboard"))

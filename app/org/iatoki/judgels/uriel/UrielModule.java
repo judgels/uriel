@@ -22,11 +22,13 @@ import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
 import org.iatoki.judgels.play.general.GeneralName;
 import org.iatoki.judgels.play.general.GeneralVersion;
 import org.iatoki.judgels.play.migration.BaseDataMigrationService;
-import org.iatoki.judgels.uriel.config.ContestFileSystemProvider;
-import org.iatoki.judgels.uriel.config.GabrielClientJid;
-import org.iatoki.judgels.uriel.config.ProgrammingSubmissionLocalFileSystemProvider;
-import org.iatoki.judgels.uriel.config.ProgrammingSubmissionRemoteFileSystemProvider;
-import org.iatoki.judgels.uriel.config.TeamAvatarFileSystemProvider;
+import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.uriel.contest.file.ContestFileSystemProvider;
+import org.iatoki.judgels.uriel.contest.submission.programming.GabrielClientJid;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionLocalFileSystemProvider;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionRemoteFileSystemProvider;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionServiceImpl;
+import org.iatoki.judgels.uriel.contest.team.TeamAvatarFileSystemProvider;
 import org.iatoki.judgels.uriel.user.UserServiceImpl;
 
 public class UrielModule extends AbstractJudgelsPlayModule {
@@ -47,6 +49,8 @@ public class UrielModule extends AbstractJudgelsPlayModule {
         // </DEPRECATED>
 
         bind(BaseDataMigrationService.class).to(UrielDataMigrationServiceImpl.class);
+
+        bind(ProgrammingSubmissionService.class).to(ProgrammingSubmissionServiceImpl.class);
 
         bind(JophielAuthAPI.class).toInstance(jophielAuthAPI());
         bind(JophielClientAPI.class).toInstance(jophielClientAPI());

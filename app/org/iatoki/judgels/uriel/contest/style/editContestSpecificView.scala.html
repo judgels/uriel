@@ -1,0 +1,44 @@
+@import java.util.Map
+
+@import org.iatoki.judgels.uriel.contest.module.ContestModule
+
+@import org.iatoki.judgels.uriel.contest.Contest
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+@import org.iatoki.judgels.uriel.contest.html.supervisorjs
+@import org.iatoki.judgels.uriel.contest.routes
+
+@import org.iatoki.judgels.uriel.contest.style.ContestStyle
+@import org.iatoki.judgels.uriel.contest.style.icpc.html.icpcContestStyleConfigView
+@import org.iatoki.judgels.uriel.contest.style.ioi.html.ioiContestStyleConfigView
+
+@(contest: Contest, formStyle: Form[_], modulesForm: Map[ContestModule, Form[_]])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+@formErrorView(formStyle)
+
+@b3.form(routes.ContestController.postEditContestSpecificConfig(contest.getId)) {
+
+    @helper.CSRF.formField
+
+    <h4>@Messages.get("contest.style.config")</h4>
+
+    @if(contest.getStyle.equals(ContestStyle.ICPC)) {
+        @icpcContestStyleConfigView(formStyle)
+    } else {
+        @if(contest.getStyle.equals(ContestStyle.IOI)) {
+            @ioiContestStyleConfigView(formStyle)
+        }
+    }
+
+    @for((contestModule, _) <- modulesForm) {
+        @contestModule.generateConfigFormInput(modulesForm.get(contestModule))
+    }
+
+    @b3.submit('class -> "btn btn-primary") { @Messages.get("commons.update") }
+
+    <script type="text/javascript" src="@controllers.routes.Assets.versioned("javascripts/datetimepicker.js")"></script>
+}
+
+@supervisorjs(contest.getId)

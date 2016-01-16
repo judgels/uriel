@@ -20,11 +20,9 @@ import play.db.jpa.Transactional;
 import play.mvc.Result;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
-@Named
 public final class ApplicationController extends AbstractJudgelsController {
 
     private final JophielPublicAPI jophielPublicAPI;
@@ -37,7 +35,7 @@ public final class ApplicationController extends AbstractJudgelsController {
     }
 
     public Result index() {
-        return redirect(org.iatoki.judgels.uriel.controllers.routes.ContestController.index());
+        return redirect(org.iatoki.judgels.uriel.contest.routes.ContestController.index());
     }
 
     public Result auth(String returnUri) {
