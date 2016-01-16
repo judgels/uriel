@@ -42,7 +42,7 @@ import org.iatoki.judgels.uriel.contest.team.html.listCreateTeamsView;
 import org.iatoki.judgels.uriel.contest.team.html.listScreenedTeamsView;
 import org.iatoki.judgels.uriel.contest.team.html.editTeamView;
 import org.iatoki.judgels.uriel.contest.team.html.viewTeamView;
-import org.iatoki.judgels.uriel.views.html.uploadResultView;
+import org.iatoki.judgels.uriel.html.uploadResultView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;

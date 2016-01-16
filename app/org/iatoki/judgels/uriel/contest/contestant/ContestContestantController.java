@@ -28,7 +28,7 @@ import org.iatoki.judgels.uriel.user.UserService;
 import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl;
 import org.iatoki.judgels.uriel.contest.contestant.html.listAddContestantsView;
 import org.iatoki.judgels.uriel.contest.contestant.html.editContestantView;
-import org.iatoki.judgels.uriel.views.html.uploadResultView;
+import org.iatoki.judgels.uriel.html.uploadResultView;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;

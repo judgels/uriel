@@ -1,6 +1,4 @@
-package org.iatoki.judgels.uriel.config;
-
-import org.iatoki.judgels.uriel.UrielModule;
+package org.iatoki.judgels.uriel;
 
 public final class UrielJedisModule extends UrielModule {
 
