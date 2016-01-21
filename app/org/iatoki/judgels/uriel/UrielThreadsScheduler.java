@@ -33,7 +33,7 @@ public final class UrielThreadsScheduler {
         ExecutionContextExecutor context = actorSystem.dispatcher();
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, programmingSubmissionService, sealtielClientAPI, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
-        ScoreboardUpdaterDispatcher updater = new ScoreboardUpdaterDispatcher(scheduler, context, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
+        ScoreboardUpdaterDispatcher updater = new ScoreboardUpdaterDispatcher(jpaApi, scheduler, context, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
         UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(jpaApi, jophielClientAPI, UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielGradingPollerInterval(), TimeUnit.SECONDS), poller, context);

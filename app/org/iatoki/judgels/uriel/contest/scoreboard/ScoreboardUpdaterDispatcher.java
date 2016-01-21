@@ -7,7 +7,7 @@ import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingS
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantService;
 import org.iatoki.judgels.uriel.contest.ContestService;
-import play.db.jpa.JPA;
+import play.db.jpa.JPAApi;
 import scala.concurrent.ExecutionContext;
 import scala.concurrent.duration.Duration;
 
@@ -20,6 +20,7 @@ public final class ScoreboardUpdaterDispatcher implements Runnable {
 
     private static final Set<String> UPDATER_JIDS = Sets.newHashSet();
 
+    private final JPAApi jpaApi;
     private final Scheduler scheduler;
     private final ExecutionContext executor;
     private final ContestService contestService;
@@ -27,7 +28,8 @@ public final class ScoreboardUpdaterDispatcher implements Runnable {
     private final ContestContestantService contestContestantService;
     private final ProgrammingSubmissionService programmingSubmissionService;
 
-    public ScoreboardUpdaterDispatcher(Scheduler scheduler, ExecutionContext executor, ContestService contestService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ProgrammingSubmissionService programmingSubmissionService) {
+    public ScoreboardUpdaterDispatcher(JPAApi jpaApi, Scheduler scheduler, ExecutionContext executor, ContestService contestService, ContestScoreboardService contestScoreboardService, ContestContestantService contestContestantService, ProgrammingSubmissionService programmingSubmissionService) {
+        this.jpaApi = jpaApi;
         this.scheduler = scheduler;
         this.executor = executor;
         this.contestService = contestService;
@@ -61,7 +63,7 @@ public final class ScoreboardUpdaterDispatcher implements Runnable {
         Date timeNow = new Date();
         List<Contest> runningContests = Lists.newArrayList();
         try {
-            JPA.withTransaction("default", true, () -> {
+            jpaApi.withTransaction("default", true, () -> {
                     runningContests.addAll(contestService.getRunningContestsWithScoreboardModule(timeNow));
                     return null;
                 });
