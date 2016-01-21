@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.user;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.iatoki.judgels.api.jophiel.JophielUser;
-import org.iatoki.judgels.jophiel.UserTokens;
+import org.iatoki.judgels.jophiel.user.UserTokens;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.Page;

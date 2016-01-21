@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.contest.submission.programming;
 
-import org.iatoki.judgels.sandalphon.models.entities.AbstractProgrammingSubmissionModel;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.AbstractProgrammingSubmissionModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

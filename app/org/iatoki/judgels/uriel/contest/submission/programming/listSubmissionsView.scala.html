@@ -1,4 +1,5 @@
-@(contestId: Long, page: org.iatoki.judgels.play.Page[org.iatoki.judgels.sandalphon.ProgrammingSubmission], contestantJids: List[String], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, contestantJid: String, problemJid: String)
+@import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission
+@(contestId: Long, page: org.iatoki.judgels.play.Page[ProgrammingSubmission], contestantJids: List[String], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, contestantJid: String, problemJid: String)
 
 @import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl
 @import play.i18n.Messages

@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.controllers.api.internal;
 
 import com.google.common.collect.ImmutableList;
 import org.iatoki.judgels.play.IdentityUtils;
-import org.iatoki.judgels.play.apis.JudgelsAPIForbiddenException;
+import org.iatoki.judgels.play.api.JudgelsAPIForbiddenException;
 import org.iatoki.judgels.play.controllers.apis.AbstractJudgelsAPIController;
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.ContestNotFoundException;

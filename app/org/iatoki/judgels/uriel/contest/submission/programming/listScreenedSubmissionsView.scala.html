@@ -1,3 +1,4 @@
+@import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission
 @import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl
 
 @import scala.collection.JavaConversions
@@ -9,7 +10,6 @@
 @import org.iatoki.judgels.uriel.contest.submission.programming.routes
 @import org.iatoki.judgels.play.Page
 @import org.iatoki.judgels.play.JudgelsPlayUtils
-@import org.iatoki.judgels.sandalphon.ProgrammingSubmission
 
 @(contestId: Long, pageOfProgrammingSubmissions: Page[ProgrammingSubmission], problemJidToAliasMap: Map[String, String], gradingLanguageToNameMap: Map[String, String], pageIndex: Long, orderBy: String, orderDir: String, problemJid: String)
 

@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel.contest.submission.programming;
 
 import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
-import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
-import org.iatoki.judgels.sandalphon.services.impls.AbstractProgrammingSubmissionServiceImpl;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.AbstractProgrammingSubmissionServiceImpl;
 import org.iatoki.judgels.uriel.contest.grading.programming.ProgrammingGradingDao;
 import org.iatoki.judgels.uriel.contest.grading.programming.ProgrammingGradingModel;
 

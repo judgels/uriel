@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.contest.clarification;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.iatoki.judgels.api.sandalphon.SandalphonResourceDisplayNameUtils;
-import org.iatoki.judgels.play.JidService;
+import org.iatoki.judgels.play.jid.JidService;
 import org.iatoki.judgels.play.Page;
 import org.iatoki.judgels.uriel.contest.ContestControllerUtils;
 import org.iatoki.judgels.uriel.contest.ContestDao;

@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.contest.style.icpc;
 
-import org.iatoki.judgels.sandalphon.LanguageRestriction;
+import org.iatoki.judgels.sandalphon.problem.programming.grading.LanguageRestriction;
 import org.iatoki.judgels.uriel.contest.style.ContestStyleConfig;
 
 public class ICPCContestStyleConfig implements ContestStyleConfig {

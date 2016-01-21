@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.activity;
 
-import org.iatoki.judgels.jophiel.models.entities.AbstractActivityLogModel;
+import org.iatoki.judgels.jophiel.activity.AbstractActivityLogModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

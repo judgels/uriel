@@ -12,7 +12,7 @@ import org.iatoki.judgels.play.InternalLink;
 import org.iatoki.judgels.play.LazyHtml;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
 import org.iatoki.judgels.play.views.html.layouts.heading3WithActionsLayout;
-import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.ContestNotFoundException;
 import org.iatoki.judgels.uriel.contest.supervisor.ContestPermissions;

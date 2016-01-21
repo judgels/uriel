@@ -2,8 +2,8 @@ package org.iatoki.judgels.uriel.contest.scoreboard;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
-import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.ContestService;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantService;

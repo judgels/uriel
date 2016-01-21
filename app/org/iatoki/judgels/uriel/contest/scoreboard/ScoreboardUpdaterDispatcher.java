@@ -3,7 +3,7 @@ package org.iatoki.judgels.uriel.contest.scoreboard;
 import akka.actor.Scheduler;
 import com.beust.jcommander.internal.Lists;
 import com.google.common.collect.Sets;
-import org.iatoki.judgels.sandalphon.services.ProgrammingSubmissionService;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantService;
 import org.iatoki.judgels.uriel.contest.ContestService;

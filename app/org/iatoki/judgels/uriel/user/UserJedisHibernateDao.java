@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.user;
 
 import com.google.common.collect.ImmutableList;
-import org.iatoki.judgels.play.models.daos.impls.AbstractJedisHibernateDao;
+import org.iatoki.judgels.play.model.AbstractJedisHibernateDao;
 import play.db.jpa.JPA;
 import redis.clients.jedis.JedisPool;
 

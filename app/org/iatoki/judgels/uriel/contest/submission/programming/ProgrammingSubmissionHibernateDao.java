@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.contest.submission.programming;
 
-import org.iatoki.judgels.sandalphon.models.daos.hibernate.AbstractProgrammingSubmissionHibernateDao;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.AbstractProgrammingSubmissionHibernateDao;
 
 import javax.inject.Singleton;
 

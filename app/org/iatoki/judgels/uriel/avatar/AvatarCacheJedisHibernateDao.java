@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.avatar;
 
-import org.iatoki.judgels.jophiel.models.daos.jedishibernate.AbstractAvatarCacheJedisHibernateDao;
+import org.iatoki.judgels.jophiel.avatar.AbstractAvatarCacheJedisHibernateDao;
 import redis.clients.jedis.JedisPool;
 
 import javax.inject.Inject;

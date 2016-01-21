@@ -6,7 +6,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.gabriel.Verdict;
 import org.iatoki.judgels.play.jid.AbstractBaseJidCacheServiceImpl;
-import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.style.icpc.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.contest.scoreboard.Scoreboard;

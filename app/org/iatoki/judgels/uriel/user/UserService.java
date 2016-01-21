@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.user;
 
 import com.google.inject.ImplementedBy;
 import org.iatoki.judgels.api.jophiel.JophielUser;
-import org.iatoki.judgels.jophiel.services.BaseUserService;
+import org.iatoki.judgels.jophiel.user.BaseUserService;
 import org.iatoki.judgels.play.Page;
 
 import java.util.List;

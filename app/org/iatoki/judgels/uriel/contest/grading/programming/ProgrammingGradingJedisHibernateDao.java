@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.contest.grading.programming;
 
-import org.iatoki.judgels.sandalphon.models.daos.jedishibernate.AbstractProgrammingGradingJedisHibernateDao;
+import org.iatoki.judgels.sandalphon.problem.programming.grading.AbstractProgrammingGradingJedisHibernateDao;
 import redis.clients.jedis.JedisPool;
 
 import javax.inject.Inject;

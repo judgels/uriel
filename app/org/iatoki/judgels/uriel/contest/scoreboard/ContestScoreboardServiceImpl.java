@@ -2,7 +2,7 @@ package org.iatoki.judgels.uriel.contest.scoreboard;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
+import org.iatoki.judgels.jophiel.JophielClientControllerUtils;
 import org.iatoki.judgels.uriel.contest.style.ContestStyle;
 import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.avatar.AvatarCacheServiceImpl;

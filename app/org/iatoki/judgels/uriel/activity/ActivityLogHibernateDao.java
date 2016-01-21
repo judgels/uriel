@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.activity;
 
-import org.iatoki.judgels.jophiel.models.daos.hibernate.AbstractActivityLogHibernateDao;
+import org.iatoki.judgels.jophiel.activity.AbstractActivityLogHibernateDao;
 
 import javax.inject.Singleton;
 

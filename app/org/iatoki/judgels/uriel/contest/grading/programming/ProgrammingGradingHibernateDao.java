@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.contest.grading.programming;
 
-import org.iatoki.judgels.sandalphon.models.daos.hibernate.AbstractProgrammingGradingHibernateDao;
+import org.iatoki.judgels.sandalphon.problem.programming.grading.AbstractProgrammingGradingHibernateDao;
 
 import javax.inject.Singleton;
 

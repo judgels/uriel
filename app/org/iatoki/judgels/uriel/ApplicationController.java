@@ -3,11 +3,11 @@ package org.iatoki.judgels.uriel;
 import org.iatoki.judgels.api.JudgelsAPIClientException;
 import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
 import org.iatoki.judgels.api.jophiel.JophielUser;
-import org.iatoki.judgels.jophiel.controllers.JophielClientControllerUtils;
+import org.iatoki.judgels.jophiel.JophielClientControllerUtils;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.JudgelsPlayUtils;
 import org.iatoki.judgels.play.controllers.AbstractJudgelsController;
-import org.iatoki.judgels.jophiel.forms.ViewpointForm;
+import org.iatoki.judgels.jophiel.viewpoint.ViewpointForm;
 import org.iatoki.judgels.uriel.user.User;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -45,7 +45,7 @@ public final class ApplicationController extends AbstractJudgelsController {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
             String newReturnUri = routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
-            return redirect(org.iatoki.judgels.jophiel.controllers.routes.JophielClientController.login(newReturnUri));
+            return redirect(org.iatoki.judgels.jophiel.routes.JophielClientController.login(newReturnUri));
         }
     }
 

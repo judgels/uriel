@@ -1,6 +1,6 @@
 package org.iatoki.judgels.uriel.avatar;
 
-import org.iatoki.judgels.jophiel.models.entities.AbstractAvatarCacheModel;
+import org.iatoki.judgels.jophiel.avatar.AbstractAvatarCacheModel;
 
 import javax.persistence.Entity;
 import javax.persistence.Table;

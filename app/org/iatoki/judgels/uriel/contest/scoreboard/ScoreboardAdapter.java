@@ -1,7 +1,7 @@
 package org.iatoki.judgels.uriel.contest.scoreboard;
 
 import org.iatoki.judgels.play.jid.AbstractBaseJidCacheServiceImpl;
-import org.iatoki.judgels.sandalphon.ProgrammingSubmission;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission;
 import org.iatoki.judgels.uriel.contest.Contest;
 import play.twirl.api.Html;
 

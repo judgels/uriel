@@ -1,8 +1,8 @@
 package org.iatoki.judgels.uriel.activity;
 
-import org.iatoki.judgels.jophiel.OneEntityActivityKey;
-import org.iatoki.judgels.jophiel.ThreeEntityActivityKey;
-import org.iatoki.judgels.jophiel.TwoEntityActivityKey;
+import org.iatoki.judgels.jophiel.activity.OneEntityActivityKey;
+import org.iatoki.judgels.jophiel.activity.ThreeEntityActivityKey;
+import org.iatoki.judgels.jophiel.activity.TwoEntityActivityKey;
 
 public final class UrielActivityKeys {
 
