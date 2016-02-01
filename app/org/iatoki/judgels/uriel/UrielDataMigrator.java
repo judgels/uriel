@@ -9,10 +9,13 @@ import com.google.gson.reflect.TypeToken;
 import org.hibernate.Session;
 import org.hibernate.internal.SessionImpl;
 import org.iatoki.judgels.play.jid.JidService;
-import org.iatoki.judgels.play.migration.AbstractBaseDataMigrationServiceImpl;
+import org.iatoki.judgels.play.migration.AbstractJudgelsDataMigrator;
+import org.iatoki.judgels.play.migration.DataMigrationEntityManager;
+import org.iatoki.judgels.play.migration.DataVersionDao;
 import org.testng.collections.Maps;
-import play.db.jpa.JPA;
 
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,43 +24,51 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrationServiceImpl {
+public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
+
+    private EntityManager entityManager;
+
+    @Inject
+    public UrielDataMigrator(DataVersionDao dataVersionDao) {
+        super(dataVersionDao);
+        this.entityManager = DataMigrationEntityManager.createEntityManager();
+    }
 
     @Override
-    public long getCodeDataVersion() {
+    public long getLatestDataVersion() {
         return 8;
     }
 
     @Override
-    protected void onUpgrade(long databaseVersion, long codeDatabaseVersion) throws SQLException {
-        if (databaseVersion < 1) {
+    protected void migrate(long currentDataVersion) throws SQLException {
+        if (currentDataVersion < 1) {
             migrateV0toV1();
         }
-        if (databaseVersion < 2) {
+        if (currentDataVersion < 2) {
             migrateV1toV2();
         }
-        if (databaseVersion < 3) {
+        if (currentDataVersion < 3) {
             migrateV2toV3();
         }
-        if (databaseVersion < 4) {
+        if (currentDataVersion < 4) {
             migrateV3toV4();
         }
-        if (databaseVersion < 5) {
+        if (currentDataVersion < 5) {
             migrateV4toV5();
         }
-        if (databaseVersion < 6) {
+        if (currentDataVersion < 6) {
             migrateV5toV6();
         }
-        if (databaseVersion < 7) {
+        if (currentDataVersion < 7) {
             migrateV6toV7();
         }
-        if (databaseVersion < 8) {
+        if (currentDataVersion < 8) {
             migrateV7toV8();
         }
     }
 
     private void migrateV7toV8() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String contestScoreboardTable = "uriel_contest_scoreboard";
@@ -75,7 +86,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV6toV7() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String contestModuleTable = "uriel_contest_module";
@@ -118,7 +129,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV5toV6() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String contestModuleTable = "uriel_contest_module";
@@ -162,7 +173,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV4toV5() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String jidCacheTable = "uriel_jid_cache";
@@ -188,7 +199,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV3toV4() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String programmingSubmissionTable = "uriel_contest_programming_submission";
@@ -204,7 +215,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV2toV3() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String contestTable = "uriel_contest";
@@ -353,7 +364,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV1toV2() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String announcementTable = "uriel_contest_announcement";
@@ -417,7 +428,7 @@ public final class UrielDataMigrationServiceImpl extends AbstractBaseDataMigrati
     }
 
     private void migrateV0toV1() throws SQLException {
-        SessionImpl session = (SessionImpl) JPA.em().unwrap(Session.class);
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
         Connection connection = session.getJdbcConnectionAccess().obtainConnection();
 
         String supervisorTable = "uriel_contest_supervisor";

@@ -21,7 +21,7 @@ import org.iatoki.judgels.play.JudgelsPlayProperties;
 import org.iatoki.judgels.play.config.AbstractJudgelsPlayModule;
 import org.iatoki.judgels.play.general.GeneralName;
 import org.iatoki.judgels.play.general.GeneralVersion;
-import org.iatoki.judgels.play.migration.BaseDataMigrationService;
+import org.iatoki.judgels.play.migration.JudgelsDataMigrator;
 import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.contest.file.ContestFileSystemProvider;
 import org.iatoki.judgels.uriel.contest.submission.programming.GabrielClientJid;
@@ -45,10 +45,9 @@ public class UrielModule extends AbstractJudgelsPlayModule {
         JudgelsPlayProperties.buildInstance(buildInfo.name(), buildInfo.version(), config);
         UrielProperties.buildInstance(config);
         bind(UrielSingletonsBuilder.class).asEagerSingleton();
-        bind(UrielThreadsScheduler.class).asEagerSingleton();
         // </DEPRECATED>
 
-        bind(BaseDataMigrationService.class).to(UrielDataMigrationServiceImpl.class);
+        bind(JudgelsDataMigrator.class).to(UrielDataMigrator.class);
 
         bind(ProgrammingSubmissionService.class).to(ProgrammingSubmissionServiceImpl.class);
 
