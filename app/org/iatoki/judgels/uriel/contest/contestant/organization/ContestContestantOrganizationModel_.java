@@ -10,6 +10,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(ContestContestantOrganizationModel.class)
 public abstract class ContestContestantOrganizationModel_ extends AbstractModel_{
 
+    public static volatile SingularAttribute<ContestContestantOrganizationModel, Long> id;
     public static volatile SingularAttribute<ContestContestantOrganizationModel, String> contestJid;
     public static volatile SingularAttribute<ContestContestantOrganizationModel, String> userJid;
     public static volatile SingularAttribute<ContestContestantOrganizationModel, String> organization;
