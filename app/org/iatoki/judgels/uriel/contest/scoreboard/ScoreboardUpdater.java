@@ -59,11 +59,11 @@ public final class ScoreboardUpdater implements Runnable {
                 ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
                 long freezeTime = contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime();
                 if (System.currentTimeMillis() >= freezeTime) {
-                    List<ProgrammingSubmission> frozenSubmissions = programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), freezeTime);
+                    List<ProgrammingSubmission> frozenSubmissions = JPA.withTransaction("default", true, () -> programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), freezeTime));
                     updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.FROZEN, frozenSubmissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         } finally {
             for (OnScoreboardUpdateFinishListener onScoreboardUpdateFinishListener : onScoreboardUpdateFinishListeners) {
