@@ -17,5 +17,6 @@ public enum ContestModules {
     PASSWORD,
     FILE,
     LIMITED,
-    ORGANIZATION
+    ORGANIZATION,
+    JAVA_SPECIFICATION
 }

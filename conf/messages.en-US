@@ -240,7 +240,9 @@ contest.module.FILE.description=Allow public files to be uploaded by supervisors
 contest.module.LIMITED=Limited
 contest.module.LIMITED.description=Prevents the contest from being shown and being registered by public users. Contestants must be expicitly added by supervisors. Conflicts with Registration module.
 contest.module.ORGANIZATION=Organization
-contest.module.ORGANIZATION.description=When enabled, user need to input their organization/insitution when registering to a contest
+contest.module.ORGANIZATION.description=When enabled, user need to input their organization/insitution when registering to a contest.
+contest.module.JAVA_SPECIFICATION=Java Specification
+contest.module.JAVA_SPECIFICATION.description=Add java specification to below contest navigation menu.
 
 contest.beginTime=Contest begin time
 contest.contestDuration=Contest duration

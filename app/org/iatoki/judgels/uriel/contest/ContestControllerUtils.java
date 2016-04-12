@@ -29,6 +29,8 @@ import org.iatoki.judgels.uriel.contest.manager.ContestManagerService;
 import org.iatoki.judgels.uriel.contest.supervisor.ContestSupervisorService;
 import org.iatoki.judgels.uriel.contest.team.ContestTeamService;
 import org.iatoki.judgels.uriel.contest.html.contestTimeLayout;
+import org.iatoki.judgels.uriel.contest.html.javaSpecificationLayout;
+
 import play.i18n.Messages;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -394,6 +396,9 @@ public final class ContestControllerUtils {
         }
         if (contest.isLocked()) {
             content.appendLayout(c -> alertLayout.render(Messages.get("contest.isLocked"), c));
+        }
+        if (contest.containsModule(ContestModules.JAVA_SPECIFICATION)) {
+            content.appendLayout(c -> javaSpecificationLayout.render(c));
         }
         content.appendLayout(c -> tabLayout.render(internalLinkBuilder.build(), c));
 

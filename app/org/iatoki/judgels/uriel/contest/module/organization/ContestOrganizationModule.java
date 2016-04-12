@@ -12,5 +12,4 @@ public class ContestOrganizationModule extends ContestModule {
     public ContestModules getType() {
         return ContestModules.ORGANIZATION;
     }
-
 }
