@@ -401,7 +401,7 @@ public final class ContestController extends AbstractJudgelsController {
     public Result enterContestWithPassword(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
 
-        if (!ContestControllerUtils.getInstance().isAllowedToViewEnterContestButton(contest, IdentityUtils.getUserJid())) {
+        if (!ContestControllerUtils.getInstance().isAllowedToViewContest(contest, IdentityUtils.getUserJid())) {
             return redirect(org.iatoki.judgels.uriel.contest.routes.ContestController.index());
         }
 

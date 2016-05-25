@@ -206,7 +206,12 @@ public final class ContestControllerUtils {
             return true;
         }
         if (contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) {
-            return hasContestStarted(contest, userJid) && isContestant(contest, userJid);
+            if (!hasContestStarted(contest, userJid) || !isContestant(contest, userJid)) {
+                return false;
+            }
+        }
+        if (requiresPasswordToEnterContest(contest, userJid)) {
+            return false;
         }
 
         return hasContestStarted(contest, userJid);
@@ -221,12 +226,14 @@ public final class ContestControllerUtils {
         }
 
         if (contest.containsModule(ContestModules.REGISTRATION) || contest.containsModule(ContestModules.LIMITED)) {
-            return isContestant(contest, userJid);
+            if (!isContestant(contest, userJid)) {
+                return false;
+            }
         }
 
         if (contest.containsModule(ContestModules.PASSWORD)) {
             String password = contestContestantPasswordService.getContestantPassword(contest.getJid(), userJid);
-            return ((password == null) && hasEstablishedContestWithPasswordCookie(password));
+            return password == null || hasEstablishedContestWithPasswordCookie(password);
         }
 
         return true;
@@ -241,7 +248,12 @@ public final class ContestControllerUtils {
             return false;
         }
 
-        return contest.containsModule(ContestModules.PASSWORD);
+        if (!contest.containsModule(ContestModules.PASSWORD)) {
+            return false;
+        }
+
+        String password = contestContestantPasswordService.getContestantPassword(contest.getJid(), userJid);
+        return password != null && !hasEstablishedContestWithPasswordCookie(password);
     }
 
     public boolean isAllowedToStartContestAsContestant(Contest contest, String userJid) {
