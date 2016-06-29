@@ -163,7 +163,8 @@ POST        /api/contests/:contestId/clarifications/unanswered                  
 
 POST        /api/contests/:contestId/announcements/unread                                           org.iatoki.judgels.uriel.controllers.api.internal.InternalContestAnnouncementAPIController.getUnreadAnnouncementsCount(contestId: Long)
 
-GET         /api/contests/teams/avatar/:imageName                                                   org.iatoki.judgels.uriel.controllers.api.internal.InternalContestTeamAPIController.renderTeamAvatarImage(imageName)
+# Don't change this url, not backward compatible
+GET         /team/avatar/:imageName                                                                 org.iatoki.judgels.uriel.controllers.api.internal.InternalContestTeamAPIController.renderTeamAvatarImage(imageName)
 
 # Testing API
 
