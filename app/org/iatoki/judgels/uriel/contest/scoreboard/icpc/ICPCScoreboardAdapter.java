@@ -72,6 +72,10 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
             Verdict verdict = submission.getLatestVerdict();
 
+            if (verdict.getCode().equals("?")) {
+                continue;
+            }
+
             int attempts = attemptsMap.get(contestantJid).get(problemJid);
             attemptsMap.get(contestantJid).put(problemJid, attempts + 1);
 
