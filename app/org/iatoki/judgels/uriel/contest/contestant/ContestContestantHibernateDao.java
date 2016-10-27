@@ -88,7 +88,9 @@ public final class ContestContestantHibernateDao extends AbstractHibernateDao<Lo
 
         query
             .select(root.get(ContestContestantModel_.contestJid))
-            .where(cb.equal(root.get(ContestContestantModel_.userJid), contestantJid));
+            .where(cb.and(
+                    cb.equal(root.get(ContestContestantModel_.userJid), contestantJid),
+                    cb.equal(root.get(ContestContestantModel_.status), "APPROVED")));
 
         return JPA.em().createQuery(query).getResultList();
     }
