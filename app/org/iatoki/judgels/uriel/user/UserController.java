@@ -56,6 +56,7 @@ public final class UserController extends AbstractJudgelsController {
         this.contestProblemService = contestProblemService;
     }
 
+    @Transactional
     public Result index() {
 
         String contestJid = "";
