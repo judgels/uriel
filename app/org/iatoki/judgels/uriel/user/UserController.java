@@ -15,6 +15,8 @@ import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.uriel.UrielUtils;
 import org.iatoki.judgels.uriel.UrielControllerUtils;
+import org.iatoki.judgels.uriel.contest.problem.ContestProblemService;
+import org.iatoki.judgels.uriel.contest.problem.ContestProblemStatus;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
@@ -45,14 +47,28 @@ public final class UserController extends AbstractJudgelsController {
     private final JophielPublicAPI jophielPublicAPI;
     private final UserService userService;
 
+    private final ContestProblemService contestProblemService;
+
     @Inject
-    public UserController(JophielPublicAPI jophielPublicAPI, UserService userService) {
+    public UserController(JophielPublicAPI jophielPublicAPI, UserService userService, ContestProblemService contestProblemService) {
         this.jophielPublicAPI = jophielPublicAPI;
         this.userService = userService;
+        this.contestProblemService = contestProblemService;
     }
 
     @Transactional(readOnly = true)
     public Result index() {
+
+        String contestJid = "";
+        String[] jids = {};
+        String[] secrets = {};
+
+        for (int i = 0; i < jids.length; i++) {
+            String alias = "" + (char)('A' + i);
+
+            contestProblemService.createContestProblem(contestJid, jids[i], secrets[i], alias, 0, ContestProblemStatus.OPEN, IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        }
+
         return listUsers(0, "id", "asc", "");
     }
 
