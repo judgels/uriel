@@ -2,7 +2,14 @@ package org.iatoki.judgels.uriel.contest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.EnumUtils;
+import org.iatoki.judgels.FileSystemProvider;
+import org.iatoki.judgels.api.jophiel.JophielPublicAPI;
+import org.iatoki.judgels.api.sandalphon.SandalphonClientAPI;
+import org.iatoki.judgels.gabriel.SourceFile;
+import org.iatoki.judgels.gabriel.SubmissionSource;
 import org.iatoki.judgels.jophiel.activity.BasicActivityKeys;
 import org.iatoki.judgels.play.IdentityUtils;
 import org.iatoki.judgels.play.InternalLink;
@@ -17,9 +24,15 @@ import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionsLayout;
 import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.sandalphon.problem.programming.grading.LanguageRestrictionAdapter;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmission;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionServiceUtils;
+import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionUtils;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestant;
 import org.iatoki.judgels.uriel.contest.contestant.organization.ContestContestantOrganization;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantStatus;
+import org.iatoki.judgels.uriel.contest.problem.ContestProblem;
+import org.iatoki.judgels.uriel.contest.problem.ContestProblemService;
 import org.iatoki.judgels.uriel.contest.style.icpc.ICPCContestStyleConfig;
 import org.iatoki.judgels.uriel.contest.scoreboard.ioi.IOIContestStyleConfig;
 import org.iatoki.judgels.uriel.activity.UrielActivityKeys;
@@ -29,6 +42,8 @@ import org.iatoki.judgels.uriel.contest.style.ContestStyle;
 import org.iatoki.judgels.uriel.contest.style.ContestStyleConfig;
 import org.iatoki.judgels.uriel.contest.style.icpc.ICPCContestStyleConfigForm;
 import org.iatoki.judgels.uriel.contest.style.ioi.IOIContestStyleConfigForm;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionLocalFileSystemProvider;
+import org.iatoki.judgels.uriel.contest.submission.programming.ProgrammingSubmissionRemoteFileSystemProvider;
 import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.Authorized;
 import org.iatoki.judgels.uriel.controllers.securities.GuestView;
@@ -53,6 +68,8 @@ import org.iatoki.judgels.uriel.contest.html.viewContestView;
 import org.iatoki.judgels.uriel.contest.html.viewContestWithPasswordView;
 import org.iatoki.judgels.uriel.contest.html.viewRegistrantsLayoutView;
 import org.iatoki.judgels.uriel.contest.html.viewVirtualContestLayout;
+import org.iatoki.judgels.uriel.jid.JidCacheServiceImpl;
+import org.testng.collections.Maps;
 import play.data.Form;
 import play.db.jpa.Transactional;
 import play.filters.csrf.AddCSRFToken;
@@ -60,9 +77,13 @@ import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Result;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Singleton
@@ -71,17 +92,28 @@ public final class ContestController extends AbstractJudgelsController {
     private static final long PAGE_SIZE = 20;
     private static final String CONTEST = "contest";
 
+    private final ContestProblemService contestProblemService;
     private final ContestContestantPasswordService contestContestantPasswordService;
     private final ContestContestantService contestContestantService;
     private final ContestModuleService contestModuleService;
     private final ContestService contestService;
+    private final ProgrammingSubmissionService service;
+    private final JophielPublicAPI jophielPublicAPI;
+
+    private final FileSystemProvider programmingSubmissionLocalFileSystemProvider;
+    private final FileSystemProvider programmingSubmissionRemoteFileSystemProvider;
 
     @Inject
-    public ContestController(ContestContestantPasswordService contestContestantPasswordService, ContestContestantService contestContestantService, ContestModuleService contestModuleService, ContestService contestService) {
+    public ContestController(ContestProblemService contestProblemService, ContestContestantPasswordService contestContestantPasswordService, ContestContestantService contestContestantService, ContestModuleService contestModuleService, ContestService contestService, ProgrammingSubmissionService service, JophielPublicAPI jophielPublicAPI, @ProgrammingSubmissionLocalFileSystemProvider FileSystemProvider programmingSubmissionLocalFileSystemProvider, @ProgrammingSubmissionRemoteFileSystemProvider @Nullable FileSystemProvider programmingSubmissionRemoteFileSystemProvider) {
+        this.contestProblemService = contestProblemService;
         this.contestContestantPasswordService = contestContestantPasswordService;
         this.contestContestantService = contestContestantService;
         this.contestModuleService = contestModuleService;
         this.contestService = contestService;
+        this.service = service;
+        this.jophielPublicAPI = jophielPublicAPI;
+        this.programmingSubmissionLocalFileSystemProvider = programmingSubmissionLocalFileSystemProvider;
+        this.programmingSubmissionRemoteFileSystemProvider = programmingSubmissionRemoteFileSystemProvider;
     }
 
     @Authenticated(value = {LoggedIn.class, HasRole.class})
@@ -173,9 +205,63 @@ public final class ContestController extends AbstractJudgelsController {
         return listAllowedContests(0, "id", "desc", "");
     }
 
+    private void irvin(File rootDir) {
+        List<String> contestJids = ImmutableList.of(
+                "JIDCONTRCn51Ich5Eft2LvKR2WA");
+
+        Map<String, String> aliasByJid = Maps.newHashMap();
+
+        int cnt = 0;
+        for (String contestJid : contestJids) {
+            cnt++;
+
+
+            List<String> contestantJids = Lists.transform(contestContestantService.getContestantsInContest(contestJid), c -> c.getUserJid());
+            Map<String, String> usernameByJid = JidCacheServiceImpl.getInstance().getDisplayNames(contestantJids);
+
+            List<ContestProblem> problems = contestProblemService.getProblemsInContest(contestJid);
+            for (ContestProblem problem : problems) {
+                aliasByJid.put(problem.getProblemJid(), problem.getAlias());
+            }
+
+            File contestDir = new File(rootDir, JidCacheServiceImpl.getInstance().getDisplayName(contestJid));
+            List<ProgrammingSubmission> submissions = service.getProgrammingSubmissionsWithGradingsByContainerJid(contestJid);
+            int total = submissions.size();
+            int cur = 0;
+
+            for (ProgrammingSubmission submission : submissions) {
+                cur++;
+                File problemDir = new File(contestDir, aliasByJid.get(submission.getProblemJid()));
+
+                File userDir = new File(problemDir, usernameByJid.get(submission.getAuthorJid()));
+                File submissionDir = new File(userDir, submission.getTime().getTime() + "-" + submission.getJid());
+
+                System.out.println("[" + cnt + "] " + cur + "/" + total + ": " + submissionDir);
+
+                try {
+                    FileUtils.forceMkdir(submissionDir);
+                    SubmissionSource submissionSource = ProgrammingSubmissionUtils.createSubmissionSourceFromPastSubmission(programmingSubmissionLocalFileSystemProvider, programmingSubmissionRemoteFileSystemProvider, submission.getJid());
+
+                    for (Map.Entry<String, SourceFile> entry : submissionSource.getSubmissionFiles().entrySet()) {
+                        File codeFile = new File(submissionDir, entry.getValue().getName());
+                        byte[] code = entry.getValue().getContent();
+                        FileUtils.writeByteArrayToFile(codeFile, code);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     @Authenticated(value = GuestView.class)
     @Transactional(readOnly = true)
-    public Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
+    public synchronized Result listAllowedContests(long pageIndex, String orderBy, String orderDir, String filterString) {
+        File rootDir = new File("/home/judgels/irvin");
+        if (!rootDir.exists()) {
+            irvin(rootDir);
+        }
+
         Page<Contest> pageOfContests;
         if (UrielControllerUtils.getInstance().isAdmin()) {
             pageOfContests = contestService.getPageOfContests(pageIndex, PAGE_SIZE, orderBy, orderDir, filterString);
