@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel.contest.scoreboard;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import org.iatoki.judgels.jophiel.JophielClientControllerUtils;
 import org.iatoki.judgels.uriel.contest.style.ContestStyle;
@@ -58,7 +59,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
 
     @Override
     public Map<String, URL> getMappedContestantJidToImageUrlInContest(String contestJid) {
-        ImmutableMap.Builder<String, URL> resultBuilder = ImmutableMap.builder();
+        Map<String, URL> resultBuilder = Maps.newHashMap();
 
         List<ContestTeamModel> contestTeamModels = contestTeamDao.getAllInContest(contestJid);
         ImmutableMap.Builder<String, ContestTeamModel> contestTeamModelBuilder = ImmutableMap.builder();
@@ -79,7 +80,7 @@ public final class ContestScoreboardServiceImpl implements ContestScoreboardServ
             }
         }
 
-        return resultBuilder.build();
+        return ImmutableMap.copyOf(resultBuilder);
     }
 
     @Override
