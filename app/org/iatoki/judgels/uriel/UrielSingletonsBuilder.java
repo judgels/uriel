@@ -34,7 +34,7 @@ public final class UrielSingletonsBuilder {
         ActivityLogServiceImpl.buildInstance(activityLogDao);
         UserActivityMessageServiceImpl.buildInstance();
 
-        JophielClientControllerUtils.buildInstance(UrielProperties.getInstance().getJophielBaseUrl());
+        JophielClientControllerUtils.buildInstance(UrielProperties.getInstance().getRaphaelBaseUrl(), UrielProperties.getInstance().getJophielBaseUrl());
         UrielControllerUtils.buildInstance(jophielClientAPI, jophielPublicAPI);
         ContestControllerUtils.buildInstance(contestContestantService, contestSupervisorService, contestManagerService, contestTeamService, contestContestantPasswordService);
     }

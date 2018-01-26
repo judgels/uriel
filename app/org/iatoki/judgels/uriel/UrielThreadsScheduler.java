@@ -4,8 +4,6 @@ import akka.actor.ActorSystem;
 import akka.actor.Scheduler;
 import org.iatoki.judgels.api.jophiel.JophielClientAPI;
 import org.iatoki.judgels.api.sealtiel.SealtielClientAPI;
-import org.iatoki.judgels.jophiel.activity.UserActivityMessagePusher;
-import org.iatoki.judgels.jophiel.activity.UserActivityMessageServiceImpl;
 import org.iatoki.judgels.sandalphon.problem.programming.grading.GradingResponsePoller;
 import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingSubmissionService;
 import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardUpdaterDispatcher;
@@ -34,10 +32,8 @@ public final class UrielThreadsScheduler {
 
         GradingResponsePoller poller = new GradingResponsePoller(scheduler, context, programmingSubmissionService, sealtielClientAPI, TimeUnit.MILLISECONDS.convert(2, TimeUnit.SECONDS));
         ScoreboardUpdaterDispatcher updater = new ScoreboardUpdaterDispatcher(jpaApi, scheduler, context, contestService, contestScoreboardService, contestContestantService, programmingSubmissionService);
-        UserActivityMessagePusher userActivityMessagePusher = new UserActivityMessagePusher(jpaApi, jophielClientAPI, UserActivityMessageServiceImpl.getInstance());
 
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielGradingPollerInterval(), TimeUnit.SECONDS), poller, context);
         scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielScoreboardUpdateInterval(), TimeUnit.SECONDS), updater, context);
-        scheduler.schedule(Duration.create(1, TimeUnit.SECONDS), Duration.create(UrielProperties.getInstance().getUrielLogPusherInterval(), TimeUnit.SECONDS), userActivityMessagePusher, context);
     }
 }

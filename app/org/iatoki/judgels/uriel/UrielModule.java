@@ -76,7 +76,7 @@ public final class UrielModule extends AbstractModule {
     }
 
     private JophielAuthAPI jophielAuthAPI() {
-        return new JophielAuthAPI(urielProperties().getJophielBaseUrl(), urielProperties().getJophielClientJid(), urielProperties().getJophielClientSecret());
+        return new JophielAuthAPI(urielProperties().getRaphaelBaseUrl(), urielProperties().getJophielBaseUrl(), urielProperties().getJophielClientJid(), urielProperties().getJophielClientSecret());
     }
 
     private JophielClientAPI jophielClientAPI() {

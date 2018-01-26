@@ -21,6 +21,8 @@ import play.mvc.Result;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 
 @Singleton
 public final class ApplicationController extends AbstractJudgelsController {
@@ -44,8 +46,12 @@ public final class ApplicationController extends AbstractJudgelsController {
         } else if (session().containsKey("username")) {
             return redirect(routes.ApplicationController.authRole(returnUri));
         } else {
-            String newReturnUri = routes.ApplicationController.afterLogin(returnUri).absoluteURL(request(), request().secure());
-            return redirect(org.iatoki.judgels.jophiel.routes.JophielClientController.login(newReturnUri));
+            try {
+                String newReturnUri = routes.ApplicationController.afterLogin(URLEncoder.encode(returnUri, "UTF-8")).absoluteURL(request(), request().secure());
+                return redirect(org.iatoki.judgels.jophiel.routes.JophielClientController.login(newReturnUri));
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
