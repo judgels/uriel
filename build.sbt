@@ -41,6 +41,15 @@ lazy val uriel = (project in file("."))
         buildInfoKeys := Seq[BuildInfoKey](name, version),
         buildInfoPackage := "org.iatoki.judgels.uriel"
     )
+    .settings(
+        dependencyOverrides ++= Set(
+        "com.google.guava" % "guava" % "20.0",
+        "com.fasterxml.jackson.core" % "jackson-core" % "2.9.1",
+        "com.fasterxml.jackson.core" % "jackson-databind" % "2.9.1",
+        "com.fasterxml.jackson.datatype" % "jackson-datatype-jdk8" % "2.9.1",
+        "com.fasterxml.jackson.module" % "jackson-module-afterburner" % "2.9.1"
+    )
+  )
 
 lazy val playcommons = RootProject(file("../play-commons"))
 lazy val sandalphoncommons = RootProject(file("../sandalphon-commons"))
