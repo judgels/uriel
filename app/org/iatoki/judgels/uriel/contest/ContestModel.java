@@ -6,6 +6,9 @@ import org.iatoki.judgels.play.model.AbstractJudgelsModel;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.util.Date;
 
 @Entity
 @Table(name = "uriel_contest")
@@ -20,6 +23,20 @@ public final class ContestModel extends AbstractJudgelsModel {
     public String style;
 
     public boolean locked;
+
+    public String createdBy;
+
+    public String createdIp;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date createdAt;
+
+    public String updatedBy;
+
+    public String updatedIp;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date updatedAt;
 
     public ContestModel() {
     }
