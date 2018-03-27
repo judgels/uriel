@@ -24,9 +24,9 @@
     @tableHeadersView(pageOfContestAnnouncements.getPageIndex, orderBy, orderDir, filterString, listFunc)(
         "id" -> Messages.get("commons.id"),
         "title" -> Messages.get("announcement.title"),
-        "userCreate" -> Messages.get("announcement.authorJid"),
+        "createdBy" -> Messages.get("announcement.authorJid"),
         "status" -> Messages.get("announcement.status"),
-        "timeUpdate" -> Messages.get("announcement.lastUpdate")
+        "updatedAt" -> Messages.get("announcement.lastUpdate")
     )
     <tbody>
     @defining(JidCacheServiceImpl.getInstance().getDisplayNames(JavaConversions.seqAsJavaList(pageOfContestAnnouncements.getData.map(s => s.getAuthorJid).toSeq))) { displayNamesMap =>

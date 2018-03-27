@@ -42,7 +42,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
 
         query
                 .select(root.get(ContestClarificationModel_.jid))
-                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids), cb.notEqual(root.get(ContestClarificationModel_.status), ContestClarificationStatus.ASKED.name())));
+                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.createdBy).in(userJids), cb.notEqual(root.get(ContestClarificationModel_.status), ContestClarificationStatus.ASKED.name())));
 
         return JPA.em().createQuery(query).getResultList();
     }
@@ -59,7 +59,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
 
         query
                 .select(cb.count(root))
-                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid)), root.get(ContestClarificationModel_.userCreate).in(userJids));
+                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid)), root.get(ContestClarificationModel_.createdBy).in(userJids));
 
         return JPA.em().createQuery(query).getSingleResult();
     }
@@ -76,7 +76,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
 
         query
                 .orderBy(cb.desc(root.get(ContestClarificationModel_.id)))
-                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids)));
+                .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.createdBy).in(userJids)));
 
         return JPA.em().createQuery(query).getResultList();
     }
@@ -93,7 +93,7 @@ public final class ContestClarificationHibernateDao extends AbstractJudgelsHiber
 
         query
               .select(root.get(ContestClarificationModel_.jid))
-              .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.userCreate).in(userJids)));
+              .where(cb.and(cb.equal(root.get(ContestClarificationModel_.contestJid), contestJid), root.get(ContestClarificationModel_.createdBy).in(userJids)));
 
         return JPA.em().createQuery(query).getResultList();
     }

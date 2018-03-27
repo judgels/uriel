@@ -36,7 +36,7 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
 
     @Override
     public long getLatestDataVersion() {
-        return 8;
+        return 9;
     }
 
     @Override
@@ -64,6 +64,65 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
         }
         if (currentDataVersion < 8) {
             migrateV7toV8();
+        }
+        if (currentDataVersion < 9) {
+            migrateV8toV9();
+        }
+    }
+
+    private void migrateV8toV9() throws SQLException {
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String[] tables = {
+                "activity_log",
+                "avatar_cache",
+                "contest",
+                "contest_announcement",
+                "contest_clarification",
+                "contest_contestant",
+                "contest_contestant_organization",
+                "contest_contestant_password",
+                "contest_manager",
+                "contest_module",
+                "contest_problem",
+                "contest_programming_grading",
+                "contest_programming_submission",
+                "contest_scoreboard",
+                "contest_style",
+                "contest_supervisor",
+                "contest_team",
+                "contest_team_coach",
+                "contest_team_member",
+                "jid_cache",
+                "user",
+                "user_read",
+        };
+
+        Statement statement = connection.createStatement();
+
+        for (String table : tables) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE uriel_").append(table)
+                    .append(" ADD COLUMN createdAt DATETIME(3) NOT NULL DEFAULT NOW(3), ")
+                    .append(" ADD COLUMN updatedAt DATETIME(3) NOT NULL DEFAULT NOW(3), ")
+                    .append(" CHANGE COLUMN ipCreate createdIp VARCHAR(255), ")
+                    .append(" CHANGE COLUMN ipUpdate updatedIp VARCHAR(255), ")
+                    .append(" CHANGE COLUMN userCreate createdBy VARCHAR(255), ")
+                    .append(" CHANGE COLUMN userUpdate updatedBy VARCHAR(255);");
+            statement.execute(sb.toString());
+
+            sb = new StringBuilder();
+            sb.append("UPDATE uriel_").append(table).append(" SET ")
+                    .append("createdAt=FROM_UNIXTIME(timeCreate * 0.001), ")
+                    .append("updatedAt=FROM_UNIXTIME(timeUpdate * 0.001);");
+            statement.execute(sb.toString());
+
+            sb = new StringBuilder();
+            sb.append("ALTER TABLE uriel_").append(table)
+                    .append(" DROP COLUMN timeCreate, ")
+                    .append(" DROP COLUMN timeUpdate;");
+            statement.execute(sb.toString());
         }
     }
 

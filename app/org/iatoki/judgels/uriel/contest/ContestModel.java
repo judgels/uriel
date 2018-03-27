@@ -24,20 +24,6 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public boolean locked;
 
-    public String createdBy;
-
-    public String createdIp;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date createdAt;
-
-    public String updatedBy;
-
-    public String updatedIp;
-
-    @Temporal(TemporalType.TIMESTAMP)
-    public Date updatedAt;
-
     public ContestModel() {
     }
 

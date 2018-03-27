@@ -165,6 +165,6 @@ public final class ContestClarificationServiceImpl implements ContestClarificati
             String problemName = SandalphonResourceDisplayNameUtils.parseTitleByLanguage(JidCacheServiceImpl.getInstance().getDisplayName(contestProblemModel.problemJid), ContestControllerUtils.getInstance().getCurrentStatementLanguage());
             topic = contestProblemModel.alias + " - " + problemName;
         }
-        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.jid, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.userCreate, contestClarificationModel.userUpdate, ContestClarificationStatus.valueOf(contestClarificationModel.status), new Date(contestClarificationModel.timeCreate), new Date(contestClarificationModel.timeUpdate));
+        return new ContestClarification(contestClarificationModel.id, contestClarificationModel.jid, contestClarificationModel.contestJid, topic, contestClarificationModel.title, contestClarificationModel.question, contestClarificationModel.answer, contestClarificationModel.createdBy, contestClarificationModel.updatedBy, ContestClarificationStatus.valueOf(contestClarificationModel.status), contestClarificationModel.createdAt, contestClarificationModel.updatedAt);
     }
 }

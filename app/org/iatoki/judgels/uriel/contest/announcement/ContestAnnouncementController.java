@@ -55,7 +55,7 @@ public class ContestAnnouncementController extends AbstractJudgelsController {
 
     @Transactional
     public Result viewPublishedAnnouncements(long contestId) throws ContestNotFoundException {
-        return listPublishedAnnouncements(contestId, 0, "timeUpdate", "desc", "");
+        return listPublishedAnnouncements(contestId, 0, "updatedAt", "desc", "");
     }
 
     @Transactional
