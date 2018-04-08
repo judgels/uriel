@@ -8,7 +8,6 @@ import org.iatoki.judgels.uriel.contest.Contest;
 import org.iatoki.judgels.uriel.contest.ContestService;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantService;
 import org.iatoki.judgels.uriel.contest.module.ContestModules;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.module.frozenscoreboard.ContestFrozenScoreboardModule;
 import play.db.jpa.JPA;
 
@@ -55,9 +54,8 @@ public final class ScoreboardUpdater implements Runnable {
             updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.OFFICIAL, submissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");
 
             if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
-                ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
                 ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
-                long freezeTime = contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime();
+                long freezeTime = contest.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime();
                 if (System.currentTimeMillis() >= freezeTime) {
                     List<ProgrammingSubmission> frozenSubmissions = JPA.withTransaction("default", true, () -> programmingSubmissionService.getProgrammingSubmissionsWithGradingsByContainerJidBeforeTime(contest.getJid(), freezeTime));
                     updateScoreboard(contest, contestScoreboardService, ContestScoreboardType.FROZEN, frozenSubmissions, contestantStartTimes, contestService, adapter, time, "scoreboardUpdater", "localhost");

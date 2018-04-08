@@ -26,9 +26,9 @@ public interface ContestService {
 
     List<Contest> getRunningContestsWithScoreboardModule(Date timeNow);
 
-    Contest createContest(String name, String description, ContestStyle style, String userJid, String userIpAddress);
+    Contest createContest(String name, String description, ContestStyle style, Date beginTime, long duration, String userJid, String userIpAddress);
 
-    void updateContest(String contestJid, String name, String description, ContestStyle style, String userJid, String userIpAddress);
+    void updateContest(String contestJid, String name, String description, ContestStyle style, Date beginTime, long duration, String userJid, String userIpAddress);
 
     void updateContestStyleConfiguration(String contestJid, ContestStyleConfig styleConfig, String userJid, String userIpAddress);
 

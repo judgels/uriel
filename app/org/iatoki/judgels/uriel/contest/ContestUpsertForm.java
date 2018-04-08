@@ -11,4 +11,10 @@ public final class ContestUpsertForm {
 
     @Constraints.Required
     public String style;
+
+    @Constraints.Required
+    public String beginTime;
+
+    @Constraints.Required
+    public long duration;
 }

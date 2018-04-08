@@ -36,7 +36,7 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
 
     @Override
     public long getLatestDataVersion() {
-        return 9;
+        return 10;
     }
 
     @Override
@@ -68,6 +68,47 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
         if (currentDataVersion < 9) {
             migrateV8toV9();
         }
+        if (currentDataVersion < 10) {
+            migrateV9toV10();
+        }
+    }
+
+    private void migrateV9toV10() throws SQLException {
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        Statement statement = connection.createStatement();
+        statement.execute("ALTER TABLE uriel_contest ADD COLUMN beginTime datetime(3) NOT NULL DEFAULT NOW(3);");
+        statement.execute("ALTER TABLE uriel_contest ADD COLUMN duration bigint(20) NOT NULL DEFAULT 0;");
+
+        String query = "SELECT * FROM uriel_contest_module WHERE name = \"DURATION\";";
+        ResultSet resultSet = statement.executeQuery(query);
+        while (resultSet.next()) {
+            String contestJid = resultSet.getString("contestJid");
+            String config = resultSet.getString("config");
+            int enabled = resultSet.getInt("enabled");
+
+            Map<String, Long> configMap = new Gson().fromJson(config, new TypeToken<HashMap<String, Long>>() { }.getType());
+
+            long beginTime = configMap.get("beginTime");
+            long duration = configMap.get("contestDuration");
+
+            if (enabled == 0) {
+                duration = 0;
+            }
+
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE uriel_contest SET beginTime = FROM_UNIXTIME(? * 0.001) WHERE jid = ?;");
+            preparedStatement.setLong(1, beginTime);
+            preparedStatement.setString(2, contestJid);
+            preparedStatement.executeUpdate();
+
+            preparedStatement = connection.prepareStatement("UPDATE uriel_contest SET duration = ? WHERE jid = ?;");
+            preparedStatement.setLong(1, duration);
+            preparedStatement.setString(2, contestJid);
+            preparedStatement.executeUpdate();
+        }
+
+        statement.execute("DELETE FROM uriel_contest_module WHERE name = \"DURATION\";");
     }
 
     private void migrateV8toV9() throws SQLException {

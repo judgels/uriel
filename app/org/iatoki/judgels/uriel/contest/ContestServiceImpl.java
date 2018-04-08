@@ -31,7 +31,6 @@ import org.iatoki.judgels.uriel.contest.style.ContestStyleModel;
 import org.iatoki.judgels.uriel.contest.module.ContestModule;
 import org.iatoki.judgels.uriel.contest.module.ContestModuleFactory;
 import org.iatoki.judgels.uriel.contest.module.ContestModules;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -116,14 +115,8 @@ public final class ContestServiceImpl implements ContestService {
         ImmutableList.Builder<ContestModel> runningContestModelsBuilder = ImmutableList.builder();
 
         for (ContestModel contestModel : contestModels) {
-            if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
-                ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestModel.jid, ContestModules.DURATION.name());
-                ContestDurationModule contestDurationModule = (ContestDurationModule) ContestModuleFactory.parseFromConfig(ContestModules.DURATION, contestModuleModel.config);
-                Date currentDate = new Date();
-                if (currentDate.after(contestDurationModule.getBeginTime()) && currentDate.before(contestDurationModule.getEndTime())) {
-                    runningContestModelsBuilder.add(contestModel);
-                }
-            } else {
+            Date currentDate = new Date();
+            if (currentDate.after(contestModel.beginTime) && currentDate.before(new Date(contestModel.beginTime.getTime() + contestModel.duration))) {
                 runningContestModelsBuilder.add(contestModel);
             }
         }
@@ -171,14 +164,8 @@ public final class ContestServiceImpl implements ContestService {
 
         for (ContestModel contestModel : contestModels) {
             if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.SCOREBOARD.name())) {
-                if (contestModuleDao.existsEnabledInContestByName(contestModel.jid, ContestModules.DURATION.name())) {
-                    ContestModuleModel contestModuleModel = contestModuleDao.findInContestByName(contestModel.jid, ContestModules.DURATION.name());
-                    ContestDurationModule contestDurationModule = (ContestDurationModule) ContestModuleFactory.parseFromConfig(ContestModules.DURATION, contestModuleModel.config);
-                    Date currentDate = new Date();
-                    if (currentDate.after(contestDurationModule.getBeginTime()) && currentDate.before(contestDurationModule.getEndTime())) {
-                        runningContestModelsBuilder.add(contestModel);
-                    }
-                } else if (!contestModel.locked) {
+                Date currentDate = new Date();
+                if (currentDate.after(contestModel.beginTime) && currentDate.before(new Date(contestModel.beginTime.getTime() + contestModel.duration))) {
                     runningContestModelsBuilder.add(contestModel);
                 }
             }
@@ -188,11 +175,13 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public Contest createContest(String name, String description, ContestStyle style, String userJid, String userIpAddress) {
+    public Contest createContest(String name, String description, ContestStyle style, Date beginTime, long duration, String userJid, String userIpAddress) {
         ContestModel contestModel = new ContestModel();
         contestModel.name = name;
         contestModel.description = description;
         contestModel.style = style.name();
+        contestModel.beginTime = beginTime;
+        contestModel.duration = duration;
 
         contestDao.persist(contestModel, userJid, userIpAddress);
 
@@ -215,7 +204,7 @@ public final class ContestServiceImpl implements ContestService {
     }
 
     @Override
-    public void updateContest(String contestJid, String name, String description, ContestStyle style, String userJid, String userIpAddress) {
+    public void updateContest(String contestJid, String name, String description, ContestStyle style, Date beginTime, long duration, String userJid, String userIpAddress) {
         boolean isStyleChanged;
 
         ContestModel contestModel = contestDao.findByJid(contestJid);
@@ -224,6 +213,8 @@ public final class ContestServiceImpl implements ContestService {
         contestModel.description = description;
         isStyleChanged = !contestModel.style.equals(style.name());
         contestModel.style = style.name();
+        contestModel.beginTime = beginTime;
+        contestModel.duration = duration;
 
         contestDao.edit(contestModel, userJid, userIpAddress);
 
@@ -322,12 +313,6 @@ public final class ContestServiceImpl implements ContestService {
         contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
-        contestModuleModel = new ContestModuleModel();
-        contestModuleModel.contestJid = contestJid;
-        contestModuleModel.enabled = true;
-        contestModuleModel.name = ContestModules.DURATION.name();
-        contestModuleModel.config = ContestModuleFactory.createDefaultContestModule(ContestModules.DURATION).toJSONString();
-
         contestModuleDao.persist(contestModuleModel, userJid, userIpAddress);
         moduleModelBuilder.add(contestModuleModel);
 
@@ -368,6 +353,16 @@ public final class ContestServiceImpl implements ContestService {
             contestModules.put(contestModule, ContestModuleFactory.parseFromConfig(contestModule, contestModuleModel.config));
         }
 
-        return new Contest(contestModel.id, contestModel.jid, contestModel.name, contestModel.description, contestModel.locked, ContestStyle.valueOf(contestModel.style), contestStyleConfig, ImmutableMap.copyOf(contestModules));
+        return new Contest(
+                contestModel.id,
+                contestModel.jid,
+                contestModel.name,
+                contestModel.description,
+                contestModel.locked,
+                ContestStyle.valueOf(contestModel.style),
+                contestModel.beginTime,
+                contestModel.duration,
+                contestStyleConfig,
+                ImmutableMap.copyOf(contestModules));
     }
 }

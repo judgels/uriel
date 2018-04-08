@@ -24,6 +24,11 @@ public final class ContestModel extends AbstractJudgelsModel {
 
     public boolean locked;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date beginTime;
+
+    public long duration;
+
     public ContestModel() {
     }
 

@@ -1,6 +1,4 @@
 @import org.iatoki.judgels.uriel.contest.Contest
-@import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule
-@import org.iatoki.judgels.uriel.contest.module.ContestModules
 @import play.i18n.Messages
 @import org.iatoki.judgels.play.views.html.table.searchView
 @import org.iatoki.judgels.play.views.html.table.paginationView
@@ -19,12 +17,10 @@
         <div class="panel-body">
             <div class="pull-left">
             <p><a href="@routes.ContestController.viewContest(contest.getId)" class="panel-title">@contest.getName</a></p>
-            @if(contest.containsModule(ContestModules.DURATION)) {
-                <p>
-                    <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getBeginTime.getTime)</time>
-                        - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getModule(ContestModules.DURATION).asInstanceOf[ContestDurationModule].getEndTime.getTime)</time></small>
-                </p>
-            }
+            <p>
+                <small><time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getBeginTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getBeginTime.getTime)</time>
+                    - <time class="display-time" datetime="@JudgelsPlayUtils.formatISOUTCDateTime(contest.getEndTime.getTime)">@JudgelsPlayUtils.formatDetailedDateTime(contest.getEndTime.getTime)</time></small>
+            </p>
             </div>
             <div class="pull-right">
                 <a href="@routes.ContestController.viewContest(contest.getId)" class="btn btn-primary">@Messages.get("commons.view")</a>

@@ -7,7 +7,6 @@ import org.iatoki.judgels.uriel.contest.module.file.ContestFileModule;
 import org.iatoki.judgels.uriel.contest.module.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.contest.module.javaspecification.ContestJavaSpecificationModule;
 import org.iatoki.judgels.uriel.contest.module.limited.ContestLimitedModule;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.module.exclusive.ContestExclusiveModule;
 import org.iatoki.judgels.uriel.contest.module.supervisor.ContestSupervisorModule;
 import org.iatoki.judgels.uriel.contest.module.trigger.ContestTriggerModule;
@@ -37,8 +36,6 @@ public final class ContestModuleFactory {
                 return new ContestClarificationTimeLimitModule(0);
             case LIMITED:
                 return new ContestLimitedModule();
-            case DURATION:
-                return new ContestDurationModule(new Date(System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS)), TimeUnit.MILLISECONDS.convert(5, TimeUnit.HOURS));
             case EXCLUSIVE:
                 return new ContestExclusiveModule();
             case REGISTRATION:
@@ -78,8 +75,6 @@ public final class ContestModuleFactory {
                 return new Gson().fromJson(config, ContestClarificationTimeLimitModule.class);
             case LIMITED:
                 return new Gson().fromJson(config, ContestLimitedModule.class);
-            case DURATION:
-                return new Gson().fromJson(config, ContestDurationModule.class);
             case EXCLUSIVE:
                 return new Gson().fromJson(config, ContestExclusiveModule.class);
             case REGISTRATION:

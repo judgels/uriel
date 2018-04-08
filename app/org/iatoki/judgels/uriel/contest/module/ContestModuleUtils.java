@@ -12,8 +12,6 @@ public final class ContestModuleUtils {
 
     public static List<ContestModules> getDependedModules(ContestModules contestModules) {
         switch (contestModules) {
-            case DURATION:
-                return ImmutableList.of(ContestModules.FROZEN_SCOREBOARD, ContestModules.CLARIFICATION_TIME_LIMIT);
             case VIRTUAL:
                 return ImmutableList.of(ContestModules.TRIGGER);
             case TEAM:
@@ -26,9 +24,9 @@ public final class ContestModuleUtils {
     public static List<ContestModules> getModuleDependencies(ContestModules contestModules) {
         switch (contestModules) {
             case CLARIFICATION_TIME_LIMIT:
-                return ImmutableList.of(ContestModules.CLARIFICATION, ContestModules.DURATION);
+                return ImmutableList.of(ContestModules.CLARIFICATION);
             case FROZEN_SCOREBOARD:
-                return ImmutableList.of(ContestModules.SCOREBOARD, ContestModules.DURATION);
+                return ImmutableList.of(ContestModules.SCOREBOARD);
             case TRIGGER:
                 return ImmutableList.of(ContestModules.VIRTUAL, ContestModules.TEAM);
             case ORGANIZATION:

@@ -18,7 +18,6 @@ import org.iatoki.judgels.uriel.contest.module.ContestModule;
 import org.iatoki.judgels.uriel.contest.module.ContestModuleComparator;
 import org.iatoki.judgels.uriel.contest.module.ContestModules;
 import org.iatoki.judgels.uriel.contest.module.TabbedContestModule;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.module.registration.ContestRegistrationModule;
 import org.iatoki.judgels.uriel.contest.module.trigger.ContestTrigger;
 import org.iatoki.judgels.uriel.contest.module.trigger.ContestTriggerModule;
@@ -123,21 +122,11 @@ public final class ContestControllerUtils {
     }
 
     public boolean hasContestBegun(Contest contest) {
-        if (contest.containsModule(ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-            return new Date().after(contestDurationModule.getBeginTime());
-        }
-
-        return true;
+        return new Date().after(contest.getBeginTime());
     }
 
     public boolean hasContestEnded(Contest contest) {
-        if (contest.containsModule(ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-            return !new Date().before(contestDurationModule.getEndTime());
-        }
-
-        return false;
+        return !new Date().before(contest.getEndTime());
     }
 
     public boolean hasRegisteredToContest(Contest contest, String userJid) {
@@ -364,21 +353,12 @@ public final class ContestControllerUtils {
             ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contest.getModule(ContestModules.VIRTUAL);
 
             long endTime = contestContestant.getContestStartTime() + contestVirtualModule.getVirtualDuration();
-            if (contest.containsModule(ContestModules.DURATION)) {
-                ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-                contestBeginTime = contestDurationModule.getBeginTime();
-                endTime = Math.min(endTime, contestDurationModule.getBeginTime().getTime() + contestDurationModule.getContestDuration());
-            } else {
-                contestBeginTime = new Date(contestContestant.getContestStartTime());
-            }
+            contestBeginTime = contest.getBeginTime();
+            endTime = Math.min(endTime, contest.getBeginTime().getTime() + contest.getDuration());
             contestEndTime = new Date(endTime);
-        } else if (contest.containsModule(ContestModules.DURATION)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-            contestBeginTime = contestDurationModule.getBeginTime();
-            contestEndTime = new Date(contestDurationModule.getBeginTime().getTime() + contestDurationModule.getContestDuration());
         } else {
-            contestBeginTime = null;
-            contestEndTime = null;
+            contestBeginTime = contest.getBeginTime();
+            contestEndTime = contest.getEndTime();
         }
 
         ImmutableList.Builder<InternalLink> internalLinkBuilder = ImmutableList.builder();

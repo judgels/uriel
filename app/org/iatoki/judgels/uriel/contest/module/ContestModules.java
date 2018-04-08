@@ -1,8 +1,6 @@
 package org.iatoki.judgels.uriel.contest.module;
 
 public enum ContestModules {
-
-    DURATION,
     CLARIFICATION,
     CLARIFICATION_TIME_LIMIT,
     SCOREBOARD,

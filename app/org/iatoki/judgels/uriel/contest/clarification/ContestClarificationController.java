@@ -25,7 +25,6 @@ import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.contest.module.ContestModules;
 import org.iatoki.judgels.uriel.contest.module.clarificationtimelimit.ContestClarificationTimeLimitModule;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.problem.ContestProblemService;
 import org.iatoki.judgels.uriel.contest.ContestService;
 import org.iatoki.judgels.uriel.contest.team.ContestTeamService;
@@ -108,9 +107,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
         if (coach) {
             content.appendLayout(c -> heading3Layout.render(Messages.get("clarification.list"), c));
         } else if (contest.containsModule(ContestModules.CLARIFICATION_TIME_LIMIT)) {
-            ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
             ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
-            if (new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
+            if (new Date().before(new Date(contest.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
                 content.appendLayout(c -> heading3WithActionLayout.render(Messages.get("clarification.list"), new InternalLink(Messages.get("commons.create"), routes.ContestClarificationController.createClarification(contest.getId())), c));
             } else {
                 content.appendLayout(c -> alertLayout.render(Messages.get("clarification.time_ended"), c));
@@ -152,9 +150,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return showCreateClarification(contestClarificationCreateForm, contest);
         }
 
-        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
         ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
-        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
+        if (!new Date().before(new Date(contest.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 
@@ -177,9 +174,8 @@ public class ContestClarificationController extends AbstractJudgelsController {
             return processCreateClarification(contest);
         }
 
-        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
         ContestClarificationTimeLimitModule contestClarificationTimeLimitModule = (ContestClarificationTimeLimitModule) contest.getModule(ContestModules.CLARIFICATION_TIME_LIMIT);
-        if (!new Date().before(new Date(contestDurationModule.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
+        if (!new Date().before(new Date(contest.getBeginTime().getTime() + contestClarificationTimeLimitModule.getClarificationDuration()))) {
             return redirect(routes.ContestClarificationController.viewScreenedClarifications(contest.getId()));
         }
 

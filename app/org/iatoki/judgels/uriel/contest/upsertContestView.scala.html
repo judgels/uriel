@@ -10,3 +10,19 @@
 @b3.text(contestUpsertForm("name"), '_label -> Messages.get("contest.name"))
 @b3.textarea(contestUpsertForm("description"), '_label -> Messages.get("contest.description"), 'class -> "ckeditor form-control")
 @b3.select(contestUpsertForm("style"), Seq("IOI" -> "IOI", "ICPC" -> "ICPC"), '_label -> Messages.get("contest.style"), 'class -> "selectpicker form-control")
+
+@b3.inputWrapped("text", contestUpsertForm("beginTime"), '_label -> Messages.get("contest.beginTime"), 'class -> "form-control") { input =>
+    <div class="input-group date datetimepicker">
+        @input
+        <span class="input-group-addon"><span class="glyphicon-calendar glyphicon"></span></span>
+    </div>
+}
+
+@b3.inputWrapped("contestDuration", contestUpsertForm("duration"), '_label -> Messages.get("contest.duration")) { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}
+
+<script type="text/javascript" src="@controllers.routes.Assets.versioned("lib/playcommons/javascripts/datetimepicker.js")"></script>

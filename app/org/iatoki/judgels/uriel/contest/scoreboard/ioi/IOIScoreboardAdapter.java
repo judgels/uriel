@@ -12,8 +12,6 @@ import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardContent;
 import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardEntryComparator;
 import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardState;
 import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardAdapter;
-import org.iatoki.judgels.uriel.contest.module.ContestModules;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.scoreboard.ioi.html.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
@@ -201,11 +199,6 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
         if (contestStartTime != null) {
             return submissionTime.getTime() - contestStartTime.getTime();
         }
-        if (!contest.containsModule(ContestModules.DURATION)) {
-            return 0;
-        }
-
-        ContestDurationModule contestDurationModule = (ContestDurationModule) contest.getModule(ContestModules.DURATION);
-        return submissionTime.getTime() - contestDurationModule.getBeginTime().getTime();
+        return submissionTime.getTime() - contest.getBeginTime().getTime();
     }
 }

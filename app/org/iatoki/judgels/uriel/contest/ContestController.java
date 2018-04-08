@@ -63,6 +63,7 @@ import play.mvc.Result;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Map;
 
 @Singleton
@@ -466,7 +467,14 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        Contest contest = contestService.createContest(contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        Contest contest = contestService.createContest(
+                contestUpsertData.name,
+                JudgelsPlayUtils.toSafeHtml(contestUpsertData.description),
+                ContestStyle.valueOf(contestUpsertData.style),
+                new Date(JudgelsPlayUtils.parseDateTime(contestUpsertData.beginTime)),
+                contestUpsertData.duration,
+                IdentityUtils.getUserJid(),
+                IdentityUtils.getIpAddress());
 
         UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.CREATE.construct(CONTEST, contest.getJid(), contest.getName()));
 
@@ -487,6 +495,8 @@ public final class ContestController extends AbstractJudgelsController {
         contestUpsertData.name = contest.getName();
         contestUpsertData.description = contest.getDescription();
         contestUpsertData.style = contest.getStyle().name();
+        contestUpsertData.beginTime = JudgelsPlayUtils.formatDateTime(contest.getBeginTime().getTime());
+        contestUpsertData.duration = contest.getDuration();
         Form<ContestUpsertForm> contestUpsertForm = Form.form(ContestUpsertForm.class).fill(contestUpsertData);
 
         return showEditContestGeneralConfig(contestUpsertForm, contest);
@@ -508,7 +518,15 @@ public final class ContestController extends AbstractJudgelsController {
         }
 
         ContestUpsertForm contestUpsertData = contestUpsertForm.get();
-        contestService.updateContest(contest.getJid(), contestUpsertData.name, JudgelsPlayUtils.toSafeHtml(contestUpsertData.description), ContestStyle.valueOf(contestUpsertData.style), IdentityUtils.getUserJid(), IdentityUtils.getIpAddress());
+        contestService.updateContest(
+                contest.getJid(),
+                contestUpsertData.name,
+                JudgelsPlayUtils.toSafeHtml(contestUpsertData.description),
+                ContestStyle.valueOf(contestUpsertData.style),
+                new Date(JudgelsPlayUtils.parseDateTime(contestUpsertData.beginTime)),
+                contestUpsertData.duration,
+                IdentityUtils.getUserJid(),
+                IdentityUtils.getIpAddress());
 
         if (!contest.getName().equals(contestUpsertData.name)) {
             UrielControllerUtils.getInstance().addActivityLog(BasicActivityKeys.RENAME.construct(CONTEST, contest.getJid(), contest.getName(), contestUpsertData.name));

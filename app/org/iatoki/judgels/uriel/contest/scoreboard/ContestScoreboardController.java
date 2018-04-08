@@ -30,7 +30,6 @@ import org.iatoki.judgels.uriel.controllers.securities.Authenticated;
 import org.iatoki.judgels.uriel.controllers.securities.HasRole;
 import org.iatoki.judgels.uriel.controllers.securities.LoggedIn;
 import org.iatoki.judgels.uriel.contest.module.ContestModules;
-import org.iatoki.judgels.uriel.contest.module.duration.ContestDurationModule;
 import org.iatoki.judgels.uriel.contest.module.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.contest.module.scoreboard.ContestScoreboardModule;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantService;
@@ -84,13 +83,12 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             return ContestControllerUtils.getInstance().tryEnteringContest(contest, IdentityUtils.getUserJid());
         }
 
-        ContestDurationModule contestDurationModule = ((ContestDurationModule) contest.getModule(ContestModules.DURATION));
         ContestScoreboardModule contestScoreboardModule = (ContestScoreboardModule) contest.getModule(ContestModules.SCOREBOARD);
         ContestScoreboardType contestScoreboardType = ContestScoreboardType.OFFICIAL;
 
         if (contest.containsModule(ContestModules.FROZEN_SCOREBOARD)) {
             ContestFrozenScoreboardModule contestFrozenScoreboardModule = (ContestFrozenScoreboardModule) contest.getModule(ContestModules.FROZEN_SCOREBOARD);
-            if (!contestFrozenScoreboardModule.isOfficialScoreboardAllowed() && ((contestDurationModule.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis())) {
+            if (!contestFrozenScoreboardModule.isOfficialScoreboardAllowed() && ((contest.getEndTime().getTime() - contestFrozenScoreboardModule.getScoreboardFreezeTime()) < System.currentTimeMillis())) {
                 if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), ContestScoreboardType.FROZEN)) {
                     contestScoreboardType = ContestScoreboardType.FROZEN;
                 }
