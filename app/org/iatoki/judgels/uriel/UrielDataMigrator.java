@@ -36,7 +36,7 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
 
     @Override
     public long getLatestDataVersion() {
-        return 10;
+        return 11;
     }
 
     @Override
@@ -71,6 +71,51 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
         if (currentDataVersion < 10) {
             migrateV9toV10();
         }
+        if (currentDataVersion < 11) {
+            migrateV10toV11();
+        }
+    }
+
+
+    private void migrateV10toV11() throws SQLException {
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        String[] tables = {
+                "activity_log",
+                "avatar_cache",
+                "contest",
+                "contest_announcement",
+                "contest_clarification",
+                "contest_contestant",
+                "contest_contestant_organization",
+                "contest_contestant_password",
+                "contest_manager",
+                "contest_module",
+                "contest_problem",
+                "contest_programming_grading",
+                "contest_programming_submission",
+                "contest_scoreboard",
+                "contest_style",
+                "contest_supervisor",
+                "contest_team",
+                "contest_team_coach",
+                "contest_team_member",
+                "jid_cache",
+                "user",
+                "user_read",
+        };
+
+        Statement statement = connection.createStatement();
+
+        for (String table : tables) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER TABLE uriel_").append(table)
+                    .append(" MODIFY COLUMN createdAt DATETIME(3) NOT NULL, ")
+                    .append(" MODIFY COLUMN updatedAt DATETIME(3) NOT NULL; ");
+            statement.execute(sb.toString());
+        }
+        statement.execute("ALTER TABLE uriel_contest MODIFY COLUMN beginTime DATETIME(3) NOT NULL;");
     }
 
     private void migrateV9toV10() throws SQLException {
