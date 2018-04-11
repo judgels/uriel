@@ -11,7 +11,6 @@ import org.iatoki.judgels.uriel.contest.module.ContestModules;
 import org.iatoki.judgels.uriel.contest.module.frozenscoreboard.ContestFrozenScoreboardModule;
 import play.db.jpa.JPA;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -76,16 +75,14 @@ public final class ScoreboardUpdater implements Runnable {
 
     private static void updateScoreboard(Contest contest, ContestScoreboardService contestScoreboardService, ContestScoreboardType contestScoreboardType, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, ContestService contestService, ScoreboardAdapter adapter, long time, String userJid, String ipAddress) {
         ScoreboardState state;
-        Map<String, URL> mapContestantToAvatar = Maps.newHashMap();
         try {
             state = JPA.withTransaction("default", true, () -> {
-                    mapContestantToAvatar.putAll(contestScoreboardService.getMappedContestantJidToImageUrlInContest(contest.getJid()));
                     return contestService.getScoreboardStateInContest(contest.getJid());
                 });
         } catch (Throwable t) {
             throw new RuntimeException(t);
         }
-        ScoreboardContent content = adapter.computeScoreboardContent(contest, state, submissions, contestantStartTimes, mapContestantToAvatar);
+        ScoreboardContent content = adapter.computeScoreboardContent(contest, state, submissions, contestantStartTimes);
         Scoreboard scoreboard = adapter.createScoreboard(state, content);
         JPA.withTransaction(() -> {
                 contestScoreboardService.upsertContestScoreboard(contest.getJid(), contestScoreboardType, scoreboard, time, userJid, ipAddress);

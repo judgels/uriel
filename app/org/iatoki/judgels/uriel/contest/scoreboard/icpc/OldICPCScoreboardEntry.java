@@ -6,7 +6,7 @@ import org.iatoki.judgels.uriel.contest.scoreboard.ScoreboardEntry;
 import java.net.URL;
 import java.util.List;
 
-public class ICPCScoreboardEntry implements ScoreboardEntry {
+public class OldICPCScoreboardEntry implements ScoreboardEntry {
 
     public enum State {
         NOT_ACCEPTED,
@@ -16,6 +16,7 @@ public class ICPCScoreboardEntry implements ScoreboardEntry {
 
     public int rank;
     public String contestantJid;
+    public URL imageURL;
     public int totalAccepted;
     public long totalPenalties;
     public long lastAcceptedPenalty;
@@ -23,7 +24,7 @@ public class ICPCScoreboardEntry implements ScoreboardEntry {
     public List<Long> penaltyList;
     public List<Integer> problemStateList;
 
-    public ICPCScoreboardEntry() {
+    public OldICPCScoreboardEntry() {
         this.problemStateList = Lists.newArrayList();
         this.attemptsList = Lists.newArrayList();
         this.penaltyList = Lists.newArrayList();

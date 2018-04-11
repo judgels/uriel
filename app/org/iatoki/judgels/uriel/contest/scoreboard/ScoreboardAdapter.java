@@ -5,7 +5,6 @@ import org.iatoki.judgels.sandalphon.problem.programming.submission.ProgrammingS
 import org.iatoki.judgels.uriel.contest.Contest;
 import play.twirl.api.Html;
 
-import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +12,7 @@ import java.util.Set;
 
 public interface ScoreboardAdapter {
 
-    ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimesMap, Map<String, URL> userJidToImageMap);
+    ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimesMap);
 
     Scoreboard parseScoreboardFromJson(String json);
 

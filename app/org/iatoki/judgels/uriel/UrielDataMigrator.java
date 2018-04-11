@@ -1,6 +1,7 @@
 package org.iatoki.judgels.uriel;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -12,6 +13,14 @@ import org.iatoki.judgels.play.jid.JidService;
 import org.iatoki.judgels.play.migration.AbstractJudgelsDataMigrator;
 import org.iatoki.judgels.play.migration.DataMigrationEntityManager;
 import org.iatoki.judgels.play.migration.DataVersionDao;
+import org.iatoki.judgels.uriel.contest.scoreboard.icpc.ICPCScoreboard;
+import org.iatoki.judgels.uriel.contest.scoreboard.icpc.ICPCScoreboardContent;
+import org.iatoki.judgels.uriel.contest.scoreboard.icpc.ICPCScoreboardEntry;
+import org.iatoki.judgels.uriel.contest.scoreboard.icpc.OldICPCScoreboard;
+import org.iatoki.judgels.uriel.contest.scoreboard.ioi.IOIScoreboard;
+import org.iatoki.judgels.uriel.contest.scoreboard.ioi.IOIScoreboardContent;
+import org.iatoki.judgels.uriel.contest.scoreboard.ioi.IOIScoreboardEntry;
+import org.iatoki.judgels.uriel.contest.scoreboard.ioi.OldIOIScoreboard;
 import org.testng.collections.Maps;
 
 import javax.inject.Inject;
@@ -22,6 +31,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
@@ -36,7 +46,7 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
 
     @Override
     public long getLatestDataVersion() {
-        return 11;
+        return 12;
     }
 
     @Override
@@ -74,8 +84,61 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
         if (currentDataVersion < 11) {
             migrateV10toV11();
         }
+        if (currentDataVersion < 12) {
+            migrateV11toV12();
+        }
     }
 
+    private void migrateV11toV12() throws SQLException {
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM uriel_contest_scoreboard;");
+        while (resultSet.next()) {
+            String contestJid = resultSet.getString("contestJid");
+            String scoreboard = resultSet.getString("scoreboard");
+
+            Map<String, Object> scoreboardMap = new Gson().fromJson(scoreboard, new TypeToken<HashMap<String, Object>>() { }.getType());
+            String newScoreboard;
+
+            if (scoreboardMap.containsKey("config")) {
+                OldIOIScoreboard sc = new Gson().fromJson(scoreboard, OldIOIScoreboard.class);
+                List<IOIScoreboardEntry> entries = Lists.transform(sc.getContent().getEntries(), e -> {
+                    IOIScoreboardEntry ne = new IOIScoreboardEntry();
+                    ne.rank = e.rank;
+                    ne.contestantJid = e.contestantJid;
+                    ne.scores = e.scores;
+                    ne.totalScores = e.totalScores;
+                    ne.lastAffectingPenalty = e.lastAffectingPenalty;
+                    return ne;
+                });
+                IOIScoreboard newsc = new IOIScoreboard(sc.getState(), new IOIScoreboardContent(entries));
+                newScoreboard = new Gson().toJson(newsc);
+            } else {
+                OldICPCScoreboard sc = new Gson().fromJson(scoreboard, OldICPCScoreboard.class);
+                List<ICPCScoreboardEntry> entries = Lists.transform(sc.getContent().getEntries(), e -> {
+                    ICPCScoreboardEntry ne = new ICPCScoreboardEntry();
+                    ne.rank = e.rank;
+                    ne.contestantJid = e.contestantJid;
+                    ne.totalAccepted = e.totalAccepted;
+                    ne.totalPenalties = e.totalPenalties;
+                    ne.lastAcceptedPenalty = e.lastAcceptedPenalty;
+                    ne.attemptsList = e.attemptsList;
+                    ne.penaltyList = e.penaltyList;
+                    ne.problemStateList = e.problemStateList;
+                    return ne;
+                });
+                ICPCScoreboard newsc = new ICPCScoreboard(sc.getState(), new ICPCScoreboardContent(entries));
+                newScoreboard = new Gson().toJson(newsc);
+            }
+
+            PreparedStatement preparedStatement = connection.prepareStatement("UPDATE uriel_contest_scoreboard SET scoreboard = ? WHERE contestJid = ?;");
+            preparedStatement.setString(1, newScoreboard);
+            preparedStatement.setString(2, contestJid);
+            preparedStatement.executeUpdate();
+        }
+    }
 
     private void migrateV10toV11() throws SQLException {
         SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);

@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 public class ICPCScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes) {
 
         ICPCContestStyleConfig icpcStyleConfig = (ICPCContestStyleConfig) contest.getStyleConfig();
         ScoreboardEntryComparator<ICPCScoreboardEntry> comparator = new ICPCScoreboardEntryComparator();
@@ -97,7 +97,6 @@ public class ICPCScoreboardAdapter implements ScoreboardAdapter {
         for (String contestantJid : state.getContestantJids()) {
             ICPCScoreboardEntry entry = new ICPCScoreboardEntry();
             entry.contestantJid = contestantJid;
-            entry.imageURL = userJidToImageMap.get(contestantJid);
 
             for (String problemJid : state.getProblemJids()) {
                 int attempts = attemptsMap.get(contestantJid).get(problemJid);

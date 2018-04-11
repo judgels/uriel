@@ -16,7 +16,6 @@ import org.iatoki.judgels.uriel.contest.scoreboard.ioi.html.ioiScoreboardView;
 import play.i18n.Messages;
 import play.twirl.api.Html;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 public final class IOIScoreboardAdapter implements ScoreboardAdapter {
 
     @Override
-    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes, Map<String, URL> userJidToImageMap) {
+    public ScoreboardContent computeScoreboardContent(Contest contest, ScoreboardState state, List<ProgrammingSubmission> submissions, Map<String, Date> contestantStartTimes) {
 
         IOIContestStyleConfig styleConfig = (IOIContestStyleConfig) contest.getStyleConfig();
 
@@ -83,7 +82,6 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
         for (String contestantJid : state.getContestantJids()) {
             IOIScoreboardEntry entry = new IOIScoreboardEntry();
             entry.contestantJid = contestantJid;
-            entry.imageURL = userJidToImageMap.get(contestantJid);
 
             int totalScores = 0;
             for (String problemJid : state.getProblemJids()) {
@@ -156,7 +154,6 @@ public final class IOIScoreboardAdapter implements ScoreboardAdapter {
             IOIScoreboardEntry newEntry = new IOIScoreboardEntry();
             newEntry.scores = filterIndices(entry.scores, openProblemIndices);
             newEntry.contestantJid = entry.contestantJid;
-            newEntry.imageURL = entry.imageURL;
             newEntry.totalScores = newEntry.scores.stream().filter(s -> s != null).mapToInt(s -> s).sum();
             newEntries.add(newEntry);
         }

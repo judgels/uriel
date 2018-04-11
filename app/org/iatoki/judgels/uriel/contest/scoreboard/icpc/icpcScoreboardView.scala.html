@@ -16,7 +16,6 @@
         <thead>
             <tr>
                 <th class="scoreboard-rank">Rank</th>
-                <th class="scoreboard-logo">Logo</th>
                 <th>Contestant</th>
                 <th class="scoreboard-score">Total</th>
                 @for(problemAlias <- state.getProblemAliases) {
@@ -33,7 +32,6 @@
                     } else {
                         <td class="scoreboard-rank">@entry.rank</td>
                     }
-                    <td class="scoreboard-logo"><img src="@entry.imageURL.toString" class="scoreboard-logo-image" alt="logo" /></td>
                     <td>@Html(JudgelsPlayUtils.prettifyUserDisplayName(displayNamesMap.get(entry.contestantJid)))</td>
                     <td class="scoreboard-score">
                         <div class="scoreboard-icpc-accepted-attempts">@entry.totalAccepted</div>
