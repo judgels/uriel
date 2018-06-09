@@ -151,6 +151,10 @@ public final class ContestControllerUtils {
     }
 
     public boolean hasContestFinished(Contest contest, String userJid) {
+        if (hasContestEnded(contest)) {
+            return true;
+        }
+
         if (contest.containsModule(ContestModules.VIRTUAL) && isContestant(contest, userJid)) {
             ContestContestant contestContestant = contestContestantService.findContestantInContestAndJid(contest.getJid(), userJid);
             ContestVirtualModule contestVirtualModule = (ContestVirtualModule) contest.getModule(ContestModules.VIRTUAL);
