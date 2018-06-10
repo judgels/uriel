@@ -1,14 +1,16 @@
 package org.iatoki.judgels.uriel.contest.contestant;
 
+import java.util.Date;
+
 public final class ContestContestant {
 
     private final long id;
     private final String contestJid;
     private final String userJid;
     private final ContestContestantStatus status;
-    private final long contestStartTime;
+    private final Date contestStartTime;
 
-    public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status, long contestStartTime) {
+    public ContestContestant(long id, String contestJid, String userJid, ContestContestantStatus status, Date contestStartTime) {
         this.id = id;
         this.contestJid = contestJid;
         this.userJid = userJid;
@@ -33,6 +35,6 @@ public final class ContestContestant {
     }
 
     public long getContestStartTime() {
-        return contestStartTime;
+        return contestStartTime == null ? 0 : contestStartTime.getTime();
     }
 }

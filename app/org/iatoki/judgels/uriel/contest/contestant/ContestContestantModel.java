@@ -6,6 +6,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.util.Date;
 
 @Entity
 @Table(name = "uriel_contest_contestant")
@@ -21,5 +24,6 @@ public final class ContestContestantModel extends AbstractModel {
 
     public String status;
 
-    public long contestStartTime;
+    @Temporal(TemporalType.TIMESTAMP)
+    public Date contestStartTime;
 }

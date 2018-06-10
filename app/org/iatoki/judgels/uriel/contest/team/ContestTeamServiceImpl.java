@@ -342,7 +342,7 @@ public final class ContestTeamServiceImpl implements ContestTeamService {
 
         for (ContestTeamMemberModel contestTeamMemberModel : contestTeamMemberModels) {
             ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, contestTeamMemberModel.memberJid);
-            contestContestantModel.contestStartTime = now;
+            contestContestantModel.contestStartTime = new Date(now);
 
             contestContestantDao.edit(contestContestantModel, userJid, userIpAddress);
         }

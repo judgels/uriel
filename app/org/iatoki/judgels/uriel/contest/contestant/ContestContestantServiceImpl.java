@@ -78,8 +78,8 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
         List<ContestContestantModel> contestContestantModels = contestContestantDao.findSortedByFiltersEq("id", "asc", "", ImmutableMap.of(ContestContestantModel_.contestJid, contestJid), 0, -1);
 
         return contestContestantModels.stream()
-                .filter(m -> m.contestStartTime != 0)
-                .collect(Collectors.toMap(m -> m.userJid, m -> new Date(m.contestStartTime)));
+                .filter(m -> m.contestStartTime != null)
+                .collect(Collectors.toMap(m -> m.userJid, m -> m.contestStartTime));
     }
 
     @Override
@@ -152,8 +152,8 @@ public final class ContestContestantServiceImpl implements ContestContestantServ
     @Override
     public void startContestAsContestant(String contestJid, String userJid, String starterUserJid, String starterUserIpAddress) {
         ContestContestantModel contestContestantModel = contestContestantDao.findInContestByContestantJid(contestJid, userJid);
-        if (contestContestantModel.contestStartTime == 0) {
-            contestContestantModel.contestStartTime = System.currentTimeMillis();
+        if (contestContestantModel.contestStartTime == null) {
+            contestContestantModel.contestStartTime = new Date(System.currentTimeMillis());
 
             contestContestantDao.edit(contestContestantModel, starterUserJid, starterUserIpAddress);
         }

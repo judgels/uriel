@@ -46,7 +46,7 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
 
     @Override
     public long getLatestDataVersion() {
-        return 12;
+        return 13;
     }
 
     @Override
@@ -87,6 +87,20 @@ public final class UrielDataMigrator extends AbstractJudgelsDataMigrator {
         if (currentDataVersion < 12) {
             migrateV11toV12();
         }
+        if (currentDataVersion < 13) {
+            migrateV12toV13();
+        }
+    }
+
+    private void migrateV12toV13() throws SQLException {
+        SessionImpl session = (SessionImpl) entityManager.unwrap(Session.class);
+        Connection connection = session.getJdbcConnectionAccess().obtainConnection();
+
+        Statement statement = connection.createStatement();
+        statement.execute("ALTER TABLE uriel_contest_contestant ADD COLUMN contestStartTime2 datetime(3);");
+        statement.execute("UPDATE uriel_contest_contestant SET contestStartTime2 = FROM_UNIXTIME(contestStartTime * 0.001) WHERE contestStartTime > 0;");
+        statement.execute("ALTER TABLE uriel_contest_contestant DROP COLUMN contestStartTime;");
+        statement.execute("ALTER TABLE uriel_contest_contestant CHANGE COLUMN contestStartTime2 contestStartTime datetime(3);");
     }
 
     private void migrateV11toV12() throws SQLException {
