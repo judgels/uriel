@@ -95,6 +95,10 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             }
         }
 
+        if (contestScoreboardType == ContestScoreboardType.FROZEN || contestScoreboardModule.isIncognitoScoreboard()) {
+            contestScoreboardType = ContestScoreboardType.OFFICIAL;
+        }
+
         ContestScoreboard contestScoreboard = null;
         if (contestScoreboardService.scoreboardExistsInContestByType(contest.getJid(), contestScoreboardType)) {
             contestScoreboard = contestScoreboardService.findScoreboardInContestByType(contest.getJid(), contestScoreboardType);
