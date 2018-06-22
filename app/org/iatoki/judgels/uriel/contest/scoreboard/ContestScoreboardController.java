@@ -95,7 +95,7 @@ public class ContestScoreboardController extends AbstractJudgelsController {
             }
         }
 
-        if (contestScoreboardType == ContestScoreboardType.FROZEN || contestScoreboardModule.isIncognitoScoreboard()) {
+        if (contestScoreboardType == ContestScoreboardType.FROZEN && contestScoreboardModule.isIncognitoScoreboard()) {
             contestScoreboardType = ContestScoreboardType.OFFICIAL;
         }
 
