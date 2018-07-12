@@ -1,0 +1,19 @@
+@import org.iatoki.judgels.uriel.contest.module.delayedgrading.DelayedGradingConfigForm
+@import play.i18n.Messages
+@import org.iatoki.judgels.play.views.html.formErrorView
+
+@import org.iatoki.judgels.uriel.contest.module.delayedgrading.DelayedGradingConfigForm
+@(delayedGradingConfigForm: Form[DelayedGradingConfigForm])
+
+@implicitFieldConstructor = @{ b3.horizontal.fieldConstructor("col-md-3", "col-md-9") }
+
+<h4>Delayed Grading</h4>
+
+@formErrorView(delayedGradingConfigForm)
+
+@b3.inputWrapped("delayDuration", delayedGradingConfigForm("delayDuration"), '_label -> "Delay duration") { input =>
+    <div class="input-group">
+        @input
+        <div class="input-group-addon">milliseconds</div>
+    </div>
+}

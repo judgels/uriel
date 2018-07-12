@@ -3,6 +3,7 @@ package org.iatoki.judgels.uriel.contest.module;
 import com.google.gson.Gson;
 import org.iatoki.judgels.uriel.contest.module.clarification.ContestClarificationModule;
 import org.iatoki.judgels.uriel.contest.module.clarificationtimelimit.ContestClarificationTimeLimitModule;
+import org.iatoki.judgels.uriel.contest.module.delayedgrading.DelayedGradingModule;
 import org.iatoki.judgels.uriel.contest.module.file.ContestFileModule;
 import org.iatoki.judgels.uriel.contest.module.frozenscoreboard.ContestFrozenScoreboardModule;
 import org.iatoki.judgels.uriel.contest.module.javaspecification.ContestJavaSpecificationModule;
@@ -34,6 +35,8 @@ public final class ContestModuleFactory {
                 return new ContestClarificationModule();
             case CLARIFICATION_TIME_LIMIT:
                 return new ContestClarificationTimeLimitModule(0);
+            case DELAYED_GRADING:
+                return new DelayedGradingModule(0);
             case LIMITED:
                 return new ContestLimitedModule();
             case EXCLUSIVE:
@@ -73,6 +76,8 @@ public final class ContestModuleFactory {
                 return new Gson().fromJson(config, ContestClarificationModule.class);
             case CLARIFICATION_TIME_LIMIT:
                 return new Gson().fromJson(config, ContestClarificationTimeLimitModule.class);
+            case DELAYED_GRADING:
+                return new Gson().fromJson(config, DelayedGradingModule.class);
             case LIMITED:
                 return new Gson().fromJson(config, ContestLimitedModule.class);
             case EXCLUSIVE:
