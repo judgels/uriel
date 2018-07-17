@@ -17,6 +17,7 @@ import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionsLayout;
 import org.iatoki.judgels.play.views.html.layouts.subtabLayout;
 import org.iatoki.judgels.sandalphon.problem.programming.grading.LanguageRestrictionAdapter;
+import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestant;
 import org.iatoki.judgels.uriel.contest.contestant.organization.ContestContestantOrganization;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestantStatus;
@@ -59,6 +60,7 @@ import play.filters.csrf.AddCSRFToken;
 import play.filters.csrf.RequireCSRFCheck;
 import play.i18n.Messages;
 import play.mvc.Result;
+import play.mvc.Results;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -203,6 +205,9 @@ public final class ContestController extends AbstractJudgelsController {
     @Transactional(readOnly = true)
     public Result viewContest(long contestId) throws ContestNotFoundException {
         Contest contest = contestService.findContestById(contestId);
+        if (UrielProperties.getInstance().isLegacyContestDisallowed(contest.getJid()) && !ContestControllerUtils.getInstance().isSupervisorOrAbove(contest, IdentityUtils.getUserJid())) {
+            return Results.redirect("https://tlx.toki.id/competition/contests/" + contest.getId());
+        }
         if (contest.containsModule(ContestModules.REGISTRATION)) {
             return viewContestAndListRegistrants(contestId, 0, "id", "desc", "");
         }

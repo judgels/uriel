@@ -9,6 +9,7 @@ import org.iatoki.judgels.play.views.html.layouts.alertLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingLayout;
 import org.iatoki.judgels.play.views.html.layouts.headingWithActionLayout;
 import org.iatoki.judgels.play.views.html.layouts.tabLayout;
+import org.iatoki.judgels.uriel.UrielProperties;
 import org.iatoki.judgels.uriel.contest.contestant.ContestContestant;
 import org.iatoki.judgels.uriel.contest.supervisor.ContestPermissions;
 import org.iatoki.judgels.uriel.contest.team.ContestTeam;
@@ -211,6 +212,9 @@ public final class ContestControllerUtils {
     }
 
     public boolean isAllowedToEnterContest(Contest contest, String userJid) {
+        if (UrielProperties.getInstance().isLegacyContestDisallowed(contest.getJid()) && !isSupervisorOrAbove(contest, userJid)) {
+            return false;
+        }
         if (!isAllowedToViewEnterContestButton(contest, userJid)) {
             return false;
         }

@@ -70,6 +70,7 @@ public final class UrielProperties {
     private Region fileAWSS3BucketRegion;
 
     private Set<String> criticalContestJids;
+    private Set<String> disallowLegacyContestJids;
 
     private UrielProperties(Config config) {
         this.config = config;
@@ -392,6 +393,10 @@ public final class UrielProperties {
         return criticalContestJids.contains(contestJid);
     }
 
+    public boolean isLegacyContestDisallowed(String contestJid) {
+        return disallowLegacyContestJids.contains(contestJid);
+    }
+
     private void build() {
         urielBaseUrl = requireStringValue("uriel.baseUrl");
         urielBaseDataDir = requireDirectoryValue("uriel.baseDataDir");
@@ -474,6 +479,13 @@ public final class UrielProperties {
             criticalContestJids = ImmutableSet.copyOf(Sets.newHashSet(criticalContestJidsAsString.split(",")));
         } else {
             criticalContestJids = ImmutableSet.of();
+        }
+        
+        String disallowLegacyContestJidsAsString = getStringValue("uriel.disallowLegacyContestJids");
+        if (disallowLegacyContestJidsAsString != null) {
+            disallowLegacyContestJids = ImmutableSet.copyOf(Sets.newHashSet(disallowLegacyContestJidsAsString.split(",")));
+        } else {
+            disallowLegacyContestJids = ImmutableSet.of();
         }
     }
 
